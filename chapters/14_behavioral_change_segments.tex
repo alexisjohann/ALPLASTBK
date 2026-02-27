@@ -1,0 +1,1301 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CHAPTER 14: BEHAVIORAL CHANGE SEGMENTS (BCS)
+% Frage 6: In welchem Behavioral Change Segment befindet sich der Entscheider?
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% METADATA BLOCK
+% ==============================================================================
+% Chapter Type: C (Application Chapter)
+% Version: 2.0 (January 2026)
+% Status: Final
+%
+% PURPOSE:
+% Operationalize segment emergence theory for practical identification and
+% intervention design. Show how natural clusters emerge from heterogeneity,
+% why cluster count is context-dependent, and how BCJ × BCS interaction
+% determines optimal intervention design.
+%
+% PRIMARY APPENDIX: BA (FORMAL-SEGMENTATION: Emergent Segment Genesis)
+% SECONDARY APPENDICES: AV (READY), AW (STAGE), AU (AWARE), C (WHAT)
+%
+% PREREQUISITES: Chapters 11-13 (Awareness, Willingness, Journey)
+% LEADS TO: Chapter 15 (Integration Framework)
+%
+% CHAPTER TYPE DECLARATION: Type C (Application Chapter)
+% - Multiple worked examples showing context-dependent clustering
+% - Policy implications for intervention design
+% - Practical identification methods
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% =============================================================================
+% Chapter 14: Behavioral Change Segments
+% =============================================================================
+%
+% Version: 1.0 (January 2026)
+%
+% Purpose: Segment profiles
+%
+% Primary Appendix: See appendix references below
+% Secondary Appendices: G (Glossary), F (Examples)
+%
+% Prerequisites: Chapters 1-8 (Foundations)
+% Leads to: Chapter 15
+%
+% Chapter Type: C (Application)
+% =============================================================================
+
+
+\chapter{Behavioral Change Segments: Emergent Clustering from Population Heterogeneity}
+\label{ch:bcs}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CHAPTER SCOPE BOX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{tcolorbox}[
+    colback=purple!5!white,
+    colframe=purple!75!black,
+    title={\textbf{Chapter Scope: Ziel / In-Scope / Out-of-Scope}},
+    fonttitle=\bfseries
+]
+
+\textbf{Ziel (Objective):}
+Apply the EBF framework to segment profiles with practical examples and policy implications.
+
+\vspace{0.3cm}
+\textbf{In-Scope:}
+\begin{itemize}[nosep]
+    \item Practical applications of segment profiles
+    \item Multiple worked examples (≥2)
+    \item Policy implications and recommendations
+    \item Implementation guidance
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Out-of-Scope (delegiert an Appendices):}
+\begin{itemize}[nosep]
+    \item Theoretical foundations $\rightarrow$ Foundation chapters
+    \item Formal proofs $\rightarrow$ FORMAL appendices
+    \item Parameter estimation methods $\rightarrow$ METHOD appendices
+\end{itemize}
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+% CONNECTION TO EIT-EMP
+%------------------------------------------------------------------------------
+\paragraph{Connection to Intervention Design (EIT-EMP).}
+The segment-multiplier $\sigma_s = CATE(s)/ATE$ defined in this chapter is a primary input
+for the EMERGE algorithm (Chapter 11). Segments with high $\sigma$ (Innovators, Early Adopters)
+justify higher intervention intensity, while segments with low or negative $\sigma$ (Resisters)
+may require different approaches or exclusion from certain intervention types. The variance
+of $\sigma$ across segments determines the heterogeneity factor that modulates optimal
+portfolio size $K^*$: high variance means more segment-specific interventions are needed.
+Chapter 19 provides the complete Segment-Multiplier Matrix for intervention portfolio optimization.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX REFERENCES BOX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{tcolorbox}[
+    colback=yellow!10!white,
+    colframe=orange!75!black,
+    title={\textbf{Appendix References for This Chapter}},
+    fonttitle=\bfseries
+]
+\small
+\begin{tabular}{@{}lp{8cm}@{}}
+\textbf{Appendix} & \textbf{Content} \\
+\midrule
+G (REF-GLOSSARY) & Symbol definitions and terminology \\
+F (REF-EXAMPLES) & Additional worked examples \\
+\end{tabular}
+
+\medskip
+\textit{For formal proofs and complete derivations, see the referenced appendices.}
+\end{tcolorbox}
+
+%==============================================================================
+% CROSS-REFERENCE: EIT-EMP / EMERGE ALGORITHM
+%==============================================================================
+\begin{tcolorbox}[
+    colback=blue!5!white,
+    colframe=blue!75!black,
+    title={\textbf{Cross-Reference: EMERGE Algorithm (Chapter 11, EIT-EMP)}},
+    fonttitle=\bfseries
+]
+\textbf{BCS $\rightarrow$ Intervention Design:} Die Behavioral Change Segments bestimmen den Segment-Multiplier $\sigma_s$ im EMERGE-Algorithmus (Chapter 11). Unterschiedliche Segmente reagieren unterschiedlich stark auf dieselbe Intervention.
+
+\medskip
+\textbf{Segment-Multiplier $\sigma$:}
+\begin{equation*}
+\sigma_s = \frac{CATE(s)}{ATE} = \frac{\text{Conditional Average Treatment Effect für Segment } s}{\text{Average Treatment Effect}}
+\end{equation*}
+
+\begin{center}
+\begin{tabular}{lcl}
+\textbf{Segment-Typ} & \textbf{Typisches $\sigma$} & \textbf{Implikation} \\
+\midrule
+Innovators & 1.5--2.0 & Frühe Adopter, hohe Responsivität \\
+Early Majority & 1.0--1.2 & Durchschnittliche Wirkung \\
+Late Majority & 0.6--0.8 & Niedrigere Responsivität \\
+Resisters & 0.2--0.4 & Sehr niedrig, evtl. Backfire-Risiko \\
+\end{tabular}
+\end{center}
+
+\medskip
+\textbf{EMERGE-Integration (Chapter 19, EXC-3 Hybrid):}
+\[
+K^* = K_{\text{base}} \cdot f_B + \delta_C + \delta_S + \delta_\gamma + \delta_L
+\]
+Nur $f_B$ ist multiplikativ. Der Stage-Adjustment $\delta_S$ ist additiv und wird durch Segment-Heterogenität moduliert:
+\[
+f_S = f_S^{\text{BCJ}} \cdot g(\text{Var}(\sigma)) \quad \text{mit } g(\text{Var}) = \begin{cases}
+1.0 & \text{Var}(\sigma) < 0.1 \text{ (homogen)} \\
+1.2 & \text{Var}(\sigma) \in [0.1, 0.3] \\
+1.4 & \text{Var}(\sigma) > 0.3 \text{ (heterogen)}
+\end{cases}
+\]
+
+\medskip
+\textbf{BCJ $\times$ BCS Matrix:}
+Die Kombination aus Journey-Stage (Chapter 13) und Segment-Typ bestimmt die optimale Intervention. Siehe Chapter 19 für die vollständige Segment-Multiplier Matrix.
+
+\medskip
+\textbf{Workflow:} Chapter 14 (BCS: $\sigma_s$) $\rightarrow$ Chapter 19 (Segment-Specific) $\rightarrow$ Chapter 11 (EMERGE: $K^*$)
+
+\medskip
+\textit{Siehe Chapter 11, Section 11.5 für die vollständige EMERGE-Spezifikation.}
+\end{tcolorbox}
+
+
+%------------------------------------------------------------------------------
+% DIE 9 FRAGEN NAVIGATION BOX
+%------------------------------------------------------------------------------
+\BCMQuestionNav{14}
+
+%------------------------------------------------------------------------------
+% QUICK REFERENCE BOX
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=Quick Reference: Chapter 14]
+
+\textbf{Central Concepts:}
+\begin{itemize}[nosep]
+    \item \textbf{Heterogeneity Space} $\mathcal{H}$: Distribution of (ω, A, W) across population
+    \item \textbf{Behavioral Segment}: Natural cluster $C_k$ of individuals with similar preferences
+    \item \textbf{Cluster Count} $k^*$: Data-driven, context-dependent (NOT fixed at 5)
+    \item \textbf{Rogers Structure}: 5-segment special case (voluntary, new, social influence)
+\end{itemize}
+
+\textbf{Key Equation:}
+\begin{equation*}
+\text{Clusters} = f(\mathcal{H}, \Psi) \quad \text{(context modulates structure)}
+\end{equation*}
+
+\textbf{Practical Methods:}
+Survey-based, behavioral indicators, or data-driven clustering with silhouette/BIC validation
+
+\textbf{Interaction Rule:} BCJ (journey stage) × BCS (cluster type) $\rightarrow$ Intervention design
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+% INTUITION BOX (with named character)
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=orange!75!black,
+    title=Intuition: Why Do Natural Segments Exist?]
+
+\textbf{Anna's Question:} ``If everyone cares about the environment, why don't
+they all make the same choices?''
+
+\textbf{Answer:} Because people care \emph{differently}. Some prioritize environmental
+identity; others prioritize financial ROI; others care about what neighbors do.
+
+These different priority structures naturally create clusters. It's not that researchers
+invented ``5 types''---the clusters emerge from how diverse preferences are distributed
+in the population.
+
+\textbf{Thomas's Reality Check:} ``But I've heard there are always 5 segments...''
+
+\textbf{Nuance:} 5 segments is very common for voluntary adoption of new technologies,
+but it's NOT universal. When behavior is mandatory (COVID vaccines), only 2-3 clusters
+emerge. When behavior is established (smartphones), usage-based clusters form instead
+of adoption-based ones.
+
+\textbf{Key Insight:} \emph{Segments are not theoretical constructs; they are data-driven
+phenomena shaped by the population's heterogeneous preferences and the context.}
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+% CENTRAL QUESTION BOX
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black,
+    title=Central Question of Chapter 14]
+
+\textbf{In which behavioral segment does a decision-maker reside, and how does
+segment membership (combined with BCJ stage) determine optimal intervention design?}
+
+\noindent Subquestions:
+\begin{enumerate}[nosep]
+    \item How do natural segments emerge from population heterogeneity?
+    \item Why does cluster count vary across domains and contexts?
+    \item How can we practically identify segments in a population?
+    \item How do we design interventions that target each cluster's key levers?
+\end{enumerate}
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+% CHAPTER OVERVIEW WITH SECTION REFERENCES
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=Chapter Overview: Structure and Key Sections]
+
+This chapter develops practical segmentation science through six major sections:
+
+\begin{enumerate}
+
+\item \textbf{Segment Emergence Theory} (\S\ref{sec:segment-emergence})
+  -- Why segments exist and why cluster count is context-dependent (Axioms 1-3)
+
+\item \textbf{Practical Identification Methods} (\S\ref{sec:segment-identification})
+  -- Three approaches: survey-based, behavioral, data-driven clustering
+
+\item \textbf{Context-Dependent Examples} (\S\ref{sec:context-examples})
+  -- How the same behavior produces 5 clusters (EVs), 2-3 clusters (COVID),
+  2-3 clusters (smartphones)
+
+\item \textbf{Intervention Matching and Diagnostics} (\S\ref{sec:bcj-bcs}, \S\ref{sec:intervention-matching})
+  -- Leverage profiles, matching principles, diagnostic frameworks (Axioms 8-9)
+
+\item \textbf{From Craft to Science: Axioms 10-13} (\S\ref{sec:axioms-10-13})
+  -- Theory externalization, pre-registration, diagnostic refinement, cumulative knowledge
+
+\item \textbf{Policy Implications} (\S\ref{sec:policy-implications})
+  -- Five actionable recommendations for behavior-change practitioners
+
+\end{enumerate}
+
+\textbf{Reading Strategy:}
+Start with theory (Sections 1-2), then move to examples (Section 3). Return
+to intervention matching (Section 4) for design guidance. Section 5 shows how
+to make your work scientifically rigorous and cumulative. Policy implications
+(Section 6) provide immediate actionable guidance.
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+\section{Introduction: The Segmentation Perspective}
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=Supporting Appendix]
+
+\textbf{Formal Specification:} See Appendix PAP1 (FORMAL-SEGMENTATION: Emergent Segment Genesis) for complete axiomatization of segmentation logic, including:
+\begin{itemize}[nosep]
+\item \textbf{Axioms 1-7:} Segment emergence from heterogeneity
+\item \textbf{Axioms 8-9:} Intervention matching via leverage profiles
+\item \textbf{Axioms 10-13:} Theory externalization, pre-registration, diagnostic refinement, and cumulative knowledge
+\end{itemize}
+
+This chapter operationalizes Axioms 1-9 with practical methods. See Section \ref{sec:axioms-10-13} for how Axioms 10-13 transform segmentation work from implicit craft into explicit, cumulative science.
+
+\end{tcolorbox}
+
+\vspace{1em}
+
+While the BCJ (Chapter~\ref{ch:bcj}) captures \emph{where} a person is in the
+change process, the \textbf{Behavioral Change Segments (BCS)} capture
+\emph{what type of person} they are. This chapter addresses:
+
+\begin{center}
+\fbox{\parbox{0.85\textwidth}{
+\textbf{Question 6:} In which \textbf{Behavioral Change Segment}
+does the decision-maker find themselves?
+}}
+\end{center}
+
+The key distinction:
+\begin{itemize}
+    \item \textbf{BCJ} = Dynamic position in behavior-change journey (Stage 1-5)
+    \item \textbf{BCS} = Stable preference structure within a given context
+\end{itemize}
+
+\textbf{Critical Insight:} Behavioral segments are not theoretical constructs imposed
+by researchers. They emerge as natural clusters from heterogeneity in utility
+preferences, awareness levels, and willingness thresholds. The number, type, and
+size of these clusters depend on the domain and context---not fixed a priori.
+
+%------------------------------------------------------------------------------
+\section{Segment Definition and Heterogeneity Space}
+%------------------------------------------------------------------------------
+
+A \textbf{Behavioral Change Segment} is a natural cluster of individuals with
+similar profiles across:
+
+\begin{enumerate}
+    \item Utility weights ($\vec{\omega}_i$) across the FEPSDE dimensions
+    \item Awareness levels and trajectories ($A_i$)
+    \item Willingness thresholds ($W_i$)
+    \item Context sensitivity ($\Psi$ responsiveness)
+\end{enumerate}
+
+Formally, define the heterogeneity space:
+\begin{equation}
+\mathcal{H} = \{ (\vec{\omega}_i, A_i, W_i) : i \in [1,N] \}
+\end{equation}
+
+A behavioral segment is a cluster $C_k \subset \mathcal{H}$ of individuals with
+similar preference structures. These clusters are not imposed but emerge from
+the natural distribution of heterogeneity in the population.
+
+%------------------------------------------------------------------------------
+\section{Segment Emergence: From Heterogeneity to Clusters}
+\label{sec:segment-emergence}
+%------------------------------------------------------------------------------
+
+\subsection{Why Segments Exist (Axiom 1-2)}
+
+\textbf{Axiom 1 (Universal Heterogeneity):} Every population exhibits significant
+variance in utility preferences, awareness, and willingness. This heterogeneity
+is the norm, not an exception.
+
+\textbf{Axiom 2 (Natural Clustering):} Heterogeneous populations do not distribute
+uniformly in preference space. Instead, they naturally cluster into groups with
+similar preferences. These clusters are the foundation of behavioral segments.
+
+Therefore: segments always exist. The question is not whether segments exist, but
+how many clusters, with what sizes, and what profiles.
+
+\subsection{Context Determines Cluster Structure (Axiom 3)}
+
+The critical insight: **Cluster structure is not universal; context determines it.**
+
+\begin{equation}
+\text{Clusters} = f(\mathcal{H}, \Psi)
+\end{equation}
+
+Different contexts produce different cluster counts:
+
+\begin{itemize}
+    \item \textbf{Voluntary adoption of novel technology} (e.g., electric vehicles): ~5 natural clusters
+    \item \textbf{Mandatory behavior with high stakes} (e.g., COVID vaccines): ~2-3 clusters
+    \item \textbf{Established, ubiquitous behavior} (e.g., smartphones): ~2-3 clusters (usage-based)
+    \item \textbf{High-cost decisions} (e.g., solar panels): ~6-7 clusters (financial constraints matter)
+\end{itemize}
+
+\textbf{Key implication:} We cannot assume a fixed number of segments like ``there are
+always 5 types.'' Instead, we must empirically determine the cluster structure for
+each domain and context.
+
+\subsection{Why 5 Segments Appear Common (Special Case)}
+
+The famous Rogers diffusion curve (Innovators, Early Adopters, Early Majority, Late
+Majority, Laggards) shows 5 segments. Why is this common?
+
+The 5-segment structure emerges when:
+\begin{itemize}[nosep]
+    \item The behavior is \textit{new or unfamiliar} (high heterogeneity in awareness)
+    \item Adoption involves \textit{individual choice} (not mandatory)
+    \item \textit{Social influence} is present (peer effects matter)
+    \item The population is \textit{reasonably large} ($N \geq 1000$)
+\end{itemize}
+
+But remove any condition, and the cluster structure changes. This is NOT a universal
+law; it is a special case that applies to certain domains.
+
+%------------------------------------------------------------------------------
+\section{Practical Segment Identification}
+\label{sec:segment-identification}
+%------------------------------------------------------------------------------
+
+How to determine behavioral segments in practice:
+
+\subsection{Method 1: Survey-Based Classification}
+\label{sec:survey-classification}
+
+For each domain, design psychographic items that measure utility weights and
+context sensitivities:
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lp{8cm}}
+\toprule
+\textbf{Dimension} & \textbf{Sample Survey Items (Likert 1-5)} \\
+\midrule
+\textbf{Identity Utility} &
+``I feel personally responsible for this behavior change.'' \\
+& ``It's the right thing to do, even if inconvenient.'' \\
+\midrule
+\textbf{Incentive Utility} &
+``What's the financial payback period?'' \\
+& ``Show me concrete cost-benefit numbers.'' \\
+\midrule
+\textbf{Social Utility} &
+``I want to do what my community does.'' \\
+& ``What percentage of neighbors/peers do it?'' \\
+\midrule
+\textbf{Uncertainty Sensitivity} &
+``I need guarantees this will work.'' \\
+& ``What are the risks if something goes wrong?'' \\
+\midrule
+\textbf{Effort Sensitivity} &
+``Change requires too much effort.'' \\
+& ``I'll adopt if the default changes, but won't seek it out.'' \\
+\bottomrule
+\end{tabular}
+\caption{Survey items for measuring utility weights and context sensitivities}
+\label{tab:survey-items}
+\end{table}
+
+\textbf{Scoring:} Construct utility weight scores from survey responses. Calculate
+averages for each respondent. The result is a feature vector $(\omega^F_i, \omega^E_i, \omega^P_i, \omega^S_i, \omega^D_i)$ for each individual.
+
+\subsection{Method 2: Behavioral Indicators}
+\label{sec:behavioral-indicators}
+
+Observable behaviors reveal segment membership without explicit surveys:
+
+\begin{itemize}
+    \item \textbf{Identity-driven:} Early adoption of behaviors aligned with self-image,
+    willing to incur costs if perceived as meaningful
+    \item \textbf{Incentive-driven:} Adoption correlates with clear ROI, price-sensitive,
+    compares alternatives
+    \item \textbf{Social-driven:} Adoption lags behind influential peers by 2-4 months,
+    participates in social challenges
+    \item \textbf{Risk-averse:} Requires proof before adoption, reads reviews extensively,
+    seeks guarantees and third-party certifications
+    \item \textbf{Effort-averse:} No proactive behavior change, adopts only via defaults
+    or strong nudges
+\end{itemize}
+
+\subsection{Method 3: Data-Driven Clustering (Recommended)}
+\label{sec:clustering}
+
+For data-rich environments (firms with transaction logs, health providers with records),
+use unsupervised clustering to let the data reveal natural segments:
+
+\textbf{Step 1: Feature Engineering}
+Create feature vectors from behavioral or psychographic data:
+\begin{itemize}[nosep]
+    \item Time-to-adoption (latency after awareness)
+    \item Elasticity to price changes ($\partial \text{Adoption} / \partial \text{Price}$)
+    \item Responsiveness to social information (effect size of social norm messaging)
+    \item Risk aversion indicators
+    \item Effort sensitivity (adoption when friction reduced)
+\end{itemize}
+
+\textbf{Step 2: Determine Optimal Cluster Count $k$}
+
+This is the crucial step: **Do not assume $k=5$.** Use standard clustering algorithms
+with validation metrics:
+
+\begin{enumerate}
+    \item Apply k-means or hierarchical clustering with varying $k \in [2, 10]$
+    \item For each $k$, compute clustering metrics:
+    \begin{itemize}[nosep]
+        \item \textbf{Silhouette Score}: Measures within-cluster cohesion vs. between-cluster separation (higher is better)
+        \item \textbf{Elbow Method}: Plot within-cluster sum of squares vs. $k$, look for elbow
+        \item \textbf{BIC}: Bayesian Information Criterion penalizes excess complexity
+    \end{itemize}
+    \item Select optimal $k$ based on these metrics
+\end{enumerate}
+
+\textbf{Step 3: Validate Cluster Differences}
+
+A good segmentation scheme must show that clusters differ in intervention response:
+\begin{itemize}
+    \item Conduct A/B tests: vary intervention intensity by cluster
+    \item Measure intervention elasticity: $\epsilon_{i,k}^{I} = \frac{\partial W_i}{\partial I} | i \in C_k$
+    \item Confirm that $\epsilon_{i,k}^{I}$ differs significantly across clusters
+\end{itemize}
+
+If all clusters respond identically, segmentation adds no practical value.
+
+%------------------------------------------------------------------------------
+\section{Example: Context-Dependent Cluster Structure}
+\label{sec:context-examples}
+%------------------------------------------------------------------------------
+
+Consider sustainable consumption across three contexts:
+
+\subsection{Context 1: Electric Vehicles (Novel, Voluntary, Social Influence)}
+
+\textbf{Situation:} EVs are still new. High awareness heterogeneity, social proof effects.
+
+\textbf{Clustering Result:} 5 natural clusters emerge:
+\begin{enumerate}
+    \item \textbf{Innovators} (2-3\%): High novelty-seeking, strong environmental values
+    \item \textbf{Early Adopters} (13-15\%): Environmentally conscious, willing to pay premium
+    \item \textbf{Pragmatists} (35-40\%): Will adopt if payback $\leq 7$ years
+    \item \textbf{Late Majority} (30-35\%): Adopt when cost parity achieved
+    \item \textbf{Laggards} (15-20\%): Resistant to change, prefer familiar technology
+\end{enumerate}
+
+\textbf{Quality:} Silhouette score $\approx 0.65$ (good separation).
+
+\subsection{Context 2: COVID Vaccination (Mandatory, High-Stakes, Politicized)}
+
+\textbf{Situation:} Vaccination is strongly recommended. High stakes, polarized.
+
+\textbf{Clustering Result:} Only 2-3 clusters:
+\begin{enumerate}
+    \item \textbf{Compliers} (70-75\%): Follow expert guidance
+    \item \textbf{Skeptics} (15-20\%): Distrust authorities
+    \item (Optional) \textbf{Defiant} (5-10\%): Actively oppose vaccination
+\end{enumerate}
+
+\textbf{Quality:} Silhouette score $\approx 0.55$ (moderate). Fewer clusters because
+risk aversion dominates; innovativeness is irrelevant.
+
+\subsection{Context 3: Smartphone Usage (Established, Ubiquitous, Mandatory)}
+
+\textbf{Situation:} Smartphones are ubiquitous and affordable. Segmentation now focuses
+on usage intensity, not adoption.
+
+\textbf{Clustering Result:} 2-3 clusters:
+\begin{enumerate}
+    \item \textbf{Heavy Users} (35-45\%): Use for work, entertainment, socializing
+    \item \textbf{Moderate Users} (40-50\%): Use for essential tasks only
+    \item \textbf{Light Users} (10-20\%): Use only for calls and texts
+\end{enumerate}
+
+\textbf{Key Insight:} Same population, same framework, but different context produces
+different cluster count. This is not a failure of theory; it is the theory working as intended.
+
+%------------------------------------------------------------------------------
+\section{Diagnosing Heterogeneity Distribution from Cluster Sizes}
+\label{sec:cluster-size-diagnosis}
+%------------------------------------------------------------------------------
+
+\textbf{Critical Discovery:} Cluster size distributions are not arbitrary---they reveal
+the \textbf{shape of the underlying heterogeneity distribution}. By examining cluster
+sizes, practitioners can diagnose whether the population's preference structure is
+normally distributed, bimodal, or heavily skewed.
+
+\subsection{Normal Heterogeneity: Balanced Cluster Sizes}
+
+Under multivariate normal heterogeneity, cluster sizes are relatively balanced:
+
+**Expected Pattern (Rogers Type):** $\{2.5\%, 13.5\%, 34\%, 34\%, 16\%\}$
+- Coefficient of variation: $CV \approx 0.3$ to $0.5$
+- Largest cluster $\leq 45\%$ of population
+- Smallest cluster $\geq 2\%$ of population
+
+**Interpretation:** This pattern indicates that preference heterogeneity is approximately
+normally distributed. The population has diverse preferences distributed smoothly across
+preference space.
+
+**What to Do:** Use standard clustering algorithms (k-means, hierarchical) with silhouette
+validation. Segment-specific interventions will be highly effective.
+
+\subsection{Bimodal Heterogeneity: Polarized Clusters}
+
+When heterogeneity is bimodal (two distinct preference groups), cluster sizes show extreme imbalance:
+
+**Observed Pattern (COVID Vaccines, Polarized Politics):** $\{70\%, 25\%, 5\%\}$ or $\{80\%, 20\%\}$
+- Coefficient of variation: $CV > 1.0$ (high variability)
+- One or two dominant clusters account for $>80\%$ of population
+- Many small clusters with $<5\%$ each
+
+**Interpretation:** The population has fundamentally different preference structures with
+little middle ground. This is not a measurement error; it reflects genuine polarization.
+
+**What to Do:**
+- Do NOT force normal clustering methods (k-means assumes roughly equal cluster sizes)
+- Use algorithms designed for bimodal data: Gaussian Mixture Models (EM algorithm),
+or hierarchical clustering with non-standard linkage
+- Design interventions targeting the two major segments separately
+- Expect that one intervention works for 70% but alienates the other 30%
+
+\subsection{Skewed Heterogeneity: One Dominant + Many Small}
+
+When heterogeneity is heavily right-skewed (one dominant preference type), cluster sizes
+follow a skewed pattern:
+
+**Observed Pattern (Established Behaviors, Mandatory Compliance):** $\{60\%, 20\%, 15\%, 5\%\}$
+- Coefficient of variation: $CV \approx 0.7$ to $1.2$
+- One dominant cluster accounts for 50-70% of population
+- Remaining clusters are progressively smaller
+
+**Interpretation:** One preference type dominates (e.g., "compliers" for mandatory behaviors),
+with minority groups having different preferences. The heterogeneity is not bimodal but
+skewed toward one option.
+
+**What to Do:**
+- Use standard clustering, but expect imbalanced cluster sizes
+- Focus interventions on moving the minority clusters
+- The dominant cluster may need minimal intervention
+- Use diagnostic measures (Gini coefficient, skewness tests) to quantify asymmetry
+
+\subsection{Practical Diagnostic Tool: Cluster Size Regularity Test}
+
+Here is a practical test to diagnose heterogeneity distribution:
+
+**Step 1: Calculate cluster sizes** $|C_k|$ from your data
+
+**Step 2: Compute:**
+- Mean cluster size: $\bar{n}_k = N / k^*$
+- Standard deviation: $\sigma_{n_k}$
+- Coefficient of variation: $CV = \sigma_{n_k} / \bar{n}_k$
+- Ratio of largest to smallest: $R = |C_{max}| / |C_{min}|$
+
+**Step 3: Interpret:**
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llll}
+\toprule
+\textbf{CV} & \textbf{R (Max/Min)} & \textbf{Diagnosis} & \textbf{Heterogeneity Type} \\
+\midrule
+$0.2$--$0.4$ & $< 10$ & Well-balanced & Normal distribution \\
+$0.4$--$0.7$ & $10$--$50$ & Slightly skewed & Near-normal, slight skew \\
+$0.7$--$1.2$ & $50$--$200$ & Moderately skewed & Heavy right-skew \\
+$> 1.2$ & $> 200$ & Highly polarized & Bimodal or heavy skew \\
+\bottomrule
+\end{tabular}
+\caption{Diagnostic table: Cluster size distribution patterns}
+\label{tab:cluster-size-diagnosis}
+\end{table}
+
+**Step 4: Adjust methodology:**
+- Normal distribution ($CV < 0.4$): Standard k-means, segment-specific interventions
+- Skewed ($0.4 < CV < 1.0$): Hierarchical clustering, target minority segments
+- Polarized ($CV > 1.0$): Gaussian Mixture Models, design for major/minor segments separately
+
+\subsection{Example: COVID Vaccination Cluster Sizes Reveal Polarization}
+
+\textbf{Observed Cluster Sizes (UK, 2021):}
+- Enthusiastic Compliers: 72%
+- Hesitant: 18%
+- Actively Resistant: 10%
+
+\textbf{Calculations:}
+- $CV = (0.72 - 0.18 - 0.10) / (1/3) \approx 1.4$ (highly polarized)
+- $R = 0.72 / 0.10 = 7.2$
+
+\textbf{Diagnosis:} Bimodal heterogeneity with one dominant cluster.
+
+\textbf{Implication:} Population is NOT approximately normally distributed in vaccination
+preferences. Attempting to find a "middle ground" message will fail---some segments need
+expert reassurance (Hesitant), while others need clear risk acknowledgment (Resistant).
+
+\textbf{Practical Lesson:} Cluster size distribution revealed the polarization that simple
+surveys might have missed. This diagnostic saved significant wasted intervention effort.
+
+%------------------------------------------------------------------------------
+\section{BCJ × BCS Interaction}
+\label{sec:bcj-bcs}
+%------------------------------------------------------------------------------
+
+The combination of \textbf{where in the journey} (BCJ) and
+\textbf{what type of person} (BCS) determines:
+
+\begin{enumerate}
+    \item \textbf{Which} intervention is appropriate (BCJ determines stage-specific levers)
+    \item \textbf{How} to design the intervention (BCS determines cluster-specific framing)
+\end{enumerate}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{BCJ Stage} & \textbf{BCS Cluster Type} & \textbf{Tailored Intervention} \\
+\midrule
+Considering & Incentive-driven & Concrete ROI calculation \\
+Considering & Social-driven & ``Your neighbors are considering it too'' \\
+Intending & Identity-driven & One-click enrollment \\
+Intending & Risk-averse & Money-back guarantee \\
+Acting & Effort-averse & Make continuation the default \\
+\bottomrule
+\end{tabular}
+\caption{BCJ × BCS interaction determines tailored intervention design}
+\label{tab:bcj-bcs-interaction}
+\end{table}
+
+%------------------------------------------------------------------------------
+\section{Worked Examples}
+\label{sec:worked-examples}
+%------------------------------------------------------------------------------
+
+\subsection{Example 1: Anna's Preference Structure}
+
+\textbf{Anna's Profile:} Hybrid incentive-driven and social-driven
+
+\begin{itemize}
+    \item High $\omega^E$ (values economic payoff): ``What's the ROI?''
+    \item High $\omega^S$ (values social conformity): ``Will my neighbors do it?''
+    \item Moderate $\omega^I$ (identity utility): ``It's the right thing, but cost matters''
+\end{itemize}
+
+\textbf{BCJ Stage:} Currently in Considering (aware, evaluating whether to act)
+
+\textbf{Intervention Design:}
+\begin{itemize}
+    \item \textbf{BCJ says:} Use awareness-boosting interventions (testimonials, calculators)
+    to move from Considering → Intending
+    \item \textbf{BCS says:} Use interventions that address both ROI AND social proof
+    \item \textbf{Result:} Matching subsidy ($\omega^E$ lever) + neighborhood challenge
+    ($\omega^S$ lever)
+\end{itemize}
+
+\textbf{Expected Outcome:} Anna moves from Considering → Intending → Acting because
+the intervention design targets both of her dominant preferences.
+
+\subsection{Example 2: Thomas's Risk Profile}
+
+\textbf{Thomas's Profile:} Pragmatic but highly risk-averse
+
+\begin{itemize}
+    \item Moderate-high $\omega^E$ (economic payoff matters)
+    \item Very high uncertainty sensitivity: ``What if it fails?''
+    \item Low $\omega^I$ (identity not a primary driver)
+\end{itemize}
+
+\textbf{BCJ Stage:} Stuck between Aware and Considering (aware of the behavior but
+deeply uncertain whether to even evaluate it)
+
+\textbf{Intervention Design:}
+\begin{itemize}
+    \item \textbf{NOT effective:} Generic social proof (``90\% of people are switching'')
+    → triggers skepticism
+    \item \textbf{NOT effective:} Pure financial incentive (``Save \$1,000/year'') →
+    he distrusts the savings claim
+    \item \textbf{EFFECTIVE:} Multi-part strategy addressing risk:
+    \begin{enumerate}
+        \item Provide independent test results (3rd-party certification)
+        \item Offer extended trial period (60 days, money-back guarantee)
+        \item Testimonials from credible, similar people (not celebrities)
+        \item Clear, quantified risk statement (``Here's what we cover if something goes wrong'')
+    \end{enumerate}
+\end{itemize}
+
+\textbf{Expected Outcome:} Guarantees reduce perception of catastrophic loss. Thomas
+moves from Aware → Considering. Trial period provides direct experience, supporting
+move to Intending → Acting.
+
+\subsection{Example 3: Maria's Fear of Asking}
+\label{subsec:example-fear-asking}
+
+\textbf{Maria's Profile:} Mid-level employee hesitant to seek help from supervisor
+
+\begin{itemize}
+    \item High rejection sensitivity ($\lambda_R \approx 2.5$): ``What if my manager says no?''
+    \item High self-image concerns ($\mu > 0$): ``Asking reveals I can't handle this alone''
+    \item Moderate need ($w$): Genuinely needs help but threshold not clearly exceeded
+\end{itemize}
+
+\textbf{BCJ Stage:} Stuck in Considering due to \textbf{fear of asking} \citep{benabou2022hurts}
+
+The asking threshold $w^*$ is elevated by rejection aversion:
+\begin{equation}
+w^* = \lambda_R \alpha [M^+_N(\hat{g}(w^*)) - \bar{g}_N]
+\end{equation}
+where $\lambda_R > 1$ creates non-monotonic asking behavior---moderate-need employees
+like Maria may ask \emph{less} than low-need colleagues because rejection costs scale
+with revealed need.
+
+\textbf{Key Insight:} The \textbf{discouragement effect}---when no offer is made,
+$w^*_N > w^*_O$ because non-offering signals lower generosity, making rejection
+more likely and thus asking more psychologically costly.
+
+\textbf{Intervention Design:}
+\begin{itemize}
+    \item \textbf{NOT effective:} ``Open door policy'' announcements → doesn't reduce
+    rejection risk or shift asking threshold
+    \item \textbf{NOT effective:} Generic encouragement (``Ask if you need help'') →
+    actually increases salience of asking-as-signal-of-weakness
+    \item \textbf{EFFECTIVE:} Proactive offering norm by managers:
+    \begin{enumerate}
+        \item Regular check-ins where manager \emph{offers} help first (shifts from
+        asking to accepting frame)
+        \item Structured ``office hours'' normalized across organization (reduces
+        individual signaling)
+        \item Team-level resource allocation (``The team gets 2 hours of senior
+        support weekly'') rather than individual requests
+        \item Explicit acknowledgment that complexity is normal (reduces need-revelation cost)
+    \end{enumerate}
+\end{itemize}
+
+\textbf{Formal Mechanism (Appendix UNMAPPED_RB, Axiom UNMAPPED_RB-9):}
+\begin{itemize}[nosep]
+    \item When manager offers proactively: $\pi > 0$ (positive offer probability)
+    \item Maria can \emph{accept} rather than \emph{ask}: removes rejection risk entirely
+    \item Even if offer not made, high $\pi$ reduces discouragement: $w^*_N$ falls
+    \item Complementarity: $\gamma(\text{offer}, \text{ask}) > 0$ when rejection costs
+    are addressed (UNMAPPED_CMP-12)
+\end{itemize}
+
+\textbf{Expected Outcome:} Proactive offering culture reduces Maria's effective asking
+threshold. She moves from Considering → Intending because the psychological cost of
+help-seeking drops. The waiting trap equilibrium (both parties waiting for the other
+to move first) is broken when one side commits to offering.
+
+\textbf{Cross-Reference:} See Appendix UNMAPPED_RB §\ref{subsec:rb-fear-asking} for full formalization
+of fear of asking dynamics; Appendix UNMAPPED_B (UNMAPPED_CMP-12) for asking-offering complementarity.
+
+%------------------------------------------------------------------------------
+\section{How to Match Interventions to Segments: Axioms 8-9}
+\label{sec:intervention-matching}
+%------------------------------------------------------------------------------
+
+\subsection{The Leverage Principle (Axiom 8)}
+
+The examples above illustrate a fundamental principle: each segment has specific
+\textbf{leverage points}---particular utility dimensions and barriers where
+interventions can create disproportionate impact.
+
+\textbf{Anna's Leverage Points:}
+\begin{itemize}[nosep]
+\item High variability on $\omega^E$ (Economic): Different subsidy levels create different choices
+\item High variability on $\omega^S$ (Social): Peer comparison pressure strongly influences her
+\item Low variability on $\omega^P$ (Practical): Practical barriers matter less than for other clusters
+\end{itemize}
+
+An intervention targeting her ``Practical'' constraints (e.g., ``We provide free installation'')
+would have \textbf{low leverage} because she and her cluster peers don't vary much on practical
+motivations. But an intervention targeting her Economic and Social dimensions (ROI + social proof)
+has \textbf{high leverage} because this is where cluster members differ most.
+
+\textbf{Thomas's Leverage Points:}
+\begin{itemize}[nosep]
+\item Very high variability on risk/uncertainty dimensions: Where interventions reduce risk perception, impact is large
+\item Moderate variability on $\omega^E$ (Economic): ROI messaging works, but only if credible
+\item Low variability on $\omega^I$ (Identity): Identity appeals don't work for this cluster---wasted effort
+\end{itemize}
+
+An ``identity and meaning'' campaign would have \textbf{zero leverage} for Thomas's cluster because
+they simply don't vary on identity motivations. A campaign addressing risk (third-party tests, guarantees)
+has \textbf{very high leverage}.
+
+\textbf{Formal Leverage Concept (Appendix PAP1, Axiom 8):}
+
+For a cluster $C_k$, the \textbf{leverage profile} identifies which dimensions show maximum variability:
+\begin{equation}
+\ell_k^d = \frac{\text{Variance}(\omega_i^d | i \in C_k)}{\text{Total Variance Across All Dimensions}}
+\end{equation}
+
+High $\ell_k^d$ means targeting dimension $d$ will differentiate cluster members' choices.
+Low $\ell_k^d$ means targeting dimension $d$ wastes intervention resources.
+
+\subsection{The Specificity-Matching Principle (Axiom 9)}
+
+Your question was: ``If I derive interventions from segments, and both segmented and
+non-segmented groups perform equally, is the segmentation wrong or the intervention
+logic wrong?''
+
+\textbf{Axiom 9 formalizes the answer:} The expected effect size scales with the
+\textbf{match} between intervention design and cluster leverage profile.
+
+\begin{equation}
+E[\Delta O_k^I] = E[\Delta O_{\text{baseline}}] + \beta^{\text{match}} \cdot \text{Leverage}(I, C_k) + \epsilon_k
+\end{equation}
+
+Where:
+\begin{itemize}[nosep]
+\item $E[\Delta O_{\text{baseline}}]$ = effect of generic (non-segmented) intervention
+\item $\text{Leverage}(I, C_k)$ = how well intervention $I$ matches cluster $C_k$'s leverage profile
+\item $\beta^{\text{match}}$ = effect multiplier per unit of leverage match
+\end{itemize}
+
+\textbf{Prediction Table:} When comparing segmented vs. non-segmented groups:
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Average Leverage Match} & \textbf{Predicted Outcome} & \textbf{Problem If Equal Results} \\
+\midrule
+High ($> 0.7$) & Segmented should significantly outperform & Segmentation or implementation flawed \\
+Moderate (0.4-0.7) & Segmented should modestly outperform & Interventions need better design \\
+Low ($< 0.4$) & Segmented might equal non-segmented & Interventions poorly matched to clusters \\
+Zero ($\approx 0$) & Segmented = non-segmented & No differentiated intervention designed \\
+\bottomrule
+\end{tabular}
+\caption{Diagnostic framework: matching intervention design to cluster leverage}
+\label{tab:leverage-diagnostics}
+\end{table}
+
+\textbf{Diagnostic Procedure:}
+
+When you test segmented vs. non-segmented and get equal results:
+
+\begin{enumerate}
+\item \textbf{Compute each cluster's leverage profile} from your data (which $\omega$ dimensions
+show highest variance?)
+\item \textbf{Evaluate each intervention's design} (which dimensions does it emphasize?)
+\item \textbf{Calculate average leverage match} for the segmented group
+\item \textbf{Interpret results:}
+\begin{itemize}[nosep]
+\item If $\text{AvgLeverage} < 0.3$: \textbf{Fix interventions} to target actual cluster constraints
+(segmentation theory likely valid, execution was poor)
+\item If $\text{AvgLeverage} > 0.6$ but outcomes equal: \textbf{Fix segmentation} (test cluster quality
+with silhouette score, BIC)
+\end{itemize}
+\end{enumerate}
+
+This closes the theoretical circle: Axioms 1-7 explain \emph{why} segments exist.
+Axioms 8-9 explain \emph{how} to exploit segment differences with matched interventions.
+Without high leverage matching, segmentation adds no value---not because theory is wrong,
+but because intervention design is uncoupled from segment characteristics.
+
+\textbf{Appendix Reference:} Full formalization in Appendix PAP1, Axioms SEG-MATCH-8 and SEG-MATCH-9.
+
+%------------------------------------------------------------------------------
+\section{From Craft to Science: Axioms 10-13 and Cumulative Knowledge}
+\label{sec:axioms-10-13}
+%------------------------------------------------------------------------------
+
+Axioms 1-9 explain \emph{why} segments exist and \emph{how} to exploit them. But practitioners often rely on intuition: ``I just \textit{know} that this group responds to X.'' This intuitive knowledge is valuable but has a fatal flaw: it is lost when practitioners retire, cannot be taught precisely, and is vulnerable to post-hoc rationalization of failures.
+
+Axioms 10-13 address this problem by formalizing the process of transforming implicit theories into explicit, testable, falsifiable, transferable knowledge. This transformation is what separates scientific approaches from craftwork.
+
+\subsection{Axiom 10: Theory Externalization Principle}
+
+\textbf{Problem:} Practitioners often design segmented interventions based on implicit theories: ``I think identity-driven clusters will respond to moral framing, but I haven't quantified what that means.''
+
+\textbf{Solution (Axiom 10):} \emph{Experimental design forces externalization.} To design an experiment, you must specify:
+
+\begin{enumerate}[nosep]
+\item \textbf{Leverage profiles} ($\mathcal{L}_k$): Which dimensions does each cluster vary on? Quantify: $\ell_k^d = \text{Var}(\omega_i^d | i \in C_k) / \sum_{d'} \text{Var}(\omega_i^{d'} | i \in C_k)$
+\item \textbf{Intervention design} ($\mathcal{D}_I$): How intensely does your intervention target each dimension? Specify: $\delta_I^d \in [0,1]$ for each $d$
+\end{enumerate}
+
+By \emph{requiring} these explicit specifications before running an experiment, Axiom 10 transforms vague intuition (``moral framing works for identity people'') into precise mathematics: ``We expect $\delta_I^S = 0.8$ (social/identity dimension focus) to match $\ell_k^S = 0.7$ (high identity variance), yielding strong leverage.''
+
+\textbf{Practical Implication:} Before running your segmented intervention study, document your theory mathematically. This disciplines thinking and reveals gaps. \cite{popper1959logic, angrist2010mostly}
+
+\subsection{Axiom 11: Pre-Registration and Falsifiability}
+
+\textbf{Problem:} Even with explicit theories, practitioners can rationalize any outcome. ``The intervention had low leverage, so we expected small effects.'' This unfalsifiability undermines scientific progress.
+
+\textbf{Solution (Axiom 11):} \emph{Pre-register your predictions before collecting data.} Commit in advance to:
+
+\begin{itemize}[nosep]
+\item Primary prediction: $E[\Delta O_{\text{seg}}] - E[\Delta O_{\text{non-seg}}] = \beta^{\text{match}} \cdot \text{AvgLeverage}$
+\item Expected $\beta^{\text{match}}$ value (e.g., $\beta^{\text{match}} = 0.15$ based on prior literature)
+\item Expected AvgLeverage (calculated from your leverage profile and intervention design specifications)
+\item Decision rules: ``IF AvgLeverage $< 0.3$ AND outcomes equal $\Rightarrow$ intervention matching problem. IF AvgLeverage $> 0.6$ AND outcomes equal $\Rightarrow$ segmentation problem.''
+\end{itemize}
+
+Pre-registration creates an asymmetry: results either confirm or disconfirm your theory. They cannot be ambiguous post-hoc rationalizations. This discipline transforms your work from craftwork into science. \cite{nosek2018registered, collaboration2015estimating}
+
+\textbf{Practical Implication:} Register your segmentation study on a platform like OSF (Open Science Framework) before data collection. This commitment enhances credibility and enables meta-analysis across studies.
+
+\textbf{Worked Example: Pre-Registration for a Solar Panel Study}
+
+\textit{Domain:} Promoting residential solar panel adoption in a mid-sized city.
+
+\textit{Step 1 (Axiom 10 - Externalization):} Identify clusters and their leverage profiles:
+\begin{itemize}[nosep]
+\item \textbf{Cluster A (Financially-driven):} High variance on Financial dimension: $\ell_A^{F} = 0.6$; low on Identity: $\ell_A^{I} = 0.1$
+\item \textbf{Cluster B (Socially-driven):} High variance on Social dimension: $\ell_B^{S} = 0.7$; low on Financial: $\ell_B^{F} = 0.2$
+\item \textbf{Cluster C (Risk-averse):} High variance on Risk/Uncertainty: $\ell_C^{U} = 0.8$; moderate on all others
+\end{itemize}
+
+Design segment-specific interventions:
+\begin{itemize}[nosep]
+\item \textbf{For Cluster A:} ROI calculator tool ($\delta_I^{F} = 0.8$) with financing options ($\delta_I^{U} = 0.4$)
+\item \textbf{For Cluster B:} Social proof campaign showing neighbor adoption ($\delta_I^{S} = 0.8$) with community challenge ($\delta_I^{S} = 0.5$)
+\item \textbf{For Cluster C:} Warranty information, third-party certifications ($\delta_I^{U} = 0.8$), guarantees ($\delta_I^{U} = 0.3$)
+\end{itemize}
+
+\textit{Step 2 (Axiom 11 - Pre-registration):} Before launching, document:
+\begin{itemize}[nosep]
+\item Primary prediction: $E[\Delta O_{\text{seg}}] - E[\Delta O_{\text{non-seg}}] = 0.20 \cdot \text{AvgLeverage}$ (based on Sunstein et al. nudge studies showing 0.15-0.25 effect multipliers)
+\item Predicted AvgLeverage: $(0.6 + 0.7 + 0.8) / 3 = 0.70$ (high leverage match across clusters)
+\item Expected effect: $0.20 \times 0.70 = 0.14$ (Cohen's $d$ for overall adoption rate improvement)
+\item Decision rule: ``IF AvgLeverage $< 0.4$ at end: intervention matching failed. IF AvgLeverage $> 0.6$ but adoption unchanged: segmentation suspect.''
+\item Register on OSF before sending interventions
+\end{itemize}
+
+This external commitment prevents post-hoc rationalization if results disappoint.
+
+\subsection{Axiom 12: Diagnostic Refinement}
+
+\textbf{Problem:} When experiments don't show predicted effects, practitioners face a dilemma: Is the segmentation theory wrong? Or is the intervention matching wrong? Or is implementation fidelity poor?
+
+\textbf{Solution (Axiom 12):} \emph{Use diagnostic signals to identify the exact problem.} If segmented and non-segmented groups show equal outcomes:
+
+\begin{enumerate}[nosep]
+\item Compute actual $\text{AvgLeverage}_{\text{observed}}$ from your experimental data
+\item Compare to $\text{AvgLeverage}_{\text{predicted}}$ from your pre-registration
+\item Interpret:
+\begin{itemize}[nosep]
+\item If actual leverage $< 0.3$: Interventions were poorly matched to clusters. \textbf{Fix:} Redesign $\delta_I^d$ to better target leverage dimensions
+\item If actual leverage $0.4$--$0.6$ AND low effect: Interventions partly matched. \textbf{Fix:} Increase specificity for high-leverage dimensions
+\item If actual leverage $> 0.6$ BUT outcomes still equal: Segmentation or implementation fidelity failed. \textbf{Fix:} Revalidate clusters or improve treatment adherence
+\end{itemize}
+\end{enumerate}
+
+This diagnostic framework enables \emph{targeted refinement} rather than wholesale theory rejection. You learn exactly what to fix for the next cycle. \cite{button2013power, bland1995multiple, camerer2018evaluatingevaluating}
+
+\textbf{Practical Implication:} When results disappoint, don't assume failure. Conduct leverage diagnostics. This reveals whether you should refinement parameters or reconsider the basic theory.
+
+\textit{Continuation of Solar Panel Example (Axiom 12):}
+
+Suppose after 3 months, segmented and non-segmented groups show identical 8\% adoption rates (no difference). Rather than conclude ``segmentation failed,'' apply Axiom 12 diagnostics:
+
+\textit{Step 3 (Axiom 12 - Diagnostics):} Compute actual leverage achieved:
+\begin{itemize}[nosep]
+\item Cluster A: ROI calculator used by 45\% of this cluster; ROI messaging was present. Actual $\ell_A^{F} = 0.55$ (close to predicted 0.6) → Match: 0.55 × 0.8 = 0.44
+\item Cluster B: Social proof campaign reached 60\% but adoption within this cluster was only 12\%. Actual engagement: $\ell_B^{S} = 0.50$ (lower than predicted 0.7). Match: 0.50 × 0.8 = 0.40
+\item Cluster C: Warranty/guarantee info was static on website; only 15\% of this cluster reviewed it. Actual $\ell_C^{U} = 0.30$ (much lower than predicted 0.8). Match: 0.30 × 0.8 = 0.24
+\end{itemize}
+
+Actual AvgLeverage: $(0.44 + 0.40 + 0.24) / 3 = 0.36$ (compared to predicted 0.70)
+
+\textit{Diagnosis:} AvgLeverage = 0.36 (below 0.4 threshold) → \textbf{Intervention matching problem, not segmentation failure}.
+
+\textit{Refinement Actions:}
+\begin{itemize}[nosep]
+\item Cluster A: ROI calculator underutilized. Solution: Send targeted email with calculator link to this cluster (push instead of pull)
+\item Cluster B: Social proof content didn't reach full cluster. Solution: Use peer-network communication (text/email) instead of general website
+\item Cluster C: Warranty information not salient. Solution: Include guarantee in initial pitch, not as secondary info
+\end{itemize}
+
+\textit{Step 4 (Axiom 13 - Iteration):} Re-run with refined interventions and document the lesson: ``For solar adoption, high-engagement interventions (direct communication) required for Risk-averse clusters; passive website-based information insufficient.'' Store this learning in Appendix UNMAPPED_REG registry for use in future projects.
+
+This cycle illustrates how Axioms 10-13 enable \emph{scientific learning} rather than craft intuition.
+
+\subsection{Axiom 13: Cumulative Knowledge}
+
+\textbf{Problem:} Even successful interventions often disappear. The practitioner retires, tacit knowledge is lost, and the next team reinvents the wheel.
+
+\textbf{Solution (Axiom 13):} \emph{Externalized, refined theories are transferable and cumulative.} After each study cycle:
+
+\begin{itemize}[nosep]
+\item \textbf{Document} operational specifications: ``In domain X, clusters with high $\omega^S$ (social dimension) respond to peer-comparison interventions with $\beta^{\text{match}} \approx 0.25$ effect multiplier''
+\item \textbf{Transfer} to other practitioners and contexts using the same measurement framework
+\item \textbf{Accumulate} results in a registry (Appendix UNMAPPED_REG: Framework Falsification \& Feedback Registry) with success/failure patterns by context
+\item \textbf{Refine} Bayesian-style: prior is your refined theory; likelihood is new data; posterior becomes your next theory
+\end{itemize}
+
+Unlike craft knowledge (which dies with experts), explicit theories accumulate. Each study adds constraints, reducing uncertainty. Over 5-10 years, organizations can build scientifically grounded segmentation knowledge that transfers across practitioners and contexts. \cite{camerer2018evaluatingevaluating, collaboration2015estimating, nosek2015promoting}
+
+\textbf{Practical Implication:} Frame segmentation studies not as one-off projects but as contributions to a cumulative knowledge base. Document not just what worked, but why, so others can replicate and build on your insights.
+
+\vspace{1em}
+
+\textbf{Summary of Axioms 10-13:}
+
+\begin{tcolorbox}[colback=cyan!10!white, colframe=cyan!75!black]
+
+Axioms 1-9 explain segment emergence and matching. Axioms 10-13 explain how to turn segmentation work into \textbf{cumulative science}:
+
+\begin{itemize}[nosep]
+\item \textbf{Axiom 10 (Externalization):} Require explicit mathematical specification of theories before experimentation
+\item \textbf{Axiom 11 (Falsifiability):} Pre-register predictions and diagnostic decision trees before seeing data
+\item \textbf{Axiom 12 (Refinement):} Use leverage diagnostics to identify exactly where theory needs adjustment
+\item \textbf{Axiom 13 (Accumulation):} Transfer refined theories to registries and other practitioners, building cumulative knowledge
+\end{itemize}
+
+The result: segmentation goes from implicit craft knowledge (``we just know this works'') to explicit science (``we know this works because X, measured by Y, under conditions Z, with these failure modes and refinement procedures'').
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+\section{Policy Implications}
+\label{sec:policy-implications}
+%------------------------------------------------------------------------------
+
+Segmentation-aware behavior change design produces dramatically better outcomes
+than one-size-fits-all approaches. Key implications:
+
+\subsection{Implication 1: Segment First, Then Design}
+
+\textbf{Recommendation:} Any large-scale behavior change initiative must begin with
+segmentation analysis.
+
+\textbf{Why:} A policy optimized for the average person is suboptimal for everyone.
+Risk-averse people ignore aspirational messaging; incentive-driven people ignore
+identity appeals. Segmentation reveals what motivates each cluster.
+
+\textbf{How:} Conduct surveys ($n \geq 500$) or use clustering on behavioral data
+to identify cluster distributions in your target population.
+
+\subsection{Implication 2: Portfolio Approach Outperforms Single Campaign}
+
+\textbf{Recommendation:} Allocate budget across segment-specific interventions rather
+than a single campaign.
+
+Example allocation (environmental behavior):
+\begin{itemize}[nosep]
+    \item 10\% budget to Leaders/Innovators: Social proof, aspirational messaging
+    \item 40\% budget to Pragmatists: Financial incentives, ROI clarity
+    \item 30\% budget to Majority: Social norm shifts, peer comparisons
+    \item 15\% budget to Risk-averse: Guarantees, third-party verification
+    \item 5\% budget to Effort-averse: Default changes, mandatory opt-out
+\end{itemize}
+
+\textbf{Expected ROI:} 5-10x higher adoption than undifferentiated campaigns.
+
+\subsection{Implication 3: Trigger Cascades via Opinion Leaders}
+
+\textbf{Recommendation:} Target Leaders/Innovators first to trigger adoption cascades.
+
+\textbf{Why:} Once Leaders adopt, social norms shift. This increases transition rates
+from Pragmatists and Majority without requiring separate interventions.
+
+\textbf{Timeline:} Leaders in months 1-3; Pragmatists in months 4-8; Majority in
+months 9-12; Risk-averse in months 13-18.
+
+\subsection{Implication 4: Avoid Identity-Threatening Framing}
+
+\textbf{Recommendation:} Never frame behavior change as moral judgment of non-adopters.
+
+\textbf{Why:} Identity-threatening language triggers defensive reactions, causing
+polarization and active opposition, especially among risk-averse and identity-driven
+clusters.
+
+\textbf{Instead:} Use protective framing:
+\begin{itemize}[nosep]
+    \item ``You can be smart and choose differently'' (respect autonomy)
+    \item ``Early adopters were worried too, until they tried it'' (normalize uncertainty)
+    \item ``This is for people like you'' (cluster-congruent messaging)
+\end{itemize}
+
+\subsection{Implication 5: Monitor Cluster-Level Transitions}
+
+\textbf{Recommendation:} Track not just overall adoption but segment-level transitions.
+
+\textbf{Metrics:}
+\begin{itemize}[nosep]
+    \item What fraction of Pragmatists moved to Acting? (Should increase with incentives)
+    \item Are Risk-averse people moving to Considering? (Should increase with guarantees)
+    \item What is the lag between Leaders and Majority adoption? (Should decrease over time)
+\end{itemize}
+
+If transitions stall, adjust interventions. For example:
+\begin{itemize}[nosep]
+    \item If Pragmatists aren't moving: ROI messaging may be unclear
+    \item If Risk-averse stall: Guarantees may be insufficient
+    \item If Majority stalls: Social proof signals may be weak
+\end{itemize}
+
+%------------------------------------------------------------------------------
+\section{Summary}
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=green!10!white, colframe=green!75!black,
+    title=\textbf{Chapter 14: Summary}]
+
+\textbf{Core Question:} In which behavioral segment does a decision-maker reside, and
+how does this determine intervention design?
+
+\textbf{Key Findings:}
+
+\begin{enumerate}
+
+\item \textbf{Segments are emergent, not fixed.} Behavioral segments emerge as natural
+clusters from heterogeneity in utility preferences, awareness, and willingness. They
+are data-driven phenomena, not theoretical constructs imposed a priori.
+
+\item \textbf{Cluster count is context-dependent.} The number of natural clusters varies
+by domain and context. Some domains show 5 clusters (Rogers diffusion structure); others
+show 2-4 (mandatory or established behaviors). Empirically determine $k$ for your domain.
+
+\item \textbf{Five segments are special, not universal.} The Rogers structure (Innovators,
+Early Adopters, Early Majority, Late Majority, Laggards) is common but emerges only under
+specific conditions: voluntary adoption, social influence, moderate costs.
+
+\item \textbf{Cluster stability is context-conditional.} Individuals can transition
+between clusters as context, awareness, and willingness change. Within a given context,
+cluster membership is predictive of behavior.
+
+\item \textbf{Practical identification works.} Survey-based, behavioral, and clustering
+methods reliably identify segments without requiring special expertise.
+
+\item \textbf{BCJ × BCS determines intervention.} The BCJ stage (where in the journey)
+combined with BCS cluster (what type) determines both which intervention is appropriate
+(BCJ) and how to design it (BCS).
+
+\item \textbf{Portfolio approaches outperform generic campaigns.} Segment-specific
+interventions targeting each cluster's key levers produce 5-10x higher adoption than
+one-size-fits-all approaches.
+
+\end{enumerate}
+
+\textbf{Practical Workflow:}
+\begin{itemize}[nosep]
+    1. Segment your population (survey or clustering)
+    2. Empirically determine optimal $k$ for your domain
+    3. Validate that clusters differ in intervention response
+    4. Design cluster-specific + BCJ-stage-specific interventions
+    5. Monitor cluster-level transitions to refine approach
+\end{itemize}
+
+\vspace{0.5em}
+
+\textbf{Quick Decision Guides:} For rapid reference during project work, see \textbf{Appendix TKT} (REF-SEGMENTATION-HEURISTICS) for decision trees, diagnostic tables, and rules of thumb that operationalize the framework in this chapter.
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+% FORMAL DETAILS
+%------------------------------------------------------------------------------
+\subsection{Formal Details}
+\label{sec:ch14-formal}
+
+The complete formal treatment appears in Appendix BA (FORMAL-SEGMENT). Key results:
+
+\begin{itemize}[nosep]
+    \item \textbf{Clustering Axioms:} Segments satisfy within-group homogeneity ($d_{within} < \tau$) and between-group heterogeneity ($d_{between} > \tau$)
+    \item \textbf{Optimal k:} $k^* = \arg\min_k \{ BIC(k) \}$ where BIC penalizes complexity
+    \item \textbf{Treatment Effect Heterogeneity:} $CATE(s) = E[Y(1) - Y(0) | S = s]$ varies by segment
+    \item \textbf{Segment Multiplier:} $\sigma_s = CATE(s) / ATE$ quantifies relative effectiveness
+\end{itemize}
+
+%------------------------------------------------------------------------------
+% WHAT COMES NEXT
+%------------------------------------------------------------------------------
+\subsection{What Comes Next}
+\label{sec:ch14-next}
+
+With behavioral segments established, subsequent chapters build the intervention architecture:
+
+\begin{enumerate}[nosep]
+    \item \textbf{Chapter 15:} WEC-Synthesis---integrating Willingness, Expectation, and Compatibility
+    \item \textbf{Chapter 16:} Probability of Behavior Change---the effective probability output
+    \item \textbf{Chapter 17:} Intervention Foundations---emergent 10C intervention vectors and the 20-field schema
+\end{enumerate}
+
+%------------------------------------------------------------------------------
+% READING PATH TO CHAPTER 15
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=Reading Path: To Chapter 15 (HI CORE-HIERARCHY)]
+
+\textbf{You are here:} Chapter 14 (Behavioral Change Segments) identified WHO in your population and how each segment responds differently.
+
+\textbf{Next step:} Chapter 15 (Decision Hierarchy \& Coherent Intervention Design) shows **HOW** to structure decision layers so that interventions are coherent across Willingness (W), Expectation (E), and Compatibility (C).
+
+\textbf{Why connected:}
+\begin{itemize}[nosep]
+    \item Chapter 14 showed that different segments have different leverage points (which dimensions matter most)
+    \item Chapter 15 uses the HI CORE-HIERARCHY to predict how many L2 (strategic) decisions are needed to address all segments' needs
+    \item Together: Segment identification (Ch14) + Decision hierarchy (Ch15) = Coherent, multi-layer intervention design
+\end{itemize}
+
+\textbf{Preview of Chapter 15:}
+\begin{itemize}[nosep]
+    \item \textbf{Part I:} Foundations (W11-W13 dynamic willingness + BB equilibrium)
+    \item \textbf{Part II:} HI CORE-HIERARCHY formalization (Universal L2 formula: $N_{L2} = \alpha \cdot \gamma_{avg} \times n \times (1-m) / \log(n)$)
+    \item \textbf{Part III:} How to apply HI to your intervention design
+    \item \textbf{Part IV:} 7 detailed worked examples (Individual, Household, Organization, Nation, Tribal, Health Systems, SaaS)
+    \item \textbf{Part V:} Practitioner protocol (Steps 1-4 for systematic design)
+    \item \textbf{Part VI:} Monitoring and long-term stability (Months 1-3, 4-12, Year 2+)
+\end{itemize}
+
+\end{tcolorbox}
+

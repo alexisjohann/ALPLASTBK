@@ -1,0 +1,389 @@
+# ============================================================================
+# WORKFLOW: NotebookLM Infografik — Generierung + 3-Iterationen QA
+# ============================================================================
+# Version: 1.0
+# Erstellt: 2026-02-06
+# Typ: Wiederverwendbarer Workflow für alle SPÖ-Infografiken
+# SSOT Design System: templates/infographic-design-system.yaml
+# SSOT Preset: templates/infographic-presets/spo.yaml
+# Skill: /infographic --preset spo
+# ============================================================================
+
+metadata:
+  workflow_id: "WF-SPO-INFOGRAPHIC-001"
+  name: "NotebookLM Infografik mit 3-Iterationen QA"
+  version: "1.0"
+  created: "2026-02-06"
+  author: "FehrAdvice EBF System"
+  applicable_to:
+    - "SPÖ Social Media Infografiken"
+    - "SPÖ Parteitag Visuals"
+    - "SPÖ Kampagnen-Material"
+
+  ssot_referenzen:
+    design_system: "templates/infographic-design-system.yaml"
+    scoring_checklist: "templates/infographic-scoring-checklist.yaml"
+    spo_preset: "templates/infographic-presets/spo.yaml"
+    prompt_templates:
+      landscape: "templates/notebooklm-prompt-landscape.md"
+      portrait: "templates/notebooklm-prompt-portrait.md"
+      square: "templates/notebooklm-prompt-square.md"
+
+  integration_mit_bestehendem_system:
+    strategie_ssot: "spo_strategiebriefing_parteitag_2026.md"
+    axiome: "strategie/AXIOME_ordnung_statt_spalten.yaml"
+    portfolio: "database/PORTFOLIO_DASHBOARD.yaml"
+    kommunikation_index: "SPO_KOMMUNIKATION_INDEX.md"
+
+# ============================================================================
+# TRIGGER
+# ============================================================================
+
+trigger:
+  skill_aufruf:
+    - "/infographic"
+    - "/infographic --preset spo"
+    - "/infographic --preset spo --thema inflation"
+  schluesselwoerter:
+    - "Infografik erstellen"
+    - "NotebookLM Prompt"
+    - "Social Media Grafik"
+    - "Visual für"
+    - "Plakat generieren"
+  deployment_regeln:
+    # Verknüpfung mit PORTFOLIO_DASHBOARD.yaml → deployment_regeln
+    social_media:
+      format_empfehlung: "square"    # 1:1 für Instagram, Facebook
+      alternative: "portrait"         # 9:16 für Stories, Reels
+    parteitag:
+      format_empfehlung: "landscape"  # 16:9 für Präsentationen
+      alternative: "portrait"         # 9:16 für Rollups
+    pressekonferenz:
+      format_empfehlung: "landscape"  # 16:9 für Screens
+    tv_interview:
+      format_empfehlung: null         # Keine Infografik nötig
+      hinweis: "Zahlen-Cards statt Infografik"
+
+# ============================================================================
+# VERFÜGBARE THEMEN (aus SPÖ-Preset)
+# ============================================================================
+
+themen_bibliothek:
+  vorkonfiguriert:
+    - thema: "inflation"
+      status: "KOMPLETT"
+      killer_zahl: "-0,7% Preisrückgang (Jänner 2026)"
+      anzahl_massnahmen: 3
+      vergleich: "Österreich (SPÖ) vs. Ungarn (Orbán)"
+      verwundbarkeiten: ["VPI vs. HVPI", "Basiseffekt"]
+
+    - thema: "migration"
+      status: "TEILWEISE"
+      killer_zahl: "14.156 Abschiebungen 2025"
+      anzahl_massnahmen: 3
+      verwundbarkeiten: ["FPÖ Issue Ownership"]
+
+    - thema: "gesundheit"
+      status: "GRUNDGERÜST"
+      verweis: "reports/INFOGRAFIK_basis_gesundheitsversorgung_2026-02-03.md"
+
+    - thema: "wohnen"
+      status: "GRUNDGERÜST"
+
+    - thema: "bildung"
+      status: "NUR EHRLICHKEITS-LINIE"
+
+    - thema: "energie"
+      status: "NUR EHRLICHKEITS-LINIE"
+
+  hinzufuegen:
+    beschreibung: |
+      Neue Themen können im SPÖ-Preset ergänzt werden:
+      templates/infographic-presets/spo.yaml → themen.{neues_thema}
+      Benötigt mindestens: titel_optionen, killer_zahl_primary, massnahmen, ehrlichkeit
+
+# ============================================================================
+# WORKFLOW-PHASEN (6 Phasen)
+# ============================================================================
+
+workflow:
+
+  # --------------------------------------------------------------------------
+  # PHASE 0: MODUS WÄHLEN
+  # --------------------------------------------------------------------------
+  phase_0_modus:
+    name: "Modus wählen"
+    optionen:
+      generieren:
+        beschreibung: "Neue Infografik-Prompts erstellen"
+        output: "NotebookLM-Prompt (Copy-Paste ready)"
+      bewerten:
+        beschreibung: "Einzelnes Bild scoren (ohne Loop)"
+        output: "Score + Verbesserungsvorschläge"
+      qa_loop:
+        beschreibung: "Vollen 3-Iterationen Qualitätsprozess starten"
+        output: "Freigabe-fähige Infografik (Score ≥ 8.5)"
+      alle_3:
+        beschreibung: "Prompts für Landscape + Portrait + Square"
+        output: "3 Prompts + 3 QA-Loops"
+
+  # --------------------------------------------------------------------------
+  # PHASE 1: BRIEFING (Preset + Thema)
+  # --------------------------------------------------------------------------
+  phase_1_briefing:
+    name: "Briefing sammeln"
+
+    mit_preset:
+      beschreibung: |
+        SPÖ-Preset lädt automatisch:
+        - Farben (#E3000F Rot, #1A1A1A Schwarz, #FFFFFF Weiss)
+        - Hashtag (#OrdnenStattSpalten)
+        - Claim ("Ordnung wirkt.")
+        - Ehrlichkeits-Linien (pro Thema)
+        - Vergleiche (SPÖ vs. Orbán)
+        - Bekannte Verwundbarkeiten
+
+      mit_thema:
+        beschreibung: |
+          Thema aus Bibliothek lädt zusätzlich:
+          - Killer-Zahlen (Primary + Secondary)
+          - 3 Massnahmen mit Zahlen + Icons
+          - Titel-Optionen
+          - Themenspezifische Vergleiche
+        user_input: "Nur noch Format wählen + bestätigen"
+
+      ohne_thema:
+        beschreibung: "Nur Farben/Hashtag vorausgefüllt"
+        user_input: "10 Briefing-Fragen (Thema, Zahlen, Massnahmen, ...)"
+
+    axiom_compliance:
+      beschreibung: |
+        JEDE Infografik wird gegen K1-K10 geprüft (Phase 2).
+        Besonders relevant:
+        K1: Keine FPÖ-Rhetorik (auch nicht in Vergleichen)
+        K2: Zahlen als Beleg
+        K3: Ordnung-Frame
+        K9: Populär, nicht populistisch
+
+  # --------------------------------------------------------------------------
+  # PHASE 2: PRE-GENERATION GATE
+  # --------------------------------------------------------------------------
+  phase_2_gate:
+    name: "Template befüllen + Pre-Generation Gate"
+
+    pre_generation_checks:
+      - check: "Alle {{PLATZHALTER}} befüllt?"
+        fail_action: "Fehlende Daten nachfragen"
+      - check: "Action Title ist These (nicht Beschreibung)?"
+        fail_action: "Titel umformulieren"
+      - check: "Alle Zahlen mit Einheit und Kontext?"
+        fail_action: "Einheiten ergänzen"
+      - check: "Ehrlichkeits-Linie formuliert?"
+        fail_action: "Aus Preset laden oder formulieren"
+      - check: "Max 1 Primary + 2 Secondary Killer Numbers?"
+        fail_action: "Reduktion auf Kern-Zahlen"
+      - check: "Quellenangabe konkret (Institution + Monat Jahr)?"
+        fail_action: "Quelle präzisieren"
+      - check: "Bekannte Verwundbarkeiten geprüft?"
+        fail_action: "Preset-Verwundbarkeiten konsultieren"
+      - check: "Axiom-Compliance (K1-K10)?"
+        fail_action: "Inhalt anpassen"
+
+  # --------------------------------------------------------------------------
+  # PHASE 3: PROMPT AUSGEBEN
+  # --------------------------------------------------------------------------
+  phase_3_prompt:
+    name: "Prompt ausgeben"
+    beschreibung: |
+      Vollständiger NotebookLM-Prompt wird generiert.
+      User kopiert diesen 1:1 in NotebookLM Style Prompt Feld.
+
+    formate:
+      landscape: "templates/notebooklm-prompt-landscape.md"
+      portrait: "templates/notebooklm-prompt-portrait.md"
+      square: "templates/notebooklm-prompt-square.md"
+
+  # --------------------------------------------------------------------------
+  # PHASE 4: 3-ITERATIONEN QA-LOOP (PFLICHT!)
+  # --------------------------------------------------------------------------
+  phase_4_qa_loop:
+    name: "3-Iterationen QA-Loop"
+    pflicht: true
+    min_iterationen: 3
+
+    erfahrungswert: "6.0 → 8.0 → 8.5 → 9.0"
+
+    notebooklm_constraint: |
+      KRITISCH: NotebookLM kann NICHT iterieren!
+      Jede Runde = NEUER KOMPLETTER Prompt mit eingebauten Fixes.
+
+    runde_1:
+      name: "Struktur & Vollständigkeit"
+      erwarteter_score: "6.0-7.5"
+      fokus:
+        - "Alle Elemente vorhanden?"
+        - "Architektur korrekt?"
+        - "Leserichtung klar?"
+        - "Ehrlichkeits-Linie vorhanden?"
+        - "≤ 7 Informations-Cluster?"
+      typische_fehler:
+        - "Fehlende Sektion"
+        - "Falsches Layout"
+        - "Ehrlichkeit fehlt"
+        - "Zu viele Cluster"
+      output: "Score + Fixes → Neuer kompletter Prompt für R2"
+
+    runde_2:
+      name: "Daten-Integrität & Halluzinationen"
+      erwarteter_score: "7.5-8.5"
+      fokus:
+        - "ALLE Zahlen stimmen mit Quelle überein?"
+        - "Keine NotebookLM-Halluzinationen?"
+        - "Konkrete Zahlen statt vager Adjektive?"
+        - "Datum in Quellenangabe korrekt?"
+        - "Österreichisches Deutsch? (Jänner, nicht Januar)"
+      typische_fehler:
+        - "Falsches Datum ('Oktober 2023' statt 'Jänner 2026')"
+        - "Erfundene Quelle"
+        - "Gerundete/falsche Zahlen"
+      output: "Score + Fixes → Neuer kompletter Prompt für R3"
+
+    runde_3:
+      name: "Feinschliff & Verhaltensökonomie"
+      erwarteter_score: "8.5-9.5"
+      fokus:
+        - "Anchoring: Killer-Zahl visuell dominant?"
+        - "Framing: Gain-Frame für Massnahmen?"
+        - "Inoculation: Ehrlichkeits-Linie richtig dosiert?"
+        - "Social Proof: Vergleichstabelle korrekt?"
+        - "Salience: Grösste Zahl = wichtigstes Argument?"
+        - "Keine Angriffsfläche?"
+      output: "Score → Freigabe oder R4"
+
+    runde_bonus:
+      name: "Exzellenz (optional, bei Score < 9.0 nach R3)"
+      erwarteter_score: "9.0+"
+      fokus:
+        - "EIN Element das Score auf 9.0+ hebt?"
+        - "Emotionaler Bogen vollständig?"
+        - "Journalist würde Grafik verwenden?"
+
+  # --------------------------------------------------------------------------
+  # PHASE 5: FREIGABE + PROTOKOLL
+  # --------------------------------------------------------------------------
+  phase_5_freigabe:
+    name: "Freigabe + Iterations-Protokoll"
+
+    schwellenwerte:
+      freigabe: 8.5
+      nachbesserung: 8.0
+      neustart: 6.0
+      exzellent: 9.0
+
+    protokoll_speichern:
+      pfad: "reports/INFOGRAFIK_{thema}_{datum}.md"
+      inhalt:
+        - "Thema, Format, Preset, Datum"
+        - "Score-Verlauf (R1 → R2 → R3 → R4*)"
+        - "Fixes pro Runde"
+        - "Final Score + Verdict"
+        - "Finaler Prompt (für Reproduzierbarkeit)"
+
+    in_portfolio_eintragen:
+      beschreibung: |
+        Bei Freigabe: Infografik als Deployment-Asset im
+        PORTFOLIO_DASHBOARD.yaml → deployment_regeln → social_media
+        registrieren.
+
+# ============================================================================
+# SCORING-KRITERIEN (6 Dimensionen)
+# ============================================================================
+
+scoring:
+  kriterien:
+    K1:
+      name: "Frame-Konsistenz"
+      gewicht: 0.20
+      spo_spezifisch: |
+        Passt alles zum "Ordnen statt Spalten" Frame?
+        Keine FPÖ-Begriffe (Festung, Remigration, Volk)?
+    K2:
+      name: "Verhaltenswirksamkeit"
+      gewicht: 0.20
+      spo_spezifisch: |
+        Anchoring mit Killer-Zahl?
+        Ehrlichkeits-Linie (McGuire Inoculation)?
+    K3:
+      name: "Angriffsfläche (invertiert)"
+      gewicht: 0.20
+      spo_spezifisch: |
+        VPI vs. HVPI Verwundbarkeit geprüft?
+        Basiseffekt berücksichtigt?
+        Keine Cherry-Picking-Vorwürfe möglich?
+    K4:
+      name: "Visuelle Klarheit"
+      gewicht: 0.15
+    K5:
+      name: "Daten-Integrität"
+      gewicht: 0.15
+      spo_spezifisch: |
+        Österreichisches Deutsch (Jänner, Matura)?
+        Quellen konkret (Statistik Austria, Eurostat)?
+    K6:
+      name: "Zielgruppen-Abdeckung"
+      gewicht: 0.10
+      spo_spezifisch: |
+        Wechselwähler-tauglich (keine Parteipolitik)?
+        Kanal-Format passt (Social = Square, Parteitag = Landscape)?
+
+# ============================================================================
+# VERBINDUNG ZU BESTEHENDEN SPÖ-INFOGRAFIKEN
+# ============================================================================
+
+bestehende_infografiken:
+  beschreibung: |
+    Diese Infografiken wurden VOR dem standardisierten Workflow erstellt.
+    Bei Neuauflagen: Durch /infographic --preset spo --thema X ersetzen.
+
+  dateien:
+    - pfad: "reports/INFOGRAFIK_basis_gesundheitsversorgung_2026-02-03.md"
+      thema: "gesundheit"
+      status: "PRE-WORKFLOW — bei Neuauflage durch QA-Loop ersetzen"
+
+    - pfad: "reports/INFOGRAFIK_social_media_sog_2026-02-03.md"
+      thema: "sog"
+      status: "PRE-WORKFLOW — bei Neuauflage durch QA-Loop ersetzen"
+
+    - pfad: "reports/INFOGRAFIK_spitalstouristen_2026-02-03.md"
+      thema: "spitalstouristen"
+      status: "PRE-WORKFLOW — bei Neuauflage durch QA-Loop ersetzen"
+
+# ============================================================================
+# SKILL-AUFRUF
+# ============================================================================
+
+skill_integration:
+  command: "/infographic"
+  empfohlene_aufrufe:
+    - "/infographic --preset spo --thema inflation"
+    - "/infographic --preset spo --thema migration"
+    - "/infographic --preset spo --thema gesundheit"
+    - "/infographic --preset spo --thema wohnen"
+    - "/infographic --score"
+    - "/infographic --qa"
+
+  quick_start: |
+    1. /infographic --preset spo --thema inflation --format landscape
+    2. Prompt in NotebookLM kopieren
+    3. Ergebnis-Bild teilen
+    4. 3 Runden QA → Freigabe bei Score ≥ 8.5
+
+# ============================================================================
+# CHANGELOG
+# ============================================================================
+
+changelog:
+  - datum: "2026-02-06"
+    version: "1.0"
+    aenderung: "Initiale Erstellung mit 6-Phasen-Workflow und 3-Iterationen QA"
+    quelle: "Extraktion aus 4+ validierten Infografiken + EBF Scoring"

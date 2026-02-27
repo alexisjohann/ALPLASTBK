@@ -1,0 +1,241 @@
+# =============================================================================
+# SENSITIVITY ANALYSIS MODEL (SAM-1.0) - CONFIGURATION TEMPLATE
+# =============================================================================
+# Model: Systematic Parameter Sensitivity Testing
+# Version: 1.0.0
+# Status: GENERIC (no hardcoded defaults)
+#
+# Purpose: Test impact of parameter changes on key outputs,
+#          generate tornado diagrams, run scenario analysis.
+#
+# Usage:
+#   python scripts/models/sensitivity_analysis.py <this_config.yaml>
+#
+# Integration:
+#   - Runs: RPM-1.0, CSM-1.0, PLM-1.0 (or custom model runner)
+#   - Input: Full strategic config with all model parameters
+#   - Output: Sensitivity rankings, tornado data, scenario comparisons
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# SENSITIVITY ANALYSIS CONFIGURATION
+# -----------------------------------------------------------------------------
+sensitivity_analysis:
+  # Default settings for all parameters
+  default_range_pct: 20      # Default: test ±20% of base value
+  default_steps: 5           # Default: 5 test points per parameter
+
+  # -----------------------------------------------------------------------------
+  # Parameters to Test
+  # Each parameter specifies:
+  #   - name: Display name
+  #   - path: Dot-notation path in config (e.g., "section.subsection.key")
+  #   - base_value: Override base value (optional, reads from path if omitted)
+  #   - range_pct: Percentage range to test (e.g., 30 = ±30%)
+  #   - range_absolute: Absolute range to test (e.g., 2 = ±2 pp)
+  #   - steps: Number of test points
+  #   - min_value: Minimum allowed value
+  #   - max_value: Maximum allowed value
+  # -----------------------------------------------------------------------------
+  parameters:
+    # Regional Growth Rates (from RPM config)
+    - name: "europe_cagr"
+      path: "strategic_assumptions.regional_growth_rates.europe.cagr"
+      base_value: 2.5
+      range_pct: 40           # Test 1.5% to 3.5%
+      steps: 5
+
+    - name: "apac_cagr"
+      path: "strategic_assumptions.regional_growth_rates.apac.cagr"
+      base_value: 8.5
+      range_pct: 30           # Higher growth = more uncertainty
+      steps: 5
+
+    - name: "south_america_cagr"
+      path: "strategic_assumptions.regional_growth_rates.south_america.cagr"
+      base_value: 6.5
+      range_pct: 35
+      steps: 5
+
+    - name: "north_america_cagr"
+      path: "strategic_assumptions.regional_growth_rates.north_america.cagr"
+      base_value: 3.0
+      range_pct: 30
+      steps: 5
+
+    # Margin Assumptions (from PLM config)
+    - name: "ebitda_margin"
+      path: "pnl_model.ebitda_margin_percent"
+      base_value: 12
+      range_absolute: 4       # Test 8% to 16%
+      steps: 5
+      min_value: 5            # Floor: 5% minimum margin
+      max_value: 25           # Cap: 25% maximum margin
+
+    # Cost Parameters (from CSM config)
+    - name: "personnel_escalation"
+      path: "cost_model.cost_blocks.0.escalation_rate"
+      base_value: 3.0
+      range_absolute: 2       # Test 1% to 5% wage growth
+      steps: 5
+
+    - name: "material_cost_pct"
+      path: "cost_model.cost_blocks.1.percent_of_revenue"
+      base_value: 35
+      range_pct: 15           # Test 30% to 40%
+      steps: 5
+
+    # Tax Rate
+    - name: "tax_rate"
+      path: "pnl_model.tax_rate_percent"
+      base_value: 25
+      range_absolute: 5       # Test 20% to 30%
+      steps: 3
+
+  # -----------------------------------------------------------------------------
+  # Output Metrics to Track
+  # These are extracted from model results for sensitivity measurement.
+  # -----------------------------------------------------------------------------
+  output_metrics:
+    - name: "revenue_2035"
+      description: "Total Revenue in 2035 (EUR M)"
+
+    - name: "ebitda_2035"
+      description: "EBITDA in 2035 (EUR M)"
+
+    - name: "net_income_2035"
+      description: "Net Income in 2035 (EUR M)"
+
+    - name: "ebitda_margin_2035"
+      description: "EBITDA Margin in 2035 (%)"
+
+  # -----------------------------------------------------------------------------
+  # Predefined Scenarios
+  # Test specific combinations of parameter adjustments.
+  #
+  # Adjustment formats:
+  #   - "+20%" or "-15%": Percentage change from base
+  #   - "+2pp" or "-1pp": Absolute change (percentage points)
+  #   - Numeric: Absolute value override
+  # -----------------------------------------------------------------------------
+  scenarios:
+    - name: "conservative"
+      description: "All growth rates -20%, margins -2pp"
+      adjustments:
+        europe_cagr: "-20%"
+        apac_cagr: "-20%"
+        south_america_cagr: "-20%"
+        north_america_cagr: "-20%"
+        ebitda_margin: "-2pp"
+
+    - name: "base_case"
+      description: "No adjustments (baseline)"
+      adjustments: {}
+
+    - name: "aggressive"
+      description: "All growth rates +20%, margins +2pp"
+      adjustments:
+        europe_cagr: "+20%"
+        apac_cagr: "+20%"
+        south_america_cagr: "+20%"
+        north_america_cagr: "+20%"
+        ebitda_margin: "+2pp"
+
+    - name: "apac_boom"
+      description: "APAC outperforms (+50%), others flat"
+      adjustments:
+        apac_cagr: "+50%"
+
+    - name: "europe_slowdown"
+      description: "Europe stagnates (0% growth)"
+      adjustments:
+        europe_cagr: 0.5         # Absolute override to 0.5%
+
+    - name: "cost_pressure"
+      description: "Material costs +20%, personnel +2pp escalation"
+      adjustments:
+        material_cost_pct: "+20%"
+        personnel_escalation: "+2pp"
+
+    - name: "margin_compression"
+      description: "EBITDA margin -3pp due to competition"
+      adjustments:
+        ebitda_margin: "-3pp"
+
+    - name: "tax_increase"
+      description: "Corporate tax rate increases to 30%"
+      adjustments:
+        tax_rate: 30             # Absolute override
+
+# =============================================================================
+# INCLUDE FULL MODEL CONFIGS BELOW
+# The sensitivity analysis needs the complete configuration for all models
+# it will run. Include or merge your RPM, CSM, PLM configs here.
+# =============================================================================
+
+# Example: Include base strategic assumptions for RPM
+strategic_assumptions:
+  regional_growth_rates:
+    europe:
+      cagr: 2.5
+      revenue_2024_eur_m: 2000
+    apac:
+      cagr: 8.5
+      revenue_2024_eur_m: 500
+    south_america:
+      cagr: 6.5
+      revenue_2024_eur_m: 300
+    north_america:
+      cagr: 3.0
+      revenue_2024_eur_m: 150
+    amet:
+      cagr: 5.0
+      revenue_2024_eur_m: 50
+
+# Example: Include cost model config for CSM
+cost_model:
+  base_year: 2024
+  projection_years: 11
+  currency: "EUR"
+  cost_blocks:
+    - name: "Personnel"
+      type: "semi_variable"
+      base_value_m: 300
+      percent_of_revenue: 15
+      escalation_rate: 3.0
+    - name: "Raw_Materials"
+      type: "variable"
+      percent_of_revenue: 35
+      escalation_rate: 2.0
+
+# Example: Include P&L model config for PLM
+pnl_model:
+  base_year: 2024
+  projection_years: 11
+  currency: "EUR"
+  ebitda_margin_percent: 12
+  depreciation_percent_of_revenue: 3.0
+  interest_rate_percent: 4.0
+  tax_rate_percent: 25.0
+
+# =============================================================================
+# OUTPUT SPECIFICATION
+# =============================================================================
+# Running this model produces:
+#
+# 1. sensitivity_tornado_<metric>.csv
+#    - Parameter, Low_Value, Base_Value, High_Value, Range, Elasticity
+#    - Sorted by impact (range) descending
+#
+# 2. sensitivity_scenarios.csv
+#    - Scenario, Description, revenue_2035, ebitda_2035, net_income_2035, ...
+#
+# 3. sensitivity_single_param_<param>.csv
+#    - Value, Pct_Change, revenue_2035, ebitda_2035, ...
+#    - For each parameter tested
+#
+# 4. sensitivity_summary.yaml
+#    - Top drivers per metric
+#    - Elasticity coefficients
+#    - Scenario comparison
+# =============================================================================

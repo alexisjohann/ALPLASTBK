@@ -1,0 +1,883 @@
+# =============================================================================
+# BFE-019 ECHfP: Fragebogen → BCM-Parameter-Mapping
+# =============================================================================
+# PARADIGMENWECHSEL: Fragebogen parametrisiert ein Verhaltensmodell,
+# nicht bloss KPI-Dashboards.
+#
+# Version: 1.0
+# Erstellt: 2026-02-16
+# Kontext: model.yaml (segment_behavioral_profiles) definiert die Parameter
+#          β, λ, θ, W_base, u_F, u_S, u_X, σ, τ, A(·) pro Segment.
+#          Der Fragebogen muss diese Parameter MESSEN können.
+#
+# CONSTRAINT: Fragebogen ist bereits mit BFE geteilt. Keine komplett neue
+#             Version möglich. Änderungen müssen in 3 Ebenen kategorisiert
+#             werden: (A) Nur Mapping/Label, (B) Minor Rewording, (C) Neue Items.
+# =============================================================================
+
+metadata:
+  project: BFE-019 ECHfP Wirkungsmessung
+  document: "Fragebogen → BCM-Parameter-Analyse"
+  version: "1.0"
+  created: "2026-02-16"
+  model_source: "model.yaml → segment_behavioral_profiles"
+  kpi_source: "kpi_architecture.yaml → AWIT Framework"
+
+# =============================================================================
+# 1. DAS PROBLEM: KPI vs. PARAMETER
+# =============================================================================
+problem_statement:
+  current_state: |
+    Der Fragebogen ist als KPI-Instrument konzipiert:
+    - Items → KPI-Scores (A1, W2, T3, etc.) → Dashboard-Werte [0-100]
+    - Aggregation: G = 0.25*A + 0.25*W + 0.30*I + 0.20*T
+    - Zweck: "Steigt der Awareness-Score von 35 auf 55?"
+
+    KPIs sind methodisch volatile Konstrukte:
+    - Sie messen VERÄNDERUNG auf einer ad-hoc-Skala
+    - Sie sind nicht transferierbar (kein anderes Projekt nutzt "A1")
+    - Sie haben keine Theorie-Anbindung (warum genau 0.25 Gewicht?)
+    - Sie erlauben keine kausalen Aussagen
+
+  required_state: |
+    Der Fragebogen muss als Parameter-Instrument funktionieren:
+    - Items → BCM-Parameter (β, λ, θ, W_base, u_F, u_S, σ, A(·), etc.)
+    - Parameter fliessen in das Verhaltensmodell (model.yaml)
+    - Modell erzeugt Interventionsvektoren →I pro Segment
+    - Interventionsvektoren bestimmen Kampagnen-Allokation
+
+    BCM-Parameter sind stabil und transferierbar:
+    - Sie haben eine theoretische Fundierung (jeder Parameter hat Papers)
+    - Sie sind vergleichbar über Projekte (λ=2.1 in BFE vs. λ=2.3 bei LUKB)
+    - Sie erlauben kausale Modellierung (wenn λ↑ dann θ↑)
+    - Sie sind die Grundlage für kontrafaktische Analyse
+
+  key_insight: |
+    DASSELBE Item kann SOWOHL einen KPI-Score als auch einen BCM-Parameter
+    liefern. Der Fragebogen muss nicht komplett neu sein — aber das MAPPING
+    muss sich ändern, und an wenigen Stellen braucht es Ergänzungen.
+
+# =============================================================================
+# 2. VOLLSTÄNDIGES ITEM → PARAMETER MAPPING
+# =============================================================================
+# Für jedes Item: Welchen BCM-Parameter misst es (primär/sekundär)?
+# BCM-Parameter aus model.yaml: β, λ, θ, W_base, u_F, u_S, u_X, u_E, u_P,
+#   σ_d (deskriptive Norm), σ_i (injunktive Norm), A(·), τ (Complexity),
+#   φ (BCJ Phase), Ψ_trust (institutionelles Vertrauen)
+# =============================================================================
+
+item_parameter_mapping:
+
+  # ---------------------------------------------------------------------------
+  # INTRO-BLOCK (Screening + BCJ-Phasen-Zuordnung)
+  # ---------------------------------------------------------------------------
+  intro:
+    INTRO1:
+      item: "Eigentumsstatus"
+      kpi_current: "Screening"
+      bcm_parameter_primary: "WHO_Level (L0-L3)"
+      bcm_parameter_secondary: null
+      bcm_function: |
+        Bestimmt den WHO-Level (EFH=L0_individual, MFH=L1, STWE=L2_community).
+        Der WHO-Level determiniert die Entscheidungsautonomie und damit welche
+        Segmentparameter (β, λ, θ, W_base) aus model.yaml geladen werden.
+      change_needed: "A"  # Nur Mapping
+      change_detail: "Kein Item-Change. Nur im Mapping-Dokument als WHO_Level führen."
+
+    INTRO2:
+      item: "Baujahr"
+      kpi_current: "Screening"
+      bcm_parameter_primary: "Ψ_physical (Gebäudezustand-Proxy)"
+      bcm_parameter_secondary: "ROI-Moderator"
+      bcm_function: |
+        Baujahr ist ein Proxy für den physischen Kontext (Ψ_F).
+        Ältere Gebäude haben höheren Sanierungsbedarf → höherer erwarteter ROI
+        → moduliert u_F. Direkt relevant für PCT (Parameter Context Transformation):
+        θ_target = θ_anchor × M(ΔΨ_F).
+      change_needed: "A"
+
+    INTRO3:
+      item: "Wohnungsanzahl (EFH/MFH/STWE)"
+      kpi_current: "Screening"
+      bcm_parameter_primary: "Segment-Selektor"
+      bcm_parameter_secondary: "Collective Action Parameter"
+      bcm_function: |
+        Determiniert direkt, welches Parameterset geladen wird:
+        EFH → SEG_EFH (β=0.82, λ=2.1, θ=0.65, W_base=0.35)
+        MFH → SEG_MFH (β=0.78, λ=2.3, θ=0.72, W_base=0.28)
+        STWE → SEG_STWE (β=0.75, λ=2.5, θ=0.78, W_base=0.22)
+      change_needed: "A"
+
+    INTRO4_to_INTRO8:
+      item: "Bestand pro Modul (bereits modernisiert?)"
+      kpi_current: "Impact – Bestandscheck"
+      bcm_parameter_primary: "φ (BCJ Phase) → acting/maintaining"
+      bcm_parameter_secondary: "Endowment (Status Quo)"
+      bcm_function: |
+        Ja → Person ist in Phase φ=acting oder φ=maintaining.
+        Nein → Person ist in φ=unaware bis φ=considering.
+        Modell-relevant: Bestimmt den BCJ-Phasenstatus und damit
+        welcher Interventionsvektor emergiert (Ch.17).
+      change_needed: "A"
+
+    INTRO9_to_INTRO13:
+      item: "Planung nächste 2 Jahre pro Modul"
+      kpi_current: "Impact I2 – Intention"
+      bcm_parameter_primary: "φ (BCJ Phase) → intending"
+      bcm_parameter_secondary: "Intention-Behavior Gap (Sheeran 2002)"
+      bcm_function: |
+        Ja → φ=intending (28% Intention-Behavior Gap nach Sheeran).
+        Weiss nicht → φ=considering.
+        Nein → φ=aware (wenn INTRO4-8=Nein) oder φ=unaware.
+        KRITISCH: Die Kombination INTRO4-8 + INTRO9-13 ergibt die vollständige
+        BCJ-Phasenverteilung pro Modul und Segment.
+      change_needed: "A"
+
+  # ---------------------------------------------------------------------------
+  # AWARENESS-BLOCK
+  # ---------------------------------------------------------------------------
+  awareness:
+    A1:
+      item: "Information/Werbung gesehen (12 Monate)"
+      kpi_current: "Awareness – Exposure"
+      bcm_parameter_primary: "A_exposure ∈ {0,1}"
+      bcm_parameter_secondary: null
+      bcm_function: |
+        Binärer Indikator der Awareness-Funktion A(·) aus Appendix AU.
+        A_exposure = 1 ist NOTWENDIGE Bedingung für Campaign-Impact.
+        Segmentiert nach Modul: Erlaubt Kampagnen-Reichweiten-Schätzung.
+      change_needed: "A"
+
+    A2:
+      item: "Thema beschäftigt mich (Likert 1-5)"
+      kpi_current: "Awareness – Relevance"
+      bcm_parameter_primary: "A_salience ∈ [0,1]"
+      bcm_parameter_secondary: null
+      bcm_function: |
+        Salienz-Komponente der Awareness-Funktion A(·).
+        Likert 1-5 → normalisiert auf [0,1].
+        Hohe Salienz = niedrigere Aktivierungsschwelle θ (inversely related).
+        A_salience = (Likert - 1) / 4.
+      change_needed: "A"
+
+    A3:
+      item: "Betrifft mich persönlich (Likert 1-5)"
+      kpi_current: "Awareness – Relevance"
+      bcm_parameter_primary: "A_personal_relevance ∈ [0,1]"
+      bcm_parameter_secondary: "Scarcity-Proxy (Mullainathan/Shafir 2013)"
+      bcm_function: |
+        Persönliche Relevanz als Modulator der Awareness-Funktion.
+        Hohe persönliche Relevanz verstärkt den Effekt von A_salience
+        auf die Aktivierungsschwelle: θ_eff = θ × (1 - α × A_personal_relevance),
+        wobei α der Relevanz-Moderator ist.
+      change_needed: "A"
+
+    A4:
+      item: "Weiss um was es geht (Likert 1-5)"
+      kpi_current: "Awareness – Understanding"
+      bcm_parameter_primary: "A_subjective_knowledge ∈ [0,1]"
+      bcm_parameter_secondary: "Overconfidence-Indikator (Falk et al. 2025)"
+      bcm_function: |
+        Subjektives Wissen ≠ objektives Wissen (Falk et al. 2025).
+        BCM-relevant als Moderator für Information-Seeking:
+        Hohe A_subjective_knowledge + niedrige I1 = Information Avoidance.
+        Diagnostisch wertvoll: Identifiziert «confident but wrong» Segment.
+      change_needed: "A"
+
+    A5:
+      item: "Eigenes Verhalten bedeutsam für Gesellschaft/Umwelt (Likert 1-5)"
+      kpi_current: "Awareness – Understanding"
+      bcm_parameter_primary: "u_E (Environmental/Prosocial Utility)"
+      bcm_parameter_secondary: "Perceived Behavioral Significance"
+      bcm_function: |
+        FEHLKLASSIFIZIERUNG: Dieses Item misst NICHT Awareness, sondern
+        eine Utility-Dimension (WHAT). Es erfasst die wahrgenommene
+        WIRKSAMKEIT des eigenen Verhaltens für die Umwelt — das ist eine
+        Werte/Motivations-Frage, keine Wissens-Frage.
+
+        BCM-Parameter: u_E (Environmental Utility) — Bénabou/Tirole (2006)
+        Warm-Glow-Komponente + Perceived Behavioral Significance.
+
+        Ergänzend zu W2 (Gemeinwohl) und W3 (Werte):
+        W2 misst die ABSICHT ("möchte etwas Positives tun")
+        A5 misst die ÜBERZEUGUNG ("mein Handeln IST bedeutsam")
+        → A5 informiert über die Brücke zwischen Intention und Impact.
+      change_needed: "B"
+      change_detail: |
+        EMPFEHLUNG: Item im Block belassen (Position stabil gegenüber BFE),
+        aber im Mapping als Willingness-Parameter (u_E) führen.
+        BEGRÜNDUNG: Keine Fragebogen-Änderung nötig — nur die Auswertung
+        ändert sich. A5 fliesst nicht in den A-Score, sondern in W_base.
+        Alternativ: Im neuen Analyse-Layer als "Brücken-Item" A→W führen.
+
+  # ---------------------------------------------------------------------------
+  # WILLINGNESS-BLOCK
+  # ---------------------------------------------------------------------------
+  willingness:
+    W1:
+      item: "Grosse persönliche Vorteile (Likert 1-5)"
+      kpi_current: "Willingness – Perceived Utility"
+      bcm_parameter_primary: "u_F (Financial/Private Utility)"
+      bcm_parameter_secondary: "u_P (Procedural/Comfort Utility)"
+      bcm_function: |
+        Direkte Messung der privaten Nutzendimension u_F + u_P.
+        "Grosse persönliche Vorteile" = Decision Utility (Kahneman 2000).
+        Likert 1-5 → u_F_perceived = (Likert - 1) / 4.
+        Fliesst in W_base: W_base ∝ Σ_d w_d × u_d (über alle Dimensionen d).
+      change_needed: "A"
+
+    W2:
+      item: "Positives für Gemeinwohl/Umwelt (Likert 1-5)"
+      kpi_current: "Willingness – Perceived Utility"
+      bcm_parameter_primary: "u_S (Social Utility / Warm Glow)"
+      bcm_parameter_secondary: "Social Desirability Bias Indikator"
+      bcm_function: |
+        Misst die prosoziale Motivations-Komponente nach Bénabou/Tirole (2006).
+        u_S = Warm Glow (Andreoni 1990) + Image-Motivation (Ariely et al. 2009).
+        CAVE: Social Desirability Bias — Selbstbericht überschätzt u_S.
+        Korrekturfaktor aus Literatur: u_S_corrected ≈ 0.7 × u_S_reported.
+        Fliesst in W_base: W_base = f(u_F, u_S, u_X, u_E, u_P).
+      change_needed: "A"
+
+    W3:
+      item: "Einklang mit Werten (Likert 1-5)"
+      kpi_current: "Willingness – Perceived Utility"
+      bcm_parameter_primary: "u_X (Identity Utility)"
+      bcm_parameter_secondary: null
+      bcm_function: |
+        Identity Economics (Akerlof/Kranton 2000): Menschen erleiden Disutility
+        wenn Handlung ≠ Identitätskategorie. Dieses Item misst die
+        KONGRUENZ zwischen Handlung und Identität.
+        u_X = (Likert - 1) / 4.
+        Hohe u_X → stabiles Verhalten (weniger kontextsensitiv).
+        Niedrige u_X → instabil, starker Kontext-Einfluss.
+      change_needed: "A"
+
+    W4:
+      item: "Traue mir zu, erfolgreich umzusetzen (Likert 1-5)"
+      kpi_current: "Willingness – Self-Efficacy"
+      bcm_parameter_primary: "θ_inv (invertierte Aktivierungsschwelle)"
+      bcm_parameter_secondary: "PBC (Perceived Behavioral Control)"
+      bcm_function: |
+        ZENTRAL für das BCM: Self-Efficacy ist der inverse Proxy für die
+        Aktivierungsschwelle θ. Je höher die Self-Efficacy, desto niedriger θ.
+        θ_proxy = 1 - (Likert - 1) / 4.
+        Segment-Kalibrierung: SEG_EFH θ=0.65, SEG_MFH θ=0.72, SEG_STWE θ=0.78.
+        W4 erlaubt die EMPIRISCHE Kalibrierung dieser Modellwerte.
+      change_needed: "A"
+
+    W5:
+      item: "Prozess erscheint kompliziert (Likert 1-5, invertiert)"
+      kpi_current: "Willingness – Perceived Barrier"
+      bcm_parameter_primary: "τ (Perceived Complexity)"
+      bcm_parameter_secondary: "Choice Overload Indikator"
+      bcm_function: |
+        Wahrgenommene Komplexität τ ist ein eigenständiger Modellparameter,
+        nicht bloss eine Barrier. τ verstärkt Present Bias β (Enke et al. 2024):
+        β_eff = β × (1 - κ_τ × τ), wobei κ_τ der Komplexitäts-Moderator ist.
+        τ = (Likert - 1) / 4 (NICHT invertiert für BCM — hoher Wert = hohe Komplexität).
+        CAVE: Im KPI-Score wird invertiert (hohe Komplexität = niedriger Score),
+        aber im BCM ist τ direkt (hohe Komplexität = hoher τ-Wert).
+      change_needed: "A"
+
+    W6:
+      item: "Viele andere haben modernisiert (Likert 1-5)"
+      kpi_current: "Willingness – Second Order Belief"
+      bcm_parameter_primary: "σ_d (Deskriptive Sozialnorm)"
+      bcm_parameter_secondary: "Boomerang-Risiko (Schultz et al. 2007)"
+      bcm_function: |
+        Deskriptive Sozialnorm σ_d nach Allcott (2011).
+        σ_d = (Likert - 1) / 4.
+        Wirkt auf W_base via u_S: Wenn σ_d hoch → u_S steigt (Norm-Konformität).
+        ABER: Boomerang-Effekt bei hohem σ_d + eigenem Verhalten > Norm.
+        Diagnostisch: σ_d < 0.3 → Wahrnehmung "niemand macht es" → Norm-Stärkung
+        als Intervention I_WHAT prioritisieren.
+      change_needed: "A"
+
+  # ---------------------------------------------------------------------------
+  # IMPACT-BLOCK
+  # ---------------------------------------------------------------------------
+  impact:
+    I1:
+      item: "Über Förderprogramme informiert (Ja/Nein)"
+      kpi_current: "Impact – Activation"
+      bcm_parameter_primary: "φ_progression_indicator"
+      bcm_parameter_secondary: "Information Seeking ∈ {0,1}"
+      bcm_function: |
+        Binärer BCJ-Progressions-Indikator: Wer sich über Förderung informiert hat,
+        ist mindestens in φ=considering (über unaware/aware hinaus).
+        In Kombination mit INTRO9-13: Validiert die Phasen-Selbstzuordnung.
+        Ja + INTRO_Planung=Ja → φ=intending (hohe Konfidenz).
+        Ja + INTRO_Planung=Nein → φ=considering (Information gesucht aber nicht konvertiert).
+      change_needed: "A"
+
+    I2:
+      item: "Mit Fachleuten gesprochen (Ja/Nein)"
+      kpi_current: "Impact – Consultation"
+      bcm_parameter_primary: "φ_progression_indicator (stärker als I1)"
+      bcm_parameter_secondary: "Credence Good Interaction"
+      bcm_function: |
+        Stärkerer BCJ-Progressions-Indikator als I1. Expert Consultation
+        erfordert höheres Commitment (Credence Good nach Beck et al. 2014).
+        Ja → φ≥intending mit hoher Wahrscheinlichkeit.
+        Ja + I1=Ja → starke Konversion-Pipeline.
+        BCM-relevant: Misst den Übergang von passiver Information zu aktiver
+        Handlungsvorbereitung.
+      change_needed: "A"
+
+  # ---------------------------------------------------------------------------
+  # TRUST-BLOCK
+  # ---------------------------------------------------------------------------
+  trust:
+    T0:
+      item: "EnergieSchweiz bekannt? (Ja/Nein)"
+      kpi_current: "Trust Gate"
+      bcm_parameter_primary: "Ψ_trust_gate ∈ {0,1}"
+      bcm_parameter_secondary: null
+      bcm_function: |
+        Gate-Variable: Ohne Bekanntheit keine Trust-Messung möglich.
+        BCM-relevant als Moderator: Alle Trust-basierten Interventionen
+        (I_AWARE via EnergieSchweiz) setzen T0=1 voraus.
+        T0=0 → Grundlegende Awareness-Intervention nötig (Absender bekanntmachen).
+      change_needed: "A"
+
+    T1:
+      item: "Vertraue EnergieSchweiz als Informationsquelle (Likert 1-5)"
+      kpi_current: "Trust – Source Trust"
+      bcm_parameter_primary: "Ψ_trust_source ∈ [0,1]"
+      bcm_parameter_secondary: null
+      bcm_function: |
+        Institutionelles Vertrauen als Kontext-Parameter (Ψ_I).
+        Ψ_trust_source = (Likert - 1) / 4.
+        Moderiert die Wirksamkeit ALLER EnergieSchweiz-Interventionen:
+        I_eff = I_base × Ψ_trust_source.
+        Niedrig → Information wird ignoriert/abgelehnt.
+        Hoch → Information wird verarbeitet und handlungsrelevant.
+      change_needed: "A"
+
+    T2:
+      item: "Informationen glaubwürdig und verlässlich (Likert 1-5)"
+      kpi_current: "Trust – Message Credibility"
+      bcm_parameter_primary: "Ψ_trust_credibility ∈ [0,1]"
+      bcm_parameter_secondary: "Credence Good Trust (Beck 2014)"
+      bcm_function: |
+        Message Credibility als eigenständiger Parameter (nicht identisch mit T1).
+        Fehr (2009): Vertrauen in Person ≠ Vertrauen in Botschaft.
+        Ψ_trust_credibility moderiert spezifisch den INFORMATIONS-Kanal:
+        Impact_info = Base_info × Ψ_trust_credibility.
+      change_needed: "A"
+
+    T3:
+      item: "Informationen sind transparent (Likert 1-5)"
+      kpi_current: "Process Trust"
+      bcm_parameter_primary: "Ψ_trust_transparency ∈ [0,1]"
+      bcm_parameter_secondary: null
+      bcm_function: |
+        Prozedurale Transparenz nach Geraats (2002).
+        Moderiert die Belief-Updating-Rate (Ambühl 2021):
+        Opake Quellen → Beliefs werden weniger aktualisiert.
+        Transparente Quellen → Beliefs werden stärker angepasst.
+      change_needed: "A"
+
+    T4:
+      item: "Lässt mir Freiheit der eigenen Entscheidung (Likert 1-5)"
+      kpi_current: "Process Trust"
+      bcm_parameter_primary: "Ψ_autonomy ∈ [0,1]"
+      bcm_parameter_secondary: "Reaktanz-Risiko-Indikator (Brehm 1966)"
+      bcm_function: |
+        EIGENSTÄNDIGER PARAMETER (nicht primär Trust):
+        Wahrgenommene Autonomie bestimmt, ob Interventionen akzeptiert oder
+        durch Reaktanz abgelehnt werden. Reaktanz-Schwelle bei Ψ_autonomy < 0.4.
+        Constraint aus model.yaml: C5_ethical → autonomy_score ≥ 0.3.
+        Dieses Item VALIDIERT die ethische Constraint des Modells.
+      change_needed: "B"
+      change_detail: |
+        Item im Block belassen, aber im Mapping als eigenständigen
+        Autonomie/Reaktanz-Parameter führen, nicht unter Trust subsumieren.
+        Im Analyse-Layer: Ψ_autonomy separat auswerten (nicht in T-Score mitteln).
+
+    T5:
+      item: "Mein Umfeld findet Massnahme sinnvoll (Likert 1-5)"
+      kpi_current: "Trust – Social Trust"
+      bcm_parameter_primary: "σ_i (Injunktive Sozialnorm)"
+      bcm_parameter_secondary: null
+      bcm_function: |
+        FEHLKLASSIFIZIERUNG: Dieses Item misst NICHT Trust in EnergieSchweiz,
+        sondern die INJUNKTIVE SOZIALNORM (Cialdini 2003).
+
+        σ_i = (Likert - 1) / 4.
+
+        ZUSAMMENSPIEL mit W6:
+        W6 = σ_d (deskriptive Norm: "viele TUN es")
+        T5 = σ_i (injunktive Norm: "Umfeld FINDET es sinnvoll")
+
+        Schultz et al. (2007): σ_i puffert den Boomerang-Effekt von σ_d.
+        Wenn σ_d hoch aber σ_i niedrig → Boomerang-Risiko.
+        Wenn σ_d niedrig aber σ_i hoch → Motivations-Potenzial.
+
+        BEIDE Parameter zusammen informieren den u_S-Parameter im Modell:
+        u_S = f(σ_d, σ_i, visibility, ...).
+      change_needed: "B"
+      change_detail: |
+        EMPFEHLUNG: Item im Trust-Block belassen (keine Fragebogen-Änderung),
+        aber im Analyse-Layer als σ_i (injunktive Norm) führen.
+        In der Auswertung: T5 fliesst NICHT in den T-Score, sondern in W_base
+        via u_S. Doppelauswertung möglich (Trust-Tabelle UND Norm-Analyse).
+
+    T6:
+      item: "Würde anderen empfehlen (Likert 1-5)"
+      kpi_current: "Recommendation Trust"
+      bcm_parameter_primary: "Advocacy Score (NPS-ähnlich)"
+      bcm_parameter_secondary: "Norm-Verstärkungs-Potenzial"
+      bcm_function: |
+        Empfehlungsbereitschaft als OUTCOME-Variable, nicht als INPUT-Parameter.
+        BCM-relevant: Wer empfiehlt, erzeugt soziale Norm-Signale.
+        T6 hoch → Person wird zum "Norm Entrepreneur" (Sunstein).
+        Modell-relevant für SCALING: T6 × Netzwerkgrösse = Diffusions-Potenzial.
+      change_needed: "A"
+
+    T7:
+      item: "Unsicher ob Informationen stimmen (Likert 1-5, invertiert)"
+      kpi_current: "Epistemic Uncertainty"
+      bcm_parameter_primary: "Ψ_trust_uncertainty ∈ [0,1]"
+      bcm_parameter_secondary: null
+      bcm_function: |
+        Epistemische Unsicherheit als eigenständiger Parameter.
+        Aghion et al. (2010): Misstrauen ≠ fehlendes Vertrauen (neurobiologisch
+        unterschiedlich). T7 misst AKTIVES Misstrauen.
+        Im BCM: Ψ_trust_uncertainty hoch → alle informationsbasierten
+        Interventionen weniger wirksam. Alternative Strategie nötig:
+        Social Proof (σ_d, σ_i) statt Information.
+      change_needed: "A"
+
+  # ---------------------------------------------------------------------------
+  # ZUSATZFRAGEN
+  # ---------------------------------------------------------------------------
+  zusatzfragen:
+    Z1:
+      item: "Investitions-Ranking (10 Optionen, Drag & Drop)"
+      kpi_current: "Revealed Preferences"
+      bcm_parameter_primary: "Investitions-Priorität (relative Position Energiemassnahmen)"
+      bcm_parameter_secondary: "Myopic Loss Aversion Indikator (Benartzi/Thaler 1995)"
+      bcm_function: |
+        BCM-Goldmine: Die relative Position von Energiemassnahmen vs.
+        sichtbaren Investitionen (Küche, Bad, Garten) ist ein Proxy für
+        Myopic Loss Aversion. Wenn Energiemassnahmen systematisch auf
+        hinteren Rängen landen, ist λ_myopic hoch.
+        Operationalisierung: rank_energy = Durchschnittsrang der Energieitems.
+        λ_proxy = 1 - (rank_energy / max_rank).
+      change_needed: "A"
+
+    Z2:
+      item: "MaxDiff: Wichtigste Aspekte (Best-Worst Scaling)"
+      kpi_current: "Nutzendimensionen (WHAT: FEPSDE)"
+      bcm_parameter_primary: "Relative Utility-Gewichte w_d für FEPSDE"
+      bcm_parameter_secondary: null
+      bcm_function: |
+        ZENTRAL: MaxDiff liefert die RELATIVEN GEWICHTE der Utility-Dimensionen.
+        Das ist genau die FEPSDE-Zerlegung aus WHAT (Chapter 10):
+        U = w_F×u_F + w_E×u_E + w_P×u_P + w_S×u_S + w_D×u_D + w_X×u_X.
+
+        Die 11 MaxDiff-Aspekte müssen den FEPSDE-Dimensionen zugeordnet werden:
+        - Anschaffungskosten → u_F (Financial)
+        - Betriebskosten → u_F (Financial)
+        - CO2-Ausstoss → u_E (Environmental)
+        - Komfort → u_P (Procedural/Comfort)
+        - Unabhängigkeit → u_X (Identity)
+        - Nachbarschaft → u_S (Social)
+        - etc.
+
+        Die Best-Worst-Scores ergeben direkt die w_d-Gewichte.
+      change_needed: "B"
+      change_detail: |
+        Die 11 MaxDiff-Attribute sollten so gewählt sein, dass sie die
+        FEPSDE-Dimensionen abdecken. PRÜFUNG NÖTIG: Sind alle 6 FEPSDE-
+        Dimensionen durch mindestens 1 Attribut vertreten?
+        Aktuell fehlt möglicherweise: u_D (Deontological/Procedural Justice).
+
+    Z3:
+      item: "Informationsquellen (Mehrfachauswahl)"
+      kpi_current: "Information Channel Choice"
+      bcm_parameter_primary: "Ψ_channel (Informations-Kanal-Profil)"
+      bcm_parameter_secondary: null
+      bcm_function: |
+        Kanal-Profil als Kontext-Variable. Bestimmt, ÜBER WELCHEN KANAL
+        Interventionen am besten wirken. Persönliche Kanäle (Berater, Nachbarn)
+        vs. unpersönliche (Internet, Medien) haben unterschiedliche
+        Wirkungsstärken (Allcott/Rogers 2014).
+      change_needed: "A"
+
+    Z4:
+      item: "Grösste Hindernisse (Mehrfachauswahl)"
+      kpi_current: "W3 – Barrier Perception"
+      bcm_parameter_primary: "Barrier-Profil (kategorisch)"
+      bcm_parameter_secondary: "λ-Proxy (wenn 'Kosten' dominant)"
+      bcm_function: |
+        Kategorische Barrieren-Diagnostik. Modell-relevant:
+        "Kosten" als grösstes Hindernis → λ hoch (Verlustaversion dominant).
+        "Komplexität" → τ hoch.
+        "Zeitaufwand" → β niedrig (Present Bias dominant).
+        "Unsicherheit" → Ψ_trust niedrig.
+        "Koordination" (STWE) → Collective Action Problem.
+      change_needed: "A"
+
+  # ---------------------------------------------------------------------------
+  # SEGMENTIERUNG (4 Zielgruppen)
+  # ---------------------------------------------------------------------------
+  segmentation:
+    seg_A1_A2:
+      item: "Orientierung (Wissen + Self-Efficacy)"
+      kpi_current: "Segmentierung – Orientierung"
+      bcm_parameter_primary: "θ_inv-Proxy + A_subjective_knowledge"
+      bcm_function: |
+        Orientierung = Kombination aus subjektivem Wissen (≈A4) und
+        Self-Efficacy (≈W4). Im BCM: Hohe Orientierung → niedriges θ.
+
+    seg_B1_B2:
+      item: "Rationalität (Kosten-Fokus + Förder-Abhängigkeit)"
+      kpi_current: "Segmentierung – Rationalität"
+      bcm_parameter_primary: "β-Proxy + λ-Proxy"
+      bcm_function: |
+        B1 (erst bei Kosten-Klarheit) → Proxy für Discount Rate / Deliberation.
+        B2 (nur mit Förderung) → Proxy für finanzielle Constraint / λ.
+        Hohe Rationalität → β näher an 1 (deliberativ), λ hoch (kostenorientiert).
+
+    seg_C2_C3:
+      item: "Werte (Erneuerbare sinnvoll + Klimaschutz)"
+      kpi_current: "Segmentierung – Werte"
+      bcm_parameter_primary: "u_E + u_X Proxy"
+      bcm_function: |
+        Werte-Dimension = Kombination aus u_E (Klimaschutz) und u_X (Identität).
+        Hohe Werte → hohe u_E, u_X → W_base steigt.
+
+    seg_D1:
+      item: "Misstrauen (Schwarz auf Weiss)"
+      kpi_current: "Segmentierung – Misstrauen"
+      bcm_parameter_primary: "Ψ_trust_uncertainty Proxy"
+      bcm_function: |
+        Misstrauen als eigenständiger Segmentierungs-Faktor.
+        Hohes Misstrauen → Ψ_trust niedrig → informationsbasierte Interventionen
+        weniger wirksam → Social Proof Strategie priorisieren.
+
+    segmentation_to_bcm_profiles:
+      description: |
+        Die 4 Segmente (Überzeugte, Ratlose, Skeptiker, Verhinderer) ergeben
+        unterschiedliche BCM-Parameterprofile:
+
+        ÜBERZEUGTE (hohe Orientierung, hohe Werte, niedriges Misstrauen):
+        → θ niedrig, u_E/u_X hoch, Ψ_trust hoch, W_base hoch
+        → Intervention: I_WHEN dominant (nur noch Trigger/Vereinfachung nötig)
+
+        RATLOSE (niedrige Orientierung, hohe Werte, niedriges Misstrauen):
+        → θ hoch (wegen fehlender Self-Efficacy), u_E/u_X hoch, Ψ_trust mittel
+        → Intervention: I_AWARE + I_READY dominant (Wissen + Empowerment)
+
+        SKEPTIKER (mittlere Orientierung, hohe Rationalität, hohes Misstrauen):
+        → θ mittel, β ≈ 1 (deliberativ), λ hoch, Ψ_trust niedrig
+        → Intervention: I_WHAT(u_F) dominant (ROI-Argumente, konkrete Zahlen)
+
+        VERHINDERER (niedrige Orientierung, niedrige Werte, hohes Misstrauen):
+        → θ hoch, u_E/u_X niedrig, Ψ_trust niedrig, W_base sehr niedrig
+        → Intervention: Schwierig. Evtl. I_WHEN (Regulierung/Default) oder
+          akzeptieren dass dieses Segment nicht über freiwillige Kampagnen erreichbar ist.
+
+# =============================================================================
+# 3. GAP-ANALYSE: FEHLENDE BCM-PARAMETER
+# =============================================================================
+gap_analysis:
+
+  critical_gaps:
+    - parameter: "λ (Loss Aversion)"
+      model_values: "SEG_EFH=2.1, SEG_MFH=2.3, SEG_STWE=2.5"
+      current_measurement: |
+        KEIN direktes Item. Schwache Proxies:
+        - Z4 Hindernisse "Kosten" (kategorisch, nicht skaliert)
+        - Z1 Investitions-Ranking (relativ, nicht absolut)
+        - Seg_B1 "erst wenn Kosten klar" (Deliberation, nicht λ)
+      gap_severity: "HOCH"
+      impact_on_model: |
+        λ ist der zentrale Parameter für die Investitionsentscheidung.
+        λ bestimmt, wie stark die Upfront-Kosten gewichtet werden vs.
+        langfristige Einsparungen. Ohne λ-Messung ist die Kalibrierung
+        der Modell-Werte (2.1/2.3/2.5) rein literaturbasiert.
+      recommendation: "C_MINOR"
+      recommendation_detail: |
+        EIN zusätzliches Item, das λ besser approximiert. Vorschlag:
+        "Stellen Sie sich vor, eine Massnahme kostet CHF 30'000,
+        spart aber über 20 Jahre CHF 50'000 ein. Wie bewerten Sie
+        diese Investition?"
+        Skala: 1="Sehr unattraktiv" bis 5="Sehr attraktiv"
+        BCM: λ_proxy = f(Likert, Einkommen, Baujahr)
+
+        ALTERNATIV (weniger invasiv): Das bestehende Item B1 ("erst
+        wenn Kosten klar") und Z4 ("Hindernisse") triangulieren.
+        Dann braucht es kein neues Item, aber die λ-Schätzung ist
+        weniger präzise (Proxy-basiert statt direkt).
+
+    - parameter: "β (Present Bias)"
+      model_values: "SEG_EFH=0.82, SEG_MFH=0.78, SEG_STWE=0.75"
+      current_measurement: |
+        Schwacher Proxy: Seg_B1 ("erst wenn Kosten klar und weiss ab wann
+        es sich rechnet") — misst Deliberation, nicht direkt Present Bias.
+        Indirekte Proxies:
+        - Z4 "Zeitaufwand" als Hindernis → β-Proxy
+        - INTRO9-13 "Planung nächste 2 Jahre" vs. tatsächlich getan → Intention-Behavior Gap
+      gap_severity: "MITTEL"
+      impact_on_model: |
+        β bestimmt, wie stark zukünftiger Nutzen abdiskontiert wird.
+        Relevant für die Effektivität von Trigger-Strategien (WHEN).
+        Die bestehenden Proxies erlauben eine grobe Kalibrierung, aber
+        keine präzise Segment-Differenzierung.
+      recommendation: "B_REFRAME"
+      recommendation_detail: |
+        Kein neues Item nötig. Stattdessen: B1 im Analyse-Layer als
+        β-Proxy interpretieren und mit INTRO9-13 (Intention vs. Bestand)
+        triangulieren. Die Intention-Behavior Gap (Sheeran 2002: 28%)
+        ist ein empirisch validierter Proxy für β.
+
+  moderate_gaps:
+    - parameter: "γ (Complementarity)"
+      model_values: "Aus model.yaml: C2_crowding γ(u_S, u_F) = -0.2"
+      current_measurement: |
+        Nicht direkt messbar in einem Survey. Aber:
+        - W1 (u_F) + W2 (u_S) ZUSAMMEN → Interaktionsterm in Regression
+        - Seg_B2 (nur mit Förderung) → Crowding-Out Indikator
+      gap_severity: "MITTEL"
+      recommendation: "A_ANALYSIS"
+      recommendation_detail: |
+        Kein neues Item nötig. γ wird NICHT im Fragebogen gemessen,
+        sondern im MODELL geschätzt durch:
+        1. Interaktionsterm W1×W2 in der Regression
+        2. Seg_B2 als Crowding-Out Indikator
+        3. Literaturwerte aus PAR-COMP-002 (γ = -0.68 Social × Financial)
+
+    - parameter: "δ (Discount Factor)"
+      model_values: "Nicht explizit in model.yaml"
+      current_measurement: "Kein Item"
+      gap_severity: "NIEDRIG"
+      recommendation: "KEINE_ÄNDERUNG"
+      recommendation_detail: |
+        δ wird in diesem Projekt durch β approximiert (quasi-hyperbolische
+        Diskontierung nach Laibson 1997: β-δ Modell). Die Trennung von
+        β und δ erfordert eine experimentelle Elicitation (z.B. Multiple
+        Price List), die für eine Befragung zu aufwendig wäre.
+
+    - parameter: "Social Desirability Correction"
+      current_measurement: |
+        Kein Kontrollinstrument für Social Desirability Bias.
+        Betrifft primär: W2 (Gemeinwohl), W3 (Werte), A5 (Bedeutsamkeit),
+        Seg_C2/C3 (Klimaschutz).
+      gap_severity: "MITTEL"
+      recommendation: "KEINE_ÄNDERUNG"
+      recommendation_detail: |
+        In einer Panel-Befragung mit 1'200 Teilnehmenden ist ein vollständiger
+        Social Desirability Scale (Marlowe-Crowne) nicht praktikabel.
+        Stattdessen: Literatur-basierte Korrekturfaktoren anwenden
+        (u_S_corrected ≈ 0.7 × u_S_reported) und in der Auswertung transparent
+        dokumentieren.
+
+  no_gap:
+    - parameter: "A(·) (Awareness Function)"
+      coverage: "A1 (Exposure), A2 (Salience), A3 (Personal Relevance), A4 (Knowledge)"
+      note: "Vollständig abgedeckt. A5 sollte als u_E umklassifiziert werden."
+
+    - parameter: "u_F, u_S, u_X, u_E (Utility Dimensions)"
+      coverage: "W1 (u_F), W2 (u_S), W3 (u_X), A5/W2 (u_E)"
+      note: "Gut abgedeckt. Z2 (MaxDiff) liefert relative Gewichte."
+
+    - parameter: "θ (Activation Threshold)"
+      coverage: "W4 (Self-Efficacy als θ_inv-Proxy)"
+      note: "Direkte Messung. Zusätzlich informiert durch Seg_A1/A2."
+
+    - parameter: "τ (Perceived Complexity)"
+      coverage: "W5 (invertiert)"
+      note: "Direkte Messung."
+
+    - parameter: "σ_d, σ_i (Soziale Normen)"
+      coverage: "W6 (σ_d, deskriptiv), T5 (σ_i, injunktiv)"
+      note: "Vollständig abgedeckt, aber T5 ist fehlklassifiziert."
+
+    - parameter: "Ψ_trust (Institutionelles Vertrauen)"
+      coverage: "T0 (Gate), T1 (Source), T2 (Credibility), T3 (Transparency), T7 (Uncertainty)"
+      note: "Sehr gut abgedeckt (5 Items für einen Moderator-Parameter)."
+
+    - parameter: "φ (BCJ Phase)"
+      coverage: "INTRO4-8 (Bestand) + INTRO9-13 (Planung) + I1/I2 (Aktionsindikator)"
+      note: "Vollständig abgedeckt. Erlaubt präzise Phasen-Zuordnung pro Modul."
+
+    - parameter: "WHO Level"
+      coverage: "INTRO1 (Eigentum) + INTRO3 (Gebäudetyp)"
+      note: "Vollständig abgedeckt."
+
+# =============================================================================
+# 4. EMPFOHLENE ÄNDERUNGEN (3 EBENEN)
+# =============================================================================
+recommended_changes:
+
+  level_A_mapping_only:
+    description: |
+      KEINE Änderung am Fragebogen. Nur das Mapping-Dokument und die
+      Auswertungs-Logik werden angepasst. Null Risiko gegenüber BFE.
+    changes:
+      - id: "A01"
+        item: "Alle INTRO-Items"
+        action: "BCM-Parameter-Labels hinzufügen (WHO_Level, φ, Ψ_F, etc.)"
+        effort: "Mapping-Update"
+
+      - id: "A02"
+        item: "A1-A4"
+        action: "Awareness-Funktion A(·) Komponenten zuordnen"
+        effort: "Mapping-Update"
+
+      - id: "A03"
+        item: "W1-W6"
+        action: "BCM-Parameter zuordnen (u_F, u_S, u_X, θ_inv, τ, σ_d)"
+        effort: "Mapping-Update"
+
+      - id: "A04"
+        item: "T0-T4, T6-T7"
+        action: "Ψ_trust Komponenten zuordnen"
+        effort: "Mapping-Update"
+
+      - id: "A05"
+        item: "Z1"
+        action: "λ_proxy-Berechnung definieren (Rang-basiert)"
+        effort: "Auswertungs-Update"
+
+      - id: "A06"
+        item: "Z2 (MaxDiff)"
+        action: "FEPSDE-Gewichte w_d aus Best-Worst-Scores berechnen"
+        effort: "Auswertungs-Update"
+
+      - id: "A07"
+        item: "Z4"
+        action: "Barrier-Profil → Parameter-Proxy-Matrix (Kosten→λ, Komplexität→τ, etc.)"
+        effort: "Auswertungs-Update"
+
+      - id: "A08"
+        item: "Seg_A-D"
+        action: "Segment → BCM-Parameterprofil Mapping definieren"
+        effort: "Mapping-Update"
+
+      - id: "A09"
+        item: "Demografie"
+        action: "PLZ → Sprachregion → Ψ_K Mapping definieren"
+        effort: "Auswertungs-Update"
+
+  level_B_reframing:
+    description: |
+      Keine neuen Items. Items bleiben im selben Block. Nur die
+      AUSWERTUNG ändert sich (welcher Score fliesst wohin).
+      Gegenüber BFE als "methodische Verfeinerung" kommunizierbar.
+    changes:
+      - id: "B01"
+        item: "A5 (Verhalten bedeutsam für Gesellschaft)"
+        action: |
+          Im Analyse-Layer als u_E (Environmental Utility) führen, nicht
+          als Awareness-Komponente. A5 bleibt physisch im A-Block (keine
+          Fragebogen-Änderung), aber der A-Score wird NUR aus A1-A4 berechnet.
+          A5 fliesst in W_base via u_E.
+        rationale: "Misst Werte/Motivation, nicht Wissen"
+        risk: "Null (nur Auswertung)"
+
+      - id: "B02"
+        item: "T5 (Umfeld findet sinnvoll)"
+        action: |
+          Im Analyse-Layer als σ_i (injunktive Sozialnorm) führen, nicht
+          als Trust-Komponente. T5 bleibt physisch im T-Block, aber der
+          T-Score wird NUR aus T0-T4, T6-T7 berechnet.
+          T5 fliesst zusammen mit W6 (σ_d) in die Norm-Analyse.
+        rationale: "Misst Sozialnorm, nicht institutionelles Vertrauen"
+        risk: "Null (nur Auswertung)"
+
+      - id: "B03"
+        item: "T4 (Freiheit eigene Entscheidung)"
+        action: |
+          Zusätzlich als Ψ_autonomy separat auswerten. Bleibt im T-Block
+          und im T-Score, wird aber ZUSÄTZLICH als Reaktanz-Indikator
+          separat reportet.
+        rationale: "Validiert ethische Constraint C5 des Modells"
+        risk: "Null (zusätzliche Auswertung)"
+
+      - id: "B04"
+        item: "Z2 MaxDiff Attribute"
+        action: |
+          Prüfen ob alle 6 FEPSDE-Dimensionen vertreten sind.
+          Falls u_D (Deontological: Fairness, Gerechtigkeit) fehlt:
+          Ein bestehendes Attribut so umformulieren, dass es u_D abdeckt
+          (z.B. "Fairness der Kostenverteilung" statt eines redundanten
+          Attributs).
+        rationale: "Vollständige FEPSDE-Abdeckung für w_d-Gewichte"
+        risk: "Minimal (ein Attribut in einer Liste umformulieren)"
+
+  level_C_new_items:
+    description: |
+      Neue Items, die den Fragebogen ERWEITERN (nicht ersetzen).
+      Erfordert Kommunikation mit BFE: "Aufgrund der Modellanalyse
+      schlagen wir X zusätzliche Items vor, um die Kalibrierung
+      des Verhaltensmodells zu verbessern."
+    changes:
+      - id: "C01"
+        parameter: "λ (Loss Aversion) – Direkterer Proxy"
+        proposed_item: |
+          "Stellen Sie sich vor: Eine energetische Massnahme an Ihrem Haus
+          kostet CHF 30'000. Über 20 Jahre sparen Sie damit insgesamt
+          CHF 50'000 an Energiekosten. Wie bewerten Sie diese Investition?"
+
+          Skala: 1="Sehr unattraktiv" bis 5="Sehr attraktiv"
+        placement: "Im Zusatzfragen-Block (Z-Items), nach Z1"
+        bcm_parameter: "λ_proxy"
+        bcm_function: |
+          Normativ rational: 50k/30k = 1.67 → attraktiv (≥4).
+          Bei λ=2: Verlust wiegt doppelt → 30k×2=60k > 50k → unattraktiv.
+          λ_estimated = f(Likert, Discount Rate, Einkommen).
+
+          Die Kombination mit Einkommen (Demografie) erlaubt eine
+          einkommensadjustierte λ-Schätzung.
+        risk: "Niedrig — wirkt wie eine natürliche Ergänzung der Z-Fragen"
+        priority: "HOCH"
+        alternative: |
+          Falls kein neues Item möglich: λ wird trianguliert aus
+          Z1 (Ranking) + Z4 (Hindernisse-Kosten) + B1 (Kosten-Fokus)
+          + Einkommen. Weniger präzise aber machbar.
+
+# =============================================================================
+# 5. ZUSAMMENFASSUNG DER ÄNDERUNGEN
+# =============================================================================
+summary:
+  total_changes: 14
+  by_level:
+    A_mapping_only: 9
+    B_reframing: 4
+    C_new_items: 1
+  fragebogen_impact: |
+    - Level A (9 Änderungen): NULL Fragebogen-Impact, nur Auswertung
+    - Level B (4 Änderungen): NULL Fragebogen-Impact, nur Analyse-Layer
+    - Level C (1 Änderung): 1 neues Item im Z-Block (optional)
+
+    TOTAL: Der Fragebogen bleibt zu 99% identisch.
+    Die wesentliche Änderung ist ein PARADIGMENWECHSEL in der Auswertung:
+    von KPI-Score-Berechnung zu BCM-Parameter-Extraktion.
+
+  communication_to_bfe: |
+    "Die Fragebogen-Items bleiben unverändert. Was sich ändert, ist die
+    Auswertungsmethodik: Statt nur aggregierte KPI-Scores (A=55, W=45,
+    I=25, T=72) zu berechnen, extrahieren wir aus denselben Items die
+    Verhaltensparameter des BCM-Modells. Das erlaubt:
+    1. Segment-spezifische Interventionsvektoren (statt One-Size-Fits-All)
+    2. Kausale Modellierung (warum ändert sich Verhalten?)
+    3. Kontrafaktische Analyse (was wäre ohne Kampagne passiert?)
+    4. Transfer auf andere Projekte (Parameter sind universell)"
+
+  open_questions:
+    - question: "Sind die 11 MaxDiff-Attribute so gewählt, dass alle 6 FEPSDE-Dimensionen vertreten sind?"
+      action: "Z2-Attribute gegen FEPSDE-Dimensionen prüfen"
+      priority: "HOCH"
+
+    - question: "Soll das λ-Item (C01) als Pflicht oder Optional vorgeschlagen werden?"
+      action: "Diskussion mit BFE"
+      priority: "MITTEL"
+
+    - question: "Wie wird der Social Desirability Bias für u_S korrigiert?"
+      action: "Korrekturfaktor aus Literatur (0.7) dokumentieren und in Auswertung einbauen"
+      priority: "MITTEL"

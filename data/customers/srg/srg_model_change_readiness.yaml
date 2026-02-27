@@ -1,0 +1,545 @@
+# =============================================================================
+# SRG CHANGE READINESS MODEL (CRM)
+# =============================================================================
+# Model-ID: MOD-SRG-001
+# Version: 1.0.0
+# Framework: EBF Evidence-Based Framework
+# Empirische Basis: SRG017 Personalbefragung (N=~5000)
+# Created: 2026-02-03
+# =============================================================================
+
+metadata:
+  model_id: "MOD-SRG-001"
+  name: "SRG Change Readiness Model"
+  short_name: "SRG-CRM"
+  version: "1.0.0"
+  status: "validated"
+
+  description: |
+    Verhaltensmodell zur Vorhersage der Veränderungsbereitschaft (Willingness)
+    von SRG-Mitarbeitenden im Kontext der Enavant-Transformation.
+
+    Basiert auf empirischen Daten der SRG017-Personalbefragung mit
+    12 getesteten Hypothesen (9 signifikant, p<.001).
+
+  anwendungsbereich:
+    organisation: "SRG SSR"
+    kontext: "Transformationsprojekt Enavant"
+    zielgruppe: "Mitarbeitende (mit/ohne Führungsverantwortung)"
+    n_befragte: "~5000"
+
+  empirische_basis:
+    projekt: "SRG017"
+    zeitraum: "2025-09 bis 2025-10"
+    hypothesen_getestet: 12
+    hypothesen_signifikant: 9
+    datenquelle: "data/customers/srg/SRG017/hypothesen_ergebnisse.yaml"
+
+# =============================================================================
+# 10C FRAMEWORK MAPPING
+# =============================================================================
+
+ten_c_mapping:
+
+  WHO:
+    description: "Wer sind die Akteure?"
+    segmente:
+      - id: "SEG-FK"
+        name: "Mit Führungsverantwortung"
+        anteil: 0.15  # geschätzt
+        charakteristik:
+          awareness: 3.74
+          leadership_bewertung: 0.58
+          unsicherheit: 3.95
+
+      - id: "SEG-MA"
+        name: "Ohne Führungsverantwortung"
+        anteil: 0.85  # geschätzt
+        charakteristik:
+          awareness: 3.52
+          leadership_bewertung: 0.56
+          unsicherheit: 3.90
+
+    befund: |
+      Keine signifikanten Unterschiede bei Leadership-Bewertung (H1.1)
+      und Unsicherheit (H2.1). Aber: Awareness-Gap von 0.22 Punkten (H3.1).
+
+  WHAT:
+    description: "Was treibt Verhalten?"
+    utility_dimensionen:
+      - dimension: "U_identity"
+        name: "Identitäts-Utility"
+        beschreibung: "Identifikation mit der SRG-Mission"
+        messung: "Identity-Index"
+        effekt_auf_willingness: 0.715
+        rang: 1
+        interpretation: |
+          STÄRKSTER TREIBER: Wer sich mit der SRG identifiziert,
+          ist automatisch veränderungsbereit.
+
+      - dimension: "U_health"
+        name: "Gesundheits-Utility"
+        beschreibung: "Organisationales Wohlbefinden"
+        messung: "Health-Index"
+        effekt_auf_willingness: 0.418
+        rang: 3
+        interpretation: |
+          Erschöpfte Menschen können sich nicht verändern.
+          Gesundheit ist Voraussetzung für Change.
+
+      - dimension: "U_social"
+        name: "Soziale Utility"
+        beschreibung: "Wahrgenommene Führungsqualität"
+        messung: "Leadership-Index"
+        effekt_auf_willingness: 0.378
+        rang: 4
+        interpretation: |
+          Gute Führung fördert Veränderungsbereitschaft direkt
+          und indirekt über Identity und Health.
+
+      - dimension: "U_economic"
+        name: "Ökonomische Utility"
+        beschreibung: "Existenzielle Sicherheit"
+        messung: "Unsicherheits-Score (invers)"
+        effekt: "Wird durch Awareness moduliert"
+        interpretation: |
+          Mehr Wissen führt zu mehr Unsicherheit (β=0.351).
+          Information muss kontextualisiert werden.
+
+  HOW:
+    description: "Wie interagieren die Faktoren?"
+    interaktionsstruktur: "Additiv (keine signifikante Interaktion H6.1)"
+    befund: |
+      Leadership und Awareness wirken UNABHÄNGIG voneinander.
+      Keine Verstärkung oder Abschwächung bei Kombination.
+      Das vereinfacht Interventionsplanung.
+
+  WHEN:
+    description: "Wann/In welchem Kontext?"
+    kontext_faktoren:
+      - faktor: "Enavant-Transformation"
+        zeitraum: "2024-2029"
+        sparbedarf_mio: 270
+        stellenabbau: 900
+
+      - faktor: "Halbierungsinitiative"
+        datum: "2026-03-08"
+        externe_bedrohung: true
+
+      - faktor: "Vertikalisierung"
+        start: "2026-01"
+        betroffene_bereiche: ["HR", "Finanzen", "IT"]
+
+  WHERE:
+    description: "Woher die Parameter?"
+    datenquellen:
+      - quelle: "SRG017 Personalbefragung"
+        n: "~5000"
+        zeitraum: "2025-09/10"
+        methode: "Online-Befragung"
+        validierung: "Regressionsanalyse, p<.001"
+
+  AWARE:
+    description: "Wie bewusst/informiert?"
+    awareness_index:
+      mit_fuehrung: 3.74
+      ohne_fuehrung: 3.52
+      gap: 0.22
+      signifikant: true
+      p_value: "<.001"
+    befund: |
+      Führungskräfte sind besser informiert.
+      Information "versickert" auf dem Weg nach unten.
+      Gap bedeutet ungenutztes Potenzial für Willingness.
+
+  READY:
+    description: "Wie bereit für Veränderung?"
+    willingness_index:
+      beschreibung: "Veränderungsbereitschaft"
+      skala: "0-1 oder 1-5 normalisiert"
+      haupttreiber:
+        - name: "Identity"
+          beta: 0.715
+          varianz_erklaert: 0.511
+        - name: "Awareness"
+          beta: 0.430
+          varianz_erklaert: 0.185
+        - name: "Health"
+          beta: 0.418
+          varianz_erklaert: 0.175
+        - name: "Leadership"
+          beta: 0.378
+          varianz_erklaert: 0.143
+
+  STAGE:
+    description: "Wo in der Journey?"
+    transformation_phase: "Frühe Umsetzung"
+    meilensteine:
+      - "2025: Ankündigung, Befragung"
+      - "2026: Start Vertikalisierung"
+      - "2027-2029: Vollständige Umsetzung"
+
+  HIERARCHY:
+    description: "Entscheidungsebenen?"
+    ebenen:
+      - L0: "Individuum (Mitarbeitende)"
+      - L1: "Team"
+      - L2: "Unternehmenseinheit (SRF, RTS, RSI, RTR)"
+      - L3: "SRG SSR (Konzern)"
+    befund: |
+      Keine Hierarchie-Unterschiede bei Unsicherheit.
+      Transformation betrifft alle Ebenen gleich.
+
+# =============================================================================
+# MODELL-SPEZIFIKATION
+# =============================================================================
+
+model_specification:
+
+  endogene_variable:
+    name: "Willingness"
+    symbol: "W"
+    beschreibung: "Veränderungsbereitschaft"
+    skala: "[0, 1]"
+
+  exogene_variablen:
+    - name: "Identity"
+      symbol: "I"
+      beschreibung: "Identifikation mit SRG-Mission"
+
+    - name: "Awareness"
+      symbol: "A"
+      beschreibung: "Informiertheit über Transformation"
+
+    - name: "Health"
+      symbol: "H"
+      beschreibung: "Organisationales Wohlbefinden"
+
+    - name: "Leadership"
+      symbol: "L"
+      beschreibung: "Wahrgenommene Führungsqualität"
+
+  hauptgleichung:
+    formel: "W = β₁·I + β₂·A + β₃·H + β₄·L + ε"
+    latex: "W = \\beta_1 \\cdot I + \\beta_2 \\cdot A + \\beta_3 \\cdot H + \\beta_4 \\cdot L + \\varepsilon"
+
+  mediationsgleichungen:
+    - formel: "I = γ₁·L + ε₁"
+      beschreibung: "Leadership beeinflusst Identity"
+
+    - formel: "H = γ₂·L + ε₂"
+      beschreibung: "Leadership beeinflusst Health"
+
+    - formel: "U = δ·A + ε₃"
+      beschreibung: "Awareness beeinflusst Uncertainty"
+
+# =============================================================================
+# PARAMETER (EMPIRISCH VALIDIERT)
+# =============================================================================
+
+parameters:
+
+  # Direkte Effekte auf Willingness
+  beta_identity_willingness:
+    symbol: "β₁"
+    value: 0.715
+    ci_95: [0.65, 0.78]  # geschätzt
+    p_value: "<.001"
+    interpretation: "Pro 1 Einheit Identity steigt Willingness um 0.715"
+    rang: 1
+    varianz_erklaert: 0.511
+
+  beta_awareness_willingness:
+    symbol: "β₂"
+    value: 0.430
+    ci_95: [0.35, 0.51]  # geschätzt
+    p_value: "<.001"
+    interpretation: "Pro 1 Einheit Awareness steigt Willingness um 0.430"
+    rang: 2
+    varianz_erklaert: 0.185
+
+  beta_health_willingness:
+    symbol: "β₃"
+    value: 0.418
+    ci_95: [0.34, 0.50]  # geschätzt
+    p_value: "<.001"
+    interpretation: "Pro 1 Einheit Health steigt Willingness um 0.418"
+    rang: 3
+    varianz_erklaert: 0.175
+
+  beta_leadership_willingness:
+    symbol: "β₄"
+    value: 0.378
+    ci_95: [0.30, 0.46]  # geschätzt
+    p_value: "<.001"
+    interpretation: "Pro 1 Einheit Leadership steigt Willingness um 0.378"
+    rang: 4
+    varianz_erklaert: 0.143
+
+  # Mediationseffekte
+  gamma_leadership_identity:
+    symbol: "γ₁"
+    value: 0.358
+    p_value: "<.001"
+    interpretation: "Leadership formt Identity"
+
+  gamma_leadership_health:
+    symbol: "γ₂"
+    value: 0.366
+    p_value: "<.001"
+    interpretation: "Leadership beeinflusst Wohlbefinden"
+
+  delta_awareness_uncertainty:
+    symbol: "δ"
+    value: 0.351
+    p_value: "<.001"
+    richtung: "positiv"
+    interpretation: "Mehr Wissen führt zu mehr Unsicherheit (kontraintuitiv)"
+
+  # Indirekte Effekte
+  indirect_leadership_via_identity:
+    value: 0.256  # 0.358 × 0.715
+    interpretation: "Leadership-Effekt über Identity"
+
+  indirect_leadership_via_health:
+    value: 0.153  # 0.366 × 0.418
+    interpretation: "Leadership-Effekt über Health"
+
+  total_leadership_effect:
+    value: 0.787  # 0.378 + 0.256 + 0.153
+    interpretation: "Gesamteffekt von Leadership auf Willingness"
+
+  # Gruppenunterschiede
+  awareness_gap:
+    mit_fuehrung: 3.74
+    ohne_fuehrung: 3.52
+    differenz: 0.22
+    p_value: "<.001"
+    signifikant: true
+
+  unsicherheit_gap:
+    mit_fuehrung: 3.95
+    ohne_fuehrung: 3.90
+    differenz: 0.05
+    p_value: 0.152
+    signifikant: false
+
+  leadership_gap:
+    mit_fuehrung: 0.58
+    ohne_fuehrung: 0.56
+    differenz: 0.02
+    p_value: 0.353
+    signifikant: false
+
+# =============================================================================
+# PFADMODELL (VISUALISIERUNG)
+# =============================================================================
+
+path_model:
+
+  ascii_diagram: |
+
+    ┌─────────────────────────────────────────────────────────────────────┐
+    │                    SRG CHANGE READINESS MODEL                       │
+    ├─────────────────────────────────────────────────────────────────────┤
+    │                                                                     │
+    │                      LEADERSHIP (L)                                 │
+    │                           │                                         │
+    │            ┌──────────────┼──────────────┐                         │
+    │            │              │              │                         │
+    │         γ₁=0.358      γ₂=0.366      β₄=0.378                       │
+    │            │              │              │                         │
+    │            ▼              ▼              │                         │
+    │       IDENTITY (I)    HEALTH (H)        │                         │
+    │            │              │              │                         │
+    │         β₁=0.715      β₃=0.418          │                         │
+    │            │              │              │                         │
+    │            └──────────────┴──────────────┘                         │
+    │                           │                                         │
+    │                           ▼                                         │
+    │                    WILLINGNESS (W)                                  │
+    │                           ▲                                         │
+    │                           │                                         │
+    │                       β₂=0.430                                      │
+    │                           │                                         │
+    │                     AWARENESS (A)                                   │
+    │                           │                                         │
+    │                       δ=0.351                                       │
+    │                           ▼                                         │
+    │                    UNCERTAINTY (U)                                  │
+    │                                                                     │
+    └─────────────────────────────────────────────────────────────────────┘
+
+  effekt_ranking:
+    - rang: 1
+      variable: "Identity"
+      beta: 0.715
+      varianz: "51.1%"
+
+    - rang: 2
+      variable: "Awareness"
+      beta: 0.430
+      varianz: "18.5%"
+
+    - rang: 3
+      variable: "Health"
+      beta: 0.418
+      varianz: "17.5%"
+
+    - rang: 4
+      variable: "Leadership (direkt)"
+      beta: 0.378
+      varianz: "14.3%"
+
+# =============================================================================
+# INTERVENTIONSEMPFEHLUNGEN
+# =============================================================================
+
+interventions:
+
+  - prioritaet: 1
+    name: "Identity-Stärkung"
+    target_variable: "I"
+    erwarteter_effekt: "ΔW = 0.715 × ΔI"
+    roi: "Höchster ROI wegen stärkstem β"
+    massnahmen:
+      - "Service-Public-Narrativ stärken"
+      - "Purpose-Kommunikation: 'Warum SRG?'"
+      - "Mitarbeiter-Testimonials"
+      - "Mission in Onboarding verankern"
+      - "SRG-Stolz-Kampagne intern"
+    warnung: |
+      Halbierungsinitiative bedroht Identity.
+      Kommunikation sollte Mission STÄRKEN, nicht verteidigen.
+
+  - prioritaet: 2
+    name: "Awareness-Steigerung"
+    target_variable: "A"
+    erwarteter_effekt: "ΔW = 0.430 × ΔA"
+    roi: "Hoch, schliesst Gap von 0.22"
+    massnahmen:
+      - "Monatliche All-Hands für ALLE"
+      - "Direkte Kommunikationskanäle (nicht nur via FK)"
+      - "Strategie-Newsletter"
+      - "Intranet mit Echtzeit-Updates"
+      - "FAQ zu Enavant"
+    warnung: |
+      Mehr Information führt auch zu mehr Unsicherheit (β=0.351).
+      IMMER mit Kontext und Handlungsoptionen verbinden.
+
+  - prioritaet: 3
+    name: "Leadership-Entwicklung"
+    target_variable: "L"
+    erwarteter_effekt: "ΔW = 0.787 × ΔL (total)"
+    roi: "Hoch durch Multiplikatoreffekt"
+    massnahmen:
+      - "Purpose Leadership Training"
+      - "Kommunikationstraining für FK"
+      - "Gesundheitsförderliche Führung"
+      - "FK als Identitätsmultiplikatoren schulen"
+    hinweis: |
+      Leadership wirkt dreifach:
+      - Direkt auf Willingness (0.378)
+      - Via Identity (0.256)
+      - Via Health (0.153)
+
+  - prioritaet: 4
+    name: "Unsicherheit kontextualisieren"
+    target_variable: "U"
+    erwarteter_effekt: "Reduktion Angst trotz Information"
+    massnahmen:
+      - "Information + Handlungsoption kombinieren"
+      - "Szenarien mit Lösungen kommunizieren"
+      - "Gemeinsame Unsicherheit anerkennen (FK = MA)"
+      - "'Was kannst DU tun?'-Fokus"
+    format: |
+      SCHLECHT: "Die Gebühren könnten um 40% sinken."
+      GUT: "Die Gebühren könnten um 40% sinken.
+            Deshalb arbeiten wir an Plan B.
+            Hier ist, wie du dich einbringen kannst..."
+
+# =============================================================================
+# MODELL-VALIDIERUNG
+# =============================================================================
+
+validation:
+
+  empirische_basis:
+    n: "~5000"
+    hypothesen_getestet: 12
+    hypothesen_bestaetigt: 9
+    rate: 0.75
+
+  signifikanz:
+    alle_haupteffekte: "p < .001"
+    nicht_signifikant:
+      - "H1.1: Leadership-Unterschiede FK/MA"
+      - "H2.1: Unsicherheits-Unterschiede FK/MA"
+      - "H6.1: Interaktion Leadership × Awareness"
+
+  modell_guete:
+    r_squared_willingness: "~0.65"  # geschätzt aus Partial R²
+    interpretation: "Modell erklärt ca. 65% der Varianz in Willingness"
+
+  externe_validitaet:
+    generalisierbarkeit: "Spezifisch für SRG im Enavant-Kontext"
+    uebertragbarkeit: |
+      Parameter können für andere Transformationsprojekte
+      als Ausgangspunkt dienen, müssen aber rekalibriert werden.
+
+  limitationen:
+    - "Querschnittsdaten (keine Kausalität im strengen Sinn)"
+    - "Selbstauskunft (Social Desirability Bias möglich)"
+    - "Spezifisch für SRG-Kontext 2025"
+    - "Konfidenzintervalle für β geschätzt, nicht aus Originaldaten"
+
+# =============================================================================
+# ANWENDUNG
+# =============================================================================
+
+anwendung:
+
+  prognose_willingness:
+    formel: "W = 0.715·I + 0.430·A + 0.418·H + 0.378·L"
+    beispiel:
+      input:
+        identity: 0.7
+        awareness: 0.6
+        health: 0.65
+        leadership: 0.55
+      berechnung: "W = 0.715×0.7 + 0.430×0.6 + 0.418×0.65 + 0.378×0.55"
+      ergebnis: "W = 0.501 + 0.258 + 0.272 + 0.208 = 1.239 (normalisiert: 0.62)"
+
+  simulation_intervention:
+    szenario: "Identity-Kampagne erhöht I um 0.1"
+    delta_I: 0.1
+    delta_W: 0.0715  # 0.715 × 0.1
+    interpretation: "10% mehr Identity → 7.15% mehr Willingness"
+
+  segment_analyse:
+    mit_fuehrung:
+      awareness: 3.74
+      potenzial: "Bereits gut informiert, Fokus auf Identity"
+    ohne_fuehrung:
+      awareness: 3.52
+      potenzial: "Awareness-Gap schliessen (+0.22 × 0.430 = +0.095 Willingness)"
+
+# =============================================================================
+# METADATEN
+# =============================================================================
+
+_references:
+  - projekt: "SRG017"
+    dateien:
+      - "data/customers/srg/SRG017/hypothesen_ergebnisse.yaml"
+      - "data/customers/srg/SRG017/hypothesen_interpretation.yaml"
+      - "data/customers/srg/SRG017/hypothesen_antworten_intuitiv.md"
+
+  - projekt: "PRJ-SRG-002"
+    datei: "data/customers/srg/srg_project_enavant.yaml"
+
+_changelog:
+  - version: "1.0"
+    date: "2026-02-03"
+    author: "Claude/EBF"
+    changes: "Initiale Erstellung basierend auf SRG017 Hypothesen-Analyse"

@@ -1,0 +1,149 @@
+# =============================================================================
+# COST STRUCTURE MODEL (CSM-1.0) - CONFIGURATION TEMPLATE
+# =============================================================================
+# Model: Cost Structure Projection
+# Version: 1.0.0
+# Status: GENERIC (no hardcoded defaults)
+#
+# Purpose: Project cost evolution by cost block over the planning horizon.
+#
+# Usage:
+#   python scripts/models/cost_structure.py <this_config.yaml> [revenue_file.csv]
+#
+# Integration:
+#   - Input: Revenue projection (from RPM-1.0 or config estimates)
+#   - Output: Cost projection by block, feeds into PLM-1.0
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# COST MODEL CONFIGURATION
+# -----------------------------------------------------------------------------
+cost_model:
+  # Time horizon
+  base_year: 2024
+  projection_years: 11  # 2024-2034
+
+  # Currency for all values
+  currency: "EUR"
+
+  # -----------------------------------------------------------------------------
+  # Cost Blocks
+  # Each block represents a major cost category.
+  #
+  # Types:
+  #   - "variable": Scales with revenue (uses percent_of_revenue)
+  #   - "fixed": Constant base value with escalation
+  #   - "semi_variable": Fixed base + variable component
+  #
+  # Parameters:
+  #   - name: Display name for reporting
+  #   - type: "variable" | "fixed" | "semi_variable"
+  #   - base_value_m: Base value in millions (for fixed/semi_variable)
+  #   - percent_of_revenue: Percentage of revenue (for variable/semi_variable)
+  #   - escalation_rate: Annual growth rate in % (default: 0)
+  #   - fixed_component_m: Fixed component for semi_variable (optional)
+  # -----------------------------------------------------------------------------
+  cost_blocks:
+    # Example: Personnel costs (semi-variable)
+    - name: "Personnel"
+      type: "semi_variable"
+      base_value_m: 500          # Fixed admin overhead
+      percent_of_revenue: 20     # Variable production labor
+      escalation_rate: 3.0       # Annual wage growth
+
+    # Example: Materials (variable)
+    - name: "Raw_Materials"
+      type: "variable"
+      percent_of_revenue: 35     # Direct materials as % of revenue
+      escalation_rate: 2.0       # Commodity inflation
+
+    # Example: Energy (semi-variable)
+    - name: "Energy"
+      type: "semi_variable"
+      base_value_m: 50           # Base facility costs
+      percent_of_revenue: 5      # Production-linked energy
+      escalation_rate: 4.0       # Energy price growth
+
+    # Example: Rent/Facilities (fixed)
+    - name: "Rent_Facilities"
+      type: "fixed"
+      base_value_m: 100
+      escalation_rate: 2.5       # Lease escalation
+
+    # Example: Logistics (variable)
+    - name: "Logistics"
+      type: "variable"
+      percent_of_revenue: 8
+      escalation_rate: 3.0
+
+    # Example: R&D (fixed investment)
+    - name: "R_and_D"
+      type: "fixed"
+      base_value_m: 75
+      escalation_rate: 5.0       # Growing R&D investment
+
+    # Example: IT/Digital (semi-variable)
+    - name: "IT_Digital"
+      type: "semi_variable"
+      base_value_m: 40           # Infrastructure
+      percent_of_revenue: 2      # Transaction/usage costs
+      escalation_rate: 4.0
+
+    # Example: Administrative (fixed)
+    - name: "Administrative"
+      type: "fixed"
+      base_value_m: 60
+      escalation_rate: 2.0
+
+  # -----------------------------------------------------------------------------
+  # Efficiency Improvements (Optional)
+  # Model cost reduction initiatives over time.
+  # -----------------------------------------------------------------------------
+  efficiency_improvements:
+    enabled: true
+    # Phase-based efficiency gains
+    phases:
+      - name: "Foundation"
+        years: [2024, 2025, 2026]
+        efficiency_gain_pct: 0.5   # 0.5% annual cost reduction
+
+      - name: "Optimization"
+        years: [2027, 2028, 2029]
+        efficiency_gain_pct: 1.0   # 1.0% annual cost reduction
+
+      - name: "Scale"
+        years: [2030, 2031, 2032, 2033, 2034]
+        efficiency_gain_pct: 0.3   # 0.3% annual cost reduction (diminishing)
+
+    # Block-specific efficiency (optional)
+    block_efficiencies:
+      Personnel: 0.8        # Lower efficiency gains (labor-intensive)
+      Raw_Materials: 1.2    # Higher efficiency gains (procurement)
+      Energy: 1.5           # Highest gains (sustainability initiatives)
+
+# -----------------------------------------------------------------------------
+# REVENUE ESTIMATES (if not using RPM output)
+# Used when running CSM standalone without revenue projection file.
+# -----------------------------------------------------------------------------
+company:
+  base_revenue_m: 1000        # Base year revenue in millions
+  revenue_cagr_percent: 5.0   # Estimated revenue CAGR
+
+# =============================================================================
+# OUTPUT SPECIFICATION
+# =============================================================================
+# Running this model produces:
+#
+# 1. cost_projection.csv
+#    - Year, Cost Block columns, Total_Costs
+#    - Cost by block and year (in millions)
+#
+# 2. cost_summary.yaml
+#    - Base year costs
+#    - Final year costs
+#    - Cost CAGR
+#    - Cost-to-revenue ratio evolution
+#
+# 3. cost_breakdown.csv
+#    - Detailed breakdown by cost type (variable/fixed/semi)
+# =============================================================================

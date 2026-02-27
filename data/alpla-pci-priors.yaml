@@ -1,0 +1,437 @@
+# ALPLA PCI Parameter Priors
+# LLMMC-Schätzungsgrundlagen für Plant Comparability Index
+#
+# ANLEITUNG FÜR ALPLA:
+# - Dieses File enthält unsere Annahmen (Priors) für die Schätzungen
+# - Sie können jeden Wert anpassen basierend auf Ihrem Wissen
+# - Nach Anpassung: python scripts/estimate_plant_parameters.py
+#
+# Version: 1.0
+# Datum: 2026-01-19
+# Methodik: LLMMC (LLM Monte Carlo) - Appendix AN
+
+---
+metadata:
+  version: "1.0"
+  date: "2026-01-19"
+  methodology: "LLMMC"
+  reference: "docs/methods/ALPLA_Plant_Comparability_Index_PCI.md"
+  simulations: 1000
+  confidence_level: 0.80  # 80% CI = [P10, P90]
+
+# =============================================================================
+# GLOBALE CONSTRAINTS
+# Diese Werte MÜSSEN erfüllt sein (harte Constraints)
+# =============================================================================
+global_constraints:
+  alpla_global:
+    total_employees: 25500
+    total_plants: 206
+    avg_employees_per_plant: 124  # = 25500/206
+
+  north_america_region:
+    revenue_share_pct: 15
+    estimated_employees: 3825  # = 25500 * 0.15
+    usa_plants: 17
+    canada_mexico_plants_est: 8  # Schätzung
+    usa_employee_share_pct: 75  # USA hat ~75% der NA-Mitarbeiter
+    usa_employees_target: 2870  # = 3825 * 0.75
+    usa_employees_tolerance_pct: 15  # ±15% = 2440-3300
+
+# =============================================================================
+# PRIOR-VERTEILUNGEN NACH WERKSTYP
+# Distribution: lognormal(mu, sigma) mit hard bounds [min, max]
+# mu = ln(median), sigma = Streuung
+# =============================================================================
+plant_type_priors:
+  in_house:
+    description: "Werk auf Kundengelände, dediziert für einen Kunden"
+    distribution: "lognormal"
+    median: 75
+    sigma: 0.4
+    min: 30
+    max: 150
+    rationale: "Schlanke Struktur, keine eigene Admin, Fokus auf Produktion"
+
+  near_customer:
+    description: "Werk in Kundennähe, primär ein Hauptkunde"
+    distribution: "lognormal"
+    median: 135
+    sigma: 0.35
+    min: 80
+    max: 250
+    rationale: "Etwas mehr Flexibilität als In-House, aber kundenorientiert"
+
+  standalone:
+    description: "Eigenständiges Werk, multiple Kunden"
+    distribution: "lognormal"
+    median: 180
+    sigma: 0.45
+    min: 100
+    max: 400
+    rationale: "Volle Infrastruktur, eigene Admin, Qualität, Logistik"
+
+  regional_hq:
+    description: "Standalone + regionale Admin/Tech-Funktionen"
+    distribution: "lognormal"
+    median: 330
+    sigma: 0.4
+    min: 200
+    max: 600
+    rationale: "McDonough ist US-HQ mit Tech Center Atlanta"
+
+# =============================================================================
+# BLUE COLLAR / WHITE COLLAR SPLIT
+# Anteil Blue Collar (Produktion) vs. White Collar (Admin/Management)
+# =============================================================================
+workforce_composition:
+  by_plant_type:
+    in_house:
+      blue_collar_pct: 88
+      white_collar_pct: 12
+      rationale: "Minimal Admin - vom Kunden übernommen"
+    near_customer:
+      blue_collar_pct: 85
+      white_collar_pct: 15
+      rationale: "Etwas mehr Koordination als In-House"
+    standalone:
+      blue_collar_pct: 80
+      white_collar_pct: 20
+      rationale: "Volle Admin-Struktur (HR, Finance, QM, Engineering)"
+    regional_hq:
+      blue_collar_pct: 70
+      white_collar_pct: 30
+      rationale: "McDonough: Tech Center + Regional Admin"
+
+  blue_collar_roles:
+    - "Maschinenführer (Machine Operators)"
+    - "Produktionsmitarbeiter (Production Workers)"
+    - "Lagermitarbeiter (Warehouse Workers)"
+    - "Wartungstechniker (Maintenance Technicians)"
+    - "Qualitätsprüfer (Quality Inspectors - Floor)"
+    - "Schichtführer (Shift Supervisors)"
+
+  white_collar_roles:
+    - "Plant Manager"
+    - "HR Manager / Coordinator"
+    - "Finance / Accounting"
+    - "Quality Manager"
+    - "Process Engineers"
+    - "Supply Chain / Logistics Coordinator"
+    - "Customer Service"
+    - "Administrative Staff"
+
+  churn_rates_prior:
+    blue_collar:
+      us_manufacturing_avg: 28
+      alpla_estimated_median: 22
+      alpla_estimated_sigma: 6
+      min: 10
+      max: 45
+      rationale: "ALPLA besser als Branche durch Benefits, aber Schichtarbeit bleibt Faktor"
+    white_collar:
+      us_manufacturing_avg: 12
+      alpla_estimated_median: 10
+      alpla_estimated_sigma: 3
+      min: 4
+      max: 20
+      rationale: "Stabilere Karrierepfade, bessere Work-Life-Balance"
+
+# =============================================================================
+# WERK-SPEZIFISCHE PRIORS
+# Hier können Sie werkspezifische Informationen eintragen
+# =============================================================================
+plants:
+  US-001:
+    name: "McDonough GA"
+    type: "regional_hq"
+    known_facts:
+      - "US Headquarters"
+      - "Tech Center Atlanta nearby"
+      - "Largest US facility"
+    prior_override:
+      median: 380
+      min: 280
+      max: 500
+    confidence: "medium"
+
+  US-002:
+    name: "Bethlehem PA"
+    type: "standalone"
+    known_facts:
+      - "Opened 2017"
+      - "Northeast corridor location"
+    prior_override: null  # Nutzt Typ-Default
+    confidence: "medium"
+
+  US-003:
+    name: "Iowa City IA (1)"
+    type: "near_customer"
+    known_facts:
+      - "Near P&G facility"
+      - "Opened 2003"
+      - "Two facilities at same location"
+    prior_override:
+      median: 140
+      note: "Geteilt mit US-004"
+    confidence: "medium"
+
+  US-004:
+    name: "Iowa City IA (2)"
+    type: "near_customer"
+    known_facts:
+      - "Near P&G facility"
+      - "Expansion of US-003"
+    prior_override:
+      median: 120
+      note: "Kleiner als US-003"
+    confidence: "medium"
+
+  US-005:
+    name: "Jefferson City MO"
+    type: "standalone"
+    known_facts:
+      - "State capital location"
+      - "Smaller MSA"
+    prior_override:
+      median: 175
+    confidence: "medium"
+
+  US-006:
+    name: "St Peters MO (1)"
+    type: "standalone"
+    known_facts:
+      - "St. Louis Metro"
+      - "Opened 2010"
+    prior_override: null
+    confidence: "medium"
+
+  US-007:
+    name: "St Peters MO (2)"
+    type: "standalone"
+    known_facts:
+      - "St. Louis Metro"
+      - "Second facility"
+    prior_override:
+      median: 160
+      note: "Etwas kleiner als US-006"
+    confidence: "medium"
+
+  US-008:
+    name: "Kansas City MO"
+    type: "standalone"
+    known_facts:
+      - "Opened 2022"
+      - "Newest facility"
+      - "Still ramping up"
+    prior_override:
+      median: 150
+      note: "Ramp-up Phase"
+    confidence: "low"
+
+  US-009:
+    name: "Bowling Green KY (1)"
+    type: "standalone"
+    known_facts:
+      - "Opened 2013"
+      - "Established facility"
+    prior_override: null
+    confidence: "medium"
+
+  US-010:
+    name: "Bowling Green KY (2) - HENKEL"
+    type: "in_house"
+    known_facts:
+      - "In-House für Henkel"
+      - "Opened 2020"
+      - "Adhesives/consumer goods packaging"
+    prior_override:
+      median: 85
+    confidence: "high"
+
+  US-011:
+    name: "Florence KY (1) - L'OREAL"
+    type: "in_house"
+    known_facts:
+      - "In-House für L'Oréal"
+      - "Cosmetics packaging specialist"
+      - "Cincinnati Metro (Boone County)"
+    prior_override:
+      median: 95
+    confidence: "high"
+
+  US-012:
+    name: "Florence KY (2) - L'OREAL"
+    type: "in_house"
+    known_facts:
+      - "In-House für L'Oréal"
+      - "Expansion facility"
+    prior_override:
+      median: 90
+    confidence: "high"
+
+  US-013:
+    name: "Lima OH"
+    type: "standalone"
+    known_facts:
+      - "Opened 2006"
+      - "Smaller MSA"
+      - "Northwest Ohio"
+    prior_override:
+      median: 170
+    confidence: "medium"
+
+  US-014:
+    name: "Dayton OH"
+    type: "standalone"
+    known_facts:
+      - "Opened 2019"
+      - "Park 70/75 industrial area"
+    prior_override: null
+    confidence: "medium"
+
+  US-015:
+    name: "Salt Lake City UT"
+    type: "standalone"
+    known_facts:
+      - "Opened 2018"
+      - "Small facility"
+      - "Western region coverage"
+    prior_override:
+      median: 110
+      note: "Bekannt als kleines Werk"
+    confidence: "medium"
+
+  US-016:
+    name: "Houston TX"
+    type: "near_customer"
+    known_facts:
+      - "Near Clorox facility"
+      - "Opened 2001"
+      - "Established"
+    prior_override:
+      median: 165
+    confidence: "medium"
+
+  US-017:
+    name: "West Bend WI"
+    type: "standalone"
+    known_facts:
+      - "Opened 2017"
+      - "Small facility"
+      - "Milwaukee Metro area"
+    prior_override:
+      median: 95
+      note: "Bekannt als kleines Werk"
+    confidence: "medium"
+
+# =============================================================================
+# ANDERE PARAMETER-PRIORS (S3-S6, O1-O5, P1-P4)
+# =============================================================================
+other_parameters:
+  S3_plant_age:
+    description: "Jahre seit Eröffnung"
+    source: "Bekannte Eröffnungsjahre"
+    estimation_needed: false
+
+  S4_technology_complexity:
+    description: "Tech-Mix Index (1-3)"
+    prior:
+      standalone: { median: 2.0, sigma: 0.3 }
+      in_house: { median: 1.5, sigma: 0.2 }
+      near_customer: { median: 1.8, sigma: 0.25 }
+    rationale: "In-House meist EBM-fokussiert (einfacher)"
+
+  S5_automation_pct:
+    description: "Automatisierungsgrad (%)"
+    prior:
+      new_plants_2018_plus: { median: 65, sigma: 10 }
+      established_pre_2015: { median: 45, sigma: 15 }
+    rationale: "Neuere Werke höher automatisiert"
+
+  S6_shift_model:
+    description: "Schichtmodell (1-4)"
+    prior:
+      in_house: { mode: 3, rationale: "Meist 3-Schicht für Kundenbedarf" }
+      standalone_large: { mode: 4, rationale: "Konti bei >200 MA" }
+      standalone_small: { mode: 2, rationale: "2-Schicht bei <150 MA" }
+
+  O1_customer_concentration:
+    description: "% Revenue vom Top-Kunden"
+    prior:
+      in_house: { median: 95, min: 85, max: 100 }
+      near_customer: { median: 70, min: 50, max: 90 }
+      standalone: { median: 35, min: 15, max: 60 }
+
+  O2_plant_manager_tenure:
+    description: "Jahre im Amt"
+    prior:
+      distribution: "exponential"
+      mean: 4.5
+      rationale: "ALPLA hat stabile Führung, aber Rotation alle 4-6 Jahre"
+
+  O3_hr_onsite:
+    description: "Dedizierter HR vor Ort (0/1)"
+    prior:
+      threshold_employees: 150
+      rationale: "Ab 150 MA meist dedizierter HR"
+
+  O4_union_status:
+    description: "Union/Non-Union"
+    prior:
+      kentucky: { prob_union: 0.1 }
+      ohio: { prob_union: 0.25 }
+      missouri: { prob_union: 0.15 }
+      pennsylvania: { prob_union: 0.20 }
+      other_states: { prob_union: 0.10 }
+    rationale: "Rust Belt Staaten höhere Gewerkschaftsdichte"
+
+  O5_training_hours:
+    description: "Trainingsstunden/MA/Jahr"
+    prior:
+      alpla_global_avg: 24
+      sigma: 8
+      rationale: "ALPLA Academy Standard"
+
+  P1_baseline_churn:
+    description: "12M Turnover Rate (%)"
+    prior:
+      manufacturing_us_avg: 25
+      alpla_estimated: { median: 18, sigma: 6 }
+    rationale: "ALPLA besser als Branche durch Benefits/Kultur"
+
+  P2_absence_rate:
+    description: "Unplanned Absence (%)"
+    prior:
+      us_manufacturing_avg: 3.5
+      sigma: 1.2
+
+  P3_trir:
+    description: "Total Recordable Incident Rate"
+    prior:
+      plastics_industry_avg: 3.8
+      alpla_estimated: { median: 2.5, sigma: 0.8 }
+    rationale: "ALPLA Fokus auf Sicherheit"
+
+  P4_productivity:
+    description: "Output/FTE Index (100=avg)"
+    prior:
+      median: 100
+      sigma: 15
+      correlation_with_automation: 0.4
+
+# =============================================================================
+# VALIDIERUNGS-REGELN
+# =============================================================================
+validation_rules:
+  - name: "US Total Employee Check"
+    formula: "sum(S2) within usa_employees_target ± tolerance"
+
+  - name: "In-House Size Check"
+    formula: "all(in_house.S2 < 150)"
+
+  - name: "Regional HQ Size Check"
+    formula: "regional_hq.S2 > 250"
+
+  - name: "Type Consistency"
+    formula: "in_house.O1 > 80%"

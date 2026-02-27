@@ -1,0 +1,576 @@
+# =============================================================================
+# TLA Deviation Study — Query Battery (Stufe 2: 20 Queries)
+# =============================================================================
+# Study: Three-Layer Architecture Deviation Study
+# Design: docs/research/TLA-deviation-study-design.md
+# Version: 0.1 (20 queries, stratified S1-S4)
+# Date: 2026-02-16
+#
+# STRATIFICATION:
+#   S1: Context-free (SIMPLE)           — 6 queries
+#   S2: 1 Psi dimension (CONTEXTUAL)    — 6 queries
+#   S3: 2-3 Psi dimensions (MULTI-D)    — 5 queries
+#   S4: Full pipeline (CALIBRATED)      — 3 queries
+# =============================================================================
+
+metadata:
+  study_id: "TLA-DEV-2026-001"
+  version: "0.2"
+  n_queries: 20
+  date_created: "2026-02-16"
+  status: "ACTIVE"
+  stratification:
+    S1: {n: 6, description: "Context-free (SIMPLE query)"}
+    S2: {n: 6, description: "1 Psi dimension (CONTEXTUAL)"}
+    S3: {n: 5, description: "2-3 Psi dimensions (MULTI-D)"}
+    S4: {n: 3, description: "Full pipeline (CALIBRATED)"}
+
+# =============================================================================
+# S1: CONTEXT-FREE QUERIES (Layer 2 lookup only)
+# Ground truth: parameter-registry.yaml literature values
+# =============================================================================
+
+queries:
+
+  # --- S1: Context-free ---
+
+  - id: "Q001"
+    stratum: "S1"
+    parameter_id: "PAR-BEH-001"
+    symbol: "λ"
+    parameter_name: "Loss Aversion Coefficient"
+    context: null
+    domain: null
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze den Parameter Loss Aversion Coefficient (λ).
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      value: 2.25
+      ci_95: [1.5, 3.0]
+      source: "PAP-kahneman1979prospectprospect"
+      tier: 2
+
+  - id: "Q002"
+    stratum: "S1"
+    parameter_id: "PAR-BEH-003"
+    symbol: "β"
+    parameter_name: "Present Bias / Hyperbolic Discounting"
+    context: null
+    domain: null
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze den Parameter Present Bias (β) für quasi-hyperbolisches Diskontieren.
+      β=1 wäre exponentiell, β<1 ist hyperbolisch.
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      value: 0.70
+      ci_95: [0.60, 0.85]
+      source: "laibson1997golden"
+      tier: 2
+
+  - id: "Q003"
+    stratum: "S1"
+    parameter_id: "PAR-BEH-002"
+    symbol: "φ_crowding"
+    parameter_name: "Motivation Crowding-Out Coefficient"
+    context: null
+    domain: null
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze den Parameter Motivation Crowding-Out (φ).
+      Dies misst die Reduktion intrinsischer Motivation durch extrinsische Anreize.
+      Skala: 0 = kein Crowding-Out, 1 = vollständiges Crowding-Out.
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      value: 0.65
+      ci_95: [0.50, 0.80]
+      source: "frey2001motivation"
+      tier: 2
+
+  - id: "Q004"
+    stratum: "S1"
+    parameter_id: "PAR-BEH-001"
+    symbol: "λ"
+    parameter_name: "Loss Aversion Coefficient"
+    context: null
+    domain: "finance"
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze den Parameter Loss Aversion (λ) spezifisch
+      für Finanzentscheidungen (Investitionen, Sparverhalten).
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      value: 2.4
+      ci_68: [2.1, 2.7]
+      source: "parameter-registry domain_specific.finance"
+      tier: 2
+
+  - id: "Q005"
+    stratum: "S1"
+    parameter_id: "PAR-BEH-001"
+    symbol: "λ"
+    parameter_name: "Loss Aversion Coefficient"
+    context: null
+    domain: "health"
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze den Parameter Loss Aversion (λ) spezifisch
+      für Gesundheitsentscheidungen (Behandlungswahl, Prävention).
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      value: 1.8
+      ci_68: [1.5, 2.1]
+      source: "parameter-registry domain_specific.health"
+      tier: 2
+
+  - id: "Q006"
+    stratum: "S1"
+    parameter_id: "PAR-BEH-009"
+    symbol: "I_s"
+    parameter_name: "Identity Loss from Own Prescription Violation"
+    context: null
+    domain: null
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze den Identity Loss Parameter (I_s) aus Akerlof & Kranton (2000).
+      Dies misst den Utility-Verlust wenn eigenes Verhalten von
+      Identitäts-Vorschriften abweicht. Skala: 0-1.
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      value: 0.3
+      ci_95: [0.1, 0.5]
+      source: "PAP-akerlof2000identity"
+      tier: 2
+
+  # --- S2: Single Psi Dimension ---
+
+  - id: "Q007"
+    stratum: "S2"
+    parameter_id: "PAR-BEH-016"
+    symbol: "λ_R"
+    parameter_name: "Rejection Sensitivity (Loss Aversion)"
+    context:
+      target_psi:
+        psi_S: "competence_signaling"
+      anchor_psi:
+        psi_S: "welfare_stigma"
+      description: "From welfare context (high stigma) to workplace (competence signaling)"
+    domain: null
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze die Verlustaversion bei Ablehnung (λ_R) in einem
+      ARBEITSPLATZ-Kontext, wo Ablehnung als Kompetenz-Signal wirkt
+      (nicht als Stigma wie bei Sozialleistungen).
+      Referenz: λ_R ≈ 2.5 im Welfare-Kontext (Bénabou et al. 2022).
+      Wie ändert sich λ_R wenn das soziale Stigma geringer ist?
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      note: "PCT-computed from anchor 2.5 with psi_S delta"
+      anchor_value: 2.5
+      psi_deltas:
+        psi_S: {anchor: "welfare_stigma", target: "competence_signaling"}
+      tier: "2+PCT"
+
+  - id: "Q008"
+    stratum: "S2"
+    parameter_id: "PAR-BEH-001"
+    symbol: "λ"
+    parameter_name: "Loss Aversion Coefficient"
+    context:
+      target_psi:
+        psi_C: "ego_depletion_context"
+      anchor_psi:
+        psi_C: "warm_glow_active"
+      description: "From relaxed warm-glow to ego-depleted cognitive state"
+    domain: null
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze die Verlustaversion (λ) einer Person die kognitiv
+      ERSCHÖPFT ist (ego depletion, Entscheidungsmüdigkeit).
+      Referenz: λ ≈ 2.25 für entspannte Personen.
+      Wie ändert sich λ unter kognitiver Erschöpfung?
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      note: "PCT-computed: cognitive load increases loss aversion"
+      anchor_value: 2.25
+      psi_deltas:
+        psi_C: {anchor: "warm_glow_active", target: "ego_depletion_context"}
+      tier: "2+PCT"
+
+  - id: "Q009"
+    stratum: "S2"
+    parameter_id: "PAR-BEH-003"
+    symbol: "β"
+    parameter_name: "Present Bias"
+    context:
+      target_psi:
+        psi_T: "same_day_deadline"
+      anchor_psi:
+        psi_T: "no_deadline_open_horizon"
+      description: "From open horizon to same-day deadline (temporal urgency shift)"
+    domain: null
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze den Present Bias (β) einer Person die HEUTE eine
+      Entscheidung treffen muss (same-day deadline, keine Verlängerung).
+      Referenz: β ≈ 0.70 ohne Zeitdruck (offener Horizont).
+      Wird der Present Bias unter Zeitdruck stärker (β sinkt) oder schwächer?
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      note: "PCT-computed: temporal urgency increases present bias (β decreases)"
+      anchor_value: 0.70
+      psi_deltas:
+        psi_T: {anchor: "no_deadline_open_horizon", target: "same_day_deadline"}
+      tier: "2+PCT"
+
+  - id: "Q010"
+    stratum: "S2"
+    parameter_id: "PAR-BEH-002"
+    symbol: "φ_crowding"
+    parameter_name: "Crowding-Out Coefficient"
+    context:
+      target_psi:
+        psi_E: "low_stakes_grocery"
+      anchor_psi:
+        psi_E: "moderate_stakes_auction"
+      description: "From moderate to low stakes context"
+    domain: null
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze den Motivation Crowding-Out Koeffizienten (φ) in einem
+      Kontext mit NIEDRIGEN EINSÄTZEN (z.B. Einkaufen im Supermarkt).
+      Referenz: φ ≈ 0.65 bei moderaten Einsätzen.
+      Wie ändert sich Crowding-Out bei niedrigeren Stakes?
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      note: "PCT-computed: lower stakes reduce crowding-out"
+      anchor_value: 0.65
+      psi_deltas:
+        psi_E: {anchor: "moderate_stakes_auction", target: "low_stakes_grocery"}
+      tier: "2+PCT"
+
+  - id: "Q011"
+    stratum: "S2"
+    parameter_id: "PAR-BEH-001"
+    symbol: "λ"
+    parameter_name: "Loss Aversion Coefficient"
+    context:
+      target_psi:
+        psi_K: "US_culture_2024"
+      anchor_psi:
+        psi_K: "german_consumer_expectations"
+      description: "From German to US cultural context"
+    domain: null
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze die Verlustaversion (λ) im US-AMERIKANISCHEN Kulturkontext.
+      Referenz: λ ≈ 2.25 im deutschen Kontext.
+      Wie unterscheidet sich Loss Aversion zwischen deutscher und
+      US-amerikanischer Kultur?
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      note: "PCT-computed: cultural dimension shift"
+      anchor_value: 2.25
+      psi_deltas:
+        psi_K: {anchor: "german_consumer_expectations", target: "US_culture_2024"}
+      tier: "2+PCT"
+
+  - id: "Q012"
+    stratum: "S2"
+    parameter_id: "PAR-BEH-009"
+    symbol: "I_s"
+    parameter_name: "Identity Loss"
+    context:
+      target_psi:
+        psi_S: "identity_threat"
+      anchor_psi:
+        psi_S: "no_relationship"
+      description: "From no social context to identity threat"
+    domain: null
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze den Identity Loss Parameter (I_s) in einer Situation
+      mit IDENTITÄTSBEDROHUNG (z.B. Migrationserfahrung, Diskriminierung).
+      Referenz: I_s ≈ 0.3 ohne sozialen Druck.
+      Wie steigt der Identitätsverlust unter Bedrohung?
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      note: "PCT-computed: social threat amplifies identity loss"
+      anchor_value: 0.3
+      psi_deltas:
+        psi_S: {anchor: "no_relationship", target: "identity_threat"}
+      tier: "2+PCT"
+
+  # --- S3: Multi-Psi (2-3 Dimensions) ---
+
+  - id: "Q013"
+    stratum: "S3"
+    parameter_id: "PAR-BEH-001"
+    symbol: "λ"
+    parameter_name: "Loss Aversion Coefficient"
+    context:
+      target_psi:
+        psi_S: "welfare_stigma"
+        psi_C: "ego_depletion_context"
+      anchor_psi:
+        psi_S: "no_relationship"
+        psi_C: "warm_glow_active"
+      description: "High stigma + cognitive depletion (double stressor)"
+    domain: null
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze die Verlustaversion (λ) einer Person die:
+      1. Unter HOHEM SOZIALEM STIGMA steht (z.B. Sozialhilfe-Empfänger)
+      2. Gleichzeitig kognitiv ERSCHÖPFT ist (Entscheidungsmüdigkeit)
+      Referenz: λ ≈ 2.25 ohne sozialen Druck, entspannt.
+      Wie interagieren Stigma und Erschöpfung?
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      note: "PCT-computed: multiplicative psi_S × psi_C"
+      anchor_value: 2.25
+      psi_deltas:
+        psi_S: {anchor: "no_relationship", target: "welfare_stigma"}
+        psi_C: {anchor: "warm_glow_active", target: "ego_depletion_context"}
+      tier: "2+PCT"
+
+  - id: "Q014"
+    stratum: "S3"
+    parameter_id: "PAR-BEH-003"
+    symbol: "β"
+    parameter_name: "Present Bias"
+    context:
+      target_psi:
+        psi_E: "low_SES_populations"
+        psi_T: "monthly_recurring_deadline"
+      anchor_psi:
+        psi_E: "high_income_group"
+        psi_T: "no_deadline_open_horizon"
+      description: "Low income + monthly payment deadline (poverty trap context)"
+    domain: null
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze den Present Bias (β) einer EINKOMMENSSCHWACHEN Person
+      die mit MONATLICHEN ZAHLUNGSFRISTEN konfrontiert ist
+      (Miete, Rechnungen, Ratenzahlungen am Monatsende).
+      Referenz: β ≈ 0.70 für einkommensstarke Personen ohne Fristen.
+      Wie verstärken Armut und wiederkehrende Zahlungsfristen den Present Bias?
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      note: "PCT-computed: multiplicative psi_E × psi_T"
+      anchor_value: 0.70
+      psi_deltas:
+        psi_E: {anchor: "high_income_group", target: "low_SES_populations"}
+        psi_T: {anchor: "no_deadline_open_horizon", target: "monthly_recurring_deadline"}
+      tier: "2+PCT"
+
+  - id: "Q015"
+    stratum: "S3"
+    parameter_id: "PAR-BEH-016"
+    symbol: "λ_R"
+    parameter_name: "Rejection Sensitivity"
+    context:
+      target_psi:
+        psi_S: "professional_hierarchy"
+        psi_I: "research_ethics_protocol"
+        psi_C: "performance_evaluation"
+      anchor_psi:
+        psi_S: "welfare_stigma"
+        psi_I: "bureaucratic_application"
+        psi_C: "information_avoidance"
+      description: "From welfare bureaucracy to professional research context (3D shift)"
+    domain: null
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze die Rejection Sensitivity (λ_R) in einem PROFESSIONELLEN
+      FORSCHUNGSKONTEXT (Peer Review, Grant-Antrag) mit:
+      - Professioneller Hierarchie (statt Welfare-Stigma)
+      - Forschungsethik-Protokoll (statt Bürokratie)
+      - Leistungsbewertung (statt Informationsvermeidung)
+      Referenz: λ_R ≈ 2.5 im Welfare-Kontext.
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      note: "PCT-computed: 3D psi shift (S + I + C)"
+      anchor_value: 2.5
+      psi_deltas:
+        psi_S: {anchor: "welfare_stigma", target: "professional_hierarchy"}
+        psi_I: {anchor: "bureaucratic_application", target: "research_ethics_protocol"}
+        psi_C: {anchor: "information_avoidance", target: "performance_evaluation"}
+      tier: "2+PCT"
+
+  - id: "Q016"
+    stratum: "S3"
+    parameter_id: "PAR-BEH-002"
+    symbol: "φ_crowding"
+    parameter_name: "Crowding-Out Coefficient"
+    context:
+      target_psi:
+        psi_S: "ongoing_relationship"
+        psi_K: "reciprocity_expectation"
+      anchor_psi:
+        psi_S: "stranger_recipient"
+        psi_K: "US_culture_2024"
+      description: "From stranger/US to ongoing relationship/reciprocity norms"
+    domain: null
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze den Crowding-Out Koeffizienten (φ) wenn:
+      1. Eine BESTEHENDE BEZIEHUNG vorliegt (nicht Fremde)
+      2. REZIPROZITÄTSNORMEN gelten (nicht individualistisch)
+      Referenz: φ ≈ 0.65 bei Fremden in individualistischem Kontext.
+      Ist Crowding-Out stärker oder schwächer bei bestehenden Beziehungen?
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      note: "PCT-computed: 2D psi shift (S + K)"
+      anchor_value: 0.65
+      psi_deltas:
+        psi_S: {anchor: "stranger_recipient", target: "ongoing_relationship"}
+        psi_K: {anchor: "US_culture_2024", target: "reciprocity_expectation"}
+      tier: "2+PCT"
+
+  - id: "Q017"
+    stratum: "S3"
+    parameter_id: "PAR-BEH-001"
+    symbol: "λ"
+    parameter_name: "Loss Aversion Coefficient"
+    context:
+      target_psi:
+        psi_I: "optout_default"
+        psi_M: "digital_remote"
+        psi_F: "public_to_private"
+      anchor_psi:
+        psi_I: "anonymous_application"
+        psi_M: null
+        psi_F: null
+      description: "Digital opt-out default in private setting (3D)"
+    domain: "finance"
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze die Verlustaversion (λ) bei einer DIGITALEN
+      OPT-OUT-ENTSCHEIDUNG (z.B. Pensionskasse, Online-Banking)
+      in einer PRIVATEN Umgebung (zuhause, Smartphone).
+      Referenz: λ ≈ 2.4 für Finanzentscheidungen allgemein.
+      Wie beeinflussen digitale Defaults und private Umgebung λ?
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      note: "PCT-computed: 3D psi shift (I + M + F)"
+      anchor_value: 2.4
+      psi_deltas:
+        psi_I: {anchor: "anonymous_application", target: "optout_default"}
+      tier: "2+PCT"
+
+  # --- S4: Full Pipeline (CALIBRATED) ---
+
+  - id: "Q018"
+    stratum: "S4"
+    parameter_id: "PAR-BEH-001"
+    symbol: "λ"
+    parameter_name: "Loss Aversion Coefficient"
+    context:
+      target_psi:
+        psi_S: "welfare_stigma"
+        psi_I: "bureaucratic_application"
+        psi_C: "ego_depletion_context"
+        psi_E: "low_SES_populations"
+      anchor_psi:
+        psi_S: "no_relationship"
+        psi_I: "anonymous_application"
+        psi_C: "warm_glow_active"
+        psi_E: "high_income_group"
+      description: "Welfare applicant: stigma + bureaucracy + depletion + poverty (4D, full pipeline)"
+    domain: null
+    calibrate: true
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze die Verlustaversion (λ) einer ARMEN PERSON die:
+      1. Soziale STIGMATISIERUNG erlebt (Sozialhilfe-Empfänger)
+      2. Einen BÜROKRATISCHEN Antrag ausfüllen muss
+      3. Kognitiv ERSCHÖPFT ist (viele Entscheidungen)
+      4. Unter KNAPPHEIT leidet (geringes Einkommen)
+      Referenz: λ ≈ 2.25 für eine entspannte, wohlhabende Person ohne Stigma.
+      Wie kumulieren diese Faktoren?
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      note: "Full pipeline: Layer 2 + PCT (4D) + LLMMC calibration"
+      anchor_value: 2.25
+      psi_deltas:
+        psi_S: {anchor: "no_relationship", target: "welfare_stigma"}
+        psi_I: {anchor: "anonymous_application", target: "bureaucratic_application"}
+        psi_C: {anchor: "warm_glow_active", target: "ego_depletion_context"}
+        psi_E: {anchor: "high_income_group", target: "low_SES_populations"}
+      tier: "2+PCT+LLMMC"
+
+  - id: "Q019"
+    stratum: "S4"
+    parameter_id: "PAR-BEH-003"
+    symbol: "β"
+    parameter_name: "Present Bias"
+    context:
+      target_psi:
+        psi_E: "low_SES_populations"
+        psi_T: "monthly_recurring_deadline"
+        psi_C: "ego_depletion_context"
+      anchor_psi:
+        psi_E: "high_income_group"
+        psi_T: "no_deadline_open_horizon"
+        psi_C: "warm_glow_active"
+      description: "Poverty trap: scarcity + monthly payment deadline + depletion (3D, full pipeline)"
+    domain: null
+    calibrate: true
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze den Present Bias (β) einer Person in der «Armutsfalle»:
+      1. EINKOMMENSSCHWACH (knapper Monat)
+      2. MONATLICHE ZAHLUNGSFRISTEN (Miete, Rechnungen)
+      3. Kognitiv ERSCHÖPFT (zu viele Entscheidungen, «bandwidth tax»)
+      Referenz: β ≈ 0.70 für wohlhabende, entspannte Personen ohne Fristen.
+      Mullainathan & Shafir (2013) «Scarcity» argumentieren, dass
+      Knappheit den Present Bias verstärkt. Wie stark?
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      note: "Full pipeline: Layer 2 + PCT (3D) + LLMMC calibration"
+      anchor_value: 0.70
+      psi_deltas:
+        psi_E: {anchor: "high_income_group", target: "low_SES_populations"}
+        psi_T: {anchor: "no_deadline_open_horizon", target: "monthly_recurring_deadline"}
+        psi_C: {anchor: "warm_glow_active", target: "ego_depletion_context"}
+      tier: "2+PCT+LLMMC"
+
+  - id: "Q020"
+    stratum: "S4"
+    parameter_id: "PAR-BEH-016"
+    symbol: "λ_R"
+    parameter_name: "Rejection Sensitivity"
+    context:
+      target_psi:
+        psi_S: "intimate_bond"
+        psi_I: "anonymous_application"
+        psi_C: "high_arousal_emotional"
+        psi_K: "reciprocity_expectation"
+      anchor_psi:
+        psi_S: "welfare_stigma"
+        psi_I: "bureaucratic_application"
+        psi_C: "information_avoidance"
+        psi_K: "self_reliance_norm"
+      description: "Family rejection: intimate bond + emotional arousal + reciprocity (4D, full pipeline)"
+    domain: null
+    calibrate: true
+    llm_prompt: |
+      Du bist ein Experte für Verhaltensökonomie.
+      Schätze die Rejection Sensitivity (λ_R) bei FAMILIÄRER ABLEHNUNG:
+      1. ENGE BEZIEHUNG (Familienmitglied, Partner:in)
+      2. EMOTIONAL AUFGELADEN (hohe Erregung)
+      3. REZIPROZITÄTSNORMEN gelten (Familienkultur)
+      Referenz: λ_R ≈ 2.5 bei Welfare-Ablehnung (bürokratisch, Stigma).
+      Wie verändert sich λ_R wenn die Ablehnung von einer nahestehenden
+      Person kommt statt von einer Behörde?
+      Gib eine Punktschätzung und ein 95% Konfidenzintervall.
+    ground_truth:
+      note: "Full pipeline: Layer 2 + PCT (4D) + LLMMC calibration"
+      anchor_value: 2.5
+      psi_deltas:
+        psi_S: {anchor: "welfare_stigma", target: "intimate_bond"}
+        psi_I: {anchor: "bureaucratic_application", target: "anonymous_application"}
+        psi_C: {anchor: "information_avoidance", target: "high_arousal_emotional"}
+        psi_K: {anchor: "self_reliance_norm", target: "reciprocity_expectation"}
+      tier: "2+PCT+LLMMC"

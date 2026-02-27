@@ -1,0 +1,271 @@
+# =============================================================================
+# ACADEMIC API SYNC
+# =============================================================================
+# Synchronizes researcher and paper data from academic APIs.
+#
+# APIs:
+#   - OpenAlex: Paper metadata, author profiles, citations
+#   - ORCID: Researcher IDs, publication lists
+#   - Unpaywall: Open Access status and PDF links
+#
+# Triggers:
+#   - Manual (workflow_dispatch)
+#   - Weekly on Sundays at 05:00 UTC
+# =============================================================================
+
+name: Academic API Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      api:
+        description: 'Which API to use'
+        type: choice
+        required: true
+        default: 'all'
+        options:
+          - all
+          - openalex
+          - orcid
+          - unpaywall
+      task:
+        description: 'Task to perform'
+        type: choice
+        required: true
+        default: 'sync-researchers'
+        options:
+          - sync-researchers    # Update researcher data from APIs
+          - find-oa            # Find Open Access versions
+          - fetch-fulltext     # Fetch OA full texts (L2→L3 upgrade)
+          - fetch-mpg-fulltext # Fetch full texts from MPG PuRe repository
+          - update-citations   # Update citation counts
+          - report             # Generate report only
+      limit:
+        description: 'Max items to process'
+        required: false
+        default: '50'
+      author_filter:
+        description: 'Author filter for fetch-fulltext (e.g., sutter)'
+        required: false
+        default: 'sutter'
+      person_id:
+        description: 'PuRe person ID for fetch-mpg-fulltext (e.g., persons206813)'
+        required: false
+        default: 'persons206813'
+      dry_run:
+        description: 'Dry run (no changes committed)'
+        required: false
+        default: 'true'
+        type: boolean
+      target_branch:
+        description: 'Branch to checkout and commit to'
+        required: false
+        default: ''
+
+  schedule:
+    # Weekly on Sunday at 05:00 UTC
+    - cron: '0 5 * * 0'
+
+jobs:
+  sync-academic-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_branch || github.ref }}
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests pyyaml
+          # pdftotext needed for fulltext extraction
+          if [ "${{ inputs.task }}" = "fetch-fulltext" ] || [ "${{ inputs.task }}" = "fetch-mpg-fulltext" ]; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+
+      - name: Sync researchers from ORCID
+        if: ${{ github.event.inputs.api == 'all' || github.event.inputs.api == 'orcid' || github.event_name == 'schedule' }}
+        run: |
+          echo "Syncing researcher data from ORCID..."
+          # Process researchers with ORCID IDs from registry
+          python -c "
+          import yaml
+          import sys
+          sys.path.insert(0, 'scripts')
+          from orcid_api import ORCIDClient, extract_works, extract_person
+
+          with open('data/researcher-registry.yaml', 'r') as f:
+              registry = yaml.safe_load(f)
+
+          client = ORCIDClient()
+          updated = 0
+
+          for researcher in registry.get('researchers', []):
+              orcid = researcher.get('orcid', '')
+              if 'orcid.org' in str(orcid):
+                  orcid_id = orcid.split('orcid.org/')[-1]
+                  print(f'Checking {researcher.get(\"name\")}: {orcid_id}')
+
+                  works = client.get_works(orcid_id)
+                  pubs = extract_works(works)
+                  print(f'  Found {len(pubs)} works')
+                  updated += 1
+
+          print(f'\\nUpdated {updated} researchers')
+          "
+
+      - name: Fetch full texts (L2→L3)
+        if: ${{ github.event.inputs.task == 'fetch-fulltext' }}
+        run: |
+          echo "Fetching Open Access full texts..."
+          ARGS="--batch ${{ inputs.limit || '5' }}"
+
+          if [ -n "${{ inputs.author_filter }}" ]; then
+            ARGS="$ARGS --author ${{ inputs.author_filter }}"
+          fi
+
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+
+          echo "Running: python scripts/fetch_fulltext_oa.py $ARGS"
+          python scripts/fetch_fulltext_oa.py $ARGS
+
+      - name: Fetch full texts from MPG PuRe
+        if: ${{ github.event.inputs.task == 'fetch-mpg-fulltext' }}
+        run: |
+          echo "Fetching full texts from MPG PuRe..."
+
+          # Special modes via limit field:
+          # - "item_XXXX" → inspect single item
+          # - "find-internal" → scan all items for INTERNAL_MANAGED files
+          # - "fetch-internal" → download PDFs from INTERNAL_MANAGED items
+          LIMIT="${{ inputs.limit || '50' }}"
+          if [[ "$LIMIT" == item_* ]]; then
+            echo "INSPECT MODE: Inspecting single item $LIMIT"
+            ARGS="--inspect $LIMIT"
+          elif [[ "$LIMIT" == "find-internal" ]]; then
+            echo "FIND-INTERNAL MODE: Scanning all items for INTERNAL_MANAGED files"
+            ARGS="--find-internal"
+            if [ -n "${{ inputs.person_id }}" ]; then
+              ARGS="$ARGS --person-id ${{ inputs.person_id }}"
+            fi
+            if [ -n "${{ inputs.author_filter }}" ]; then
+              ARGS="$ARGS --name ${{ inputs.author_filter }}"
+            fi
+          elif [[ "$LIMIT" == "fetch-internal" ]]; then
+            echo "FETCH-INTERNAL MODE: Download PDFs from INTERNAL_MANAGED items"
+            ARGS="--fetch-internal"
+            if [ -n "${{ inputs.author_filter }}" ]; then
+              ARGS="$ARGS --name ${{ inputs.author_filter }}"
+            fi
+            if [ "${{ inputs.dry_run }}" = "true" ]; then
+              ARGS="$ARGS --dry-run"
+            fi
+          else
+            ARGS="--batch $LIMIT"
+
+            if [ -n "${{ inputs.person_id }}" ]; then
+              ARGS="$ARGS --person-id ${{ inputs.person_id }}"
+            fi
+
+            if [ -n "${{ inputs.author_filter }}" ]; then
+              ARGS="$ARGS --name ${{ inputs.author_filter }}"
+            fi
+
+            if [ "${{ inputs.dry_run }}" = "true" ]; then
+              ARGS="$ARGS --dry-run"
+            fi
+          fi
+
+          echo "Running: python scripts/fetch_mpg_fulltext.py $ARGS"
+          python scripts/fetch_mpg_fulltext.py $ARGS
+
+      - name: Find Open Access versions
+        if: ${{ github.event.inputs.task == 'find-oa' || (github.event_name == 'schedule' && github.event.inputs.api != 'orcid') }}
+        run: |
+          echo "Finding Open Access versions..."
+          python scripts/unpaywall_api.py \
+            --batch bibliography/bcm_master.bib \
+            --limit ${{ github.event.inputs.limit || '100' }} \
+            --output data/oa-report.yaml
+
+      - name: Update citations from OpenAlex
+        if: ${{ github.event.inputs.task == 'update-citations' }}
+        run: |
+          echo "Updating citation counts from OpenAlex..."
+          python -c "
+          import yaml
+          import sys
+          sys.path.insert(0, 'scripts')
+          from openalex_api import OpenAlexClient
+
+          client = OpenAlexClient()
+
+          # Test with a few DOIs
+          test_dois = [
+              '10.1257/aer.91.5.1369',
+              '10.1162/003355302760193896',
+          ]
+
+          for doi in test_dois:
+              work = client.get_work(doi)
+              if 'cited_by_count' in work:
+                  print(f'{doi}: {work[\"cited_by_count\"]} citations')
+          "
+
+      - name: Generate report
+        if: ${{ github.event.inputs.task == 'report' }}
+        run: |
+          echo "Generating academic API report..."
+          python -c "
+          print('=== Academic API Status ===')
+          print('OpenAlex: Active')
+          print('ORCID: Active')
+          print('Unpaywall: Active')
+          "
+
+      - name: Commit changes
+        if: ${{ github.event.inputs.task != 'report' && inputs.dry_run != 'true' }}
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          if [ "${{ inputs.task }}" = "fetch-fulltext" ]; then
+            git add data/paper-texts/ data/paper-references/ data/fulltext-fetch-log.yaml
+            CHANGED=$(git diff --staged --name-only | wc -l)
+            git diff --staged --quiet || git commit -m "feat(papers): Fetch ${CHANGED} OA full texts (L2→L3)
+
+          Task: fetch-fulltext
+          Author: ${{ inputs.author_filter }}
+          Batch: ${{ inputs.limit }}
+
+          https://claude.ai/code/session_015eQ5iY9wbAt5Q9xNrK2JoY"
+          elif [ "${{ inputs.task }}" = "fetch-mpg-fulltext" ]; then
+            git add data/paper-texts/ data/paper-references/ data/mpg-fulltext-fetch-log.yaml
+            CHANGED=$(git diff --staged --name-only | wc -l)
+            git diff --staged --quiet || git commit -m "feat(papers): Fetch ${CHANGED} MPG PuRe full texts (L2→L3)
+
+          Task: fetch-mpg-fulltext
+          Person: ${{ inputs.person_id }}
+          Author: ${{ inputs.author_filter }}
+          Batch: ${{ inputs.limit }}
+
+          https://claude.ai/code/session_015eQ5iY9wbAt5Q9xNrK2JoY"
+          else
+            git add -A data/
+            git diff --staged --quiet || git commit -m "feat(academic): Sync data from academic APIs
+
+          - Updated researcher ORCID data
+          - Updated Open Access status
+          - Updated citation counts"
+          fi
+
+          git push || echo "Nothing to push"

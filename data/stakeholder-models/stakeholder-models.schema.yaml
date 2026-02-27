@@ -1,0 +1,761 @@
+# ============================================================================
+# EBF STAKEHOLDER MODELS REGISTRY SCHEMA
+# ============================================================================
+#
+# ACHTUNG: Diese Datei ist die EINZIGE autoritative Quelle für die Struktur
+# der Stakeholder Models Registry Datenbank. Alle YAML Einträge in
+# data/stakeholder-models/stakeholder_models_registry.yaml MÜSSEN mit dieser
+# Definition konsistent sein.
+#
+# Version: 1.0
+# Erstellt: 2026-01-18
+# ============================================================================
+
+version: "1.0"
+created: "2026-01-18"
+description: "Authoritative schema for EBF Stakeholder Models Registry (customer/company databases)"
+
+# ============================================================================
+# CORE ENTITIES
+# ============================================================================
+
+entities:
+
+  # =========================================================================
+  # STAKEHOLDER ENTITY: Master record for each company/customer model
+  # =========================================================================
+  Stakeholder:
+    description: "A complete company/customer model with profile, assumptions, simulations, and outputs"
+    required_fields:
+      id:
+        type: string
+        pattern: "^[A-Z]{4,8}$"
+        example: "ALPLA"
+        immutable: true
+        description: "Company code/identifier"
+
+  # =========================================================================
+  # COMPANY_PROFILE ENTITY: Basic company information
+  # =========================================================================
+  CompanyProfile:
+    description: "Corporate identity and market positioning"
+    required_fields:
+      name:
+        type: string
+        min_length: 3
+        max_length: 100
+        example: "ALPLA"
+
+      industry:
+        type: enum
+        allowed: ["manufacturing", "services", "finance", "retail", "energy", "healthcare", "technology", "other"]
+
+      region:
+        type: enum
+        allowed: ["Europe", "APAC", "Americas", "Middle_East", "Africa", "Global"]
+
+    optional_fields:
+      headquarters:
+        type: string
+        description: "City, Country"
+
+      employees:
+        type: integer
+        min: 1
+        example: 8000
+
+      revenue_current:
+        type: object
+        fields:
+          value: number
+            min: 0
+          currency: string
+            default: "EUR"
+          year: integer
+
+      market_cap:
+        type: object
+        fields:
+          value: number
+          currency: string
+
+      description:
+        type: string
+        max_length: 500
+
+  # =========================================================================
+  # BUSINESS_ASSUMPTIONS ENTITY: Core financial and operational assumptions
+  # =========================================================================
+  BusinessAssumptions:
+    description: "Key assumptions driving model behavior"
+    optional_fields:
+      revenue_growth:
+        type: object
+        fields:
+          cagr_pct:
+            type: number
+            min: -20.0
+            max: 50.0
+            description: "Compound Annual Growth Rate (%)"
+          base_year: integer
+          forecast_years: integer
+          confidence: enum ["high", "medium", "low"]
+
+      profitability:
+        type: object
+        fields:
+          ebitda_margin_pct:
+            type: number
+            min: -100.0
+            max: 100.0
+            description: "EBITDA as % of revenue"
+          operating_margin_pct: number
+          net_margin_pct: number
+
+      capital_structure:
+        type: object
+        fields:
+          capex_intensity_pct:
+            type: number
+            min: 0.0
+            max: 100.0
+            description: "CapEx as % of revenue"
+          debt_to_ebitda:
+            type: number
+            min: 0.0
+          equity_return_pct: number
+
+      labor_costs:
+        type: object
+        fields:
+          wage_inflation_pct:
+            type: number
+            description: "Annual wage inflation (%)"
+          productivity_growth_pct: number
+          headcount_growth_pct: number
+
+      operational:
+        type: object
+        fields:
+          cost_of_goods_sold_pct: number
+          sga_as_pct_revenue: number
+          rd_as_pct_revenue: number
+
+      market:
+        type: object
+        fields:
+          market_share_pct: number
+          market_growth_pct: number
+          competitive_position: enum ["leader", "challenger", "follower", "niche"]
+
+  # =========================================================================
+  # STRATEGIC_ROADMAP ENTITY: Multi-year plans
+  # =========================================================================
+  StrategicRoadmap:
+    description: "Strategic initiatives and growth plans"
+    optional_fields:
+      initiatives:
+        type: array
+        items:
+          type: object
+          fields:
+            year: integer
+            description: string
+              max_length: 200
+            expected_impact:
+              type: object
+              fields:
+                revenue_uplift_pct: number
+                cost_reduction_pct: number
+                risk_level: enum ["high", "medium", "low"]
+            status: enum ["planned", "in_progress", "completed", "cancelled"]
+
+      milestones:
+        type: array
+        items:
+          type: object
+          fields:
+            date: date
+              format: "YYYY-MM-DD"
+            description: string
+            success_metric: string
+
+      divestiture_plans:
+        type: array
+        items:
+          type: object
+          fields:
+            business_unit: string
+            timeline: string
+            expected_value: number
+
+  # =========================================================================
+  # SCENARIO_DEFINITIONS ENTITY: What-if scenarios
+  # =========================================================================
+  Scenario:
+    description: "Alternative assumptions for sensitivity analysis"
+    required_fields:
+      name:
+        type: enum
+        allowed: ["Base Case", "Best Case", "Downside", "Stress Test", "Custom"]
+
+    optional_fields:
+      description:
+        type: string
+        max_length: 300
+
+      assumption_overrides:
+        type: object
+        additional_properties:
+          type: object
+          fields:
+            parameter: string
+            base_value: number
+            scenario_value: number
+            justification: string
+
+      probability:
+        type: number
+        min: 0.0
+        max: 1.0
+        description: "Estimated probability of this scenario"
+
+      timeline:
+        type: string
+        description: "When would this scenario occur?"
+
+  # =========================================================================
+  # OPERATING_MODEL ENTITY: Internal organizational structure
+  # =========================================================================
+  OperatingModel:
+    description: "Organizational structure and cost allocation"
+    optional_fields:
+      business_units:
+        type: array
+        items:
+          type: object
+          fields:
+            name: string
+            revenue_contribution_pct: number
+            margin_pct: number
+            growth_rate_pct: number
+            headcount: integer
+
+      cost_centers:
+        type: array
+        items:
+          type: object
+          fields:
+            name: string
+            annual_cost: number
+            headcount: integer
+            cost_per_head: number
+            allocation_basis: enum ["revenue", "headcount", "asset_base", "other"]
+
+      shared_services:
+        type: array
+        items:
+          type: object
+          fields:
+            name: string
+            entities_served: array of string
+            cost: number
+            cost_per_transaction: number
+
+  # =========================================================================
+  # KEY_PERFORMANCE_INDICATORS ENTITY: Tracking metrics
+  # =========================================================================
+  KPI_Definition:
+    description: "Key metrics tracked for this stakeholder"
+    required_fields:
+      kpi_code:
+        type: string
+        pattern: "^[A-Z]{3,4}$"
+        example: "REV"
+
+      name:
+        type: string
+        example: "Revenue"
+
+      measurement:
+        type: string
+        example: "EUR Million"
+
+    optional_fields:
+      formula:
+        type: string
+        description: "How is it calculated?"
+
+      source:
+        type: enum
+        allowed: ["financial_statements", "model_output", "survey", "operational_system"]
+
+      tracking_frequency:
+        type: enum
+        allowed: ["daily", "weekly", "monthly", "quarterly", "annually"]
+
+      targets:
+        type: array
+        items:
+          type: object
+          fields:
+            year: integer
+            target_value: number
+            confidence: enum ["high", "medium", "low"]
+
+  # =========================================================================
+  # MONTE_CARLO_RESULTS ENTITY: Probabilistic simulation outputs
+  # =========================================================================
+  MonteCarloResults:
+    description: "Distribution of outcomes from simulation (typically 10,000+ runs)"
+    optional_fields:
+      simulation_parameters:
+        type: object
+        fields:
+          iterations:
+            type: integer
+            min: 1000
+            description: "Number of Monte Carlo iterations"
+          seed: integer
+            description: "Random seed for reproducibility"
+          variables_sampled:
+            type: array
+            items: string
+            description: "Which input assumptions were varied?"
+          distribution_type:
+            type: enum
+            allowed: ["normal", "lognormal", "triangular", "discrete", "other"]
+
+      kpi_distributions:
+        type: array
+        items:
+          type: object
+          required_fields:
+            kpi: string
+            year: integer
+          optional_fields:
+            mean:
+              type: number
+            median:
+              type: number
+            std_dev:
+              type: number
+            p10:
+              type: number
+              description: "10th percentile (downside)"
+            p90:
+              type: number
+              description: "90th percentile (upside)"
+            min:
+              type: number
+            max:
+              type: number
+            distribution_shape:
+              type: string
+              description: "Skewness, kurtosis, etc."
+
+      correlation_matrix:
+        type: object
+        description: "Correlations between key variables"
+        additional_properties:
+          type: object
+          additional_properties:
+            type: number
+            min: -1.0
+            max: 1.0
+
+      scenario_probabilities:
+        type: object
+        additional_properties:
+          type: number
+          min: 0.0
+          max: 1.0
+        description: "Probability that each scenario occurs"
+
+  # =========================================================================
+  # SENSITIVITY_ANALYSIS ENTITY: Parameter importance
+  # =========================================================================
+  SensitivityAnalysis:
+    description: "Which assumptions matter most?"
+    optional_fields:
+      tornado_chart:
+        type: array
+        items:
+          type: object
+          fields:
+            parameter: string
+            low_case_impact: number
+            high_case_impact: number
+            tornado_width: number
+              description: "Absolute impact range"
+            ranking: integer
+              description: "1 = most important"
+
+      elasticity_estimates:
+        type: array
+        items:
+          type: object
+          fields:
+            driver: string
+            output: string
+            elasticity: number
+              description: "% change in output per 1% change in driver"
+            confidence: enum ["high", "medium", "low"]
+
+      critical_thresholds:
+        type: array
+        items:
+          type: object
+          fields:
+            parameter: string
+            threshold_value: number
+            consequence: string
+              max_length: 200
+
+  # =========================================================================
+  # VALUE_DRIVER_ANALYSIS ENTITY: What creates value?
+  # =========================================================================
+  ValueDriverAnalysis:
+    description: "Decomposition of value creation"
+    optional_fields:
+      revenue_drivers:
+        type: array
+        items:
+          type: object
+          fields:
+            driver: string
+            contribution_pct: number
+            sensitivity: number
+            trend: enum ["improving", "stable", "deteriorating"]
+
+      cost_structure:
+        type: object
+        fields:
+          fixed_costs_pct: number
+          variable_costs_pct: number
+          operating_leverage: number
+          breakeven_revenue: number
+
+      cash_conversion:
+        type: object
+        fields:
+          operating_cash_conversion_pct: number
+          free_cash_flow_conversion_pct: number
+          working_capital_efficiency: number
+
+      return_metrics:
+        type: object
+        fields:
+          roic: number
+            description: "Return on Invested Capital (%)"
+          roe: number
+            description: "Return on Equity (%)"
+          roa: number
+            description: "Return on Assets (%)"
+
+  # =========================================================================
+  # OUTPUT_DOCUMENTS ENTITY: Generated reports and presentations
+  # =========================================================================
+  OutputDocuments:
+    description: "Files generated from this model"
+    optional_fields:
+      board_presentation:
+        type: object
+        fields:
+          filename: string
+          format: enum ["pdf", "powerpoint", "html"]
+          slides: integer
+          last_generated: date
+            format: "YYYY-MM-DD"
+          key_messages: array of string
+
+      financial_model:
+        type: object
+        fields:
+          filename: string
+          format: enum ["excel", "csv", "python"]
+          worksheets: array of string
+          last_updated: date
+
+      sensitivity_reports:
+        type: array
+        items:
+          type: object
+          fields:
+            name: string
+            format: enum ["pdf", "html", "csv"]
+            analysis_type: enum ["tornado", "waterfall", "scenario_comparison"]
+
+      detailed_assumptions:
+        type: object
+        fields:
+          filename: string
+          format: enum ["pdf", "excel", "html"]
+          pages: integer
+
+  # =========================================================================
+  # MODEL_LINEAGE ENTITY: What was used to create this?
+  # =========================================================================
+  ModelLineage:
+    description: "Sources and dependencies of this model"
+    optional_fields:
+      seed_model:
+        type: string
+        pattern: "^[A-Z]+-[A-Z0-9]+(\\-[0-9]{4})?$"
+        description: "Which seed model in Model Registry was used?"
+
+      template_source:
+        type: enum
+        allowed: ["revenue_projection_model", "cost_structure_model", "cash_flow_model", "organizational_scaling_model", "scenario_comparison_model"]
+
+      derived_from_stakeholder:
+        type: string
+        pattern: "^[A-Z]{4,8}$"
+        description: "If replicated from another company"
+
+      replication_date:
+        type: date
+
+      replication_adjustments:
+        type: string
+        max_length: 500
+        description: "What was changed from the template?"
+
+  # =========================================================================
+  # VALIDATION_METADATA ENTITY
+  # =========================================================================
+  ValidationMetadata:
+    description: "Model validation and quality assurance"
+    optional_fields:
+      created_date:
+        type: date
+        format: "YYYY-MM-DD"
+
+      last_updated:
+        type: date
+        format: "YYYY-MM-DD"
+
+      created_by:
+        type: string
+
+      validation_status:
+        type: enum
+        allowed: ["verified", "in_review", "flagged", "draft"]
+
+      assumptions_reviewed:
+        type: boolean
+
+      stakeholder_sign_off:
+        type: boolean
+
+      quality_score:
+        type: number
+        min: 0.0
+        max: 1.0
+        description: "Overall model quality (0-1)"
+
+      documented_limitations:
+        type: array
+        items:
+          type: object
+          fields:
+            limitation: string
+            severity: enum ["critical", "high", "medium", "low"]
+            workaround: string
+
+      audit_notes:
+        type: string
+        max_length: 500
+
+# ============================================================================
+# RELATIONSHIPS (Foreign Keys & Constraints)
+# ============================================================================
+
+relationships:
+  Stakeholder_Profile:
+    from: Stakeholder
+    to: CompanyProfile
+    cardinality: "1:1"
+    description: "Each stakeholder has one profile"
+
+  Stakeholder_Assumptions:
+    from: Stakeholder
+    to: BusinessAssumptions
+    cardinality: "1:1"
+    description: "Each stakeholder has assumptions"
+
+  Stakeholder_Scenarios:
+    from: Stakeholder
+    to: Scenario
+    cardinality: "1:N"
+    description: "Each stakeholder has multiple scenarios"
+
+  Stakeholder_MonteCarloResults:
+    from: Stakeholder
+    to: MonteCarloResults
+    cardinality: "1:1"
+    description: "Each stakeholder has simulation results"
+
+  Stakeholder_Sensitivity:
+    from: Stakeholder
+    to: SensitivityAnalysis
+    cardinality: "1:1"
+    description: "Each stakeholder has sensitivity analysis"
+
+  Stakeholder_SeedModel:
+    from: Stakeholder
+    to: SeedModel
+    cardinality: "N:1"
+    foreign_key: "seed_model → model_registry.yaml:id"
+    description: "Stakeholder uses a seed model"
+
+# ============================================================================
+# CONSTRAINTS & VALIDATION RULES
+# ============================================================================
+
+constraints:
+  stakeholder_id_uniqueness:
+    rule: "Stakeholder IDs must be globally unique"
+    check: "UNIQUE constraint on id"
+
+  scenario_names:
+    rule: "Standard scenario names recommended"
+    allowed: ["Base Case", "Best Case", "Downside", "Stress Test", "Custom"]
+
+  growth_rate_reasonableness:
+    rule: "Revenue CAGR should be between -20% and +50%"
+    check: "-20.0 <= cagr_pct <= 50.0"
+
+  margin_reasonableness:
+    rule: "EBITDA margins should be between -100% and 100%"
+    check: "-100.0 <= ebitda_margin_pct <= 100.0"
+
+  capex_reasonableness:
+    rule: "CapEx intensity should be between 0% and 100%"
+    check: "0.0 <= capex_intensity_pct <= 100.0"
+
+  scenario_probabilities:
+    rule: "Scenario probabilities should sum to 1.0"
+    check: "0.95 <= SUM(probabilities) <= 1.05"
+
+  monte_carlo_iterations:
+    rule: "Minimum iterations for statistical validity"
+    check: "iterations >= 1000"
+
+  percentile_ordering:
+    rule: "Percentiles must be ordered: p10 < median < p90"
+    check: "p10 < median < p90"
+
+  correlation_bounds:
+    rule: "Correlation matrix must be valid (symmetric, diagonal = 1)"
+    check: "-1.0 <= r_ij <= 1.0 AND r_ii = 1.0"
+
+  timestamp_logic:
+    rule: "created_date <= last_updated"
+    check: "created_date <= last_updated"
+
+# ============================================================================
+# DATABASE OPERATIONS
+# ============================================================================
+
+operations:
+  CREATE:
+    required_fields: ["id", "profile", "assumptions"]
+    validation: "All required fields must be present and valid"
+
+  UPDATE:
+    immutable_fields: ["id", "created_date"]
+    mutable_fields: ["assumptions", "scenarios", "mc_results", "sensitivity", "validation_metadata"]
+    note: "Major updates should increment version"
+
+  QUERY:
+    supported_queries:
+      - "SELECT * FROM stakeholders WHERE industry = 'manufacturing'"
+      - "SELECT * FROM stakeholders WHERE cagr_pct > 5.0"
+      - "SELECT * FROM stakeholders ORDER BY employees DESC"
+      - "SELECT * FROM stakeholders WHERE region = 'Europe'"
+
+  BULK_OPERATIONS:
+    comparative_analysis: "Compare assumptions across stakeholders"
+    scenario_stress_testing: "Run all scenarios across all stakeholders"
+
+# ============================================================================
+# SCHEMA VALIDATION RULES
+# ============================================================================
+
+validation_rules:
+  rule_1:
+    description: "Stakeholder ID must be unique"
+    check: "UNIQUE constraint on id"
+
+  rule_2:
+    description: "Revenue CAGR should be reasonable [-20%, +50%]"
+    check: "-20.0 <= cagr_pct <= 50.0"
+
+  rule_3:
+    description: "EBITDA margin should be reasonable [-100%, +100%]"
+    check: "-100.0 <= ebitda_margin_pct <= 100.0"
+
+  rule_4:
+    description: "CapEx intensity should be [0%, 100%]"
+    check: "0.0 <= capex_intensity_pct <= 100.0"
+
+  rule_5:
+    description: "Scenario probabilities must sum to 1.0 (±0.05)"
+    check: "0.95 <= SUM(probabilities) <= 1.05"
+
+  rule_6:
+    description: "Monte Carlo iterations >= 1,000"
+    check: "iterations >= 1000"
+
+  rule_7:
+    description: "Percentiles ordered correctly"
+    check: "p10 < p50 < p90"
+
+  rule_8:
+    description: "Correlation matrix entries in [-1, 1]"
+    check: "-1.0 <= correlation <= 1.0"
+
+  rule_9:
+    description: "Timestamps logically ordered"
+    check: "created_date <= last_updated"
+
+  rule_10:
+    description: "Business unit revenue contributions sum to 100% (±5%)"
+    check: "95.0 <= SUM(revenue_contribution) <= 105.0"
+
+# ============================================================================
+# QUALITY ASSURANCE CHECKLIST
+# ============================================================================
+
+qa_checklist:
+  - "All stakeholders have valid IDs"
+  - "All profiles have industry and region"
+  - "Revenue growth rates are reasonable [-20%, +50%]"
+  - "EBITDA margins are reasonable [-100%, +100%]"
+  - "Scenario probabilities sum to ~1.0"
+  - "Monte Carlo: iterations >= 1,000"
+  - "Percentiles ordered: p10 < p50 < p90"
+  - "Correlation matrix is valid"
+  - "Business unit revenues sum to ~100%"
+  - "No duplicate stakeholder IDs"
+
+# ============================================================================
+# MIGRATION & VERSIONING
+# ============================================================================
+
+versioning:
+  current_version: "1.0"
+  backward_compatible: true
+  migration_notes: |
+    No previous version.
+    Initial schema created January 18, 2026 to standardize customer models.
+
+---
+
+**SCHEMA DEFINITION COMPLETE**
+
+This schema defines the authoritative structure for the Stakeholder Models Registry.
+It ensures consistency, completeness, and validity of all customer/company models.
+
+Version 1.0 | January 18, 2026

@@ -1,0 +1,881 @@
+---
+# ==============================================================================
+# Localsearch Funnel Parameters
+# SME Customer Acquisition & Lifecycle Funnel (B2B)
+# ==============================================================================
+#
+# Three-Layer Architecture Compliance:
+#   Layer 2 (YAML): Behavioral parameters from localsearch_context_master_overview.yaml
+#   Layer 3 (LLMMC): Conversion rate estimates (clearly marked)
+#   Layer 1 (Python): Use scripts/pct.py for context transformations
+#
+# Created: 2026-02-25
+# Version: 1.0.0
+# Author: FehrAdvice (EBF-automated)
+# Status: DRAFT - LLMMC priors, pending client data validation (GAP-01, GAP-02)
+# ==============================================================================
+
+metadata:
+  customer_id: "CUST-LOCALSEARCH"
+  model_type: "funnel_conversion"
+  model_id: "MOD-LOC-FUNNEL-001"
+  primary_product: "digitalONE"
+  estimation_method: "LLMMC"
+  evidence_tier: 2  # LLMMC Prior, pending empirical calibration
+  last_updated: "2026-02-25"
+  version: "1.0.0"
+  validation_status: "awaiting_client_data"
+  data_gaps_referenced:
+    - "GAP-01"  # digitalONE adoption rate by segment
+    - "GAP-02"  # Conversion funnel metrics
+
+# ==============================================================================
+# FUNNEL DEFINITION (7 Phases)
+# ==============================================================================
+
+funnel_phases:
+  - phase_id: "F1"
+    name: "REACH"
+    definition: "SME becomes aware of localsearch products beyond free basic listing"
+    entry_metric: "TAM per segment"
+    exit_metric: "Expressed interest (page visit, responded to outreach, attended webinar)"
+    primary_behavioral_driver: "social_proof"
+    primary_barrier: "status_quo_bias"
+
+  - phase_id: "F2"
+    name: "INTEREST"
+    definition: "SME actively evaluates digitalONE (visits product page, requests demo)"
+    entry_metric: "Interested leads"
+    exit_metric: "Started evaluation (demo, call with sales, pricing page)"
+    primary_behavioral_driver: "loss_framing"
+    primary_barrier: "complexity_aversion"
+
+  - phase_id: "F3"
+    name: "TRIAL"
+    definition: "SME starts free trial or activates free tier of digitalONE"
+    entry_metric: "Evaluating leads"
+    exit_metric: "Trial activated"
+    primary_behavioral_driver: "default_effect"
+    primary_barrier: "loss_aversion"
+
+  - phase_id: "F4"
+    name: "CONVERSION"
+    definition: "SME converts from trial/free to paid digitalONE subscription"
+    entry_metric: "Active trials"
+    exit_metric: "First payment"
+    primary_behavioral_driver: "default_effect"
+    primary_barrier: "present_bias"
+
+  - phase_id: "F5"
+    name: "ACTIVATION"
+    definition: "Paid SME actively uses >= 3 features within first 30 days"
+    entry_metric: "Paid subscribers"
+    exit_metric: "3+ features used in 30 days"
+    primary_behavioral_driver: "implementation_intentions"
+    primary_barrier: "complexity_aversion"
+
+  - phase_id: "F6"
+    name: "RETENTION"
+    definition: "Paid SME retains subscription at 12-month mark"
+    entry_metric: "Activated subscribers"
+    exit_metric: "12-month renewal"
+    primary_behavioral_driver: "status_quo_bias"
+    primary_barrier: "perceived_low_roi"
+
+  - phase_id: "F7"
+    name: "EXPANSION"
+    definition: "Retained SME upgrades package or adds advertiseONE"
+    entry_metric: "Retained subscribers"
+    exit_metric: "Upgrade or cross-sell"
+    primary_behavioral_driver: "social_proof"
+    primary_barrier: "loss_aversion"
+
+# ==============================================================================
+# SEGMENT DEFINITIONS (from context_master_overview)
+# ==============================================================================
+
+segments:
+  - segment_id: "BUS-01"
+    name: "Digital-Native SMEs"
+    size_estimate_n: 65000   # midpoint of 50k-80k
+    share_of_base: 0.15
+    digital_maturity: "high"
+    adoption_readiness: 0.80
+    marketing_budget_monthly_chf: "500-2000"
+
+  - segment_id: "BUS-02"
+    name: "Traditional SMEs"
+    size_estimate_n: 275000  # midpoint of 250k-300k
+    share_of_base: 0.65
+    digital_maturity: "low"
+    adoption_readiness: 0.30
+    marketing_budget_monthly_chf: "0-200"
+
+  - segment_id: "BUS-03"
+    name: "Franchise/Chain Locations"
+    size_estimate_n: 25000   # midpoint of 20k-30k
+    share_of_base: 0.06
+    digital_maturity: "medium-high"
+    adoption_readiness: 0.60
+    marketing_budget_monthly_chf: "200-1000"
+
+  - segment_id: "BUS-04"
+    name: "Tradespeople (renovero)"
+    size_estimate_n: 35000   # est. ~14% of base
+    share_of_base: 0.14
+    digital_maturity: "medium"
+    adoption_readiness: 0.50
+    marketing_budget_monthly_chf: "100-500"
+
+# ==============================================================================
+# BEHAVIORAL PARAMETER ANCHORS (from context_master_overview, Layer 2)
+# ==============================================================================
+#
+# These behavioral parameters drive the funnel conversion estimates below.
+# Each conversion rate is derived by reasoning about how the relevant
+# behavioral parameter affects the transition for each segment.
+
+behavioral_anchors:
+  loss_aversion:
+    lambda_marketing_investment: 2.5
+    lambda_subscription_cancellation: 1.8
+    source: "localsearch_context_master_overview.yaml"
+    parameter_ref: null  # LLMMC estimate, no PAR-ID yet
+
+  present_bias:
+    beta_digital_adoption: 0.70
+    beta_booking_vs_call: 0.85
+    source: "localsearch_context_master_overview.yaml"
+
+  status_quo_bias:
+    kappa_traditional_switching: 0.70
+    kappa_platform_loyalty: 0.55
+    source: "localsearch_context_master_overview.yaml"
+
+  social_proof:
+    sigma_review_consumer: 0.72
+    sigma_peer_adoption_sme: 0.55
+    source: "localsearch_context_master_overview.yaml"
+
+  default_effect:
+    delta_auto_renewal: 0.75
+    delta_premium_vs_basic: 0.40
+    source: "localsearch_context_master_overview.yaml"
+
+  complexity_aversion:
+    penalty_per_step: -0.35
+    source: "localsearch_context_master_overview.yaml"
+
+# ==============================================================================
+# CONVERSION RATES: Phase x Segment Matrix
+# ==============================================================================
+#
+# Estimation method: LLMMC (Layer 3)
+# Each rate is the probability of advancing to the next phase.
+# Reasoning is documented per cell.
+#
+# IMPORTANT: These are PRIOR ESTIMATES. They MUST be calibrated with
+# actual client data (see data_gaps GAP-01 and GAP-02).
+
+conversion_rates:
+
+  # --------------------------------------------------------------------------
+  # F1: REACH (Awareness -> Interest)
+  # --------------------------------------------------------------------------
+  # Key driver: Social proof (sigma) + Awareness gap
+  # Key barrier: Status quo bias (kappa)
+  # Reasoning: What fraction of each segment shows interest when exposed?
+
+  F1_REACH:
+    BUS-01:
+      rate: 0.45
+      ci_68: [0.38, 0.52]
+      reasoning: |
+        Digital-native SMEs actively seek marketing solutions. High adoption
+        readiness (0.80) partly offsets the general market noise. Many already
+        use some localsearch product, so awareness of broader portfolio is
+        moderate. Social proof from peers (sigma=0.55) helps.
+      primary_driver: "adoption_readiness=0.80"
+      primary_barrier: "market_noise"
+
+    BUS-02:
+      rate: 0.12
+      ci_68: [0.08, 0.16]
+      reasoning: |
+        Traditional SMEs have low digital maturity and high status quo bias
+        (kappa=0.70). Most have a free basic listing and see no reason to
+        explore further. Only external triggers (competitor going digital,
+        sales call, declining foot traffic) create interest. The 0.12 rate
+        reflects that ~88% remain in status quo without intervention.
+      primary_driver: "external_trigger_events"
+      primary_barrier: "kappa_traditional_switching=0.70"
+
+    BUS-03:
+      rate: 0.30
+      ci_68: [0.22, 0.38]
+      reasoning: |
+        Franchise decisions often involve HQ initiative. When HQ decides to
+        improve digital presence across locations, entire chains move.
+        Individual locations have medium-high digital maturity. The 0.30
+        rate reflects the mix of HQ-driven (high) and local-initiative (low).
+      primary_driver: "hq_initiative"
+      primary_barrier: "local_autonomy_constraints"
+
+    BUS-04:
+      rate: 0.25
+      ci_68: [0.18, 0.32]
+      reasoning: |
+        Tradespeople are project-driven. When they need more leads, they
+        explore platforms. renovero already provides a channel, so awareness
+        of localsearch broader products is partial. Rate reflects the
+        fraction actively seeking to expand beyond renovero basics.
+      primary_driver: "lead_generation_need"
+      primary_barrier: "project_cycle_dependency"
+
+  # --------------------------------------------------------------------------
+  # F2: INTEREST (Interest -> Evaluation/Trial consideration)
+  # --------------------------------------------------------------------------
+  # Key driver: Loss framing (show what they lose without product)
+  # Key barrier: Complexity aversion (-0.35 per step)
+
+  F2_INTEREST:
+    BUS-01:
+      rate: 0.55
+      ci_68: [0.47, 0.63]
+      reasoning: |
+        High digital maturity means these SMEs can quickly parse product
+        pages and evaluate ROI. They compare multiple solutions routinely.
+        The main friction is competitive alternatives (Google Ads, social
+        media). Rate reflects that about half find localsearch offerings
+        compelling enough to proceed.
+      primary_driver: "digital_maturity=high"
+      primary_barrier: "competitive_alternatives"
+
+    BUS-02:
+      rate: 0.18
+      ci_68: [0.12, 0.25]
+      reasoning: |
+        Complexity aversion (penalty=-0.35) is the dominant barrier here.
+        When Traditional SMEs visit a product page or receive a sales call,
+        the feature richness of digitalONE overwhelms them. Each additional
+        feature or step loses ~35% of remaining interest. Of those who
+        showed initial interest, only ~18% stay engaged long enough to
+        evaluate seriously.
+      primary_driver: "sales_relationship"
+      primary_barrier: "complexity_penalty=-0.35"
+
+    BUS-03:
+      rate: 0.40
+      ci_68: [0.30, 0.50]
+      reasoning: |
+        Franchise locations with HQ backing have clearer evaluation criteria
+        and dedicated staff. The process is more structured but involves
+        internal approvals. Rate reflects that ~60% drop off due to
+        internal process friction or competing priorities.
+      primary_driver: "structured_evaluation_process"
+      primary_barrier: "internal_approval_latency"
+
+    BUS-04:
+      rate: 0.35
+      ci_68: [0.25, 0.45]
+      reasoning: |
+        Tradespeople evaluate pragmatically: will this get me more projects?
+        renovero already serves this need partially. Cross-sell to
+        digitalONE requires showing incremental value beyond renovero.
+        Rate reflects moderate pragmatic interest.
+      primary_driver: "pragmatic_roi_focus"
+      primary_barrier: "renovero_sufficiency_perception"
+
+  # --------------------------------------------------------------------------
+  # F3: TRIAL (Evaluation -> Trial activation)
+  # --------------------------------------------------------------------------
+  # Key driver: Default effect (delta), free trial design
+  # Key barrier: Loss aversion (lambda=2.5)
+
+  F3_TRIAL:
+    BUS-01:
+      rate: 0.65
+      ci_68: [0.55, 0.73]
+      reasoning: |
+        Digital-native SMEs are familiar with SaaS trial models. Low
+        friction to start. If trial is truly free and quick to activate,
+        most evaluating SMEs will try. Rate reflects that ~35% decide
+        competitor solutions are better before trying.
+      primary_driver: "saas_familiarity"
+      primary_barrier: "competitor_preference"
+
+    BUS-02:
+      rate: 0.25
+      ci_68: [0.18, 0.33]
+      reasoning: |
+        Loss aversion (lambda=2.5) is the primary barrier. Even for a FREE
+        trial, Traditional SMEs fear: (a) wasting time learning the tool,
+        (b) being locked in, (c) sales pressure after trial. The perceived
+        loss of time and autonomy weighs 2.5x the perceived gain. Only
+        ~25% of those evaluating take the step to activate a trial.
+        A one-click trial from existing listing could improve this.
+      primary_driver: "zero_risk_perception"
+      primary_barrier: "lambda_marketing_investment=2.5"
+
+    BUS-03:
+      rate: 0.50
+      ci_68: [0.38, 0.60]
+      reasoning: |
+        Franchise trials often involve pilot locations. HQ may approve
+        testing in 2-3 locations. Budget approval is easier for trials.
+        Rate reflects that half of evaluating chains proceed to pilot.
+      primary_driver: "pilot_culture"
+      primary_barrier: "budget_approval_process"
+
+    BUS-04:
+      rate: 0.40
+      ci_68: [0.30, 0.50]
+      reasoning: |
+        Tradespeople are action-oriented. If the trial promise is concrete
+        (get 3 free leads this month), they try. Lower loss aversion than
+        Traditional SMEs for digital tools specifically. Rate reflects
+        moderate trial willingness.
+      primary_driver: "concrete_lead_promise"
+      primary_barrier: "time_investment_concern"
+
+  # --------------------------------------------------------------------------
+  # F4: CONVERSION (Trial -> Paid subscription)
+  # --------------------------------------------------------------------------
+  # Key driver: Default effect (delta=0.75 for auto-renewal/conversion)
+  # Key barrier: Present bias (beta=0.70)
+
+  F4_CONVERSION:
+    BUS-01:
+      rate: 0.65
+      ci_68: [0.55, 0.73]
+      reasoning: |
+        Digital-native SMEs see ROI quickly during trial (they know how to
+        measure it). Default auto-conversion (delta=0.75) helps retain
+        those who are passively satisfied. Rate reflects high conversion
+        for those who trial, minus ~35% who found better alternatives or
+        decided the ROI was insufficient.
+      primary_driver: "delta_auto_conversion=0.75"
+      primary_barrier: "roi_not_demonstrated"
+
+    BUS-02:
+      rate: 0.30
+      ci_68: [0.22, 0.40]
+      reasoning: |
+        Present bias (beta=0.70) means Traditional SMEs heavily discount
+        future benefits. During trial, immediate ROI is hard to see
+        (digital marketing takes weeks to show results). Only those who
+        get direct bookings or calls during trial convert. Default
+        auto-conversion (delta=0.75) helps: if trial auto-converts to
+        paid, retention is higher than active conversion. Without auto-
+        conversion, rate would be ~15%.
+      primary_driver: "delta_auto_conversion=0.75"
+      primary_barrier: "beta_digital_adoption=0.70"
+
+    BUS-03:
+      rate: 0.50
+      ci_68: [0.38, 0.60]
+      reasoning: |
+        Franchise pilot results must justify HQ-wide rollout. If pilot
+        shows measurable improvement, conversion is high. Rate reflects
+        that about half of pilots generate convincing enough results.
+      primary_driver: "pilot_results_measurable"
+      primary_barrier: "hq_budget_approval"
+
+    BUS-04:
+      rate: 0.45
+      ci_68: [0.35, 0.55]
+      reasoning: |
+        Tradespeople convert if they got projects during trial.
+        Direct attribution is easier (leads → projects → revenue).
+        Rate reflects project-driven, pragmatic evaluation.
+      primary_driver: "direct_lead_attribution"
+      primary_barrier: "project_cycle_mismatch"
+
+  # --------------------------------------------------------------------------
+  # F5: ACTIVATION (Paid -> Active usage of 3+ features in 30 days)
+  # --------------------------------------------------------------------------
+  # Key driver: Implementation intentions, onboarding nudges
+  # Key barrier: Complexity aversion (-0.35 per step)
+
+  F5_ACTIVATION:
+    BUS-01:
+      rate: 0.85
+      ci_68: [0.78, 0.90]
+      reasoning: |
+        High digital maturity means self-onboarding works well. These SMEs
+        explore features proactively. 85% reach 3+ features within 30 days
+        simply through normal usage patterns.
+      primary_driver: "digital_maturity=high"
+      primary_barrier: "feature_discovery"
+
+    BUS-02:
+      rate: 0.50
+      ci_68: [0.40, 0.60]
+      reasoning: |
+        Complexity aversion (penalty=-0.35) means every additional feature
+        is a hurdle. Without guided onboarding, Traditional SMEs use 1-2
+        features max (usually just the listing). Reaching 3+ features
+        requires hand-holding. Sales rep onboarding calls significantly
+        improve this. Rate of 0.50 assumes current (likely minimal)
+        onboarding support.
+      primary_driver: "guided_onboarding"
+      primary_barrier: "complexity_penalty=-0.35"
+
+    BUS-03:
+      rate: 0.70
+      ci_68: [0.58, 0.78]
+      reasoning: |
+        Franchise locations benefit from HQ-mandated setup procedures and
+        sometimes dedicated digital staff. Higher than BUS-02 but lower
+        than BUS-01 due to local resource constraints.
+      primary_driver: "hq_onboarding_mandate"
+      primary_barrier: "local_staff_capacity"
+
+    BUS-04:
+      rate: 0.60
+      ci_68: [0.48, 0.70]
+      reasoning: |
+        Tradespeople are practical but time-constrained. They activate
+        features directly tied to getting leads (profile, photos,
+        availability) but may skip analytics or marketing features.
+      primary_driver: "lead_generation_features"
+      primary_barrier: "time_constraints"
+
+  # --------------------------------------------------------------------------
+  # F6: RETENTION (Active -> 12-month renewal)
+  # --------------------------------------------------------------------------
+  # Key driver: Status quo bias (kappa) + Default auto-renewal (delta=0.75)
+  # Key barrier: Perceived low ROI
+
+  F6_RETENTION:
+    BUS-01:
+      rate: 0.78
+      ci_68: [0.70, 0.84]
+      reasoning: |
+        Combination of auto-renewal default (delta=0.75), loss aversion
+        for cancellation (lambda=1.8), and status quo bias creates strong
+        retention. These SMEs also see and measure ROI. The 22% churn
+        comes from businesses that found better alternatives or reduced
+        marketing budgets.
+      primary_driver: "delta_auto_renewal=0.75"
+      primary_barrier: "competitive_switching"
+
+    BUS-02:
+      rate: 0.65
+      ci_68: [0.55, 0.73]
+      reasoning: |
+        Counterintuitively, status quo bias (kappa=0.70) that initially
+        prevented adoption now HELPS retention. Once subscribed, the same
+        inertia keeps them. Auto-renewal default (delta=0.75) further
+        reinforces this. The 35% churn comes from those who never
+        activated properly (see F5) and eventually cancel when they
+        notice the charge.
+      primary_driver: "kappa_as_retention_force=0.70"
+      primary_barrier: "low_activation_leading_to_cancel"
+
+    BUS-03:
+      rate: 0.72
+      ci_68: [0.62, 0.80]
+      reasoning: |
+        Franchise retention is driven by HQ decisions. If HQ continues
+        the program, all locations retain. If HQ cancels, all locations
+        churn. Rate reflects the probability of HQ continuing after 12
+        months, given measurable results from pilot.
+      primary_driver: "hq_program_continuation"
+      primary_barrier: "hq_budget_reallocation"
+
+    BUS-04:
+      rate: 0.55
+      ci_68: [0.45, 0.65]
+      reasoning: |
+        Tradespeople have the highest churn because their need is
+        project-dependent. During slow periods, they question the
+        subscription. Without ongoing leads, the perceived ROI drops.
+        Seasonal patterns in construction/renovation amplify this.
+      primary_driver: "ongoing_lead_flow"
+      primary_barrier: "seasonal_demand_variation"
+
+  # --------------------------------------------------------------------------
+  # F7: EXPANSION (Retained -> Upgrade or cross-sell)
+  # --------------------------------------------------------------------------
+  # Key driver: Social proof (peer upgrades), demonstrated ROI
+  # Key barrier: Loss aversion (lambda=2.5 for additional spend)
+
+  F7_EXPANSION:
+    BUS-01:
+      rate: 0.28
+      ci_68: [0.20, 0.36]
+      reasoning: |
+        Digital-native SMEs are the most likely to upgrade (advertiseONE)
+        or add products. They can measure incremental ROI and are
+        comfortable increasing spend. Rate reflects that about a quarter
+        see sufficient incremental value to expand.
+      primary_driver: "measurable_incremental_roi"
+      primary_barrier: "budget_ceiling"
+
+    BUS-02:
+      rate: 0.08
+      ci_68: [0.04, 0.13]
+      reasoning: |
+        Traditional SMEs who survived to retention are already an
+        exceptional subset. Asking them to INCREASE spend triggers
+        strong loss aversion (lambda=2.5). Only ~8% expand, typically
+        those who experienced a concrete success story (e.g., a big
+        booking through the platform).
+      primary_driver: "concrete_success_event"
+      primary_barrier: "lambda_marketing_investment=2.5"
+
+    BUS-03:
+      rate: 0.18
+      ci_68: [0.12, 0.26]
+      reasoning: |
+        Franchise expansion often means rolling out to more locations
+        rather than upgrading per location. HQ-driven expansion decisions
+        are binary (expand to all or not). Rate reflects moderate
+        expansion probability.
+      primary_driver: "hq_rollout_decision"
+      primary_barrier: "per_location_roi_variation"
+
+    BUS-04:
+      rate: 0.12
+      ci_68: [0.07, 0.18]
+      reasoning: |
+        Tradespeople who retain may add advertiseONE for visibility.
+        But their budgets are small and project-dependent. Rate reflects
+        modest expansion driven by competitive pressure.
+      primary_driver: "competitive_visibility_need"
+      primary_barrier: "small_budget_constraint"
+
+# ==============================================================================
+# END-TO-END CONVERSION (Cumulative)
+# ==============================================================================
+#
+# Product of all phase conversion rates per segment.
+# Represents: From total addressable segment -> Expanded customer
+
+end_to_end:
+  BUS-01:
+    reach_to_paid: 0.093     # 0.45 * 0.55 * 0.65 * 0.65
+    reach_to_activated: 0.079  # * 0.85
+    reach_to_retained: 0.062   # * 0.78
+    reach_to_expanded: 0.017   # * 0.28
+    absolute_estimates:
+      TAM: 65000
+      paid_customers: 6045     # 65000 * 0.093
+      activated: 5138          # * 0.85
+      retained_12m: 4008       # * 0.78
+      expanded: 1122           # * 0.28
+
+  BUS-02:
+    reach_to_paid: 0.0016    # 0.12 * 0.18 * 0.25 * 0.30
+    reach_to_activated: 0.0008  # * 0.50
+    reach_to_retained: 0.0005  # * 0.65
+    reach_to_expanded: 0.00004 # * 0.08
+    absolute_estimates:
+      TAM: 275000
+      paid_customers: 446      # 275000 * 0.0016
+      activated: 223           # * 0.50
+      retained_12m: 145        # * 0.65
+      expanded: 12             # * 0.08
+    note: |
+      Extremely low end-to-end conversion underscores why BUS-02 is both
+      the biggest opportunity AND the hardest segment. Even small
+      improvements at early funnel stages have massive absolute impact
+      given the 275k segment size.
+
+  BUS-03:
+    reach_to_paid: 0.030     # 0.30 * 0.40 * 0.50 * 0.50
+    reach_to_activated: 0.021  # * 0.70
+    reach_to_retained: 0.015   # * 0.72
+    reach_to_expanded: 0.0027  # * 0.18
+    absolute_estimates:
+      TAM: 25000
+      paid_customers: 750      # 25000 * 0.030
+      activated: 525           # * 0.70
+      retained_12m: 378        # * 0.72
+      expanded: 68             # * 0.18
+
+  BUS-04:
+    reach_to_paid: 0.016     # 0.25 * 0.35 * 0.40 * 0.45
+    reach_to_activated: 0.0095 # * 0.60
+    reach_to_retained: 0.0052  # * 0.55
+    reach_to_expanded: 0.0006  # * 0.12
+    absolute_estimates:
+      TAM: 35000
+      paid_customers: 551      # 35000 * 0.016
+      activated: 331           # * 0.60
+      retained_12m: 182        # * 0.55
+      expanded: 22             # * 0.12
+
+  # Portfolio totals (all segments combined)
+  portfolio_total:
+    paid_customers: 7792
+    activated: 6217
+    retained_12m: 4713
+    expanded: 1224
+
+# ==============================================================================
+# BOTTLENECK ANALYSIS
+# ==============================================================================
+
+bottleneck_analysis:
+  overall_bottleneck: "F1_REACH for BUS-02 (Traditional SMEs)"
+  explanation: |
+    The Traditional SME segment (BUS-02) represents 65% of the addressable
+    market but has a 12% reach-to-interest rate. This is the single biggest
+    lever: moving BUS-02 F1 from 0.12 to 0.18 (+50%) would increase total
+    BUS-02 paid customers by 50% in absolute terms.
+
+  per_segment_bottlenecks:
+    BUS-01:
+      phase: "F2_INTEREST"
+      rate: 0.55
+      explanation: "Competitive alternatives pull away interested Digital-Natives"
+      intervention_class: "differentiation"
+
+    BUS-02:
+      phase: "F1_REACH"
+      rate: 0.12
+      explanation: "Status quo bias (kappa=0.70) prevents any engagement"
+      intervention_class: "social_proof_and_loss_framing"
+
+    BUS-03:
+      phase: "F3_TRIAL"
+      rate: 0.50
+      explanation: "HQ budget approval process slows pilot initiation"
+      intervention_class: "executive_case_study"
+
+    BUS-04:
+      phase: "F6_RETENTION"
+      rate: 0.55
+      explanation: "Seasonal demand variation causes churn in slow periods"
+      intervention_class: "smoothing_and_value_reminders"
+
+# ==============================================================================
+# INTERVENTION UPLIFT SCENARIOS (BUS-02 Focus)
+# ==============================================================================
+#
+# Since BUS-02 is the biggest opportunity, we model uplift scenarios
+# for behavioral interventions targeting each funnel phase.
+
+intervention_scenarios:
+  target_segment: "BUS-02"
+  baseline_paid_customers: 446
+
+  scenarios:
+    - scenario_id: "INT-01"
+      name: "Social proof campaign"
+      target_phase: "F1_REACH"
+      intervention: |
+        Show Traditional SMEs that their direct competitors and neighbors
+        use digitalONE successfully. Leverage sigma_peer_adoption=0.55.
+        Format: Postcard/email with local success story + QR code.
+      baseline_rate: 0.12
+      projected_rate: 0.18
+      uplift_factor: 1.50
+      confidence: "MEDIUM"
+      evidence_basis: "sigma_peer_adoption_sme=0.55; peer effect literature"
+      downstream_impact:
+        paid_customers: 669  # 446 * 1.50
+        incremental: 223
+
+    - scenario_id: "INT-02"
+      name: "Radical simplification"
+      target_phase: "F2_INTEREST"
+      intervention: |
+        Reduce digitalONE evaluation from 5+ steps to 1 step.
+        Show a single-page comparison: your listing now vs. digitalONE.
+        Counter complexity_penalty=-0.35 by eliminating steps.
+      baseline_rate: 0.18
+      projected_rate: 0.35
+      uplift_factor: 1.94
+      confidence: "MEDIUM"
+      evidence_basis: "complexity_penalty=-0.35; each removed step recovers 35%"
+      downstream_impact:
+        paid_customers: 866
+        incremental: 420
+
+    - scenario_id: "INT-03"
+      name: "One-click free trial from existing listing"
+      target_phase: "F3_TRIAL"
+      intervention: |
+        Allow SMEs to upgrade their existing free listing to digitalONE
+        trial with ONE click from their admin dashboard. No forms, no
+        credit card, no sales call. Directly counters lambda=2.5 by
+        removing any perceived loss.
+      baseline_rate: 0.25
+      projected_rate: 0.50
+      uplift_factor: 2.00
+      confidence: "MEDIUM-HIGH"
+      evidence_basis: "lambda=2.5 but zero-cost trial removes loss; delta effect"
+      downstream_impact:
+        paid_customers: 892
+        incremental: 446
+
+    - scenario_id: "INT-04"
+      name: "Auto-conversion default"
+      target_phase: "F4_CONVERSION"
+      intervention: |
+        Trial auto-converts to paid after 30 days unless explicitly
+        cancelled. Leverage delta_auto_renewal=0.75. Combined with
+        immediate value demonstration during trial.
+      baseline_rate: 0.30
+      projected_rate: 0.45
+      uplift_factor: 1.50
+      confidence: "HIGH"
+      evidence_basis: "delta_auto_renewal=0.75; SaaS default conversion literature"
+      downstream_impact:
+        paid_customers: 669
+        incremental: 223
+
+    - scenario_id: "INT-05"
+      name: "Guided onboarding with local sales rep"
+      target_phase: "F5_ACTIVATION"
+      intervention: |
+        Personal onboarding call from local sales rep within 48h of
+        conversion. Walk through 3 key features together. Implementation
+        intentions: set specific goals for first month.
+      baseline_rate: 0.50
+      projected_rate: 0.75
+      uplift_factor: 1.50
+      confidence: "HIGH"
+      evidence_basis: "Implementation intentions literature; complexity reduction"
+      downstream_impact:
+        activated_customers_from_baseline: 335  # 446 * 0.75
+        incremental_activated: 112
+
+    - scenario_id: "INT-COMBINED"
+      name: "Full behavioral funnel optimization"
+      target_phases: ["F1", "F2", "F3", "F4", "F5"]
+      description: "All five interventions combined"
+      projected_rates:
+        F1: 0.18
+        F2: 0.35
+        F3: 0.50
+        F4: 0.45
+        F5: 0.75
+        F6: 0.65  # unchanged
+        F7: 0.08  # unchanged
+      projected_end_to_end:
+        reach_to_paid: 0.014   # 0.18 * 0.35 * 0.50 * 0.45
+        reach_to_activated: 0.011
+        reach_to_retained: 0.007
+      absolute_impact:
+        paid_customers: 3938   # 275000 * 0.014
+        activated: 2953        # * 0.75
+        retained_12m: 1920     # * 0.65
+      vs_baseline:
+        paid_multiplier: 8.8   # 3938 / 446
+        incremental_paid: 3492
+      caveat: |
+        Combined scenario assumes independence between interventions.
+        In practice, complementarities and crowding-out effects may
+        alter the combined impact. See localsearch_gamma_matrix.yaml
+        (future file) for interaction modelling.
+
+# ==============================================================================
+# SENSITIVITY ANALYSIS
+# ==============================================================================
+
+sensitivity:
+  description: |
+    Which parameters, if wrong by +/-20%, most affect total paid customers?
+
+  tornado_chart_bus02:
+    # Sorted by impact magnitude (highest first)
+    - parameter: "F1_rate"
+      base: 0.12
+      low_scenario: 0.096  # -20%
+      high_scenario: 0.144 # +20%
+      impact_on_paid: [-89, +89]  # absolute change in paid customers
+      elasticity: 1.0  # linear pass-through
+
+    - parameter: "F2_rate"
+      base: 0.18
+      low_scenario: 0.144
+      high_scenario: 0.216
+      impact_on_paid: [-89, +89]
+      elasticity: 1.0
+
+    - parameter: "F3_rate"
+      base: 0.25
+      low_scenario: 0.20
+      high_scenario: 0.30
+      impact_on_paid: [-89, +89]
+      elasticity: 1.0
+
+    - parameter: "F4_rate"
+      base: 0.30
+      low_scenario: 0.24
+      high_scenario: 0.36
+      impact_on_paid: [-89, +89]
+      elasticity: 1.0
+
+    - parameter: "kappa_traditional"
+      base: 0.70
+      impact_phases: ["F1", "F6"]
+      note: |
+        kappa has DUAL effect: suppresses F1 (reach) but supports F6
+        (retention). Net impact depends on which phase dominates.
+        At current conversion rates, F1 suppression dominates.
+
+    - parameter: "lambda_marketing"
+      base: 2.5
+      impact_phases: ["F3", "F7"]
+      note: |
+        Higher lambda suppresses trial initiation and expansion.
+        Reducing perceived loss (e.g., free trial) effectively
+        reduces lambda for that decision context.
+
+  key_insight: |
+    All four early-funnel rates (F1-F4) have identical elasticity=1.0
+    on total paid customers. However, F1 (reach) has the lowest
+    baseline rate (0.12) and the largest addressable population,
+    making it the highest-ROI intervention target.
+
+# ==============================================================================
+# CALIBRATION PLAN
+# ==============================================================================
+
+calibration_plan:
+  description: |
+    These LLMMC estimates require empirical calibration. Priority data
+    requests for Localsearch analytics team.
+
+  priority_1_immediate:
+    - metric: "Current digitalONE conversion funnel"
+      maps_to: "F1-F4 rates"
+      data_source: "CRM + Analytics"
+      gap_ref: "GAP-02"
+
+    - metric: "12-month retention rate by product"
+      maps_to: "F6 rates"
+      data_source: "Subscription database"
+      gap_ref: "GAP-03"
+
+    - metric: "Current digitalONE adoption by segment"
+      maps_to: "Segment sizes and F1 baselines"
+      data_source: "Customer segmentation data"
+      gap_ref: "GAP-01"
+
+  priority_2_within_4_weeks:
+    - metric: "Feature usage patterns post-conversion"
+      maps_to: "F5 activation rates"
+      data_source: "Product analytics"
+
+    - metric: "Upgrade/cross-sell rates by tenure"
+      maps_to: "F7 expansion rates"
+      data_source: "Revenue analytics"
+
+    - metric: "Sales channel effectiveness"
+      maps_to: "F1 rates by acquisition channel"
+      data_source: "CRM"
+
+  bayesian_update_protocol: |
+    When client data arrives:
+    1. Calculate empirical rates per phase x segment
+    2. Use LLMMC estimates as priors
+    3. Bayesian update: posterior = f(prior, data, sample_size)
+    4. Update this file with posterior estimates
+    5. Re-run sensitivity analysis
+    6. Update intervention scenarios with calibrated rates

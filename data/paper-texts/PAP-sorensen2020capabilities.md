@@ -1,0 +1,365 @@
+# Capabilities and Organizational Design
+
+Jesper B. Sørensen, Stanford University
+Capabilities and Organizational Design
+When firms succeed, it is often because they possess distinct
+organizational capabilities. Such organizations ﬁgure out how to do
+something that no other organization can do - either because they
+do something totally different, or because they are simply the best at
+delivering a certain quality at the lowest possible cost.
+Organizational capabilities are the organizational analogue to indi-
+vidual skills; just as some people are better at playing the piano than
+others, or have unique combinations of skills, some organizations
+consistently stand out from their competitors. They can take many
+forms: ﬁrms with distinctive capabilities might consistently be more
+innovative than others, have the most efﬁcient distribution systems,
+deliver consistently better customer service, or produce goods with
+fewer defects and greater reliability than anyone else.
+Such capabilities can be a sustainable basis for value creation
+advantages, provided they are carefully nurtured and maintained
+by the ﬁrm’s leaders. Capability-based advantages are distinct from
+resource advantages, which derive from resources or assets that you
+control and others do not. (Examples of resource advantages include
+brand reputation, patents and an installed base of users.) Firms can
+and do have both capability- and resource-based advantages.
+For example, Apple is well-known
+for its product-design and marketing
+capabilities, but also has resource-based
+advantages derived from the value of
+its brand and the size of its installed
+base of users.
+Knowing that your organization has one or more distinctive
+capabilities, however, is different from knowing how to scale them,
+or adapt to change. Yet a critical aspect of driving growth for your
+venture is understanding how your initial success can be repeated (at
+high volumes), how it can be strengthened and improved, and how
+it can be protected from imitation by rivals. If your “special sauce”
+comes down to the unique chemistry that three member of your team
+have with each other, it is exceedingly unlikely that you will be able
+to manage growth. Similarly, if you do not understand how your
+organization’s capabilities come about, you are more likely to make
+mistakes when adapting to change.
+Hiring smart people is not sufﬁcient for establishing a capability-
+
+
+---
+
+2
+based advantage. A competitive advantage that is built exclusively
+on the superior skills of employees is a tenuous advantage, and
+perhaps no advantage at all, since it walks out the door every night.
+Consider what happens to professional
+basketball teams when their star players
+are injured or leave (e.g., LeBron James
+and the Cleveland Cavaliers).
+And because they can walk out the door, the skilled employees may
+capture much of the advantage they create.
+The answer to leveraging capability, instead, lies in organizational
+design. By thinking carefully about how you structure and run your
+organization, you have the potential to deliver on a capability-based
+advantage where the whole is greater than the sum of its parts.
+Moreover, you have the opportunity that build a sustainable business
+that thrives and grows, without being dependent for its success on
+the skills of particular individual contributors.
+This note discusses the central challenge in building organizatiosns—
+balancing coordination and motivation—and introduces a model for
+assessing alignment in organizational design.
+Coordination and Motivation
+Before turning to a framework for analyzing organizational
+design, take a few minutes to consider the miracle that is modern
+organizations.
+Imagine that you want to be in the business of creating and selling
+ﬁne dining experiences, with gourmet food and ﬁrst-rate service.
+Making this happen requires an ability to coordinate a myriad of
+tasks: chopping, roasting, frying, saucing and plating the food, seat-
+ing patrons, taking their orders, ﬁlling their water and wine glasses,
+serving the food, attending to special needs, preparing checks and
+processing credit cards. You could try to do that by yourself, but to
+do so would be to give up the gains from specialization: someone
+who chops vegetables all day will get more done than someone who
+moves from chopping to frying to plating to serving. So you will
+have a chef, a prep cook, a fry cook, a maitre d’, servers, a bartender,
+a sommelier, etc.
+Now, however, you have a new challenge: you have to get all of
+these people to work together effectively, and to work to the best
+of their ability in their roles. If you have ever visited a restaurant
+kitchen during the dinner rush (or watched enough reality TV cook-
+ing shows), you have a ﬂavor for how challenging this can be.
+What does an experienced chef have to do in the kitchen to put
+an order of “Sweetbreads, morels, snap peas & ramps” on your plate
+15-20 minutes after you ordered it, and still make a proﬁt at $29 a
+plate?
+The most obvious challenge in the kitchen is coordination: a
+Capabilities and Organizational Design
+© 2020 Jesper B. Sørensen
+
+
+---
+
+3
+million moving parts, all trying to get to one ﬁnal end, which is the
+plate. Coordination means the right people doing the right thing at
+the right time, without wasteful duplication. When coordination fails
+in a kitchen, the food is overcooked, it arrives late, or they forget to
+put the sauce on the side. When it fails at an airline, bags are lost,
+planes are delayed, people miss their connections.
+But chefs have another responsibility as well: maintaining indi-
+vidual motivation. An effective head chef not only needs to ensure
+that the cook at the grilling station knows what needs to be grilled
+when, she also has to make sure that it is cooked just right—and only
+the grill cook can do that. The fry cook has to keep doing his job
+even when others do things wrong, work harder when the rush is at
+its peak, and keep going even when he has had too much to drink
+the night before. Why would either of them want to ensure that the
+diner has an exquisite experience, if their rewards are the same when
+the diner’s experience is just average? If the members of the kitchen
+are insufﬁciently motivated —if the fry cook goes out to smoke a
+cigarette during the rush— the kitchen won’t live up to its potential.
+In the worst case, the restaurant will end up on a Gordon Ramsay’s
+Kitchen Nightmares.
+How will you solve this challenge? Most likely, your solution will
+For an insightful discussion of the
+tension between coordination and
+motivation, see John Roberts. The
+Modern Firm. Oxford: Oxford University
+Press. 2007.
+be to build a formal organization, in this case a restaurant. Orga-
+nizations are one particular means of coordinating and motivating
+people’s activity; markets are another. What distinguishes organiza-
+tions and markets is how they accomplish the needed coordination
+and motivation. Organizations coordinate and motivate people’s ac-
+tivity through authority: the fry cook focuses on frying because that’s
+what you tell him to do, and because if he doesn’t, he will likely lose
+his job.
+Markets, by contrast, accomplish coordination and motivation
+through voluntary, mutually beneﬁcial exchange: the butcher sells
+meat to you, and you buy from her, because you both feel better off
+doing so. As economists since Adam Smith have taught us, well-
+functioning markets are wonderfully efﬁcient coordination devices.
+But as Nobel-prize winning economists Ronald Coase and Oliver
+Williamson explained, they only function well under certain con-
+For a useful discussion, see Robert
+Gibbons. “Taking Coase Seriously.”
+Administrative Science Quarterly 44:
+145-157. 1999.
+ditions (e.g., when contracts can be speciﬁed and enforced), and
+the failures of markets can make organizations a superior means of
+coordinating and motivating action.
+It is hard to imagine that the exchanges in a restaurant kitchen can
+be accomplished through market mechanisms. Instead, the challenge
+for the leader is how to use her authority to accomplish the needed
+coordination and motivation. Organizational design is the key lever.
+For this we turn to the PARC model, introduced by Saloner, Shepard
+Capabilities and Organizational Design
+© 2020 Jesper B. Sørensen
+
+
+---
+
+4
+and Podolny in Strategic Management (Wiley, 2001).
+The PARC Model
+Whether you are building a new ﬁrm, or leading an established
+company, the question for you as a strategic leader is simple: how
+does the design of the organization affect your ability to deliver
+superior capabilities, and sustain those capabilities over time?
+Thinking about this question is complicated by the fact that exten-
+sive research shows that there is no single right organizational design.
+Every organization is unique, with different policies, practices, and
+cultures. Even among highly successful organizations in the same
+industry, there are striking differences in how ﬁrms work. Goldman
+Sachs and Morgan Stanley are probably more similar to each other
+than they are to Google, but anyone who has worked at both places
+will tell you that they are still very different.
+With so much potential variety, and so many possible “right”
+answers, it is tempting to throw up your hands and say that it is not
+worth thinking about. However, this would be a mistake. It will lead
+you to make organizational choices without reﬂecting on why you are
+making those choices.
+What you need is a framework for making sense of the seeming
+chaos, for thinking systematically about the building blocks of or-
+ganizations, and about how these elements interact with each other
+and the ﬁrm’s strategy. We will use the PARC framework, which is
+one of many quite similar frameworks for analyzing organizational
+design, including David Nadler’s “congruence model,” McKinsey’s
+See David A. Nadler. Champions of
+Change. New York: Jossey-Bass. 1997.
+7S model, etc.
+PARC is an acronym for the key elements of organizational design
+identiﬁed in the model: People, Architecture and Routines, and
+Culture. These are the main elements that you want to focus on
+when trying to understand how an organization works and assessing
+the degree of organizational and strategic alignment.
+Understanding the organization
+Some simple questions will help you get a better picture of the
+organization:
+People
+1. What knowledge, skills, and training do employees bring to the
+ﬁrm?
+Capabilities and Organizational Design
+© 2020 Jesper B. Sørensen
+
+
+---
+
+5
+2. What motivates the employees to work? Are they primarily inter-
+ested in money, do they emphasize the meaning of their work, or
+do they value the community of their fellow employees?
+3. What are their expectations? How does the ﬁrm ﬁt into their
+career or life plans?
+Architecture and Routines
+1. How is the formal organization (organizational chart) structured?
+Are tasks organized by function, product, or customer? How does
+the grouping compare to other ﬁrms in the industry? How is work
+coordinated?
+2. Is the organizational hierarchy ﬂat, or are there many layers?
+3. How are employees compensated? Do they receive a share of
+proﬁts (directly or indirectly)?
+4. What is the typical decision-making process? How many people
+are involved? Is authority delegated or centralized in the organiza-
+tion?
+5. Are jobs deﬁned very narrowly, or do people cover a wide range
+of tasks? Are tasks combined in the same way as at competitors?
+6. Is there a lot of teamwork?
+7. How does knowledge and information ﬂow? Is the network of
+informational ties in the ﬁrm very fragmented? Do some people
+act as central hubs or brokers in the network?
+Culture
+1. What are the fundamental values of people in the organization?
+2. What assumptions and beliefs about the world do employees
+share?
+3. Is there a lot of agreement among employees about what is im-
+portant and how the world works? Are these values and beliefs
+strongly held?
+Critical Tasks
+The ﬁnal element of the PARC model is the set of
+critical tasks that the organization needs to accomplish in order
+to succeed. Critical tasks are the activities that the ﬁrm absolutely
+has to perform in order to deliver on its competitive advantage.
+Critical tasks are therefore the link between your strategy and your
+Capabilities and Organizational Design
+© 2020 Jesper B. Sørensen
+
+
+---
+
+6
+organization: they are how the strategy is translated into what needs
+to get done, and how, by the organization.
+For example, part of Volvo’s perceived quality advantage derives
+from designing cars with superior safety features. Discovering and
+inventing new technologies for preventing accidents and minimizing
+injuries is therefore a critical task for Volvo. By contrast, Toyota built
+its perceived quality advantage on producing highly reliable, defect-
+free cars. An ability to design and produce cars with a low defect
+rate is therefore a critical task for Toyota.
+Figure 1: PARC Model
+Figure 1 illustrates the interconnectedness of the various aspects of
+the PARC model.
+Organizational Alignment and Capability
+Organizational capabilities arise from and are sustained by well-
+aligned organizational designs. The value of the PARC model lies in
+giving you a framework for assessing the extent to which the orga-
+nization is well aligned, and therefore reinforces the organizations
+capabilities.
+Alignment can be assessed along two dimensions. Speciﬁcally, an
+organization is well-aligned if:
+• The elements of organizational design (People, Architecture and
+Routines, and Culture) are consistent with each other, and
+• The elements of organizational design are aligned with the ﬁrm’s
+strategy, through their alignment with the ﬁrm’s critical tasks.
+It is through the internal consistency of the elements of organi-
+zational design that the whole becomes greater than the sum of its
+parts. This is because organizations are integrated systems, where the
+performance of one component depends on the other components.
+The interaction of the different elements of organizational design is
+more important than the elements themselves. If the different compo-
+nents conﬂict with each other—are inconsistent or incongruent—the
+performance of the system as a whole will suffer. For example, peo-
+ple who do not like to be told what to do will not perform well in a
+command-and-control structure. Similarly, a strategy that requires
+real collaboration among people with different skills will be difﬁcult
+to deliver in an organization that has rigid, narrow job deﬁnitions,
+and rewards people as individual contributors.
+To return to our earlier example, a great chef uses a number of the
+elements of organizational design described in the PARC framework,
+and creates alignment between them.
+• She hires prep cooks and sous-chefs with excellent cooking skills,
+Capabilities and Organizational Design
+© 2020 Jesper B. Sørensen
+
+
+---
+
+7
+a passion for great food, and perhaps training from a culinary
+academy (People).
+• Everyone in the kitchen has an assigned set of tasks – a division of
+labor (Architecture), and there is alignment between the skills of
+the people hired and the jobs they have to do.
+• There is a control system, which in part takes the form of the chef
+calling out commands, checking the dishes before they go out, and
+yelling at people when things go wrong (Routines).
+• When yelled at, people ﬁx their mistakes without storming out
+(Culture).
+• There is a formal hierarchy, with the chef at the top and prep
+cooks near the bottom (Architecture).
+• There are routines for what happens when orders come in: the
+chef calls out “1 veal, 1 duck, 3 swine,” and everyone in the
+kitchen knows what to do in response. Prepped vegetables are
+thrown in boiling water; meat hits the pan. Plates are prepped and
+garnished. Waiters whisk them away.
+• Motivation is encouraged through incentives (wages, the hope of
+moving up, and the fear of being ﬁred on the spot) (Architecture).
+• Effective chefs create a strong set of behavioral norms that shape
+how people interact with each other, how they are allowed to
+respond to stress, and how they feel about their work (Culture).
+A well-run kitchen is one in which the elements of PARC align
+with each other to ensure effective coordination with high levels of
+motivation.
+Conclusion
+What you see in the kitchen is a microcosm of the even more com-
+plex coordination that is accomplished in organizations every day.
+In fact, what you see in the kitchen is a relatively simple form of
+coordination — it all takes place largely through face-to-face inter-
+action, with people speaking to (or yelling at) each other. Running
+the restaurant as a whole is more difﬁcult. While everything is going
+on in the kitchen, the front of the house is busy making sure guests
+are seated, water glasses are ﬁlled, and orders are taken in a timely
+fashion and communicated to the kitchen, etc.
+Few if any of you will run a high-end restaurant, much less be
+the chef in the kitchen. The organizations you manage and lead
+Capabilities and Organizational Design
+© 2020 Jesper B. Sørensen
+
+
+---
+
+8
+will in many cases be much larger and more complex – imagine
+the complexity of a modern airline. But no matter how large and
+complex the ﬁrm, the essential challenge for you is the same: how
+best to deliver coordination with high levels of motivation among
+everyone involved.
+As you surely have experienced, this does not always happen.
+Meeting the joint challenge of coordination and motivation is one
+thing in a restaurant kitchen, or even in a small startup. Doing it in a
+large, complex organization is something else entirely. The Ofﬁce may
+have exaggerated the pathologies of big ﬁrms, but it strikes a nerve
+because there is truth to it.
+The good news, however, is that the elements of organizational
+design are powerful tools for accomplishing the challenge of opti-
+mizing coordination and motivation simultaneously. Attention to
+organizational design is important, because capability-based ad-
+vantages reside in the elements of PARC, their alignment with each
+other and the ﬁrm’s Critical Tasks. In other words, a ﬁrm may have a
+competitive advantage because it has higher levels of internal consis-
+tency than its competitors. In addition, a ﬁrm may have a competitive
+advantage because it has made different, aligned choices about
+organizational design. By contrast, when leaders ﬁnd themselves
+continually facing the same organizational problems, the root cause
+almost always lies in misalignment between the elements of PARC. In
+short, alignment is critical.
+Capabilities and Organizational Design
+© 2020 Jesper B. Sørensen

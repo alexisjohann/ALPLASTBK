@@ -1,0 +1,626 @@
+# BEATRIX System Architecture — Single Source of Truth (SSOT)
+# ===========================================================
+#
+# SSOT für die gesamte BEATRIX/BEA-Lab Systemarchitektur.
+# Alle anderen Architektur-Dokumente sind DEPRECATED und verweisen hierher.
+#
+# DEPRECATED Dokumente (NUR NOCH ALS HISTORISCHE REFERENZ):
+#   - docs/bea-lab-architecture.md  (Planungs-Dokument, nie umgesetzt)
+#   - docs/bea-lab-tech-stack.md    (teilweise korrekt, hier konsolidiert)
+#
+# Created: 2026-02-14
+# Last updated: 2026-02-14
+# Version: 1.1.0
+
+metadata:
+  description: "BEATRIX System Architecture — Single Source of Truth"
+  ssot: true
+  created: "2026-02-14"
+  last_updated: "2026-02-14"
+  version: "1.1.0"
+  app_version: "v3.19.0"
+  deprecated_docs:
+    - path: "docs/bea-lab-architecture.md"
+      reason: "Planungs-Dokument (Next.js/Supabase/TypeScript) — nie umgesetzt"
+      status: "DEPRECATED"
+    - path: "docs/bea-lab-tech-stack.md"
+      reason: "Teilweise korrekt, hier konsolidiert"
+      status: "DEPRECATED"
+
+# ============================================================
+# 1. SYSTEM OVERVIEW
+# ============================================================
+
+system:
+  name: "BEATRIX"
+  full_name: "The Strategic Intelligence Suite"
+  domain: "www.bea-lab.io"
+  description: |
+    Interaktive Web-Plattform die das Evidence-Based Framework (EBF)
+    für FehrAdvice-Mitarbeitende und Kunden zugänglich macht.
+  built_in: "Single Session (2026-02-08): v0 → v3.10"
+  builder: "Claude (Anthropic) — kein menschlicher Entwickler"
+
+# ============================================================
+# 2. THREE-REPO ARCHITECTURE
+# ============================================================
+
+repos:
+  frontend:
+    name: "bea-lab-frontend"
+    org: "FehrAdvice-Partners-AG"
+    full: "FehrAdvice-Partners-AG/bea-lab-frontend"
+    purpose: "Frontend SPA (Vanilla HTML/CSS/JS)"
+    deploys_to: "Vercel"
+    auto_deploy: true
+    deploy_trigger: "Push to main"
+    deploy_time: "~30 Sekunden"
+
+  backend:
+    name: "bea-lab-upload"
+    org: "FehrAdvice-Partners-AG"
+    full: "FehrAdvice-Partners-AG/bea-lab-upload"
+    transfer_note: "Transferiert von gerhardfehr/bea-lab-upload (301 redirect aktiv)"
+    purpose: "Backend API (FastAPI/Python) + Frontend Backup"
+    deploys_to: "Railway"
+    auto_deploy: true
+    deploy_trigger: "Push to main"
+    deploy_time: "90-100 Sekunden"
+    note: "Enthält auch frontend/ Backup-Kopie"
+
+  data:
+    name: "complementarity-context-framework"
+    org: "FehrAdvice-Partners-AG"
+    full: "FehrAdvice-Partners-AG/complementarity-context-framework"
+    purpose: "EBF Knowledge Layer (YAML/LaTeX/Docs)"
+    deploys_to: "GitHub (kein Deploy nötig)"
+    note: "BEATRIX liest/schreibt über GitHub API"
+
+  dual_push_rule:
+    id: "L007"
+    rule: |
+      Frontend-Updates MÜSSEN in BEIDE Repos gepusht werden:
+      1. FehrAdvice-Partners-AG/bea-lab-frontend (Vercel auto-deploys)
+      2. FehrAdvice-Partners-AG/bea-lab-upload/frontend/    (Backup)
+
+# ============================================================
+# 3. FRONTEND LAYER
+# ============================================================
+
+frontend:
+  tech_stack:
+    framework: "KEINES"
+    languages: ["HTML5", "CSS3", "JavaScript (Vanilla)"]
+    build_step: "KEINER (kein npm, kein Webpack, kein Vite)"
+    note: "Bewusste Entscheidung: kein Build-Step = schnelleres Deployment"
+
+  # WAS NICHT verwendet wird (häufige Fehl-Annahme):
+  not_used:
+    - "React / Next.js"
+    - "Vue / Nuxt"
+    - "Angular"
+    - "TypeScript"
+    - "Tailwind CSS"
+    - "shadcn/ui"
+    - "npm / node_modules"
+    - "Webpack / Vite / Build Tools"
+
+  file_structure:
+    root: "frontend/"
+    files:
+      - path: "index.html"
+        description: "Single Page App (1 HTML-Datei)"
+      - path: "styles/main.css"
+        description: "CSS Custom Properties (Theming)"
+      - path: "styles/components.css"
+        description: "Komponenten-spezifisch"
+      - path: "js/app.js"
+        description: "App-Initialisierung"
+      - path: "js/api.js"
+        description: "Backend-API Calls (fetch)"
+      - path: "js/auth.js"
+        description: "JWT Token Management"
+      - path: "js/ui/chatInterface.js"
+        description: "Chat UI"
+      - path: "js/ui/dashboard.js"
+        description: "Dashboard UI"
+      - path: "js/ui/modelBuilder.js"
+        description: "EEE 9-Step Wizard"
+      - path: "js/ui/contextAnalyzer.js"
+        description: "Kontext-Analyse UI"
+      - path: "js/utils.js"
+        description: "Helpers, Formatting"
+      - path: "assets/"
+        description: "Bilder, Icons"
+
+  design_system:
+    font: "Plus Jakarta Sans (Google Fonts CDN)"
+    colors:
+      primary_navy: "#1B365D"
+      teal: "rgb(42,127,142)"
+      actions_gold: "rgb(251,191,36)"
+      mandates_teal: "rgb(52,211,153)"
+      models_blue: "rgb(139,170,255)"
+      context_orange: "rgb(232,163,61)"
+    responsive:
+      mobile: "320px-640px"
+      tablet: "641px-1024px"
+      desktop: "1025px+"
+      method: "CSS Media Queries"
+
+  conventions:
+    - "CSS Custom Properties für Theming (kein Sass/Less)"
+    - "async/await für alle API-Calls"
+    - "Event Delegation für dynamisch erzeugte Elemente"
+    - "SSE (Server-Sent Events) für Chat-Streaming (NICHT WebSocket)"
+    - "localStorage NUR für JWT Token (für SSE Reconnection)"
+    - "fetch() für alle Backend-Calls"
+
+  hosting:
+    provider: "Vercel"
+    url: "bea-lab-frontend.vercel.app"
+    domain: "www.bea-lab.io"
+    team: "FehrAdvice_Team_Beatrix"
+    ssl: "Automatisch via Vercel"
+
+# ============================================================
+# 4. BACKEND LAYER
+# ============================================================
+
+backend:
+  tech_stack:
+    language: "Python 3"
+    framework: "FastAPI"
+    server: "Uvicorn (ASGI)"
+    orm: "SQLAlchemy"
+    db_driver: "psycopg2"
+    auth: "PyJWT (HS256) + bcrypt"
+    dedup: "hashlib (SHA256)"
+
+  hosting:
+    provider: "Railway"
+    url: "bea-lab-upload-production.up.railway.app"
+    railway_project: "71bbbb54-ee68-4926-994d-e850bfdd8816"
+    railway_env: "36f908e9-278e-4073-a8d0-743e7a8dd5c7"
+    railway_service: "14a62e50-1e02-4b3f-a76f-982a565cace4"
+
+  api_endpoints:
+    total_count: "140+"
+    ssot: "data/beatrix/status-quo-2026-02-14.yaml → api_endpoints"
+    note: "Vollständige Liste mit allen Parametern im status-quo SSOT"
+    categories:
+      - {category: "Authentication", count: 12}
+      - {category: "Profile", count: 5}
+      - {category: "Admin", count: 18}
+      - {category: "Chat/RAG", count: 17}
+      - {category: "Documents/Upload", count: 14}
+      - {category: "CRM", count: 20}
+      - {category: "Projects", count: 10}
+      - {category: "Registry/ZEFIX", count: 5}
+      - {category: "Leads/Contexts", count: 8}
+      - {category: "Psi-Analyses", count: 5}
+      - {category: "Tasks", count: 8}
+      - {category: "Behavioral Insights", count: 5}
+      - {category: "Review/Quality", count: 10}
+      - {category: "Other", count: 13}
+
+  file_structure:
+    main: "server.py"
+    size: "14,377 Zeilen (699KB)"
+    note: "Monolithische Datei (FastAPI app + alle Routes + 140+ Endpoints)"
+
+# ============================================================
+# 5. DATABASE LAYER
+# ============================================================
+
+database:
+  type: "PostgreSQL"
+  host: "Railway"
+  user: "beatrix"
+  db_name: "beatrix"
+  extensions:
+    - name: "pgvector"
+      purpose: "Vector Search mit Cosine Similarity"
+
+  # WAS NICHT verwendet wird:
+  not_used:
+    - "Supabase (war geplant, nie umgesetzt)"
+    - "Firebase"
+    - "MongoDB"
+
+  table_count: 18
+  ssot: "data/beatrix/status-quo-2026-02-14.yaml → database.tables (Feld-Details)"
+  schema:
+    users:
+      purpose: "Benutzerverwaltung (Rollen, Verifizierung, LinkedIn)"
+    user_insights:
+      purpose: "Individuelle Ψ-Profil-Snapshots"
+    documents:
+      purpose: "Knowledge Base (PDF/DOCX/TXT + Embeddings)"
+    chat_messages:
+      purpose: "Chat-Verlauf mit Knowledge-Scores"
+    chat_sessions:
+      purpose: "Session-Management (Typ, Titel, Metadata)"
+    knowledge_checks:
+      purpose: "Wissenskalibierung (Admin-Tool)"
+    belief_analyses:
+      purpose: "Belief-Analyse (Admin-Tool)"
+    leads:
+      purpose: "Sales Pipeline / Lead-Tracking"
+    crm_companies:
+      purpose: "Firmenstammdaten (ZEFIX/Handelsregister Enrichment)"
+    crm_contacts:
+      purpose: "Kontaktpersonen zu Firmen"
+    crm_deals:
+      purpose: "Deal-Tracking (Pipeline-Stages)"
+    crm_activities:
+      purpose: "CRM-Aktivitäten (Calls, Meetings, Notes)"
+    contexts:
+      purpose: "Gespeicherte Kontext-Analyse Snapshots"
+    psi_analyses:
+      purpose: "Ψ-Analysen (versioniert, mit Lineage)"
+    feedback:
+      purpose: "User-Feedback mit Screenshots"
+    project_edits:
+      purpose: "Projekt-Änderungen (Edit-History)"
+    tasks:
+      purpose: "Task-Management (CRUD, Status-Tracking)"
+    reviewer_keys:
+      purpose: "External Review Access Keys"
+
+  data_architecture:
+    decision: "D002"
+    rule: |
+      Alle Projekt-, Kunden- und Modell-Daten leben in GitHub YAML.
+      BEATRIX liest/schreibt über GitHub API.
+      PostgreSQL NUR für User/Auth/CRM-Deals.
+
+# ============================================================
+# 6. AI / LLM LAYER
+# ============================================================
+
+ai:
+  two_path_architecture:
+    inspiration: "AlphaGo (Neural Net + Tree Search)"
+    fast_path:
+      speed: "~12 Sekunden"
+      method: "Vector Search (Voyage AI) + Claude API"
+      model: "claude-sonnet-4-20250514"
+      cost: "~$0.08/Query"
+      search:
+        vector_weight: 0.70
+        fulltext_weight: 0.20
+        keyword_weight: 0.10
+    deep_path:
+      speed: "~4-5 Minuten"
+      method: "Claude Code (vollständiger Repo-Zugriff)"
+      trigger: "GitHub Actions (anthropics/claude-code-action@v1)"
+      cost: "~$0.50/Query"
+      mechanism: "Create Issue → Poll Comments → Extract Answer"
+
+  self_learning_loop:
+    description: "Jede Deep-Path-Antwort wird embedded und erweitert die KB für den Fast Path"
+    inspiration: "AlphaGo (jede Partie verbessert Netzwerk)"
+
+  embeddings:
+    provider: "Voyage AI"
+    model: "voyage-3-lite"
+    dimensions: 512
+    tier: "Free (200M Tokens/Monat)"
+    endpoint: "/v1/embeddings"
+    input_types: ["query", "document"]
+
+  llm:
+    provider: "Anthropic"
+    model: "claude-sonnet-4-20250514"
+    endpoint: "/v1/messages"
+    env_var: "ANTHROPIC_API_KEY (on Railway)"
+
+  system_prompt_injection:
+    layers:
+      - name: "Base"
+        source: "CLAUDE.md (10C Framework, EBF Workflow)"
+        always: true
+      - name: "BCM2 Context"
+        source: "data/dr-datareq/ (Kontextfaktoren)"
+        condition: "Bei Verhaltensfragen"
+      - name: "Theory Catalog"
+        source: "data/theory-catalog.yaml"
+        condition: "Bei Modellierungs-Fragen"
+      - name: "Workflow-spezifisch"
+        source: "Skill-Definitionen"
+        condition: "Bei geführten Workflows"
+    token_budgets:
+      SCHNELL: "~5'000 Tokens"
+      STANDARD: "~16'000 Tokens"
+      TIEF: "~33'000 Tokens"
+
+# ============================================================
+# 7. AUTHENTICATION & SECURITY
+# ============================================================
+
+security:
+  auth:
+    method: "JWT (HS256)"
+    expiry: "24 Stunden"
+    password_hashing: "bcrypt (Salt Rounds)"
+    token_storage: "localStorage (Frontend)"
+    header: "Authorization: Bearer <JWT>"
+    flow:
+      - "User gibt Email + Password ein"
+      - "POST /api/auth/login"
+      - "Backend verifiziert mit bcrypt"
+      - "JWT Token zurück"
+      - "Frontend speichert in localStorage"
+      - "Alle API-Calls mit Bearer Token"
+
+  linkedin_oauth:
+    status: "WORKING"
+    provider: "LinkedIn"
+    scopes: ["openid", "profile", "email"]
+    env_vars: ["LINKEDIN_CLIENT_ID", "LINKEDIN_CLIENT_SECRET"]
+
+  # WAS NICHT verwendet wird:
+  not_used:
+    - "Supabase Auth (war geplant)"
+    - "NextAuth.js"
+
+  cors:
+    allowed_origins: ["www.bea-lab.io"]
+    method: "FastAPI CORS Middleware"
+
+  registration:
+    domain_whitelist: ["@fehradvice.com", "@bea-lab.io"]
+    email_verification: "6-stelliger Code via Resend"
+
+  rate_limiting: "10 req/min für Chat"
+  ssl: "Automatisch via Vercel + Railway"
+
+# ============================================================
+# 8. DNS & DOMAIN
+# ============================================================
+
+dns:
+  provider: "Squarespace Domains"
+  login: "gerhard.fehr@bea-lab.io"
+  domain: "bea-lab.io"
+  records:
+    a_record: "bea-lab.io → 76.76.21.21 (Vercel IP)"
+    cname: "www.bea-lab.io → cname.vercel-dns.com"
+  email:
+    service: "Resend"
+    sender: "registration_confirmation@bea-lab.io"
+    verified: "SPF/DKIM bei Squarespace"
+    note: "Railway requests need User-Agent: BEATRIXLab/3.4 (Cloudflare 1010)"
+
+# ============================================================
+# 9. CHAT TYPE ROUTING
+# ============================================================
+
+chat_types:
+  ssot: "data/beatrix/chat-types.yaml"
+  types:
+    - id: "lead"
+      label: "Pipeline"
+      icon: "🎯"
+      color: "rgb(251,191,36)"
+      description: "Akquise und Neugeschäft"
+    - id: "project"
+      label: "Mandat"
+      icon: "📋"
+      color: "rgb(52,211,153)"
+      description: "Aktive Kundenprojekte"
+    - id: "model"
+      label: "Modell"
+      icon: "🔬"
+      color: "rgb(139,170,255)"
+      description: "BCM-Modellierung und Interventionsdesign"
+    - id: "context"
+      label: "Kontext Ψ"
+      icon: "🧠"
+      color: "rgb(232,163,61)"
+      description: "Situationsanalyse mit 8 Ψ-Dimensionen"
+    - id: "research"
+      label: "Literatur"
+      icon: "📚"
+      color: "rgb(168,162,255)"
+      description: "Akademische Recherche und Knowledge Base"
+    - id: "general"
+      label: "Fragen"
+      icon: "💬"
+      color: "rgb(42,127,142)"
+      description: "Allgemeine Fragen und schnelle Antworten"
+  flow_note: "Pipeline → Mandat → (Kontext Ψ → Modell) → Abschluss"
+
+# ============================================================
+# 10. ARCHITECTURE PATTERNS
+# ============================================================
+
+patterns:
+  - name: "Two-Path Architecture"
+    inspiration: "AlphaGo (Neural Net + Tree Search)"
+    implementation: "Fast Path (~12s) + Deep Path (~4.5 Min)"
+
+  - name: "Self-Learning Loop"
+    inspiration: "AlphaGo (jede Partie verbessert Netzwerk)"
+    implementation: "Deep-Path-Antworten werden embedded → erweitern KB für Fast Path"
+
+  - name: "3+1 Choice Architecture"
+    inspiration: "EBF Axiom MD-1"
+    implementation: "3 kuratierte Optionen + 1 Custom bei jedem Workflow-Step"
+
+  - name: "Hybrid Search"
+    inspiration: "Information Retrieval Best Practices"
+    implementation: "Vector (70%) + Fulltext (20%) + Keyword (10%)"
+
+  - name: "EEE Workflow"
+    inspiration: "EBF METHOD-DESIGN"
+    implementation: "9-Step Model-Building mit Progress-Bar und visuellen Karten"
+
+# ============================================================
+# 11. DEVELOPMENT WORKFLOW
+# ============================================================
+
+development:
+  principle: "Kein lokales Development-Setup. Alles remote über APIs."
+  builder: "Claude (Anthropic) — kein menschlicher Entwickler im klassischen Sinn"
+
+  workflow:
+    - step: 1
+      action: "Claude schreibt Code (Python Backend / HTML+CSS+JS Frontend)"
+      tool: "Claude Chat (claude.ai) oder Claude Code"
+    - step: 2
+      action: "Push via GitHub REST API (Base64-encoded) oder git push"
+      tool: "GitHub REST API v3"
+    - step: 3
+      action: "Auto-Deploy"
+      details:
+        frontend: "Vercel erkennt Push → Live in ~30 Sekunden"
+        backend: "Railway erkennt Push → Rebuild in 90-100 Sekunden"
+    - step: 4
+      action: "Test gegen Live-API"
+      tool: "curl / Python Scripts / Browser"
+    - step: 5
+      action: "Iterate (Fehler fixen, erneut deployen)"
+
+  which_repo_for_what:
+    - task: "Frontend ändern (UI, Styling, JS)"
+      repo: "bea-lab-frontend + bea-lab-upload/frontend/ (DUAL PUSH!)"
+      tool: "Claude Chat → GitHub API Push"
+    - task: "Backend ändern (API, DB, Auth)"
+      repo: "bea-lab-upload"
+      tool: "Claude Chat → GitHub API Push"
+    - task: "EBF-Daten ändern (YAML, Cases, Papers, Theorien)"
+      repo: "complementarity-context-framework"
+      tool: "Claude Code (dieses Repo)"
+    - task: "Architektur dokumentieren"
+      repo: "complementarity-context-framework"
+      tool: "Claude Code (data/beatrix/architecture.yaml)"
+
+  what_claude_code_can_do:
+    - "Dieses Repo (complementarity-context-framework) direkt bearbeiten"
+    - "YAML-Daten, Docs, Scripts erstellen und committen"
+    - "Git push auf dieses Repo"
+  what_claude_code_cannot_do:
+    - "bea-lab-frontend direkt bearbeiten (separates Repo)"
+    - "bea-lab-upload direkt bearbeiten (separates Repo)"
+    - "Externe APIs aufrufen (Sandbox blockiert)"
+
+# ============================================================
+# 12. FEATURES (v3.19.0 — verifiziert aus Code 2026-02-14)
+# ============================================================
+
+features:
+  ssot: "data/beatrix/status-quo-2026-02-14.yaml → features"
+  version: "v3.19.0"
+  verified: "2026-02-14 (aus server.py + frontend index.html)"
+  core:
+    - "Auth: Login, Register, JWT, E-Mail-Verifizierung, PW-Reset, LinkedIn OAuth"
+    - "Profil: Seite, LinkedIn, Foto-Upload, Expertise-Tags"
+    - "Admin: User-Management, Embedding-Stats, Knowledge-Calibration, Belief-Analysis"
+    - "Upload: PDF/DOCX/TXT, Duplikat-Check (SHA256), GitHub-Push, 10+ Klassifikationstypen"
+    - "Chat/RAG: Claude API, Voyage AI, pgvector, 6 Chat-Typen, SSE-Streaming, Intent-Detection"
+    - "CRM: Companies (ZEFIX+Handelsregister), Contacts, Deals, Activities, Stats, GitHub-Sync"
+    - "Projekte: CRUD, GitHub R/W, Wizard, Deliverables, 9 Sub-Tabs"
+    - "Model Builder: via Chat-Intent, Psi-Profiling, Smart Defaults"
+    - "Psi-Analysen: Versioniert, Lineage-Tracking, CRUD"
+  additional:
+    - "Tasks: CRUD + Complete/Reopen + Stats + Trigger"
+    - "Memory API: Knowledge-Base Speicher"
+    - "Currency: Rates, Conversion, Customer-spezifisch"
+    - "Feedback: Screenshots, Analyse, Admin-View"
+    - "Document Review: External, Batch, APE, Multi-Review, Integrity-Check"
+    - "NotebookLM: Status + Create"
+    - "Paper Finder: Upload-Priority, Sources per Researcher, PDF-Find+Fetch"
+    - "Pre-Commitment: Behavioral Endpoint"
+    - "Challenge: Gamification Endpoint"
+    - "Transform: Notebook Transformation"
+
+# ============================================================
+# 13. COSTS (geschätzt, monatlich)
+# ============================================================
+
+costs:
+  monthly:
+    - service: "Railway (Backend + DB)"
+      plan: "Hobby"
+      cost: "~$5"
+    - service: "Vercel (Frontend)"
+      plan: "Free"
+      cost: "$0"
+    - service: "Resend (E-Mails)"
+      plan: "Free (100/Tag)"
+      cost: "$0"
+    - service: "Voyage AI (Embeddings)"
+      plan: "Free (200M Tokens)"
+      cost: "$0"
+    - service: "Anthropic Claude API"
+      plan: "Pay-per-use"
+      cost: "~$5-20"
+    - service: "GitHub Actions"
+      plan: "Free (2000 Min)"
+      cost: "$0"
+  annual:
+    - service: "Squarespace Domain"
+      cost: "~$20"
+  total: "~$10-25/Monat"
+
+# ============================================================
+# 14. OPERATIONAL LEARNINGS
+# ============================================================
+
+learnings:
+  ssot: "data/beatrix/memory.yaml (learnings section)"
+  critical:
+    - id: "L001"
+      topic: "Railway SSL"
+      rule: "Nach CNAME-Wechsel 30-60 Min warten. NICHT Domain löschen!"
+    - id: "L006"
+      topic: "Resend/Cloudflare"
+      rule: "User-Agent: BEATRIXLab/3.4 Header setzen (sonst Error 1010)"
+    - id: "L007"
+      topic: "Frontend Dual-Push"
+      rule: "IMMER beide Repos aktualisieren (Vercel + Backup)"
+
+# ============================================================
+# 15. PLANNED vs ACTUAL (Historische Korrektur)
+# ============================================================
+
+corrections:
+  description: |
+    Die Datei docs/bea-lab-architecture.md beschreibt eine GEPLANTE Architektur
+    die nie umgesetzt wurde. Hier die wichtigsten Abweichungen:
+  items:
+    - aspect: "Frontend Framework"
+      planned: "Next.js 14 + TypeScript + Tailwind + shadcn/ui"
+      actual: "Vanilla HTML5 + CSS3 + JavaScript (KEIN Framework)"
+    - aspect: "Backend"
+      planned: "Next.js API Routes (Serverless)"
+      actual: "FastAPI (Python) auf Railway"
+    - aspect: "Datenbank"
+      planned: "Supabase (PostgreSQL + Auth + Realtime)"
+      actual: "PostgreSQL auf Railway + Custom JWT Auth"
+    - aspect: "Auth"
+      planned: "Supabase Auth + NextAuth.js"
+      actual: "Custom JWT (HS256) + bcrypt"
+    - aspect: "Embedding/Search"
+      planned: "Nicht spezifiziert"
+      actual: "Voyage AI + pgvector + Hybrid Search (70/20/10)"
+    - aspect: "Chat Streaming"
+      planned: "Vercel AI SDK"
+      actual: "Server-Sent Events (SSE) via FastAPI"
+    - aspect: "Deployment"
+      planned: "Vercel für alles (Full-Stack)"
+      actual: "Vercel (Frontend) + Railway (Backend) — Split Architecture"
+    - aspect: "Build Step"
+      planned: "npm install + npm run build + Type Check"
+      actual: "KEINER — Push = Live"
+    - aspect: "Design System Font"
+      planned: "Inter + JetBrains Mono"
+      actual: "Plus Jakarta Sans (Google Fonts CDN)"
+    - aspect: "Farben"
+      planned: "#2563eb (Blau), #10b981 (Grün), #f59e0b (Amber)"
+      actual: "#1B365D (Navy), rgb(251,191,36) (Gold), rgb(52,211,153) (Teal)"
+    - aspect: "Code-Generierung"
+      planned: "Menschlicher Entwickler"
+      actual: "Claude (Anthropic) — vollständig AI-generiert"

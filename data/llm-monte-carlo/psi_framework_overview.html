@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8Ψ-Dimensions Framework: Complete Overview</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e8e8e8;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            color: #888;
+            font-weight: 300;
+        }
+        
+        .validation-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 15px;
+            font-weight: 600;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .card-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-title .icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+        }
+        
+        /* Psi Dimension Colors */
+        .psi-I { background: #e74c3c; }
+        .psi-S { background: #e67e22; }
+        .psi-C { background: #f1c40f; color: #333; }
+        .psi-K { background: #2ecc71; }
+        .psi-E { background: #3498db; }
+        .psi-T { background: #9b59b6; }
+        .psi-M { background: #1abc9c; }
+        .psi-F { background: #e91e63; }
+        
+        .dimension-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        
+        .dimension-item {
+            text-align: center;
+            padding: 15px 10px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            transition: transform 0.2s, background 0.2s;
+            cursor: pointer;
+        }
+        
+        .dimension-item:hover {
+            transform: translateY(-3px);
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .dimension-item .symbol {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .dimension-item .name {
+            font-size: 0.75em;
+            color: #aaa;
+        }
+        
+        .test-results {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .test-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+        
+        .test-number {
+            width: 25px;
+            height: 25px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        .test-name {
+            flex: 1;
+            color: #ccc;
+        }
+        
+        .test-dominant {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .psi-tag {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        .test-check {
+            color: #00b894;
+            font-size: 1.2em;
+        }
+        
+        /* Heatmap */
+        .heatmap-container {
+            overflow-x: auto;
+        }
+        
+        .heatmap {
+            display: grid;
+            grid-template-columns: 60px repeat(8, 1fr);
+            gap: 3px;
+            font-size: 0.8em;
+        }
+        
+        .heatmap-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            font-weight: 600;
+            min-width: 45px;
+        }
+        
+        .heatmap-header {
+            background: transparent;
+            font-weight: 600;
+            color: #888;
+        }
+        
+        .heatmap-label {
+            background: transparent;
+            font-weight: 600;
+            color: #888;
+            justify-content: flex-end;
+            padding-right: 10px;
+        }
+        
+        /* Threshold visualization */
+        .threshold-item {
+            margin-bottom: 20px;
+        }
+        
+        .threshold-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+        
+        .threshold-name {
+            color: #ccc;
+        }
+        
+        .threshold-value {
+            font-weight: 600;
+            color: #00d4ff;
+        }
+        
+        .threshold-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .threshold-fill {
+            height: 100%;
+            border-radius: 4px;
+            position: relative;
+        }
+        
+        .threshold-marker {
+            position: absolute;
+            top: -5px;
+            width: 3px;
+            height: 18px;
+            background: #fff;
+            border-radius: 2px;
+            transform: translateX(-50%);
+        }
+        
+        /* Key insights */
+        .insight-box {
+            background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(123,44,191,0.1));
+            border: 1px solid rgba(0,212,255,0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .insight-title {
+            font-size: 1em;
+            font-weight: 600;
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+        
+        .insight-text {
+            font-size: 0.9em;
+            color: #bbb;
+            line-height: 1.6;
+        }
+        
+        /* Chart containers */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 15px;
+        }
+        
+        /* Full width sections */
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-size: 0.85em;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 30px;
+        }
+        
+        footer a {
+            color: #00d4ff;
+            text-decoration: none;
+        }
+        
+        /* Equation box */
+        .equation-box {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            font-family: 'Times New Roman', serif;
+            font-size: 1.3em;
+            margin: 15px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .equation-box .psi {
+            color: #00d4ff;
+        }
+        
+        /* Stats row */
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            padding: 20px 0;
+        }
+        
+        .stat-item .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-item .stat-label {
+            font-size: 0.85em;
+            color: #888;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>The 8Ψ-Dimensions Framework</h1>
+            <p class="subtitle">Complementarity and Context: A Unified Framework for Economic Rationality</p>
+            <span class="validation-badge">✓ LLM Monte Carlo Validated</span>
+        </header>
+        
+        <!-- Key Stats -->
+        <div class="card full-width">
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">Context Dimensions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">6/6</div>
+                    <div class="stat-label">Tests Validated</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">48</div>
+                    <div class="stat-label">β-Coefficients</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">28</div>
+                    <div class="stat-label">Interactions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Thresholds</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <!-- The 8 Dimensions -->
+            <div class="card">
+                <div class="card-title">
+                    <span>The Eight Ψ-Dimensions</span>
+                </div>
+                <div class="equation-box">
+                    <span class="psi">Ψ</span> = (Ψ<sub>I</sub>, Ψ<sub>S</sub>, Ψ<sub>C</sub>, Ψ<sub>K</sub>, Ψ<sub>E</sub>, Ψ<sub>T</sub>, Ψ<sub>M</sub>, Ψ<sub>F</sub>) ∈ ℝ<sup>8</sup>
+                </div>
+                <div class="dimension-grid">
+                    <div class="dimension-item">
+                        <div class="symbol" style="color: #e74c3c;">Ψ<sub>I</sub></div>
+                        <div class="name">Institutional</div>
+                    </div>
+                    <div class="dimension-item">
+                        <div class="symbol" style="color: #e67e22;">Ψ<sub>S</sub></div>
+                        <div class="name">Social</div>
+                    </div>
+                    <div class="dimension-item">
+                        <div class="symbol" style="color: #f1c40f;">Ψ<sub>C</sub></div>
+                        <div class="name">Cognitive</div>
+                    </div>
+                    <div class="dimension-item">
+                        <div class="symbol" style="color: #2ecc71;">Ψ<sub>K</sub></div>
+                        <div class="name">Information</div>
+                    </div>
+                    <div class="dimension-item">
+                        <div class="symbol" style="color: #3498db;">Ψ<sub>E</sub></div>
+                        <div class="name">Economic</div>
+                    </div>
+                    <div class="dimension-item">
+                        <div class="symbol" style="color: #9b59b6;">Ψ<sub>T</sub></div>
+                        <div class="name">Temporal</div>
+                    </div>
+                    <div class="dimension-item">
+                        <div class="symbol" style="color: #1abc9c;">Ψ<sub>M</sub></div>
+                        <div class="name">Market</div>
+                    </div>
+                    <div class="dimension-item">
+                        <div class="symbol" style="color: #e91e63;">Ψ<sub>F</sub></div>
+                        <div class="name">Flexibility</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Validation Results -->
+            <div class="card">
+                <div class="card-title">
+                    <span>Empirical Validation (6 Tests)</span>
+                </div>
+                <div class="test-results">
+                    <div class="test-row">
+                        <div class="test-number">1</div>
+                        <div class="test-name">Education → Earnings</div>
+                        <div class="test-dominant">
+                            <span class="psi-tag" style="background: #2ecc71;">Ψ<sub>K</sub></span>
+                            <span class="psi-tag" style="background: #1abc9c;">Ψ<sub>M</sub></span>
+                        </div>
+                        <div class="test-check">✓</div>
+                    </div>
+                    <div class="test-row">
+                        <div class="test-number">2</div>
+                        <div class="test-name">Management → Productivity</div>
+                        <div class="test-dominant">
+                            <span class="psi-tag" style="background: #e91e63;">Ψ<sub>F</sub></span>
+                        </div>
+                        <div class="test-check">✓</div>
+                    </div>
+                    <div class="test-row">
+                        <div class="test-number">3</div>
+                        <div class="test-name">Democracy → Growth</div>
+                        <div class="test-dominant">
+                            <span class="psi-tag" style="background: #e74c3c;">Ψ<sub>I</sub></span>
+                            <span class="psi-tag" style="background: #3498db;">Ψ<sub>E</sub></span>
+                        </div>
+                        <div class="test-check">✓</div>
+                    </div>
+                    <div class="test-row">
+                        <div class="test-number">4</div>
+                        <div class="test-name">Patience → Growth</div>
+                        <div class="test-dominant">
+                            <span class="psi-tag" style="background: #9b59b6;">Ψ<sub>T</sub></span>
+                            <span class="psi-tag" style="background: #2ecc71;">Ψ<sub>K</sub></span>
+                        </div>
+                        <div class="test-check">✓</div>
+                    </div>
+                    <div class="test-row">
+                        <div class="test-number">5</div>
+                        <div class="test-name">Information → Behavior</div>
+                        <div class="test-dominant">
+                            <span class="psi-tag" style="background: #2ecc71;">Ψ<sub>K</sub><sup>−</sup></span>
+                            <span class="psi-tag" style="background: #e91e63;">Ψ<sub>F</sub></span>
+                        </div>
+                        <div class="test-check">✓</div>
+                    </div>
+                    <div class="test-row">
+                        <div class="test-number">6</div>
+                        <div class="test-name">Income → Life Expectancy</div>
+                        <div class="test-dominant">
+                            <span class="psi-tag" style="background: #9b59b6;">Ψ<sub>T</sub></span>
+                            <span class="psi-tag" style="background: #e74c3c;">Ψ<sub>I</sub></span>
+                        </div>
+                        <div class="test-check">✓</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Effects Chart -->
+            <div class="card">
+                <div class="card-title">
+                    <span>β-Coefficients by Dimension (Average)</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="mainEffectsChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Interaction Heatmap -->
+            <div class="card">
+                <div class="card-title">
+                    <span>Interaction Effects (Ψ × Ψ)</span>
+                </div>
+                <div class="heatmap-container">
+                    <div class="heatmap" id="interactionHeatmap">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+                <div style="margin-top: 15px; font-size: 0.8em; color: #888; text-align: center;">
+                    🟢 Complement (+) &nbsp;&nbsp; ⚪ Neutral &nbsp;&nbsp; 🔴 Substitute (−)
+                </div>
+            </div>
+            
+            <!-- Key Thresholds -->
+            <div class="card">
+                <div class="card-title">
+                    <span>Critical Thresholds</span>
+                </div>
+                
+                <div class="threshold-item">
+                    <div class="threshold-label">
+                        <span class="threshold-name">⭐ Rationality Threshold (Ψ<sub>T</sub>)</span>
+                        <span class="threshold-value">0.433</span>
+                    </div>
+                    <div class="threshold-bar">
+                        <div class="threshold-fill" style="width: 43.3%; background: linear-gradient(90deg, #e74c3c, #9b59b6);"></div>
+                        <div class="threshold-marker" style="left: 43.3%;"></div>
+                    </div>
+                    <div style="font-size: 0.75em; color: #888; margin-top: 5px;">Below: impatience is rational</div>
+                </div>
+                
+                <div class="threshold-item">
+                    <div class="threshold-label">
+                        <span class="threshold-name">⭐ Jensen-Dupas Threshold (Ψ<sub>K</sub>)</span>
+                        <span class="threshold-value">0.433</span>
+                    </div>
+                    <div class="threshold-bar">
+                        <div class="threshold-fill" style="width: 43.3%; background: linear-gradient(90deg, #2ecc71, #27ae60);"></div>
+                        <div class="threshold-marker" style="left: 43.3%;"></div>
+                    </div>
+                    <div style="font-size: 0.75em; color: #888; margin-top: 5px;">Info interventions work below</div>
+                </div>
+                
+                <div class="threshold-item">
+                    <div class="threshold-label">
+                        <span class="threshold-name">Flexibility Corridor (Ψ<sub>F</sub>)</span>
+                        <span class="threshold-value">[0.375 – 0.811]</span>
+                    </div>
+                    <div class="threshold-bar">
+                        <div class="threshold-fill" style="width: 81.1%; background: rgba(255,255,255,0.1);"></div>
+                        <div class="threshold-fill" style="position: absolute; left: 37.5%; width: 43.6%; background: linear-gradient(90deg, #e91e63, #c0392b);"></div>
+                        <div class="threshold-marker" style="left: 37.5%;"></div>
+                        <div class="threshold-marker" style="left: 81.1%;"></div>
+                    </div>
+                    <div style="font-size: 0.75em; color: #888; margin-top: 5px;">Optimal range for implementation</div>
+                </div>
+                
+                <div class="threshold-item">
+                    <div class="threshold-label">
+                        <span class="threshold-name">Lipset Threshold (Ψ<sub>E</sub>)</span>
+                        <span class="threshold-value">0.394</span>
+                    </div>
+                    <div class="threshold-bar">
+                        <div class="threshold-fill" style="width: 39.4%; background: linear-gradient(90deg, #3498db, #2980b9);"></div>
+                        <div class="threshold-marker" style="left: 39.4%;"></div>
+                    </div>
+                    <div style="font-size: 0.75em; color: #888; margin-top: 5px;">≈ $8,000-12,000 GDP/capita</div>
+                </div>
+            </div>
+            
+            <!-- Key Insights -->
+            <div class="card">
+                <div class="card-title">
+                    <span>Key Insights</span>
+                </div>
+                
+                <div class="insight-box">
+                    <div class="insight-title">🔑 Ψ<sub>F</sub> is the Universal Enabler</div>
+                    <div class="insight-text">
+                        Factor Flexibility interacts positively with nearly all other dimensions. 
+                        Without the capacity to act, other contextual advantages cannot be leveraged.
+                    </div>
+                </div>
+                
+                <div class="insight-box">
+                    <div class="insight-title">🔄 Institutions ↔ Social Capital</div>
+                    <div class="insight-text">
+                        Formal rules and informal trust are substitutes (β = −0.055). 
+                        Countries optimize across this tradeoff based on historical path dependencies.
+                    </div>
+                </div>
+                
+                <div class="insight-box">
+                    <div class="insight-title">📉 Information Has Diminishing Returns</div>
+                    <div class="insight-text">
+                        Ψ<sub>K</sub> × Ψ<sub>E</sub> = −0.075. Information interventions work best 
+                        where baseline information is low—not in already-informed contexts.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dominant Dimensions by Test -->
+            <div class="card full-width">
+                <div class="card-title">
+                    <span>Dominant Dimensions Across Tests</span>
+                </div>
+                <div class="chart-container" style="height: 350px;">
+                    <canvas id="dominantChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>
+                8Ψ-Dimensions Framework | LLM Monte Carlo Validation | 
+                <a href="https://github.com/FehrAdvice-Partners-AG/complementarity-context-framework">GitHub Repository</a>
+            </p>
+            <p style="margin-top: 10px;">
+                FehrAdvice & Partners AG | Appendix V & AN | 2026-01-04
+            </p>
+        </footer>
+    </div>
+    
+    <script>
+        // Color scheme for dimensions
+        const colors = {
+            'Ψ_I': '#e74c3c',
+            'Ψ_S': '#e67e22',
+            'Ψ_C': '#f1c40f',
+            'Ψ_K': '#2ecc71',
+            'Ψ_E': '#3498db',
+            'Ψ_T': '#9b59b6',
+            'Ψ_M': '#1abc9c',
+            'Ψ_F': '#e91e63'
+        };
+        
+        // Main Effects Chart
+        const mainEffectsCtx = document.getElementById('mainEffectsChart').getContext('2d');
+        new Chart(mainEffectsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Ψ_I', 'Ψ_S', 'Ψ_C', 'Ψ_K', 'Ψ_E', 'Ψ_T', 'Ψ_M', 'Ψ_F'],
+                datasets: [{
+                    label: 'Average β across 6 tests',
+                    data: [0.157, 0.096, 0.137, 0.140, 0.097, 0.163, 0.130, 0.155],
+                    backgroundColor: Object.values(colors),
+                    borderRadius: 5,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        ticks: { color: '#888' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#888' }
+                    }
+                }
+            }
+        });
+        
+        // Interaction Heatmap
+        const interactionData = [
+            [0, -0.055, 0.038, 0.076, -0.045, 0.101, 0.066, 0.140],
+            [-0.055, 0, 0.031, -0.045, -0.053, 0.076, 0.007, -0.035],
+            [0.038, 0.031, 0, 0.096, 0.045, 0.066, 0.076, 0.085],
+            [0.076, -0.045, 0.096, 0, -0.075, 0.066, 0.106, 0.095],
+            [-0.045, -0.053, 0.045, -0.075, 0, 0.086, 0.076, 0.025],
+            [0.101, 0.076, 0.066, 0.066, 0.086, 0, 0.086, 0.105],
+            [0.066, 0.007, 0.076, 0.106, 0.076, 0.086, 0, 0.116],
+            [0.140, -0.035, 0.085, 0.095, 0.025, 0.105, 0.116, 0]
+        ];
+        
+        const dims = ['Ψ_I', 'Ψ_S', 'Ψ_C', 'Ψ_K', 'Ψ_E', 'Ψ_T', 'Ψ_M', 'Ψ_F'];
+        const heatmapEl = document.getElementById('interactionHeatmap');
+        
+        // Header row
+        heatmapEl.innerHTML = '<div class="heatmap-cell heatmap-header"></div>';
+        dims.forEach(d => {
+            heatmapEl.innerHTML += `<div class="heatmap-cell heatmap-header">${d.replace('_', '<sub>').replace(/$/,'</sub>')}</div>`;
+        });
+        
+        // Data rows
+        interactionData.forEach((row, i) => {
+            heatmapEl.innerHTML += `<div class="heatmap-cell heatmap-label">${dims[i].replace('_', '<sub>')}</sub></div>`;
+            row.forEach((val, j) => {
+                let bgColor;
+                if (i === j) {
+                    bgColor = 'rgba(255,255,255,0.05)';
+                } else if (val > 0.08) {
+                    bgColor = `rgba(46, 204, 113, ${Math.min(val * 5, 0.8)})`;
+                } else if (val > 0.03) {
+                    bgColor = `rgba(46, 204, 113, ${val * 3})`;
+                } else if (val < -0.05) {
+                    bgColor = `rgba(231, 76, 60, ${Math.min(Math.abs(val) * 5, 0.8)})`;
+                } else if (val < -0.02) {
+                    bgColor = `rgba(231, 76, 60, ${Math.abs(val) * 3})`;
+                } else {
+                    bgColor = 'rgba(255,255,255,0.1)';
+                }
+                const displayVal = i === j ? '—' : val.toFixed(2);
+                heatmapEl.innerHTML += `<div class="heatmap-cell" style="background: ${bgColor};">${displayVal}</div>`;
+            });
+        });
+        
+        // Dominant Dimensions Chart
+        const dominantCtx = document.getElementById('dominantChart').getContext('2d');
+        new Chart(dominantCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Test 1: Education', 'Test 2: Management', 'Test 3: Democracy', 'Test 4: Patience', 'Test 5: Information', 'Test 6: Health'],
+                datasets: [
+                    {
+                        label: 'Ψ_I',
+                        data: [0.12, 0.24, 0.20, 0.12, 0.10, 0.22],
+                        backgroundColor: colors['Ψ_I']
+                    },
+                    {
+                        label: 'Ψ_S',
+                        data: [0.08, 0.12, 0.084, 0.104, 0.064, 0.124],
+                        backgroundColor: colors['Ψ_S']
+                    },
+                    {
+                        label: 'Ψ_C',
+                        data: [0.16, 0.16, 0.10, 0.14, 0.12, 0.14],
+                        backgroundColor: colors['Ψ_C']
+                    },
+                    {
+                        label: 'Ψ_K',
+                        data: [0.34, 0.18, 0.12, 0.24, -0.30, 0.12],
+                        backgroundColor: colors['Ψ_K']
+                    },
+                    {
+                        label: 'Ψ_E',
+                        data: [0.20, 0.10, 0.18, 0.12, -0.08, 0.06],
+                        backgroundColor: colors['Ψ_E']
+                    },
+                    {
+                        label: 'Ψ_T',
+                        data: [0.10, 0.14, 0.10, 0.28, 0.08, 0.28],
+                        backgroundColor: colors['Ψ_T']
+                    },
+                    {
+                        label: 'Ψ_M',
+                        data: [0.28, 0.18, 0.06, 0.08, 0.10, 0.08],
+                        backgroundColor: colors['Ψ_M']
+                    },
+                    {
+                        label: 'Ψ_F',
+                        data: [0.14, 0.305, 0.08, 0.10, 0.26, 0.04],
+                        backgroundColor: colors['Ψ_F']
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#888', usePointStyle: true, padding: 15 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        ticks: { color: '#888' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#888' }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

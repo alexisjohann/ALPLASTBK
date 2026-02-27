@@ -1,0 +1,619 @@
+# BCM2_MESO_energy_ch – Energie-Sektor Kontextvektor Schweiz
+# Version: 1.0
+# Quelle: FehrAdvice Kontextvektor-Architektur 2026
+# Letzte Aktualisierung: 2026-01-23
+# Ebene: MESO (Sektorspezifisch)
+
+metadata:
+  name: "Energie-Sektor Kontextvektor Schweiz"
+  code: "BCM2_MESO_ENERGY_CH"
+  layer: "meso"
+  version: "1.0"
+  last_updated: "2026-01-23"
+  description: |
+    Sektorspezifischer Kontextvektor für den Schweizer Energiesektor.
+    Aggregiert relevante MAKRO-Faktoren und ergänzt sektor-spezifische
+    Verhaltenstreiber für Energieentscheidungen.
+
+  hierarchy:
+    parent: "BCM2_04_KON (MAKRO Schweiz)"
+    children: ["BCM2_MIKRO_BFE", "BCM2_MIKRO_BKW", "BCM2_MIKRO_AXPO"]
+
+  bcm_coupling:
+    primary: "BCM2_04_KON"
+    secondary: "BCM2_02_KNU"
+    tertiary: "BCM2_01_INU"
+
+  ebf_mapping:
+    psi_dimensions:
+      - "kappa_INST"      # Institutioneller Kontext (Regulierung)
+      - "kappa_ARCH"      # Choice Architecture (Defaults, Opt-outs)
+      - "kappa_SOCIAL"    # Sozialer Kontext (Normen)
+      - "kappa_TEMP"      # Temporaler Kontext (Fristen, Saison)
+    utility_dimensions:
+      - "u_E"             # Ökologischer Nutzen
+      - "u_F"             # Finanzieller Nutzen
+      - "u_P"             # Psychologischer Nutzen (Komfort)
+      - "u_S"             # Sozialer Nutzen (Status, Normen)
+
+# =============================================================================
+# SEKTOR-CHARAKTERISTIK
+# =============================================================================
+sector_characteristics:
+  market_structure:
+    type: "regulated_liberalized_hybrid"
+    description: "Teilweise liberalisiert, starke kantonale/kommunale Rolle"
+    key_actors:
+      - "Bundesamt für Energie (BFE)"
+      - "ElCom (Regulierungsbehörde)"
+      - "Swissgrid (Übertragungsnetz)"
+      - "Kantonale/Kommunale Werke"
+      - "Private EVUs (Axpo, Alpiq, BKW)"
+
+  policy_framework:
+    primary: "Energiestrategie 2050"
+    secondary:
+      - "CO2-Gesetz"
+      - "Stromversorgungsgesetz (StromVG)"
+      - "Energiegesetz (EnG)"
+    targets:
+      - "Netto-Null bis 2050"
+      - "Ausstieg Kernenergie"
+      - "Ausbau Erneuerbare"
+
+  behavioral_context:
+    decision_frequency: "low_to_medium"
+    complexity: "high"
+    default_power: "very_high"
+    inertia: "strong"
+
+# =============================================================================
+# ENERGIE-SPEZIFISCHE KONTEXTFAKTOREN
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# ENE-REG: Regulatorischer Kontext
+# -----------------------------------------------------------------------------
+ENE_REG:
+  name: "Regulatorischer Energie-Kontext"
+  factor_count: 8
+  relevance_for_behavior: |
+    Regulierung definiert Choice Architecture (Defaults, Opt-outs),
+    Anreizstrukturen und Informationspflichten.
+
+  factors:
+    - id: ENE-REG-01
+      name: "Strommarkt-Liberalisierungsgrad"
+      definition: "Anteil freier Anbieterwahl für Endkunden"
+      current_state: "Grosskunden frei, Haushalte gebunden"
+      trend: "steigend"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        Gebundene Haushalte = Default-Macht beim lokalen EVU.
+        Liberalisierung würde aktive Wahl erzwingen.
+      psi_dimension: "kappa_ARCH"
+
+    - id: ENE-REG-02
+      name: "Einspeisevergütung (KEV/EIV)"
+      definition: "Finanzielle Förderung für Solarstrom-Einspeisung"
+      current_state: "Einmalvergütung dominiert"
+      trend: "stabil"
+      uncertainty: "niedrig"
+      behavioral_impact: |
+        Verschiebt Break-Even für Solar-Investition.
+        Framing als "Geschenk" vs. "Anspruch" relevant.
+      psi_dimension: "kappa_INST"
+
+    - id: ENE-REG-03
+      name: "CO2-Abgabe auf Brennstoffe"
+      definition: "Lenkungsabgabe pro Tonne CO2"
+      current_value: "CHF 120/t CO2"
+      trend: "steigend"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        Erhöht relative Kosten fossiler Heizungen.
+        Salience oft niedrig (in Heizölpreis versteckt).
+      psi_dimension: "kappa_INST"
+
+    - id: ENE-REG-04
+      name: "Gebäudeprogramm (Förderbeiträge)"
+      definition: "Kantonale Förderprogramme für energetische Sanierung"
+      current_state: "Heterogen, 26 kantonale Programme"
+      trend: "steigend"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        Komplexität reduziert Inanspruchnahme.
+        Default wäre: keine Förderung beantragen.
+      psi_dimension: "kappa_ARCH"
+
+    - id: ENE-REG-05
+      name: "Minergie-/GEAK-Standards"
+      definition: "Zertifizierungsstandards für Gebäudeeffizienz"
+      current_state: "Freiwillig, zunehmend gefordert"
+      trend: "steigend"
+      uncertainty: "niedrig"
+      behavioral_impact: |
+        Social Proof durch Label-Sichtbarkeit.
+        Normsetzung für "gutes Bauen".
+      psi_dimension: "kappa_SOCIAL"
+
+    - id: ENE-REG-06
+      name: "Heizungsersatz-Pflichten"
+      definition: "Kantonale Vorschriften bei Heizungsersatz"
+      current_state: "Zunehmend strenger (z.B. ZH, BE)"
+      trend: "steigend"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        Mandate reduzieren Wahlfreiheit.
+        Reaktanz bei autonomy_seeking Segmenten möglich.
+      psi_dimension: "kappa_INST"
+
+    - id: ENE-REG-07
+      name: "Netznutzungstarife Struktur"
+      definition: "Gestaltung der Stromtarife (Hoch-/Niedertarif)"
+      current_state: "Zeit-variable Tarife möglich"
+      trend: "steigend"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        Peak Pricing als Nudge für Lastverschiebung.
+        Automatisierung (Smart Home) als Enabler.
+      psi_dimension: "kappa_ARCH"
+
+    - id: ENE-REG-08
+      name: "Herkunftsnachweis-System"
+      definition: "Zertifikate für Stromherkunft (erneuerbar/fossil)"
+      current_state: "Etabliert, Default oft nicht-erneuerbar"
+      trend: "stabil"
+      uncertainty: "niedrig"
+      behavioral_impact: |
+        Default-Produkt bestimmt 90%+ der Wahl.
+        Opt-in für Ökostrom = aktive Hürde.
+      psi_dimension: "kappa_ARCH"
+
+# -----------------------------------------------------------------------------
+# ENE-PSY: Psychologische Faktoren
+# -----------------------------------------------------------------------------
+ENE_PSY:
+  name: "Psychologische Energie-Faktoren"
+  factor_count: 10
+  relevance_for_behavior: |
+    Energie ist "unsichtbar" - Awareness, Mental Accounting,
+    und psychologische Distanz prägen Entscheidungen.
+
+  factors:
+    - id: ENE-PSY-01
+      name: "Energie-Unsichtbarkeit"
+      definition: "Grad der Nicht-Wahrnehmbarkeit von Energieverbrauch"
+      salienz: 0.25
+      trend: "fallend"
+      uncertainty: "niedrig"
+      behavioral_impact: |
+        Was man nicht sieht, optimiert man nicht.
+        Smart Meter erhöhen Salienz, aber Nutzung gering.
+      psi_dimension: "kappa_AWX"
+      ebf_link: "AWARE (AU)"
+
+    - id: ENE-PSY-02
+      name: "Heizungs-Identität"
+      definition: "Emotionale Bindung an bestehende Heizung"
+      salienz: 0.68
+      trend: "stabil"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        "Meine Ölheizung läuft seit 20 Jahren perfekt"
+        Endowment Effect + Status Quo Bias kombiniert.
+      psi_dimension: "kappa_IDN"
+      ebf_link: "WHAT (C.X)"
+
+    - id: ENE-PSY-03
+      name: "Mental Accounting Energie"
+      definition: "Separate mentale Konten für Energie vs. andere Ausgaben"
+      salienz: 0.55
+      trend: "stabil"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        Heizkosten oft in "Wohnen" verbucht (fix).
+        Investment in Effizienz aus anderem "Konto".
+      psi_dimension: "kappa_FRM"
+      ebf_link: "HOW (B)"
+
+    - id: ENE-PSY-04
+      name: "Zeitliche Diskontierung Energie"
+      definition: "Abwertung zukünftiger Energieeinsparungen"
+      beta_estimate: 0.65
+      trend: "stabil"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        Hohe Upfront-Kosten vs. verteilte Einsparungen.
+        Present Bias dominiert Investitionsentscheid.
+      psi_dimension: "kappa_TEMP"
+      ebf_link: "WHEN (V)"
+
+    - id: ENE-PSY-05
+      name: "Technologie-Vertrautheit"
+      definition: "Comfort mit neuen Energietechnologien"
+      salienz: 0.58
+      trend: "steigend"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        Wärmepumpe = "kompliziert" für viele.
+        Vertrautheit reduziert wahrgenommenes Risiko.
+      psi_dimension: "kappa_KOG"
+      ebf_link: "AWARE (AU)"
+
+    - id: ENE-PSY-06
+      name: "Klimaangst-Salienz"
+      definition: "Emotionale Betroffenheit durch Klimawandel"
+      salienz: 0.62
+      trend: "steigend"
+      uncertainty: "hoch"
+      behavioral_impact: |
+        Kann motivieren ODER paralysieren.
+        Konstruktive Kanalisierung wichtig.
+      psi_dimension: "kappa_EMO"
+      ebf_link: "READY (AV)"
+
+    - id: ENE-PSY-07
+      name: "Kontrollillusion Verbrauch"
+      definition: "Überschätzung der eigenen Verbrauchskontrolle"
+      salienz: 0.71
+      trend: "stabil"
+      uncertainty: "niedrig"
+      behavioral_impact: |
+        "Ich spare schon" - obwohl objektiv nicht.
+        Feedback-Interventionen können korrigieren.
+      psi_dimension: "kappa_AWX"
+      ebf_link: "AWARE (AU)"
+
+    - id: ENE-PSY-08
+      name: "Rebound-Erwartung"
+      definition: "Antizipierte Verhaltensanpassung nach Effizienzgewinn"
+      salienz: 0.35
+      trend: "stabil"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        "Wenn ich spare, kann ich mehr verbrauchen"
+        Moral Licensing im Energiekontext.
+      psi_dimension: "kappa_KOG"
+      ebf_link: "HOW (B)"
+
+    - id: ENE-PSY-09
+      name: "Handlungs-Wirkungs-Distanz"
+      definition: "Wahrgenommene Distanz zwischen Handlung und Klimaeffekt"
+      salienz: 0.78
+      trend: "stabil"
+      uncertainty: "niedrig"
+      behavioral_impact: |
+        "Was bringt meine Solaranlage schon?"
+        Collective Action Problem Wahrnehmung.
+      psi_dimension: "kappa_KOL"
+      ebf_link: "WHAT (C.S)"
+
+    - id: ENE-PSY-10
+      name: "Entscheidungsmüdigkeit Energie"
+      definition: "Kognitive Überlastung durch Energie-Entscheidungen"
+      salienz: 0.64
+      trend: "steigend"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        Zu viele Optionen → Default gewinnt.
+        Simplifikation erhöht Handlungsrate.
+      psi_dimension: "kappa_KOG"
+      ebf_link: "STAGE (AW)"
+
+# -----------------------------------------------------------------------------
+# ENE-SOC: Soziale Faktoren
+# -----------------------------------------------------------------------------
+ENE_SOC:
+  name: "Soziale Energie-Faktoren"
+  factor_count: 8
+  relevance_for_behavior: |
+    Energieverhalten ist sozial eingebettet - Normen, Nachbarn,
+    und Sichtbarkeit prägen Entscheidungen.
+
+  factors:
+    - id: ENE-SOC-01
+      name: "Nachbarschafts-Norm Solar"
+      definition: "Sichtbare Solarpanels in der Nachbarschaft"
+      salienz: 0.72
+      trend: "steigend"
+      uncertainty: "niedrig"
+      behavioral_impact: |
+        Social Proof durch Sichtbarkeit.
+        Clustering-Effekt: Solaranlagen "ansteckend".
+      psi_dimension: "kappa_SOCIAL"
+      ebf_link: "WHAT (C.S)"
+
+    - id: ENE-SOC-02
+      name: "E-Auto-Norm"
+      definition: "Prävalenz von E-Autos im sozialen Umfeld"
+      salienz: 0.65
+      trend: "steigend"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        Sichtbarkeit hoch → starker Norm-Effekt.
+        Status-Signaling je nach Segment positiv/negativ.
+      psi_dimension: "kappa_SOCIAL"
+      ebf_link: "WHAT (C.S)"
+
+    - id: ENE-SOC-03
+      name: "Energie-Gespräche Häufigkeit"
+      definition: "Wie oft wird über Energie im sozialen Umfeld gesprochen"
+      salienz: 0.48
+      trend: "steigend"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        Diskurs erhöht Salienz und Norm-Bewusstsein.
+        Kann auch Backfire (Reaktanz bei Moralisierung).
+      psi_dimension: "kappa_SOCIAL"
+      ebf_link: "AWARE (AU)"
+
+    - id: ENE-SOC-04
+      name: "Vermieter-Mieter-Dilemma"
+      definition: "Split Incentives bei Gebäudeeffizienz"
+      salienz: 0.82
+      trend: "stabil"
+      uncertainty: "niedrig"
+      behavioral_impact: |
+        Vermieter investiert, Mieter profitiert.
+        Strukturelles Hindernis für Sanierung.
+      psi_dimension: "kappa_INST"
+      ebf_link: "WHO (AAA)"
+
+    - id: ENE-SOC-05
+      name: "Energie-Gemeinschaften Akzeptanz"
+      definition: "Bereitschaft zur Teilnahme an lokalen Energie-Coops"
+      salienz: 0.45
+      trend: "steigend"
+      uncertainty: "hoch"
+      behavioral_impact: |
+        Kollektives Handeln als Lösung für Dilemma.
+        Soziales Kapital als Enabler.
+      psi_dimension: "kappa_KOL"
+      ebf_link: "WHAT (C.S)"
+
+    - id: ENE-SOC-06
+      name: "Generationen-Gap Klimabewusstsein"
+      definition: "Unterschied im Klimabewusstsein zwischen Generationen"
+      salienz: 0.75
+      trend: "stabil"
+      uncertainty: "niedrig"
+      behavioral_impact: |
+        Jüngere höhere Dringlichkeit, weniger Mittel.
+        Intergenerationelle Spannung in Haushalten.
+      psi_dimension: "kappa_SOCIAL"
+      ebf_link: "WHO (AAA)"
+
+    - id: ENE-SOC-07
+      name: "Energie-Armut Stigma"
+      definition: "Soziale Scham bei Zahlungsschwierigkeiten"
+      salienz: 0.68
+      trend: "steigend"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        Verhindert Hilfesuche.
+        Vulnerable Gruppen bleiben unsichtbar.
+      psi_dimension: "kappa_SOCIAL"
+      ebf_link: "WHAT (C.S)"
+
+    - id: ENE-SOC-08
+      name: "Swissness Energie-Identität"
+      definition: "Energie als Teil nationaler Identität"
+      salienz: 0.55
+      trend: "stabil"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        "Schweizer Wasserkraft" als Identitätsanker.
+        Kann Veränderungsresistenz begründen.
+      psi_dimension: "kappa_IDN"
+      ebf_link: "WHAT (C.X)"
+
+# -----------------------------------------------------------------------------
+# ENE-ECO: Ökonomische Faktoren
+# -----------------------------------------------------------------------------
+ENE_ECO:
+  name: "Ökonomische Energie-Faktoren"
+  factor_count: 8
+  relevance_for_behavior: |
+    Kosten, Finanzierung und wirtschaftliche Rahmenbedingungen
+    als Enabler oder Barrieren für Energieentscheidungen.
+
+  factors:
+    - id: ENE-ECO-01
+      name: "Strompreis-Niveau"
+      definition: "Durchschnittlicher Haushaltsstrompreis"
+      current_value: "~27 Rp/kWh (2024)"
+      trend: "steigend"
+      uncertainty: "hoch"
+      behavioral_impact: |
+        Höhere Preise erhöhen Spar-Salienz.
+        Aber: Gewöhnungseffekt nach Preisschock.
+      psi_dimension: "kappa_INST"
+      ebf_link: "WHAT (C.F)"
+
+    - id: ENE-ECO-02
+      name: "Heizöl-Strom-Preisrelation"
+      definition: "Relative Kosten Öl vs. Wärmepumpe"
+      current_state: "Wärmepumpe zunehmend günstiger"
+      trend: "Konvergenz"
+      uncertainty: "hoch"
+      behavioral_impact: |
+        Break-Even-Point für Heizungsersatz.
+        Volatilität erschwert Planung.
+      psi_dimension: "kappa_INST"
+      ebf_link: "WHAT (C.F)"
+
+    - id: ENE-ECO-03
+      name: "Solar-Investitions-Payback"
+      definition: "Amortisationsdauer für PV-Anlage"
+      current_value: "~10-12 Jahre"
+      trend: "fallend"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        Mental Accounting: "Lohnt sich das?"
+        Framing als Rendite vs. Kosten wichtig.
+      psi_dimension: "kappa_FRM"
+      ebf_link: "WHAT (C.F)"
+
+    - id: ENE-ECO-04
+      name: "Verfügbarkeit Energie-Kredite"
+      definition: "Zugang zu Finanzierung für Energieinvestitionen"
+      current_state: "Zunehmend, aber komplex"
+      trend: "steigend"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        Upfront-Barriere senken.
+        Aber: Verschuldungsaversion bei vielen.
+      psi_dimension: "kappa_INST"
+      ebf_link: "WHAT (C.F)"
+
+    - id: ENE-ECO-05
+      name: "Energiekosten-Anteil Budget"
+      definition: "Anteil Energiekosten am Haushaltsbudget"
+      current_value: "~3-5% Durchschnitt"
+      trend: "steigend"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        Je höher, desto salienter.
+        Aber: Vulnerable überproportional betroffen.
+      psi_dimension: "kappa_INST"
+      ebf_link: "WHAT (C.F)"
+
+    - id: ENE-ECO-06
+      name: "Immobilienwert Energie-Premium"
+      definition: "Mehrwert für energieeffiziente Gebäude"
+      current_value: "~5-15% je nach Standard"
+      trend: "steigend"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        Rationaler Anreiz für Investition.
+        Aber: Realisierung erst bei Verkauf.
+      psi_dimension: "kappa_FRM"
+      ebf_link: "WHAT (C.F)"
+
+    - id: ENE-ECO-07
+      name: "Lokale Wertschöpfung Erneuerbare"
+      definition: "Wirtschaftliche Vorteile für Gemeinde/Region"
+      salienz: 0.42
+      trend: "steigend"
+      uncertainty: "mittel"
+      behavioral_impact: |
+        Framing als "lokaler Benefit" kann überzeugen.
+        Besonders in ländlichen Gebieten wirksam.
+      psi_dimension: "kappa_KOL"
+      ebf_link: "WHAT (C.S)"
+
+    - id: ENE-ECO-08
+      name: "Job-Sicherheit Energie-Transition"
+      definition: "Wahrgenommene Arbeitsplatzeffekte der Energiewende"
+      salienz: 0.58
+      trend: "variabel"
+      uncertainty: "hoch"
+      behavioral_impact: |
+        Angst vor Jobverlust → Widerstand.
+        Framing als Chance → Unterstützung.
+      psi_dimension: "kappa_KOL"
+      ebf_link: "WHAT (C.F)"
+
+# =============================================================================
+# MAKRO-VERERBUNG (Relevante Faktoren aus BCM2_04_KON)
+# =============================================================================
+makro_inheritance:
+  description: |
+    Diese Faktoren werden aus den MAKRO Schweiz-Kontextvektoren geerbt
+    und sind für den Energiesektor besonders relevant.
+
+  from_demographic:
+    - factor_id: "CH-DEM-01"
+      name: "Wohneigentumsquote"
+      energy_relevance: "Entscheidungsmacht bei Sanierung/Heizungsersatz"
+    - factor_id: "CH-DEM-05"
+      name: "Altersstruktur Gebäudebesitzer"
+      energy_relevance: "Investitionshorizont für Sanierung"
+    - factor_id: "CH-DEM-12"
+      name: "Stadt-Land-Verteilung"
+      energy_relevance: "Heizungstypen, Mobilitätsmuster"
+
+  from_economic:
+    - factor_id: "CH-ECO-03"
+      name: "Zinsniveau"
+      energy_relevance: "Finanzierungskosten für Investitionen"
+    - factor_id: "CH-ECO-07"
+      name: "Inflation"
+      energy_relevance: "Reale Energiekosten-Entwicklung"
+    - factor_id: "CH-ECO-15"
+      name: "Vermögensverteilung"
+      energy_relevance: "Investitionsfähigkeit Haushalte"
+
+  from_institutional:
+    - factor_id: "CH-POL-04"
+      name: "Föderalismus"
+      energy_relevance: "26 unterschiedliche Förderregimes"
+    - factor_id: "CH-POL-08"
+      name: "Direkte Demokratie"
+      energy_relevance: "Volksabstimmungen zu Energiegesetzen"
+
+  from_socio_cultural:
+    - factor_id: "CH-SOC-12"
+      name: "Umweltbewusstsein"
+      energy_relevance: "Basisniveau für Klimamotivation"
+    - factor_id: "CH-SOC-18"
+      name: "Technologieaffinität"
+      energy_relevance: "Adoption neuer Energietechnologien"
+
+# =============================================================================
+# BCM-MODUL-KOPPLUNG
+# =============================================================================
+bcm_module_coupling:
+  BCM2_01_INU:
+    sector_relevance: "Individuelle Kosten-Nutzen-Abwägung bei Energieentscheidungen"
+    key_factors: ["ENE-ECO-01", "ENE-ECO-03", "ENE-PSY-04"]
+
+  BCM2_02_KNU:
+    sector_relevance: "Klimaschutz als kollektiver Nutzen vs. individuelle Kosten"
+    key_factors: ["ENE-PSY-09", "ENE-SOC-05", "ENE-ECO-07"]
+
+  BCM2_03_IDN:
+    sector_relevance: "Energie als Teil der Identität (Swissness, Nachhaltigkeit)"
+    key_factors: ["ENE-PSY-02", "ENE-SOC-08"]
+
+  BCM2_04_KON:
+    sector_relevance: "Regulatorische und Choice Architecture Kontextfaktoren"
+    key_factors: ["ENE-REG-*", "ENE-PSY-01"]
+
+# =============================================================================
+# STATISTIKEN
+# =============================================================================
+statistics:
+  total_factors: 34
+  by_category:
+    regulatory: 8
+    psychological: 10
+    social: 8
+    economic: 8
+  by_trend:
+    steigend: 18
+    stabil: 13
+    fallend: 3
+  by_uncertainty:
+    niedrig: 8
+    mittel: 19
+    hoch: 7
+  avg_salienz: 0.58
+
+# =============================================================================
+# LEARNING LOG
+# =============================================================================
+learning_log:
+  description: |
+    Dieser Abschnitt wird durch Projekt-Learnings angereichert.
+    Jeder Eintrag referenziert das Quell-Projekt.
+  entries: []
+  # Beispiel-Eintrag:
+  # - date: "2026-06-15"
+  #   project: "BFE-2026-001"
+  #   type: "new_factor"
+  #   content:
+  #     id: "ENE-PSY-11"
+  #     name: "Discovered Factor"
+  #     ...

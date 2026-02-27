@@ -1,0 +1,458 @@
+# =============================================================================
+# INNOSUISSE LEARNING DATABASE
+# Lerndatenbank für das BEATRIX Innosuisse-Projekt
+# =============================================================================
+#
+# ZWECK: Systematische Erfassung von Learnings aus Projektarbeit
+# NUTZUNG: Bei ähnlichen Aufgaben diese Datei konsultieren
+# PFLEGE: Nach jeder relevanten Aufgabe neue Einträge hinzufügen
+#
+# =============================================================================
+
+metadata:
+  version: "1.0"
+  created: "2026-01-27"
+  last_updated: "2026-01-27"
+  project: "BEATRIX Innosuisse Innovation Cheque"
+  maintainer: "FehrAdvice Partners AG"
+
+# =============================================================================
+# LEARNING CATEGORIES (Domain - WO ist der Fehler passiert?)
+# =============================================================================
+
+categories:
+  DOC: "Dokument-Erstellung und -Adaption"
+  PROC: "Prozess und Workflow"
+  TECH: "Technische Aspekte"
+  COMM: "Kommunikation und Feedback"
+  QA: "Qualitätssicherung"
+  MEET: "Meeting-Verarbeitung"
+
+# =============================================================================
+# ERROR TYPES (Root Cause - WAS für ein Fehler ist es?)
+# =============================================================================
+
+error_types:
+  CONSISTENCY:
+    name: "Konsistenzfehler"
+    description: "Mehrere Stellen müssen synchron aktualisiert werden"
+    prevention: "Checkliste mit allen betroffenen Stellen erstellen"
+
+  CLASSIFICATION:
+    name: "Klassifikationsfehler"
+    description: "Unterscheidung/Kategorisierung von Inhaltstypen fehlt"
+    prevention: "Vor Verarbeitung: Inhalte nach Typ kategorisieren"
+
+  VERIFICATION:
+    name: "Verifikationsfehler"
+    description: "Vollständigkeit/Korrektheit wurde behauptet, nicht bewiesen"
+    prevention: "Immer mit konkreten Nachweisen (grep, Zeilennummern) antworten"
+
+  OUTPUT_FORMAT:
+    name: "Ausgabeformat-Fehler"
+    description: "Falsches Lieferformat für den Anwendungsfall"
+    prevention: "Bei Anfrage klären: Welches Format wird benötigt?"
+
+  DOMAIN_KNOWLEDGE:
+    name: "Domänenwissen-Fehler"
+    description: "Kritisches domänenspezifisches Wissen fehlte oder war falsch"
+    prevention: "Bei Fachbegriffen: Interne Dokumentation konsultieren"
+
+  TOOL_SEQUENCE:
+    name: "Werkzeug-Reihenfolge-Fehler"
+    description: "Workflow-Schritte in falscher Reihenfolge ausgeführt"
+    prevention: "Standard-Workflows dokumentieren und befolgen"
+
+  CHECKLIST:
+    name: "Checklisten-Fehler"
+    description: "Systematische Prüfung wurde nicht durchgeführt"
+    prevention: "Bei wiederkehrenden Aufgaben: Checkliste erstellen und abarbeiten"
+
+  ASSUMPTION:
+    name: "Annahme-Fehler"
+    description: "Falsche Annahme über Kontext/Anforderungen"
+    prevention: "Bei Unklarheit: Rückfrage stellen statt annehmen"
+
+# =============================================================================
+# LEARNINGS
+# =============================================================================
+
+learnings:
+
+  # ---------------------------------------------------------------------------
+  # SESSION: 2026-01-27 - BEATRIX Antragstext V4.1 → V4.2
+  # ---------------------------------------------------------------------------
+
+  - id: "INO-L-2026-01-27-DOC-001"
+    date: "2026-01-27"
+    session: "BEATRIX-V4.1-to-V4.2"
+    category: "DOC"
+    error_type: "CONSISTENCY"
+    title: "Versionsnummern-Konsistenz"
+    problem: |
+      Bei Dokument-Updates wurde die Versionsnummer nicht an allen Stellen
+      aktualisiert (Header, Titelseite, Footer).
+    concrete_example: |
+      BEATRIX V4.2: Versionsnummer "4.1" stand noch im Footer (Zeile 928),
+      während Header und Titelseite bereits "4.2" zeigten. Erst durch
+      grep -n "Version" wurde der Fehler entdeckt und korrigiert.
+    learning: |
+      Versionsnummern müssen an ALLEN Stellen im Dokument geprüft und
+      aktualisiert werden.
+    checklist:
+      - "Header/Kommentar-Block (Zeile 1-6)"
+      - "Titelseite (\\large Version X.X)"
+      - "Footer (\\small Version: X.X)"
+    prevention: |
+      Nach Versionsänderung: grep -n "Version" <datei>.tex ausführen
+      und alle Treffer prüfen.
+    severity: "medium"
+    tags: ["version", "konsistenz", "latex"]
+
+  - id: "INO-L-2026-01-27-DOC-002"
+    date: "2026-01-27"
+    session: "BEATRIX-V4.1-to-V4.2"
+    category: "DOC"
+    error_type: "CONSISTENCY"
+    title: "Kernaussagen an allen Stellen aktualisieren"
+    problem: |
+      Eine Kernaussage (z.B. "Wechselwirkungen in der Realität") muss an
+      mehreren Stellen im Dokument erscheinen, nicht nur einmal.
+    concrete_example: |
+      BEATRIX V4.2: Ernst Fehrs Korrektur "Wechselwirkungen in der Realität"
+      musste an 7 Stellen eingearbeitet werden: Abstract, Säulen-Titel,
+      Haupttext, "Warum neu?"-Abschnitt, Summary-Box, Gesamtzusammenfassung
+      und Glossar. Anfangs wurden nur 3 Stellen aktualisiert.
+    learning: |
+      Wichtige Konzeptänderungen müssen durchgängig in allen relevanten
+      Sektionen eingearbeitet werden.
+    checklist:
+      - "Abstract"
+      - "Haupttext (betroffene Sektion)"
+      - "Summary-Box der Sektion"
+      - "Gesamtzusammenfassung"
+      - "Glossar (falls Begriff definiert)"
+    prevention: |
+      Bei Kernaussagen-Änderung: Liste aller Stellen erstellen, wo die
+      Aussage vorkommt, und systematisch abarbeiten.
+    severity: "high"
+    tags: ["konsistenz", "kernaussage", "durchgängig"]
+
+  - id: "INO-L-2026-01-27-MEET-001"
+    date: "2026-01-27"
+    session: "BEATRIX-V4.1-to-V4.2"
+    category: "MEET"
+    error_type: "CLASSIFICATION"
+    title: "Meeting-Transkript-Analyse"
+    problem: |
+      Nicht alle Meeting-Teilnehmer haben inhaltliche Inputs. Es muss
+      unterschieden werden zwischen echten Änderungswünschen und
+      organisatorischen Beiträgen.
+    concrete_example: |
+      BEATRIX V4.2: Im Meeting-Transkript wurden Johannes Lugers
+      organisatorische Äusserungen ("Mhm", Bestätigungen) nicht von
+      inhaltlichen Inputs unterschieden. Resultat: Falsche Annahme,
+      er hätte Textänderungen gewünscht. Tatsächlich kam das gesamte
+      inhaltliche Feedback von Ernst Fehr.
+    learning: |
+      Bei Meeting-Transkripten: Pro Teilnehmer dokumentieren, ob
+      inhaltliche Inputs (Textänderungen) oder nur organisatorische
+      Beiträge (Bestätigungen, "Mhm") vorliegen.
+    checklist:
+      - "Teilnehmer-Liste erstellen"
+      - "Pro Teilnehmer: Inhaltliche vs. organisatorische Beiträge?"
+      - "Nur inhaltliche Inputs in Dokument einarbeiten"
+      - "Bei Rückfrage klar kommunizieren: 'X hatte keine inhaltlichen Inputs'"
+    prevention: |
+      Transkript-Analyse: Zuerst nach Namen filtern, dann Inhalte
+      kategorisieren (inhaltlich/organisatorisch).
+    severity: "medium"
+    tags: ["meeting", "transkript", "feedback"]
+
+  - id: "INO-L-2026-01-27-COMM-001"
+    date: "2026-01-27"
+    session: "BEATRIX-V4.1-to-V4.2"
+    category: "COMM"
+    error_type: "VERIFICATION"
+    title: "Explizite Verifizierung bei Vollständigkeitsfragen"
+    problem: |
+      User fragte mehrfach nach Vollständigkeit. Einfache Behauptung
+      "Ja, ist vollständig" reicht nicht.
+    concrete_example: |
+      BEATRIX V4.2: Auf die Frage "Ist alles vollständig?" wurde zunächst
+      "Ja" beantwortet, ohne zu beweisen, dass alle 5 Fundstellen von
+      "Wechselwirkungen in der Realität" aktualisiert wurden. Erst nach
+      Nachfrage wurde grep -n ausgeführt und die Zeilennummern gezeigt.
+    learning: |
+      Bei Vollständigkeitsfragen: Explizite Verifizierung mit
+      grep/Bash-Befehlen ZEIGEN, nicht nur behaupten.
+    example: |
+      grep -n "Wechselwirkungen, die in der Realität" <datei>.tex
+      → Zeigt alle Fundstellen mit Zeilennummern
+    prevention: |
+      Immer mit konkreten Nachweisen (Zeilennummern, grep-Output)
+      antworten, nicht mit Pauschalaussagen.
+    severity: "medium"
+    tags: ["kommunikation", "verifizierung", "transparenz"]
+
+  - id: "INO-L-2026-01-27-COMM-002"
+    date: "2026-01-27"
+    session: "BEATRIX-V4.1-to-V4.2"
+    category: "COMM"
+    error_type: "OUTPUT_FORMAT"
+    title: "Kompilierbarer Code im Chat"
+    problem: |
+      User wollte den vollständigen Code sehen, um ihn lokal zu
+      kompilieren. Nur den Dateipfad nennen reicht nicht.
+    concrete_example: |
+      BEATRIX V4.2: User bat um LaTeX-Code zum lokalen Kompilieren.
+      Erste Antwort nannte nur den Dateipfad
+      "/home/user/.../BEATRIX-INNOSUISSE-ANTRAGSTEXT-V4.2.tex".
+      User musste mehrfach nachfragen, bis der vollständige Code
+      als ```latex ... ``` Block im Chat angezeigt wurde.
+    learning: |
+      Wenn User nach "Code zum Kompilieren" fragt: Vollständigen
+      Code im Chat als Code-Block anzeigen, nicht nur Dateipfad.
+    prevention: |
+      Bei Anfrage nach kompilierbarem Code: Read-Tool nutzen und
+      gesamten Inhalt in ```latex ... ``` Block ausgeben.
+    severity: "low"
+    tags: ["kommunikation", "code", "latex"]
+
+  - id: "INO-L-2026-01-27-PROC-001"
+    date: "2026-01-27"
+    session: "BEATRIX-V4.1-to-V4.2"
+    category: "PROC"
+    error_type: "DOMAIN_KNOWLEDGE"
+    title: "Ernst Fehr Feedback-Muster"
+    problem: |
+      Ernst Fehr korrigierte die Beschreibung von BEATRIX fundamental:
+      Nicht "Wechselwirkungen zwischen Massnahmen analysieren", sondern
+      "Wechselwirkungen in der Realität erfassen und Massnahmen vorschlagen".
+    concrete_example: |
+      BEATRIX V4.1 enthielt falsche Kernbeschreibung: "BEATRIX analysiert
+      Wechselwirkungen zwischen Massnahmen". Ernst Fehr korrigierte dies
+      fundamental zu: "BEATRIX erfasst Wechselwirkungen, die in der
+      Realität stattfinden (psychologisch, finanziell, kulturell) und
+      schlägt darauf basierend Massnahmen vor." Dies ist ein kritischer
+      Unterschied in der Produktbeschreibung.
+    learning: |
+      BEATRIX-Kernbeschreibung muss drei Elemente enthalten:
+      1. Erfasst Wechselwirkungen IN DER REALITÄT (nicht zwischen Massnahmen)
+      2. Drei Ebenen: psychologisch, finanziell, kulturell
+      3. Schlägt Massnahmen VOR (nicht nur analysiert)
+    keywords:
+      correct:
+        - "Wechselwirkungen, die in der Realität stattfinden"
+        - "psychologische, finanzielle, kulturelle Effekte"
+        - "schlägt Massnahmen vor"
+      incorrect:
+        - "Wechselwirkungen zwischen Massnahmen"
+        - "analysiert Massnahmen"
+    severity: "critical"
+    tags: ["beatrix", "kernaussage", "ernst-fehr"]
+
+  - id: "INO-L-2026-01-27-TECH-001"
+    date: "2026-01-27"
+    session: "BEATRIX-V4.1-to-V4.2"
+    category: "TECH"
+    error_type: "TOOL_SEQUENCE"
+    title: "LaTeX-Datei nach Umbenennung neu lesen"
+    problem: |
+      Nach Umbenennung einer Datei (V4.1.tex → V4.2.tex) funktioniert
+      das Edit-Tool nicht mehr ohne erneutes Lesen.
+    concrete_example: |
+      BEATRIX: Nach Umbenennung von BEATRIX-INNOSUISSE-ANTRAGSTEXT-V4.1.tex
+      zu V4.2.tex schlug das Edit-Tool fehl, weil der interne Dateipuffer
+      noch auf den alten Namen zeigte. Korrekter Workflow wäre gewesen:
+      1. mv V4.1.tex V4.2.tex
+      2. Read V4.2.tex (neu einlesen!)
+      3. Edit V4.2.tex
+    learning: |
+      Nach Datei-Umbenennung: Datei mit Read-Tool neu einlesen,
+      bevor Edit-Tool verwendet wird.
+    prevention: |
+      Workflow: Rename → Read → Edit (nicht: Rename → Edit)
+    severity: "low"
+    tags: ["technik", "latex", "workflow"]
+
+  - id: "INO-L-2026-01-27-QA-001"
+    date: "2026-01-27"
+    session: "BEATRIX-V4.1-to-V4.2"
+    category: "QA"
+    error_type: "CHECKLIST"
+    title: "6+1 Stellen für Kernaussagen"
+    problem: |
+      Eine Kernaussage erscheint in BEATRIX-Dokumenten an bis zu 7 Stellen.
+    concrete_example: |
+      BEATRIX V4.2: Die Kernaussage "Wechselwirkungen in der Realität"
+      erscheint an 7 Stellen: (1) Abstract, (2) Säulen-Titel "Säule 2",
+      (3) Haupttext der Säule, (4) "Warum ist das neu?"-Abschnitt,
+      (5) Summary-Box (fbox), (6) Gesamtzusammenfassung-Tabelle,
+      (7) Glossar-Eintrag. Ohne systematische Checkliste wurden anfangs
+      nur 3 von 7 Stellen aktualisiert.
+    learning: |
+      Checkliste für Kernaussagen-Updates in Innosuisse-Dokumenten:
+    checklist:
+      - "1. Abstract"
+      - "2. Säulen-Titel (subsubsection)"
+      - "3. Säulen-Haupttext"
+      - "4. 'Warum ist das neu?'-Abschnitt"
+      - "5. Summary-Box (fbox)"
+      - "6. Gesamtzusammenfassung-Tabelle"
+      - "7. Glossar-Eintrag"
+    prevention: |
+      Bei Kernaussagen-Änderung: Diese 7 Stellen systematisch durchgehen.
+    severity: "high"
+    tags: ["qa", "checkliste", "kernaussage"]
+
+  # ---------------------------------------------------------------------------
+  # SESSION: 2026-01-27 - Lerndatenbank und Skill-Erstellung
+  # ---------------------------------------------------------------------------
+
+  - id: "INO-L-2026-01-27-PROC-002"
+    date: "2026-01-27"
+    session: "BEATRIX-Learning-Database"
+    category: "PROC"
+    error_type: "TOOL_SEQUENCE"
+    title: "Skill + Auto-Trigger für wiederholbare Workflows"
+    problem: |
+      Ein PFLICHT-Workflow in CLAUDE.md allein garantiert nicht, dass Claude
+      den Workflow automatisch verwendet. Der Workflow muss als Skill definiert
+      UND mit automatischen Triggern versehen werden.
+    concrete_example: |
+      Innosuisse-Projekt: Der Fehlerprävention-Workflow wurde zunächst nur in
+      CLAUDE.md dokumentiert. Claude verwendete ihn nicht automatisch bei
+      BEATRIX-Aufgaben. Lösung: Skill-Datei .claude/commands/innosuisse.md
+      mit expliziten Triggern erstellen UND in CLAUDE.md referenzieren.
+      Trigger: docs/funding/, "BEATRIX", "Innosuisse", "Innovation Cheque".
+    learning: |
+      Für automatische Workflow-Aktivierung braucht es DREI Elemente:
+      1. Skill-Datei in .claude/commands/<name>.md
+      2. Explizite Trigger-Bedingungen im Skill
+      3. Referenz in CLAUDE.md mit "DANN MUSS Claude SOFORT"
+    checklist:
+      - "Skill-Datei erstellt in .claude/commands/"
+      - "Trigger-Bedingungen definiert (Dateipfade, Keywords)"
+      - "CLAUDE.md aktualisiert mit Skill-Referenz"
+      - "SKILLS-INDEX.md aktualisiert"
+      - "Auto-Aktivierung getestet"
+    prevention: |
+      Bei wiederkehrenden Workflows: Immer als Skill implementieren,
+      nicht nur als Dokumentation in CLAUDE.md.
+    severity: "high"
+    tags: ["skill", "workflow", "automatisierung", "prompt"]
+
+  - id: "INO-L-2026-01-27-TECH-002"
+    date: "2026-01-27"
+    session: "BEATRIX-Learning-Database"
+    category: "TECH"
+    error_type: "CONSISTENCY"
+    title: "Strukturierte Daten für Claude-Nutzung"
+    problem: |
+      Unstrukturierte Learnings (z.B. in Freitext) können von Claude nicht
+      systematisch abgefragt werden. Es braucht strukturierte Datenformate
+      mit eindeutigen Identifikatoren.
+    concrete_example: |
+      Innosuisse-Learnings wurden zunächst als Freitext diskutiert. Erst
+      nach Strukturierung in YAML mit Superkey (INO-L-{DATE}-{CAT}-{NNN}),
+      error_type, concrete_example und checklist-Feldern konnten sie
+      systematisch abgefragt werden via query_learnings.py.
+    learning: |
+      Für Claude-nutzbare Daten braucht es:
+      1. Eindeutige IDs (Superkey-Format)
+      2. Kategorisierung (category + error_type)
+      3. Strukturierte Felder (problem, learning, checklist, prevention)
+      4. Konkrete Beispiele (concrete_example mit Namen, Zeilennummern)
+      5. Abfrage-Tool (query_learnings.py mit --error-type, --tag, etc.)
+    checklist:
+      - "Superkey-Format definiert"
+      - "YAML-Schema mit allen Pflichtfeldern"
+      - "Abfrage-Script mit Filtern erstellt"
+      - "Statistik-Funktion (--stats)"
+      - "Dokumentation im Skill"
+    prevention: |
+      Bei neuen Datentypen: Zuerst Schema definieren, dann Abfrage-Tool,
+      dann erst Daten erfassen.
+    severity: "medium"
+    tags: ["daten", "yaml", "struktur", "superkey", "prompt"]
+
+  - id: "INO-L-2026-01-27-PROC-003"
+    date: "2026-01-27"
+    session: "BEATRIX-Learning-Database"
+    category: "PROC"
+    error_type: "CHECKLIST"
+    title: "Fehlertyp-Klassifikation für systematische Prävention"
+    problem: |
+      Ohne Fehlertyp-Klassifikation werden Fehler nur ad-hoc behoben,
+      nicht systematisch verhindert. Ähnliche Fehler wiederholen sich.
+    concrete_example: |
+      BEATRIX V4.1→V4.2: Mehrere Fehler (Versionsnummer, Kernaussage,
+      Meeting-Analyse) wurden einzeln behoben. Erst durch Klassifikation
+      in 8 Fehlertypen (CONSISTENCY, CLASSIFICATION, VERIFICATION, etc.)
+      wurde erkannt, dass 3 Fehler denselben Root Cause hatten (CONSISTENCY).
+      Lösung: Checkliste für ALLE Konsistenz-relevanten Stellen.
+    learning: |
+      8 Fehlertypen für systematische Prävention:
+      1. CONSISTENCY - Mehrere Stellen synchron
+      2. CLASSIFICATION - Inhaltstypen kategorisieren
+      3. VERIFICATION - Beweisen, nicht behaupten
+      4. OUTPUT_FORMAT - Format klären
+      5. DOMAIN_KNOWLEDGE - Interne Doku konsultieren
+      6. TOOL_SEQUENCE - Reihenfolge einhalten
+      7. CHECKLIST - Systematisch prüfen
+      8. ASSUMPTION - Nachfragen statt annehmen
+    checklist:
+      - "Fehler einem der 8 Typen zuordnen"
+      - "Root Cause identifizieren (nicht nur Symptom)"
+      - "Prävention für ALLE Fälle dieses Typs definieren"
+      - "In Lerndatenbank mit error_type dokumentieren"
+    prevention: |
+      Bei jedem Fehler: Erst Typ klassifizieren, dann präventive Massnahme
+      für den Typ (nicht nur diesen Einzelfall) definieren.
+    severity: "high"
+    tags: ["fehlertyp", "klassifikation", "prävention", "systematik"]
+
+# =============================================================================
+# TEMPLATES FÜR NEUE LEARNINGS
+# =============================================================================
+
+_template:
+  id: "INO-L-YYYY-MM-DD-CAT-NNN"
+  date: "YYYY-MM-DD"
+  session: "Beschreibende Session-ID"
+  category: "DOC|PROC|TECH|COMM|QA|MEET"
+  error_type: "CONSISTENCY|CLASSIFICATION|VERIFICATION|OUTPUT_FORMAT|DOMAIN_KNOWLEDGE|TOOL_SEQUENCE|CHECKLIST|ASSUMPTION"
+  title: "Kurzer, prägnanter Titel"
+  problem: |
+    Was war das Problem?
+  concrete_example: |
+    Konkretes Beispiel aus dem Projekt: Was genau ist passiert?
+    Mit Dateinamen, Zeilennummern, Personennamen etc.
+  learning: |
+    Was wurde gelernt?
+  checklist:
+    - "Punkt 1"
+    - "Punkt 2"
+  prevention: |
+    Wie kann das Problem in Zukunft vermieden werden?
+  severity: "low|medium|high|critical"
+  tags: ["tag1", "tag2"]
+
+# =============================================================================
+# USAGE INSTRUCTIONS
+# =============================================================================
+#
+# BEI NEUER AUFGABE:
+# 1. Relevante Tags/Kategorien identifizieren
+# 2. grep -i "<tag>" data/innosuisse-learning-database.yaml
+# 3. Relevante Learnings lesen und anwenden
+#
+# NACH ABGESCHLOSSENER AUFGABE:
+# 1. Neue Learnings identifizieren
+# 2. Template kopieren und ausfüllen
+# 3. ID generieren: INO-L-{YYYY-MM-DD}-{CAT}-{NNN}
+#    Beispiel: INO-L-2026-01-27-DOC-003
+# 4. Commit mit: feat(learning): Add learning INO-L-YYYY-MM-DD-CAT-NNN
+#
+# =============================================================================

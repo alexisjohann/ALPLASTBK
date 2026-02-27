@@ -1,0 +1,306 @@
+# =============================================================================
+# INTEGRATION LEVEL UPGRADE WORKFLOW
+# =============================================================================
+# Upgrades papers from one Integration Level to the next.
+#
+# Integration Levels (from Appendix BM):
+#   1 = MINIMAL (BibTeX only)
+#   2 = STANDARD (has theory_support OR parameter)
+#   3 = CASE (in Case Registry)
+#   4 = THEORY (in Theory Catalog)
+#   5 = FULL (cited in BOTH appendices AND chapters)
+#
+# Triggers:
+#   - Manual (workflow_dispatch)
+# =============================================================================
+
+name: Integration Level Upgrade
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_level:
+        description: 'Target Integration Level'
+        type: choice
+        required: true
+        default: '2'
+        options:
+          - '2'  # Add theory_support, parameter fields
+          - '3'  # Add to Case Registry
+          - '4'  # Add to Theory Catalog
+      limit:
+        description: 'Max papers to process (0 = all eligible)'
+        required: false
+        default: '50'
+      dry_run:
+        description: 'Dry run (no changes)'
+        required: false
+        default: 'true'
+        type: boolean
+      priority:
+        description: 'Paper selection priority'
+        type: choice
+        required: false
+        default: 'high_content_first'
+        options:
+          - high_content_first    # Papers with most content
+          - high_citation_first   # Papers with most citations
+          - tier1_first           # Tier 1 evidence papers
+          - random                # Random selection
+
+jobs:
+  upgrade-integration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml requests
+
+      - name: Create upgrade script
+        run: |
+          cat > upgrade_integration.py << 'SCRIPT'
+          #!/usr/bin/env python3
+          """
+          Integration Level Upgrade Script
+          =================================
+          Upgrades papers to the specified Integration Level.
+          """
+
+          import os
+          import re
+          import yaml
+          from pathlib import Path
+          from datetime import datetime
+
+          # Configuration
+          TARGET_LEVEL = int(os.environ.get("TARGET_LEVEL", "2"))
+          LIMIT = int(os.environ.get("LIMIT", "50"))
+          DRY_RUN = os.environ.get("DRY_RUN", "true").lower() == "true"
+          PRIORITY = os.environ.get("PRIORITY", "high_content_first")
+
+          BIB_FILE = Path("bibliography/bcm_master.bib")
+          CLASSIFICATION_FILE = Path("data/paper-level-classification.yaml")
+          THEORY_CATALOG = Path("data/theory-catalog.yaml")
+          CASE_REGISTRY = Path("data/case-registry.yaml")
+
+          # Statistics
+          stats = {"processed": 0, "upgraded": 0, "skipped": 0, "errors": 0}
+
+          # Theory category keywords for automatic assignment
+          THEORY_KEYWORDS = {
+              "CAT-01": ["prospect theory", "loss aversion", "reference point", "framing"],
+              "CAT-02": ["social preference", "fairness", "inequity", "altruism", "reciprocity"],
+              "CAT-03": ["time preference", "discount", "present bias", "hyperbolic"],
+              "CAT-04": ["bounded rationality", "heuristic", "bias", "cognitive"],
+              "CAT-05": ["belief", "updating", "overconfidence", "bayesian"],
+              "CAT-06": ["self-control", "willpower", "temptation", "commitment"],
+              "CAT-07": ["identity", "social norm", "conformity", "peer effect"],
+              "CAT-08": ["attention", "salience", "limited attention", "cognitive load"],
+              "CAT-09": ["emotion", "affect", "mood", "anxiety"],
+              "CAT-10": ["default", "nudge", "choice architecture", "opt-out"],
+          }
+
+          def load_classification():
+              """Load paper classification data."""
+              if not CLASSIFICATION_FILE.exists():
+                  print("ERROR: Run classify_paper_levels.py first!")
+                  return None
+              with open(CLASSIFICATION_FILE, 'r') as f:
+                  return yaml.safe_load(f)
+
+          def load_bibtex():
+              """Load and parse BibTeX file."""
+              papers = {}
+              with open(BIB_FILE, 'r', encoding='utf-8') as f:
+                  content = f.read()
+
+              entries = re.findall(r'(@\w+\{[^,]+,[^@]*)', content, re.DOTALL)
+              for entry in entries:
+                  key_match = re.search(r'@\w+\{([^,]+),', entry)
+                  if key_match:
+                      key = key_match.group(1).strip()
+                      papers[key] = entry
+
+              return papers, content
+
+          def get_eligible_papers(classification, current_level):
+              """Get papers eligible for upgrade to target level."""
+              eligible = []
+              for key, data in classification['papers'].items():
+                  if data['integration_level'] == current_level:
+                      eligible.append({
+                          'key': key,
+                          'content_level': data['content_level'],
+                          'has_abstract': data['content_details'].get('has_abstract', False),
+                          'yaml_size': data['content_details'].get('yaml_size', 0)
+                      })
+              return eligible
+
+          def prioritize_papers(papers, priority):
+              """Sort papers by priority."""
+              if priority == "high_content_first":
+                  return sorted(papers, key=lambda x: (x['content_level'], x['yaml_size']), reverse=True)
+              elif priority == "tier1_first":
+                  return papers  # Would need tier data
+              elif priority == "random":
+                  import random
+                  random.shuffle(papers)
+                  return papers
+              return papers
+
+          def detect_theory_category(paper_entry):
+              """Detect likely theory category based on title/abstract."""
+              text = paper_entry.lower()
+              scores = {}
+              for cat, keywords in THEORY_KEYWORDS.items():
+                  score = sum(1 for kw in keywords if kw in text)
+                  if score > 0:
+                      scores[cat] = score
+
+              if scores:
+                  best = max(scores, key=scores.get)
+                  return best
+              return None
+
+          def upgrade_to_level_2(key, paper_entry):
+              """
+              Upgrade to Level 2: Add theory_support field.
+              """
+              # Detect theory category
+              category = detect_theory_category(paper_entry)
+              if not category:
+                  return None, "No theory category detected"
+
+              # Find theory ID from catalog
+              theory_id = f"MS-{category[-2:]}-001"  # Simplified
+
+              # Add theory_support field
+              if "theory_support" not in paper_entry:
+                  # Insert before the closing brace
+                  new_entry = paper_entry.rstrip().rstrip('}')
+                  new_entry += f',\n  theory_support = {{{theory_id}}}\n}}'
+                  return new_entry, f"Added theory_support = {{{theory_id}}}"
+
+              return None, "Already has theory_support"
+
+          def main():
+              print("=" * 70)
+              print(f"INTEGRATION LEVEL UPGRADE → Level {TARGET_LEVEL}")
+              print("=" * 70)
+              print(f"Limit: {LIMIT}")
+              print(f"Priority: {PRIORITY}")
+              print(f"Dry run: {DRY_RUN}")
+              print()
+
+              # Load data
+              classification = load_classification()
+              if not classification:
+                  return
+
+              bibtex_papers, bibtex_content = load_bibtex()
+              print(f"Loaded {len(bibtex_papers)} papers from BibTeX")
+
+              # Get eligible papers (at level TARGET-1)
+              current_level = TARGET_LEVEL - 1
+              eligible = get_eligible_papers(classification, current_level)
+              print(f"Eligible papers at Level {current_level}: {len(eligible)}")
+
+              # Prioritize
+              eligible = prioritize_papers(eligible, PRIORITY)
+
+              # Apply limit
+              if LIMIT > 0:
+                  eligible = eligible[:LIMIT]
+              print(f"Processing: {len(eligible)}")
+              print("-" * 70)
+
+              upgraded_entries = []
+
+              for paper in eligible:
+                  key = paper['key']
+                  stats['processed'] += 1
+
+                  if key not in bibtex_papers:
+                      print(f"[{stats['processed']}] {key}: NOT FOUND in BibTeX")
+                      stats['errors'] += 1
+                      continue
+
+                  entry = bibtex_papers[key]
+
+                  # Upgrade based on target level
+                  if TARGET_LEVEL == 2:
+                      new_entry, message = upgrade_to_level_2(key, entry)
+                  else:
+                      new_entry, message = None, f"Level {TARGET_LEVEL} upgrade not implemented"
+
+                  if new_entry:
+                      print(f"[{stats['processed']}] {key[:40]}...")
+                      print(f"    ✓ {message}")
+                      upgraded_entries.append((key, entry, new_entry))
+                      stats['upgraded'] += 1
+                  else:
+                      print(f"[{stats['processed']}] {key[:40]}...")
+                      print(f"    ✗ {message}")
+                      stats['skipped'] += 1
+
+              # Apply changes to BibTeX
+              if not DRY_RUN and upgraded_entries:
+                  print()
+                  print("Applying changes to BibTeX...")
+                  new_content = bibtex_content
+                  for key, old_entry, new_entry in upgraded_entries:
+                      new_content = new_content.replace(old_entry, new_entry)
+
+                  with open(BIB_FILE, 'w', encoding='utf-8') as f:
+                      f.write(new_content)
+                  print(f"Updated {len(upgraded_entries)} entries in bcm_master.bib")
+
+              # Summary
+              print()
+              print("=" * 70)
+              print("SUMMARY")
+              print("=" * 70)
+              print(f"Processed:  {stats['processed']}")
+              print(f"Upgraded:   {stats['upgraded']}")
+              print(f"Skipped:    {stats['skipped']}")
+              print(f"Errors:     {stats['errors']}")
+
+              if DRY_RUN:
+                  print("\n[DRY RUN] No files were modified")
+
+          if __name__ == '__main__':
+              main()
+          SCRIPT
+
+      - name: Run upgrade
+        env:
+          TARGET_LEVEL: ${{ inputs.target_level }}
+          LIMIT: ${{ inputs.limit }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          PRIORITY: ${{ inputs.priority }}
+        run: python upgrade_integration.py
+
+      - name: Commit changes
+        if: ${{ inputs.dry_run == 'false' }}
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add bibliography/bcm_master.bib data/
+          git diff --staged --quiet || git commit -m "feat(papers): Upgrade papers to Integration Level ${{ inputs.target_level }}
+
+          Target Level: ${{ inputs.target_level }}
+          Limit: ${{ inputs.limit }}
+          Priority: ${{ inputs.priority }}
+
+          https://claude.ai/code/session_018owGuHoers2muZN9fKKg6A"
+          git push

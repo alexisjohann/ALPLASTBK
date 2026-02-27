@@ -1,0 +1,76 @@
+# =============================================================================
+# Daily Pipeline Report
+# =============================================================================
+# Täglicher Pipeline-Report per Email an Sales Operations (Maria & Nora)
+#
+# Schedule: Jeden Tag um 07:00 Uhr CET (06:00 UTC)
+# =============================================================================
+
+name: Daily Pipeline Report
+
+on:
+  schedule:
+    # Jeden Tag um 07:00 Uhr CET (06:00 UTC)
+    - cron: '0 6 * * *'
+
+  # Manueller Trigger für Tests
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Test-Modus (keine echten E-Mails)'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  generate-and-send-report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          pip install pyyaml openpyxl
+          sudo apt-get update
+          sudo apt-get install -y pandoc texlive-xetex texlive-fonts-recommended
+
+      - name: Generate Pipeline Report
+        run: |
+          echo "📊 Generiere Pipeline Report: $(date)"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          python scripts/generate_pipeline_report.py
+
+      - name: Send Report via Email
+        if: ${{ github.event.inputs.dry_run != 'true' && env.SMTP_SERVER != '' }}
+        env:
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+        run: |
+          python scripts/send_daily_report.py
+
+      - name: Upload Report Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-report-${{ github.run_number }}
+          path: outputs/reports/pipeline_report_*.xlsx
+          retention-days: 30
+
+      - name: Summary
+        run: |
+          echo "## 📊 Daily Pipeline Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Report generiert: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Empfänger:" >> $GITHUB_STEP_SUMMARY
+          echo "- Maria Neumann" >> $GITHUB_STEP_SUMMARY
+          echo "- Nora Gavazaj Susuri" >> $GITHUB_STEP_SUMMARY

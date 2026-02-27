@@ -1,0 +1,103 @@
+# =============================================================================
+# SSRN PAPER MONITOR
+# =============================================================================
+# Monitors SSRN (Social Science Research Network) for new working papers.
+#
+# Features:
+#   - Check researchers from researcher-registry.yaml for new SSRN papers
+#   - Search SSRN by topic
+#   - Uses SerpAPI for reliable search
+#
+# Triggers:
+#   - Manual (workflow_dispatch) with researcher or topic input
+#   - Scheduled: Weekly on Mondays at 08:00 UTC
+#
+# Required Secrets:
+#   - SERPAPI_KEY: SerpAPI key for Google Scholar search
+# =============================================================================
+
+name: SSRN Paper Monitor
+
+on:
+  workflow_dispatch:
+    inputs:
+      researcher_id:
+        description: 'Researcher ID (e.g., RES-FEHR-E) or "all"'
+        required: false
+        default: 'all'
+      topic:
+        description: 'Search topic (optional, overrides researcher)'
+        required: false
+      save_results:
+        description: 'Save results to repository'
+        type: boolean
+        default: true
+
+  schedule:
+    # Weekly on Monday at 08:00 UTC
+    - cron: '0 8 * * 1'
+
+env:
+  SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+
+jobs:
+  check-ssrn:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests pyyaml
+
+      - name: Check SSRN for topic
+        if: ${{ github.event.inputs.topic != '' }}
+        id: check_topic
+        run: |
+          python scripts/check_ssrn_papers.py \
+            --topic "${{ github.event.inputs.topic }}" \
+            ${{ github.event.inputs.save_results == 'true' && '--save' || '' }}
+
+      - name: Check SSRN for researchers
+        if: ${{ github.event.inputs.topic == '' }}
+        id: check_researchers
+        run: |
+          if [ "${{ github.event.inputs.researcher_id }}" != "all" ] && [ -n "${{ github.event.inputs.researcher_id }}" ]; then
+            python scripts/check_ssrn_papers.py \
+              --researcher "${{ github.event.inputs.researcher_id }}" \
+              ${{ github.event.inputs.save_results == 'true' && '--save' || '' }}
+          else
+            python scripts/check_ssrn_papers.py \
+              ${{ github.event.inputs.save_results == 'true' && '--save' || '' }}
+          fi
+
+      - name: Commit results
+        if: ${{ github.event.inputs.save_results == 'true' || github.event_name == 'schedule' }}
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A data/ssrn/
+          git diff --staged --quiet || git commit -m "feat(ssrn): Update SSRN paper monitoring results"
+          git push || echo "Nothing to push"
+
+      - name: Create issue for new papers
+        if: steps.check_researchers.outputs.new_papers_found == 'true'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const total = '${{ steps.check_researchers.outputs.total_new_papers }}';
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `📄 ${total} new SSRN paper(s) found`,
+              body: `The SSRN monitor found ${total} new working paper(s).\n\nCheck the workflow run for details:\n${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              labels: ['ssrn', 'papers', 'automated']
+            });

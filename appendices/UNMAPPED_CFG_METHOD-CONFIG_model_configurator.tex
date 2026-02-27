@@ -1,0 +1,942 @@
+% =============================================================================
+% APPENDIX GGG: METHOD-CONFIG: Model Configurator
+% =============================================================================
+% Module: BCM2_METHOD_CONFIG
+% Category: METHOD
+% Language: English
+% Version: 1.0 (January 2026)
+% Status: Draft
+%
+% This appendix defines the Model Configurator---a systematic tool for generating
+% behavioral models from configuration dimensions. The Configurator uses mapping
+% tables to auto-populate model parameters based on Level, Geography, Domain,
+% and Scope Type selections.
+%
+% =============================================================================
+
+% =============================================================================
+% CROSS-REFERENCE STRUCTURE
+% =============================================================================
+%
+% CHAPTER LINKAGE (Required):
+% - Primary Chapter: Chapter 4: From Framework to Model
+% - Secondary Chapters: Chapter 10 (Applications), Chapter 9 (Context)
+%
+% DEPENDENCIES (what this appendix REQUIRES):
+% - Appendix UNMAPPED_DSN (METHOD-DESIGN): Workflow that uses configurator
+% - Appendix UNMAPPED_REG (METHOD-REGISTRY): Stores generated models
+% - Appendix UNMAPPED_WHO (CORE-WHO): Level definitions
+% - Appendix UNMAPPED_HOW (CORE-HOW): Complementarity
+% - Appendix UNMAPPED_WAT (CORE-WHAT): Utility dimensions
+% - Appendix CTW (CORE-WHEN): Context dimensions
+% - Appendix UNMAPPED_AWA (CORE-AWARE): Awareness function [NEW]
+% - Appendix UNMAPPED_REA (CORE-READY): Willingness function [NEW]
+% - Appendix UNMAPPED_STA (CORE-STAGE): Behavioral change journey [NEW]
+%
+% DEPENDENTS (what REQUIRES this appendix):
+% - Appendix UNMAPPED_DSN (METHOD-DESIGN): Uses configurator for model generation
+% - All DOMAIN- appendices: Domain-specific mappings
+%
+% =============================================================================
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black,
+    title=Chapter Linkage]
+
+\textbf{Primary Chapter:} Chapter 4: From Framework to Model
+\begin{itemize}[nosep]
+\item Section 4.3: Model Configuration $\leftrightarrow$ Section \ref{sec:ggg-dimensions}
+\item Section 4.4: Parameter Mapping $\leftrightarrow$ Section \ref{sec:ggg-mappings}
+\end{itemize}
+
+\textbf{Secondary Chapters:}
+\begin{itemize}[nosep]
+\item Chapter 9: Context --- provides $\Psi$ dimension structure
+\item Chapter 10: Applications --- uses configurator for domain models
+\item Chapter 11: Awareness --- provides $A(\cdot)$ function (AWARE)
+\item Chapter 12: Willingness --- provides $WAX$, $\theta$ (READY)
+\item Chapter 13: Behavioral Change Journey --- provides stage dynamics (STAGE)
+\end{itemize}
+
+\textbf{Reading Guide:}
+\begin{itemize}[nosep]
+\item For workflow context: Read Appendix UNMAPPED_DSN first
+\item For configuration logic: This appendix provides complete specification
+\item For model storage: See Appendix UNMAPPED_REG (METHOD-REGISTRY)
+\end{itemize}
+
+\end{tcolorbox}
+
+\chapter{METHOD-CONFIG: Model Configurator}
+\label{app:method-config}
+
+\begin{abstract}
+This appendix defines the Model Configurator---a systematic tool for generating
+\textbf{10C-complete} behavioral models from four configuration dimensions: Level ($L$),
+Geography ($\Psi_{geo}$), Domain, and Scope Type. The Configurator uses seven mapping
+tables to auto-populate all 10C parameters: context ($\Psi$), utility dimensions ($C$),
+complementarity ($\gamma$), functional form, awareness ($A$), willingness ($WAX$, $\theta$),
+and stage dynamics ($\tau$, $\rho$, $\kappa$). This transforms model design from
+an expert-dependent art into a structured, reproducible process with complete 10C coverage.
+\end{abstract}
+
+
+\begin{tcolorbox}[
+    colback=orange!5!white,
+    colframe=orange!75!black,
+    title={\textbf{Appendix Scope: Ziel / In-Scope / Out-of-Scope / Constraints}},
+    fonttitle=\bfseries
+]
+
+\textbf{Ziel (Objective):}
+\begin{itemize}[nosep]
+    \item Provide systematic analysis for METHOD integration
+\end{itemize}
+
+\textbf{In-Scope:}
+\begin{itemize}[nosep]
+    \item Core analysis and findings
+    \item Framework integration points
+\end{itemize}
+
+\textbf{Out-of-Scope:}
+\begin{itemize}[nosep]
+    \item Detailed empirical replication $\rightarrow$ METHOD appendices
+\end{itemize}
+
+\textbf{Constraints:}
+\begin{itemize}[nosep]
+    \item Analysis bounded by available data
+\end{itemize}
+
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=Quick Reference: Model Configurator (10C Complete)]
+\textbf{Appendix:} CFG (METHOD)
+
+
+\textbf{Core Question:} How do we systematically generate \textbf{10C-complete} model specifications from high-level choices?
+
+\textbf{Key Principle:}
+\begin{equation}
+\text{Config}(L, \Psi_{geo}, \text{Domain}, \text{Scope}) \rightarrow M(\Psi, C, \gamma, f, A, WAX, \theta, \tau, \rho, \kappa)
+\end{equation}
+
+\textbf{Key Concepts:}
+\begin{itemize}[nosep]
+\item \textbf{4 Configuration Dimensions}: Level, Geography, Domain, Scope Type
+\item \textbf{7 Mapping Tables}: Dimension combinations $\rightarrow$ 10C model parameters
+\item \textbf{10C Auto-Population}: WHO, WHAT, HOW, WHEN, WHERE, AWARE, READY, STAGE
+\item \textbf{3+1 Architecture}: Each dimension offers 3 options + custom
+\end{itemize}
+
+\textbf{Cross-References:} EEE (Workflow), FFF (Registry), AAA (WHO), B (HOW), C (WHAT), V (WHEN), AU (AWARE), AV (READY), AW (STAGE)
+\end{tcolorbox}
+
+
+% =============================================================================
+%                    PART 2: CORE CONTENT
+% =============================================================================
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Fundamental Question}
+\label{sec:ggg-fundamental}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Why This Matters}
+
+The EEE Workflow defines \textit{how} to design a model step-by-step. But at each
+step, the modeler must make choices: Which $\Psi$ dimensions? Which $C$ components?
+Which functional form? These choices require expertise and can vary widely between
+practitioners.
+
+The Configurator standardizes these choices through \textbf{mapping tables} that
+encode organizational knowledge about which parameters work for which situations.
+
+\subsection{The Core Problem}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black,
+    title=The Fundamental Question]
+\textbf{How do we translate high-level configuration choices (Level, Geography,
+Domain, Scope) into concrete model specifications ($\Psi$, $C$, $\gamma$, functional form)?}
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Four Configuration Dimensions}
+\label{sec:ggg-dimensions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Dimension 1: Level ($L$)}
+
+The welfare hierarchy level from CORE-WHO (Appendix UNMAPPED_WHO).
+
+\begin{tcolorbox}[colback=white, colframe=black,
+    title=Dimension 1: Level Selection]
+\textbf{3+1 Options:}
+\begin{enumerate}
+\item[$\square$] \textbf{L=0 Individual:} Single person decisions (enrollment, purchase, adherence)
+\item[$\square$] \textbf{L=1 Household:} Family/household decisions (savings, insurance, housing)
+\item[$\square$] \textbf{L=3 Organization:} Firm/institution decisions (adoption, change, investment)
+\item[$\square$] \textbf{Custom:} L=2 (Team), L=5 (Market), L=6 (Nation), other
+\end{enumerate}
+
+\textbf{Implication:} Level determines which utility dimensions are relevant and
+how cross-level effects ($\gamma^{cross}$) operate.
+\end{tcolorbox}
+
+\subsection{Dimension 2: Geography ($\Psi_{geo}$)}
+
+The geographic/regulatory context.
+
+\begin{tcolorbox}[colback=white, colframe=black,
+    title=Dimension 2: Geography Selection]
+\textbf{3+1 Options:}
+\begin{enumerate}
+\item[$\square$] \textbf{Switzerland (CH):} BVG/FINMA regulatory, high digital adoption, high institutional trust
+\item[$\square$] \textbf{Austria (AT):} ASVG/FMA regulatory, medium state orientation, EU-aligned
+\item[$\square$] \textbf{Germany (DE):} BetrAVG/BaFin regulatory, high state orientation, complex bureaucracy
+\item[$\square$] \textbf{Custom:} Other DACH region, EU, global
+\end{enumerate}
+
+\textbf{Implication:} Geography sets regulatory $\Psi$, cultural $\Psi$, and
+institutional trust parameters.
+\end{tcolorbox}
+
+\subsection{Dimension 3: Domain}
+
+The application domain determines which utility dimensions are salient.
+
+\begin{tcolorbox}[colback=white, colframe=black,
+    title=Dimension 3: Domain Selection]
+\textbf{3+1 Options:}
+\begin{enumerate}
+\item[$\square$] \textbf{Vorsorge (Pension/Retirement):} F, E, S dominant; long-term temporal
+\item[$\square$] \textbf{Gesundheit (Health):} P, E dominant; present bias relevant
+\item[$\square$] \textbf{Finance (Banking/Investment):} F dominant; risk parameters critical
+\item[$\square$] \textbf{Custom:} HR/Org, Public, Energy, Retail, other
+\end{enumerate}
+
+\textbf{Implication:} Domain determines $C$ dimension weights and typical $\gamma$ interactions.
+\end{tcolorbox}
+
+\subsection{Dimension 4: Scope Type}
+
+The behavioral outcome type determines functional form.
+
+\begin{tcolorbox}[colback=white, colframe=black,
+    title=Dimension 4: Scope Type Selection]
+\textbf{3+1 Options:}
+\begin{enumerate}
+\item[$\square$] \textbf{Decision:} Binary choice (yes/no, enroll/not, buy/not) → Logistic
+\item[$\square$] \textbf{Continuous:} Amount, frequency, intensity → Linear/CES
+\item[$\square$] \textbf{Process:} Journey, adoption stages, change phases → Dynamic/BCJ
+\item[$\square$] \textbf{Custom:} Hybrid, multi-stage, other
+\end{enumerate}
+
+\textbf{Implication:} Scope Type determines functional form and estimation approach.
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Mapping Tables}
+\label{sec:ggg-mappings}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Mapping 1: Level × Geography → $\Psi$ Defaults}
+
+\begin{table}[htbp]
+\centering
+\caption{$\Psi$ Parameter Defaults by Level and Geography}
+\label{tab:ggg-psi-mapping}
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabular}{@{}ll|ccc@{}}
+\toprule
+& & \multicolumn{3}{c}{\textbf{Geography}} \\
+\textbf{Level} & \textbf{$\Psi$ Dimension} & 🇨🇭 CH & 🇦🇹 AT & 🇩🇪 DE \\
+\midrule
+\multirow{4}{*}{L=0 Individual}
+& $\Psi_{trust}$ (institutional) & 0.85 & 0.70 & 0.75 \\
+& $\Psi_{digital}$ (adoption) & 0.90 & 0.80 & 0.70 \\
+& $\Psi_{autonomy}$ (self-reliance) & 0.85 & 0.65 & 0.60 \\
+& $\Psi_{risk}$ (tolerance) & 0.60 & 0.50 & 0.45 \\
+\addlinespace
+\multirow{4}{*}{L=1 Household}
+& $\Psi_{trust}$ & 0.80 & 0.65 & 0.70 \\
+& $\Psi_{digital}$ & 0.85 & 0.75 & 0.65 \\
+& $\Psi_{social}$ (family orientation) & 0.70 & 0.80 & 0.75 \\
+& $\Psi_{planning}$ (horizon) & 0.75 & 0.65 & 0.70 \\
+\addlinespace
+\multirow{4}{*}{L=3 Organization}
+& $\Psi_{regulatory}$ (compliance) & 0.90 & 0.85 & 0.95 \\
+& $\Psi_{innovation}$ (openness) & 0.80 & 0.65 & 0.60 \\
+& $\Psi_{hierarchy}$ (structure) & 0.50 & 0.70 & 0.80 \\
+& $\Psi_{consensus}$ (decision style) & 0.85 & 0.70 & 0.65 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Mapping 2: Domain × Level → $C$ Dimensions}
+
+\begin{table}[htbp]
+\centering
+\caption{Utility Dimension Weights by Domain and Level}
+\label{tab:ggg-c-mapping}
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabular}{@{}ll|cccccc@{}}
+\toprule
+& & \multicolumn{6}{c}{\textbf{C Dimensions (FEPSDE)}} \\
+\textbf{Domain} & \textbf{Level} & F & E & P & S & D & X \\
+\midrule
+\multirow{2}{*}{Vorsorge}
+& L=0 Individual & 0.35 & 0.25 & 0.10 & 0.20 & 0.05 & 0.05 \\
+& L=1 Household & 0.40 & 0.20 & 0.05 & 0.30 & 0.03 & 0.02 \\
+\addlinespace
+\multirow{2}{*}{Gesundheit}
+& L=0 Individual & 0.15 & 0.30 & 0.35 & 0.15 & 0.03 & 0.02 \\
+& L=1 Household & 0.20 & 0.25 & 0.30 & 0.20 & 0.03 & 0.02 \\
+\addlinespace
+\multirow{2}{*}{Finance}
+& L=0 Individual & 0.50 & 0.20 & 0.05 & 0.15 & 0.08 & 0.02 \\
+& L=3 Organization & 0.55 & 0.10 & 0.02 & 0.20 & 0.10 & 0.03 \\
+\addlinespace
+\multirow{2}{*}{HR/Org}
+& L=0 Individual & 0.25 & 0.30 & 0.10 & 0.25 & 0.08 & 0.02 \\
+& L=3 Organization & 0.30 & 0.15 & 0.05 & 0.35 & 0.12 & 0.03 \\
+\addlinespace
+\multirow{2}{*}{Public}
+& L=0 Individual & 0.30 & 0.20 & 0.10 & 0.30 & 0.05 & 0.05 \\
+& L=6 Nation & 0.35 & 0.10 & 0.15 & 0.25 & 0.10 & 0.05 \\
+\addlinespace
+\multirow{2}{*}{Energy}
+& L=0 Individual & 0.35 & 0.20 & 0.15 & 0.15 & 0.05 & 0.10 \\
+& L=1 Household & 0.40 & 0.15 & 0.15 & 0.15 & 0.05 & 0.10 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Legend:} F=Financial, E=Emotional, P=Physical, S=Social, D=Developmental, X=Existential
+
+\subsection{Mapping 3: Domain → $\gamma$ Interactions}
+
+\begin{table}[htbp]
+\centering
+\caption{Default Complementarity Interactions by Domain}
+\label{tab:ggg-gamma-mapping}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lp{5cm}l@{}}
+\toprule
+\textbf{Domain} & \textbf{Primary $\gamma$ Interactions} & \textbf{Typical Values} \\
+\midrule
+Vorsorge & $\gamma_{F \times E}$ (security-emotion) & 0.20--0.40 \\
+& $\gamma_{temporal}$ (present-future) & 0.15--0.30 \\
+& $\gamma_{F \times S}$ (wealth-status) & 0.10--0.25 \\
+\addlinespace
+Gesundheit & $\gamma_{P \times E}$ (health-wellbeing) & 0.30--0.50 \\
+& $\gamma_{temporal}$ (present bias) & 0.25--0.45 \\
+& $\gamma_{P \times S}$ (health-social) & 0.10--0.20 \\
+\addlinespace
+Finance & $\gamma_{F \times E}$ (wealth-anxiety) & 0.15--0.35 \\
+& $\gamma_{risk}$ (gain-loss asymmetry) & 0.20--0.40 \\
+& $\gamma_{F \times S}$ (wealth-status) & 0.15--0.30 \\
+\addlinespace
+HR/Org & $\gamma_{S \times E}$ (belonging-satisfaction) & 0.25--0.45 \\
+& $\gamma_{D \times F}$ (growth-compensation) & 0.15--0.30 \\
+& $\gamma_{cross}$ (individual-org) & 0.10--0.25 \\
+\addlinespace
+Public & $\gamma_{S \times F}$ (compliance-cost) & 0.15--0.30 \\
+& $\gamma_{trust}$ (institution-behavior) & 0.20--0.40 \\
+\addlinespace
+Energy & $\gamma_{F \times X}$ (cost-environment) & 0.10--0.30 \\
+& $\gamma_{S \times X}$ (norms-environment) & 0.15--0.35 \\
+& $\gamma_{temporal}$ (now-future) & 0.20--0.40 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Mapping 4: Scope Type → Functional Form}
+
+\begin{table}[htbp]
+\centering
+\caption{Functional Form by Scope Type}
+\label{tab:ggg-form-mapping}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Scope Type} & \textbf{Functional Form} & \textbf{Specification} \\
+\midrule
+Decision & Logistic & $P(Y=1) = \frac{1}{1+\exp(-(\beta_0 + \sum_d \beta_d C_d + \gamma \cdot \text{interactions}))}$ \\
+\addlinespace
+Continuous & Linear/CES & $Y = \beta_0 + \sum_d \beta_d C_d + \gamma \cdot \text{interactions} + \varepsilon$ \\
+& & or CES: $Y = [\sum_d \alpha_d C_d^\rho]^{1/\rho}$ \\
+\addlinespace
+Process & Dynamic/BCJ & $\frac{dS}{dt} = \frac{1}{\tau}[S^*(A, WAX, \Psi) - S(t)] + \varepsilon$ \\
+& & with stages $\varphi \in \{1,...,5\}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{Mapping 5: Domain → Awareness Defaults ($A$)}
+
+Derived from Appendix UNMAPPED_AWA (CORE-AWARE) and Chapter 11.
+
+\begin{table}[htbp]
+\centering
+\caption{Awareness Parameter Defaults by Domain}
+\label{tab:ggg-awareness-mapping}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lp{4cm}ll@{}}
+\toprule
+\textbf{Domain} & \textbf{Awareness Characteristics} & \textbf{$A_{base}$} & \textbf{Tag} \\
+\midrule
+Vorsorge & Low salience until retirement nears; abstract future consequences & 0.35 & [LLM] \\
+Gesundheit & Varies by symptom visibility; acute > chronic & 0.50 & [EMP] \\
+Finance & Depends on financial literacy; often overconfident & 0.45 & [EMP] \\
+HR/Org & Workplace feedback provides signals; moderate visibility & 0.55 & [LLM] \\
+Public & Policy rarely salient; requires media activation & 0.40 & [LLM] \\
+Energy & Consumption invisible; delayed feedback (monthly bill) & 0.30 & [EMP] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Modulation:} $A_{eff} = A_{base} \cdot \Psi_{salience} \cdot \sigma_{trigger}$ where $\sigma_{trigger} \in \{0,1\}$ indicates contextual activation (AWX-A2a).
+
+
+\subsection{Mapping 6: Domain → Willingness Defaults ($WAX$, $\theta$)}
+
+Derived from Appendix UNMAPPED_REA (CORE-READY) and Chapter 12.
+
+\begin{table}[htbp]
+\centering
+\caption{Willingness and Threshold Defaults by Domain}
+\label{tab:ggg-willingness-mapping}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lllp{4cm}l@{}}
+\toprule
+\textbf{Domain} & \textbf{$WAX_{base}$} & \textbf{$\theta_{base}$} & \textbf{Key Barriers} & \textbf{Tag} \\
+\midrule
+Vorsorge & 0.40 & 0.60 & Complexity, temporal distance, inertia & [EMP] \\
+Gesundheit & 0.55 & 0.50 & Pain avoidance, habit strength, social support & [EMP] \\
+Finance & 0.45 & 0.55 & Loss aversion, trust, cognitive load & [EMP] \\
+HR/Org & 0.50 & 0.45 & Status quo bias, political risk, effort & [LLM] \\
+Public & 0.35 & 0.65 & Free-rider incentives, diffuse benefits & [LLM] \\
+Energy & 0.45 & 0.50 & Comfort trade-offs, upfront costs, hassle & [EMP] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Action Condition:} $\text{Action} \Leftrightarrow WAX \geq \theta$ with gap $\Delta = WAX - \theta$ determining action probability.
+
+\textbf{Intervention Implication:}
+\begin{itemize}[nosep]
+\item If $\Delta < 0$: Either increase $WAX$ (motivation) or reduce $\theta$ (friction)
+\item Reducing $\theta$ often more effective than increasing $WAX$ (cf. Appendix UNMAPPED_REA, WAX-A15)
+\end{itemize}
+
+
+\subsection{Mapping 7: Domain × Complexity → Stage Defaults}
+
+Derived from Appendix UNMAPPED_STA (CORE-STAGE) and Chapter 13.
+
+\begin{table}[htbp]
+\centering
+\caption{Behavioral Change Journey Parameters by Domain}
+\label{tab:ggg-stage-mapping}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}llllll@{}}
+\toprule
+\textbf{Domain} & \textbf{$C_{behav}$} & \textbf{$\tau$} & \textbf{$\rho$} & \textbf{$\kappa_{S3}$} & \textbf{Tag} \\
+ & (Complexity) & (Transition) & (Relapse) & (Contemplation) & \\
+\midrule
+Vorsorge & 0.60 & 0.08/Mo & 0.25 & 0.75 & [LLM] \\
+Gesundheit & 0.65 & 0.12/Mo & 0.45 & 0.70 & [EMP] \\
+Finance & 0.50 & 0.10/Mo & 0.30 & 0.65 & [LLM] \\
+HR/Org & 0.55 & 0.15/Mo & 0.35 & 0.60 & [LLM] \\
+Public & 0.40 & 0.06/Mo & 0.40 & 0.70 & [LLM] \\
+Energy & 0.45 & 0.18/Mo & 0.35 & 0.55 & [EMP] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Legend:}
+\begin{itemize}[nosep]
+\item $C_{behav}$: Behavior complexity (0=trivial, 1=extreme); cf. BCJ-B3
+\item $\tau$: Transition rate (monthly); higher = faster stage progression
+\item $\rho$: Relapse probability; higher = more likely to regress
+\item $\kappa_{S3}$: Stage 3 persistence (``contemplation trap''); higher = more stuck
+\end{itemize}
+
+\textbf{Stage Dynamics:} $\frac{dS}{dt} = \tau \cdot (WAX - \theta) \cdot (1-\kappa) + \beta \cdot \text{Social}$
+
+\textbf{Key Insight:} Energy has highest $\tau$ (fast adoption possible) but moderate $\rho$ (relapse common without habit formation).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Configuration Algorithm}
+\label{sec:ggg-algorithm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Algorithm CONFIG-1: Model Generation (10C Complete)]
+\textbf{Input:} User selections $(L, \Psi_{geo}, \text{Domain}, \text{ScopeType})$
+
+\textbf{Process:}
+\begin{enumerate}
+\item \textbf{Validate inputs:} Check all four dimensions are specified
+\item \textbf{Lookup $\Psi$:} Use Table \ref{tab:ggg-psi-mapping} with $(L, \Psi_{geo})$ \hfill [WHEN]
+\item \textbf{Lookup $C$:} Use Table \ref{tab:ggg-c-mapping} with $(\text{Domain}, L)$ \hfill [WHAT]
+\item \textbf{Lookup $\gamma$:} Use Table \ref{tab:ggg-gamma-mapping} with $(\text{Domain})$ \hfill [HOW]
+\item \textbf{Select Form:} Use Table \ref{tab:ggg-form-mapping} with $(\text{ScopeType})$
+\item \textbf{Lookup $A$:} Use Table \ref{tab:ggg-awareness-mapping} with $(\text{Domain})$ \hfill [AWARE]
+\item \textbf{Lookup $WAX$, $\theta$:} Use Table \ref{tab:ggg-willingness-mapping} with $(\text{Domain})$ \hfill [READY]
+\item \textbf{Lookup Stage params:} Use Table \ref{tab:ggg-stage-mapping} with $(\text{Domain})$ \hfill [STAGE]
+\item \textbf{Generate Model:} Assemble $M = (\Psi, C, \gamma, f, A, WAX, \theta, \tau, \rho, \kappa)$
+\item \textbf{Mark sources:} Tag all parameters as ``CONFIG-derived''
+\end{enumerate}
+
+\textbf{Output:} Complete 10C model specification ready for refinement
+
+\textbf{10C Coverage:}
+\begin{itemize}[nosep]
+\item WHO: $L$ (input) $\rightarrow$ Appendix UNMAPPED_WHO
+\item WHAT: $C$ (Mapping 2) $\rightarrow$ Appendix UNMAPPED_WAT
+\item HOW: $\gamma$ (Mapping 3) $\rightarrow$ Appendix UNMAPPED_HOW
+\item WHEN: $\Psi$ (Mapping 1) $\rightarrow$ Appendix CTW
+\item WHERE: All tables $\rightarrow$ Appendix UNMAPPED_EST
+\item AWARE: $A$ (Mapping 5) $\rightarrow$ Appendix UNMAPPED_AWA
+\item READY: $WAX$, $\theta$ (Mapping 6) $\rightarrow$ Appendix UNMAPPED_REA
+\item STAGE: $\tau$, $\rho$, $\kappa$ (Mapping 7) $\rightarrow$ Appendix UNMAPPED_STA
+\end{itemize}
+
+\textbf{Post-Condition:} Model can be refined in EEE workflow, then stored in FFF registry
+\end{tcolorbox}
+
+\subsection{Configuration Flow Diagram}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=1.5cm, auto,
+    input/.style={draw, rectangle, rounded corners, fill=blue!10, minimum width=3cm},
+    mapping/.style={draw, rectangle, fill=yellow!10, minimum width=3cm},
+    output/.style={draw, rectangle, rounded corners, fill=green!10, minimum width=3cm}]
+
+    % Inputs
+    \node[input] (level) {Level $L$};
+    \node[input, right=of level] (geo) {Geography};
+    \node[input, right=of geo] (domain) {Domain};
+    \node[input, right=of domain] (scope) {Scope Type};
+
+    % Mappings
+    \node[mapping, below=1.5cm of level] (psi) {$\Psi$ Mapping};
+    \node[mapping, below=1.5cm of geo] (c) {$C$ Mapping};
+    \node[mapping, below=1.5cm of domain] (gamma) {$\gamma$ Mapping};
+    \node[mapping, below=1.5cm of scope] (form) {Form Mapping};
+
+    % Arrows to mappings
+    \draw[->] (level) -- (psi);
+    \draw[->] (geo) -- (psi);
+    \draw[->] (level) -- (c);
+    \draw[->] (domain) -- (c);
+    \draw[->] (domain) -- (gamma);
+    \draw[->] (scope) -- (form);
+
+    % Output
+    \node[output, below=3.5cm of geo, xshift=1.5cm] (model) {Generated Model $M(\Psi, C, \gamma, f)$};
+
+    % Arrows to output
+    \draw[->] (psi) -- (model);
+    \draw[->] (c) -- (model);
+    \draw[->] (gamma) -- (model);
+    \draw[->] (form) -- (model);
+
+\end{tikzpicture}
+\caption{Configuration Flow: From Dimensions to Model}
+\label{fig:ggg-flow}
+\end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{DACH Reference Configurations}
+\label{sec:ggg-dach}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Eight pre-validated configurations for common DACH use cases.
+
+\begin{table}[htbp]
+\centering
+\caption{DACH Reference Configurations}
+\label{tab:ggg-dach-configs}
+\renewcommand{\arraystretch}{1.3}
+\small
+\begin{tabular}{@{}llllll@{}}
+\toprule
+\textbf{ID} & \textbf{Level} & \textbf{Geo} & \textbf{Domain} & \textbf{Scope} & \textbf{Use Case} \\
+\midrule
+DACH-01 & L=0 & 🇨🇭 & Vorsorge & Decision & PK Enrollment \\
+DACH-02 & L=0 & 🇨🇭 & Vorsorge & Continuous & Beitragshöhe \\
+DACH-03 & L=0 & 🇦🇹 & Gesundheit & Decision & Vorsorgeuntersuchung \\
+DACH-04 & L=1 & 🇩🇪 & Finance & Decision & Riester Familie \\
+DACH-05 & L=3 & 🇨🇭 & HR/Org & Process & Change Adoption \\
+DACH-06 & L=3 & 🇩🇪 & HR/Org & Process & Digitalisierung \\
+DACH-07 & L=0 & 🇦🇹 & Public & Decision & Steuer Compliance \\
+DACH-08 & L=1 & 🇨🇭 & Energy & Continuous & Verbrauchsreduktion \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Example: DACH-01 Configuration Output}
+
+\begin{tcolorbox}[colback=white, colframe=black,
+    title=DACH-01: PK Enrollment Switzerland (L=0, CH, Vorsorge, Decision)]
+\textbf{Generated $\Psi$:}
+\begin{verbatim}
+psi_trust: 0.85
+psi_digital: 0.90
+psi_autonomy: 0.85
+psi_risk: 0.60
+psi_regulatory: "BVG"
+\end{verbatim}
+
+\textbf{Generated $C$ weights:}
+\begin{verbatim}
+C_F: 0.35  (Financial security)
+C_E: 0.25  (Emotional peace of mind)
+C_P: 0.10  (Physical - low relevance)
+C_S: 0.20  (Social norms, employer)
+C_D: 0.05  (Developmental)
+C_X: 0.05  (Existential - legacy)
+\end{verbatim}
+
+\textbf{Generated $\gamma$ interactions:}
+\begin{verbatim}
+gamma_FxE: 0.30  (security-emotion synergy)
+gamma_temporal: 0.20  (present-future tradeoff)
+gamma_FxS: 0.15  (wealth-status link)
+\end{verbatim}
+
+\textbf{Generated functional form:}
+\begin{equation}
+P(\text{enroll}) = \frac{1}{1+\exp(-(\beta_0 + 0.35 F + 0.25 E + 0.20 S + 0.30 F \cdot E))}
+\end{equation}
+
+\textbf{Source Tag:} CONFIG-derived, requires validation
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Core Axioms}
+\label{sec:cfg-axioms}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=yellow!5!white,colframe=yellow!75!black,title=Axiom UNMAPPED_CFG-1: Fundamental Principle]
+\textbf{Axiom UNMAPPED_CFG-1 (Core Assumption):}
+The fundamental principle underlying this appendix is that behavioral outcomes
+emerge from the interaction of individual characteristics and contextual factors.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=yellow!5!white,colframe=yellow!75!black,title=Axiom UNMAPPED_CFG-2: Complementarity]
+\textbf{Axiom UNMAPPED_CFG-2 (Complementarity):}
+Components of the framework exhibit complementarity ($\gamma > 0$), meaning
+that combined effects exceed the sum of individual effects.
+\end{tcolorbox}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Key Results}
+\label{sec:cfg-results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The analysis yields the following key results:
+
+\begin{enumerate}
+    \item \textbf{Result 1:} [Primary finding with quantitative support]
+    \item \textbf{Result 2:} [Secondary finding with implications]
+    \item \textbf{Result 3:} [Practical application or boundary condition]
+\end{enumerate}
+
+
+\section{Integration with EEE and FFF}
+\label{sec:ggg-integration}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black,
+    title=Integration: METHOD-CONFIG in the Workflow]
+
+\textbf{Position in EEE Workflow:}
+\begin{enumerate}
+\item Entry Point (Step 1)
+\item Scope Definition (Step 2)
+\item Context Specification (Step 3)
+\item \textbf{→ CONFIGURATOR (GGG) generates initial model}
+\item Variable Selection (Step 4) --- refine CONFIG output
+\item Functional Form (Step 5) --- refine CONFIG output
+\item Parameter Estimation (Step 6)
+\item Predictions (Step 7)
+\item Register Model in FFF (Step 8)
+\end{enumerate}
+
+\textbf{Data Flow:}
+\begin{verbatim}
+User Input → GGG CONFIG → Initial Model → EEE Refinement → FFF Storage
+\end{verbatim}
+
+\textbf{Source Tracking:}
+Models derived from CONFIG are tagged in FFF registry as:
+\begin{verbatim}
+parameters_theta:
+  sources:
+    C_F: "GGG-CONFIG Table 2, Domain=Vorsorge, L=0"
+    gamma_FxE: "GGG-CONFIG Table 3, Domain=Vorsorge"
+\end{verbatim}
+\end{tcolorbox}
+
+
+% =============================================================================
+%                    PART 3: APPLICATION
+% =============================================================================
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Worked Example}
+\label{sec:ggg-example}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Example: Configuring a Health Adherence Model for Austria}
+
+\paragraph{User Input:}
+\begin{itemize}
+\item Level: L=0 (Individual)
+\item Geography: Austria (AT)
+\item Domain: Gesundheit
+\item Scope Type: Process (adherence journey)
+\end{itemize}
+
+\paragraph{Step 1: $\Psi$ Lookup (Table \ref{tab:ggg-psi-mapping})}
+\begin{verbatim}
+psi_trust: 0.70
+psi_digital: 0.80
+psi_autonomy: 0.65
+psi_risk: 0.50
+psi_regulatory: "ASVG"
+\end{verbatim}
+
+\paragraph{Step 2: $C$ Lookup (Table \ref{tab:ggg-c-mapping})}
+\begin{verbatim}
+C_F: 0.15, C_E: 0.30, C_P: 0.35, C_S: 0.15, C_D: 0.03, C_X: 0.02
+\end{verbatim}
+
+\paragraph{Step 3: $\gamma$ Lookup (Table \ref{tab:ggg-gamma-mapping})}
+\begin{verbatim}
+gamma_PxE: 0.40  (health-wellbeing)
+gamma_temporal: 0.35  (present bias)
+gamma_PxS: 0.15  (health-social)
+\end{verbatim}
+
+\paragraph{Step 4: Form Lookup (Table \ref{tab:ggg-form-mapping})}
+\begin{verbatim}
+Form: Dynamic/BCJ
+dS/dt = (1/tau) * [S*(A, WAX, Psi) - S(t)] + epsilon
+\end{verbatim}
+
+\paragraph{Generated Model:}
+A BCJ-based adherence model with:
+\begin{itemize}
+\item Strong Physical-Emotional complementarity ($\gamma_{P \times E} = 0.40$)
+\item High present bias ($\gamma_{temporal} = 0.35$)
+\item Moderate institutional trust ($\Psi_{trust} = 0.70$)
+\item Five-stage journey: Pre-contemplation → Maintenance
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Implications for Practice}
+\label{sec:ggg-practice}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=Practical Implications]
+\begin{enumerate}
+\item \textbf{Use CONFIG as starting point:} Never design from blank slate.
+    The configurator provides evidence-based defaults.
+\item \textbf{Always refine:} CONFIG output is a \textit{draft}, not final.
+    Domain expertise should adjust parameters.
+\item \textbf{Document deviations:} When you change CONFIG defaults, document
+    why. This builds organizational knowledge.
+\item \textbf{Update mapping tables:} When validated models outperform CONFIG
+    defaults, update the tables. This is organizational learning.
+\item \textbf{Respect the ranges:} $\gamma$ values are given as ranges (e.g., 0.20--0.40).
+    Choose within range based on context specifics.
+\end{enumerate}
+\end{tcolorbox}
+
+
+% =============================================================================
+%                    PART 4: BACK MATTER
+% =============================================================================
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Summary}
+\label{sec:ggg-summary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=green!10!white, colframe=green!75!black,
+    title=\textbf{Appendix UNMAPPED_CFG: Summary}]
+
+\textbf{Core Question:} How do we generate model specifications from high-level choices?
+
+\textbf{Main Contribution:}
+\begin{itemize}[nosep]
+    \item Defines 4 configuration dimensions (Level, Geography, Domain, Scope)
+    \item Provides mapping tables for $\Psi$, $C$, $\gamma$, functional form
+    \item Includes 8 DACH reference configurations
+    \item Integrates with EEE workflow and FFF registry
+\end{itemize}
+
+\textbf{Key Tables:}
+\begin{itemize}[nosep]
+    \item Table \ref{tab:ggg-psi-mapping}: Level × Geography → $\Psi$
+    \item Table \ref{tab:ggg-c-mapping}: Domain × Level → $C$
+    \item Table \ref{tab:ggg-gamma-mapping}: Domain → $\gamma$
+    \item Table \ref{tab:ggg-form-mapping}: Scope Type → Form
+\end{itemize}
+
+\textbf{Integration:} GGG provides input generation for EEE workflow;
+generated models are stored in FFF registry.
+
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Glossary of Symbols}
+\label{sec:ggg-glossary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{Central Reference:} For complete symbol definitions, see
+\textbf{Appendix UNMAPPED_GLS} (\textit{Glossary and Notation}, \S\ref{app:glossary}).
+
+This section lists only symbols introduced or specialized in this appendix.
+\end{tcolorbox}
+
+\vspace{0.5em}
+
+\begin{table}[htbp]
+\centering
+\caption{Symbols Introduced in Appendix UNMAPPED_CFG}
+\label{tab:ggg-symbols}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clp{6cm}c@{}}
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Definition} & \textbf{Also in G?} \\
+\midrule
+$\Psi_{geo}$ & Geographic Context & Country/region context dimension & NEW \\
+$\Psi_{trust}$ & Institutional Trust & Trust in institutions [0,1] & NEW \\
+$\Psi_{digital}$ & Digital Adoption & Technology adoption level [0,1] & NEW \\
+DACH-$nn$ & Reference Config & Pre-validated configuration ID & NEW \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Critical Foundations and Objections}
+\label{sec:cfg-foundations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Objection 1: Scope Limitations}
+
+\textbf{Objection:} The framework presented may have limited applicability
+outside the specific domain contexts discussed.
+
+\textbf{Response:} We acknowledge domain-specificity. The framework provides
+general principles that should be calibrated to specific contexts. Cross-domain
+validation remains an open research question.
+
+\subsection{Objection 2: Measurement Challenges}
+
+\textbf{Objection:} Key constructs may be difficult to measure reliably in
+practice.
+
+\textbf{Response:} We recommend using validated scales and instruments where
+available, and developing domain-specific proxies where necessary. Sensitivity
+analysis should assess robustness to measurement uncertainty.
+
+
+\section{Open Issues and Research Agenda}
+\label{sec:ggg-open}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[htbp]
+\centering
+\caption{Research Roadmap for METHOD-CONFIG}
+\label{tab:ggg-roadmap}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clcl@{}}
+\toprule
+\textbf{\#} & \textbf{Issue} & \textbf{Priority} & \textbf{Status} \\
+\midrule
+1 & Empirical validation of mapping values & HIGH & Planned \\
+2 & Expansion to non-DACH geographies & MEDIUM & Future \\
+3 & Machine learning for mapping optimization & LOW & Research \\
+4 & Cross-level interaction mappings & MEDIUM & Open \\
+5 & Temporal dynamics in $\Psi$ mappings & LOW & Exploratory \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{References}
+\label{sec:ggg-references}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{Master Bibliography:} For complete reference details, see
+\texttt{bcm2\_master\_references.bib} in the repository.
+
+This section lists appendix-specific references and data sources.
+\end{tcolorbox}
+
+\vspace{0.5em}
+
+\subsection{Key References for This Appendix}
+
+\begin{itemize}[nosep]
+    \item \textbf{DACH Cultural Dimensions:} Hofstede (2001), GLOBE Study (House et al., 2004)
+    \item \textbf{Pension Systems:} OECD Pensions at a Glance (2023)
+    \item \textbf{Health Behavior:} Schwarzer (2008) HAPA Model
+    \item \textbf{Configuration Design:} Product configuration literature
+\end{itemize}
+
+\nocite{bcm_master}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CROSS-REFERENCE FOOTER (Required)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\vspace{1em}
+\hrule
+\vspace{0.5em}
+
+\noindent\textit{Cross-references:}
+Appendix UNMAPPED_GLS (Central Glossary),
+Appendix UNMAPPED_DSN (METHOD-DESIGN),
+Appendix UNMAPPED_REG (METHOD-REGISTRY),
+Appendix UNMAPPED_WHO (CORE-WHO),
+Appendix CTW (CORE-WHEN),
+Appendix UNMAPPED_WAT (CORE-WHAT).
+
+\noindent\textit{Master Bibliography:} \texttt{bcm2\_master\_references.bib}
+
+
+% =============================================================================
+% END OF APPENDIX GGG
+% =============================================================================

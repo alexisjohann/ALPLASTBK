@@ -1,0 +1,566 @@
+# Sales Pipeline Report Templates
+# FehrAdvice & Partners AG
+# Version: 1.0.0
+# Erstellt: 2026-01-27
+
+metadata:
+  version: "1.0.0"
+  last_updated: "2026-01-27"
+  description: "Standardisierte Report-Vorlagen für die Sales Pipeline"
+
+# =============================================================================
+# REPORT 1: ACTION LIST (Offene Aktionen pro Owner)
+# =============================================================================
+action_list:
+  id: RPT-001
+  name: "Action List"
+  description: "Übersicht aller offenen Aktionen gruppiert nach Owner"
+  use_case: "Tägliche/wöchentliche Aktivitätenplanung"
+  frequency: "Täglich oder bei Bedarf"
+
+  data_source:
+    primary: "lead-database.yaml"
+    filter: "next_action IS NOT NULL AND stage NOT IN [CHURNED, LOST]"
+    group_by: "relationship.owner"
+    sort_by: "next_action.date ASC"
+
+  sections:
+    - name: "Header"
+      fields:
+        - report_title: "ACTION LIST"
+        - generation_date: "{TODAY}"
+        - total_actions: "{COUNT}"
+
+    - name: "Per Owner Block"
+      repeat_for: "each owner"
+      fields:
+        - owner_name: "{OWNER}"
+        - action_count: "{COUNT_PER_OWNER}"
+        - actions:
+            - company_short_name: "{company.short_name}"
+            - lead_id: "{id}"
+            - project_phase: "{relationship.project_phase}"
+            - project_phase_name: "{PHASE_NAME}"
+            - action_description: "{next_action.description}"
+            - action_type: "{next_action.type}"
+            - due_date: "{next_action.date}"
+            - days_until_due: "{CALCULATED}"
+            - priority: "{CALCULATED: overdue=HIGH, <7days=MEDIUM, else=NORMAL}"
+
+  output_format:
+    ascii_box: |
+      ┌─────────────────────────────────────────────────────────────────────────┐
+      │  📋 ACTION LIST                                           {DATE}        │
+      ├─────────────────────────────────────────────────────────────────────────┤
+      │  OWNER: {OWNER} ({N} offene Aktionen)                                   │
+      │  ═══════════════════════════════════════════════════════════════════   │
+      │                                                                         │
+      │  ☐ {COMPANY} ({LEAD_ID})                                               │
+      │    Phase: {PHASE} ({PHASE_NAME})                                        │
+      │    Aktion: {DESCRIPTION}                                                │
+      │    Typ: {TYPE}                                                          │
+      │    Fällig: {DATE} ({DAYS_HINT})                                        │
+      │    Priorität: {PRIORITY}                                                │
+      │                                                                         │
+      └─────────────────────────────────────────────────────────────────────────┘
+
+# =============================================================================
+# REPORT 2: PIPELINE SUMMARY (Pipeline-Übersicht)
+# =============================================================================
+pipeline_summary:
+  id: RPT-002
+  name: "Pipeline Summary"
+  description: "Kompakte Übersicht der gesamten Pipeline nach Stages"
+  use_case: "Management-Reporting, Weekly Standup"
+  frequency: "Wöchentlich"
+
+  data_source:
+    primary: "lead-database.yaml"
+    aggregation: "COUNT BY stage"
+
+  sections:
+    - name: "Header"
+      fields:
+        - report_title: "PIPELINE SUMMARY"
+        - generation_date: "{TODAY}"
+        - total_leads: "{TOTAL_COUNT}"
+        - total_pipeline_value: "{SUM opportunities.value_eur}"
+
+    - name: "Stage Distribution"
+      fields:
+        - stage_counts:
+            SUSPECT: "{COUNT}"
+            PROSPECT: "{COUNT}"
+            QUALIFIED: "{COUNT}"
+            PROPOSAL: "{COUNT}"
+            NEGOTIATION: "{COUNT}"
+            WON: "{COUNT}"
+            ACTIVE: "{COUNT}"
+            DORMANT: "{COUNT}"
+            CHURNED: "{COUNT}"
+            LOST: "{COUNT}"
+
+    - name: "Phase Distribution"
+      fields:
+        - phase_counts:
+            "0": "{COUNT} (Erstgespräch)"
+            "1": "{COUNT} (Rahmenprüfung)"
+            "2": "{COUNT} (Erwartungsklärung)"
+            "3": "{COUNT} (Angebotsphase)"
+            "4": "{COUNT} (Abschluss)"
+            "5": "{COUNT} (Umsetzung)"
+            "null": "{COUNT} (Keine Phase)"
+
+    - name: "Movement This Period"
+      fields:
+        - new_leads: "{COUNT stage_history.date >= PERIOD_START}"
+        - stage_changes: "{COUNT stage changes}"
+        - won_deals: "{COUNT stage changed to WON}"
+        - lost_deals: "{COUNT stage changed to LOST}"
+
+  output_format:
+    ascii_box: |
+      ┌─────────────────────────────────────────────────────────────────────────┐
+      │  📊 PIPELINE SUMMARY                                      {DATE}        │
+      ├─────────────────────────────────────────────────────────────────────────┤
+      │                                                                         │
+      │  GESAMT: {TOTAL} Leads | Pipeline-Wert: CHF {VALUE}                    │
+      │                                                                         │
+      │  AKQUISE-PHASE                          KUNDEN-PHASE                    │
+      │  ─────────────────────────────────────  ────────────────────────────── │
+      │  SUSPECT      ████░░░░░░  {N}           ACTIVE       ████████░░  {N}   │
+      │  PROSPECT     ██░░░░░░░░  {N}           DORMANT      ██░░░░░░░░  {N}   │
+      │  QUALIFIED    ███░░░░░░░  {N}           CHURNED      █░░░░░░░░░  {N}   │
+      │  PROPOSAL     █░░░░░░░░░  {N}                                          │
+      │  NEGOTIATION  █░░░░░░░░░  {N}           LOST         ██░░░░░░░░  {N}   │
+      │                                                                         │
+      │  PROJEKT-PHASEN                                                         │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │  Phase 0 (Erstgespräch)     ███░░░░░░░  {N}                            │
+      │  Phase 1 (Rahmenprüfung)    ██░░░░░░░░  {N}                            │
+      │  Phase 2 (Erwartungen)      █░░░░░░░░░  {N}                            │
+      │  Phase 3 (Angebot)          ██░░░░░░░░  {N}                            │
+      │  Phase 4 (Abschluss)        █░░░░░░░░░  {N}                            │
+      │  Phase 5 (Umsetzung)        ████░░░░░░  {N}                            │
+      │                                                                         │
+      │  BEWEGUNG DIESE WOCHE                                                   │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │  + Neue Leads:     {N}                                                  │
+      │  → Stage-Wechsel:  {N}                                                  │
+      │  ✓ Gewonnen:       {N}                                                  │
+      │  ✗ Verloren:       {N}                                                  │
+      │                                                                         │
+      └─────────────────────────────────────────────────────────────────────────┘
+
+# =============================================================================
+# REPORT 3: LEAD CARD (Einzelner Lead im Detail)
+# =============================================================================
+lead_card:
+  id: RPT-003
+  name: "Lead Card"
+  description: "Detailansicht eines einzelnen Leads"
+  use_case: "Vorbereitung auf Kundengespräch, Übergabe"
+  frequency: "Bei Bedarf"
+
+  data_source:
+    primary: "lead-database.yaml"
+    filter: "id = {LEAD_ID}"
+
+  sections:
+    - name: "Company Info"
+      fields:
+        - company_name: "{company.name}"
+        - short_name: "{company.short_name}"
+        - website: "{company.website}"
+        - industry: "{industry}"
+        - segment: "{segment}"
+        - headquarters: "{headquarters.city}, {headquarters.country}"
+        - employee_count: "{employee_count}"
+
+    - name: "Pipeline Status"
+      fields:
+        - current_stage: "{stage}"
+        - project_phase: "{relationship.project_phase}"
+        - project_phase_name: "{PHASE_NAME}"
+        - project_phase_note: "{relationship.project_phase_note}"
+        - owner: "{relationship.owner}"
+        - fit_score: "{fit_score}"
+        - engagement_score: "{engagement_score}"
+
+    - name: "Stage History"
+      fields:
+        - history: "{stage_history[]}"
+
+    - name: "Contacts"
+      fields:
+        - contacts: "{contacts[]}"
+
+    - name: "Opportunities"
+      fields:
+        - opportunities: "{opportunities[]}"
+
+    - name: "Next Action"
+      fields:
+        - type: "{next_action.type}"
+        - date: "{next_action.date}"
+        - description: "{next_action.description}"
+
+    - name: "Notes & Tags"
+      fields:
+        - notes: "{notes}"
+        - tags: "{tags[]}"
+
+  output_format:
+    ascii_box: |
+      ┌─────────────────────────────────────────────────────────────────────────┐
+      │  🏢 LEAD CARD: {COMPANY_NAME}                             {LEAD_ID}     │
+      ├─────────────────────────────────────────────────────────────────────────┤
+      │                                                                         │
+      │  UNTERNEHMEN                                                            │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │  Name:        {FULL_NAME}                                               │
+      │  Kurzname:    {SHORT_NAME}                                              │
+      │  Website:     {WEBSITE}                                                 │
+      │  Branche:     {INDUSTRY}                                                │
+      │  Segment:     {SEGMENT}                                                 │
+      │  Standort:    {CITY}, {COUNTRY}                                        │
+      │  Mitarbeiter: {EMPLOYEE_COUNT}                                          │
+      │                                                                         │
+      │  STATUS                                                                 │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │  Pipeline:    {STAGE}                                                   │
+      │  Phase:       {PHASE} ({PHASE_NAME})                                    │
+      │  Owner:       {OWNER}                                                   │
+      │  Fit Score:   {FIT}/100  ████████░░                                    │
+      │  Engagement:  {ENG}/100  ██████░░░░                                    │
+      │                                                                         │
+      │  HISTORIE                                                               │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │  {DATE} │ {STAGE} │ {OWNER} │ {NOTES}                                  │
+      │  ...                                                                    │
+      │                                                                         │
+      │  KONTAKTE                                                               │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │  👤 {NAME} - {ROLE}                                                     │
+      │     Beziehung: {STRENGTH}                                               │
+      │                                                                         │
+      │  NÄCHSTE AKTION                                                         │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │  📅 {DATE} │ {TYPE}                                                     │
+      │  {DESCRIPTION}                                                          │
+      │                                                                         │
+      │  NOTIZEN                                                                │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │  {NOTES}                                                                │
+      │                                                                         │
+      │  TAGS: {TAG1} {TAG2} {TAG3}                                            │
+      │                                                                         │
+      └─────────────────────────────────────────────────────────────────────────┘
+
+# =============================================================================
+# REPORT 4: FORECAST REPORT (Umsatzprognose)
+# =============================================================================
+forecast_report:
+  id: RPT-004
+  name: "Forecast Report"
+  description: "Umsatzprognose basierend auf Pipeline und Wahrscheinlichkeiten"
+  use_case: "Quartals-/Jahresplanung, Board-Reporting"
+  frequency: "Monatlich/Quartalsweise"
+
+  data_source:
+    primary: "lead-database.yaml"
+    filter: "stage IN [QUALIFIED, PROPOSAL, NEGOTIATION] AND opportunities IS NOT NULL"
+    calculation: "SUM(value_eur * probability)"
+
+  sections:
+    - name: "Header"
+      fields:
+        - report_title: "FORECAST REPORT"
+        - period: "{QUARTER/YEAR}"
+        - generation_date: "{TODAY}"
+
+    - name: "Summary Metrics"
+      fields:
+        - total_pipeline_value: "{SUM value_eur}"
+        - weighted_forecast: "{SUM value_eur * probability}"
+        - best_case: "{SUM value_eur WHERE probability >= 0.7}"
+        - expected_case: "{SUM value_eur * probability}"
+        - worst_case: "{SUM value_eur WHERE probability >= 0.9}"
+
+    - name: "By Stage"
+      fields:
+        - qualified:
+            count: "{COUNT}"
+            value: "{SUM value_eur}"
+            weighted: "{SUM value_eur * 0.3}"
+        - proposal:
+            count: "{COUNT}"
+            value: "{SUM value_eur}"
+            weighted: "{SUM value_eur * 0.5}"
+        - negotiation:
+            count: "{COUNT}"
+            value: "{SUM value_eur}"
+            weighted: "{SUM value_eur * 0.8}"
+
+    - name: "Top Opportunities"
+      fields:
+        - top_5: "ORDER BY value_eur DESC LIMIT 5"
+
+  output_format:
+    ascii_box: |
+      ┌─────────────────────────────────────────────────────────────────────────┐
+      │  💰 FORECAST REPORT                                       {PERIOD}      │
+      ├─────────────────────────────────────────────────────────────────────────┤
+      │                                                                         │
+      │  ZUSAMMENFASSUNG                                                        │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │                                                                         │
+      │  Pipeline-Wert (Brutto):     CHF {TOTAL_VALUE}                         │
+      │  Gewichtete Prognose:        CHF {WEIGHTED}                            │
+      │                                                                         │
+      │  ┌─────────────────────────────────────────────────────────────────┐   │
+      │  │  SZENARIEN                                                      │   │
+      │  ├─────────────────────────────────────────────────────────────────┤   │
+      │  │  Best Case (≥70%):      CHF {BEST}     ████████████████████    │   │
+      │  │  Expected Case:         CHF {EXPECTED} ████████████░░░░░░░░    │   │
+      │  │  Worst Case (≥90%):     CHF {WORST}    ████████░░░░░░░░░░░░    │   │
+      │  └─────────────────────────────────────────────────────────────────┘   │
+      │                                                                         │
+      │  NACH STAGE                                                             │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │                                                                         │
+      │  Stage         │ Anzahl │ Brutto-Wert    │ Gewichtet                   │
+      │  ──────────────┼────────┼────────────────┼──────────────────────────── │
+      │  QUALIFIED     │   {N}  │ CHF {VALUE}    │ CHF {WEIGHTED} (×0.3)       │
+      │  PROPOSAL      │   {N}  │ CHF {VALUE}    │ CHF {WEIGHTED} (×0.5)       │
+      │  NEGOTIATION   │   {N}  │ CHF {VALUE}    │ CHF {WEIGHTED} (×0.8)       │
+      │  ──────────────┼────────┼────────────────┼──────────────────────────── │
+      │  TOTAL         │   {N}  │ CHF {VALUE}    │ CHF {WEIGHTED}              │
+      │                                                                         │
+      │  TOP 5 OPPORTUNITIES                                                    │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │  1. {COMPANY} │ CHF {VALUE} │ {PROBABILITY}% │ {STAGE}                 │
+      │  2. {COMPANY} │ CHF {VALUE} │ {PROBABILITY}% │ {STAGE}                 │
+      │  3. ...                                                                 │
+      │                                                                         │
+      └─────────────────────────────────────────────────────────────────────────┘
+
+# =============================================================================
+# REPORT 5: WIN/LOSS ANALYSIS (Gewinn-/Verlust-Analyse)
+# =============================================================================
+win_loss_analysis:
+  id: RPT-005
+  name: "Win/Loss Analysis"
+  description: "Analyse gewonnener und verlorener Deals mit Learnings"
+  use_case: "Retrospektive, Prozessverbesserung, Wettbewerbsanalyse"
+  frequency: "Quartalsweise"
+
+  data_source:
+    primary: "lead-database.yaml"
+    filter: "stage IN [WON, LOST, CHURNED] AND stage_history.date >= PERIOD_START"
+
+  sections:
+    - name: "Header"
+      fields:
+        - report_title: "WIN/LOSS ANALYSIS"
+        - period: "{QUARTER/YEAR}"
+        - generation_date: "{TODAY}"
+
+    - name: "Summary Metrics"
+      fields:
+        - total_closed: "{COUNT WON + LOST}"
+        - won_count: "{COUNT WON}"
+        - lost_count: "{COUNT LOST}"
+        - win_rate: "{WON / (WON + LOST) * 100}%"
+        - won_value: "{SUM value_eur WHERE stage=WON}"
+        - lost_value: "{SUM value_eur WHERE stage=LOST}"
+
+    - name: "Win Analysis"
+      fields:
+        - by_source: "{GROUP BY source.channel}"
+        - by_industry: "{GROUP BY industry}"
+        - avg_cycle_time: "{AVG days from PROSPECT to WON}"
+        - success_factors: "manual/extracted from notes"
+
+    - name: "Loss Analysis"
+      fields:
+        - by_competitor: "{GROUP BY lost_analysis.competitor}"
+        - by_reason: "{GROUP BY lost_analysis.reason}"
+        - by_stage_lost: "{GROUP BY stage before LOST}"
+        - lessons_learned: "{lost_analysis.lessons_learned}"
+
+    - name: "Churn Analysis"
+      fields:
+        - churn_count: "{COUNT CHURNED}"
+        - by_reason: "{GROUP BY churn_analysis.reason}"
+        - preventable: "{COUNT WHERE churn_analysis.preventable=true}"
+        - total_ltv_lost: "{SUM churn_analysis.total_lifetime_value_eur}"
+
+  output_format:
+    ascii_box: |
+      ┌─────────────────────────────────────────────────────────────────────────┐
+      │  📈 WIN/LOSS ANALYSIS                                     {PERIOD}      │
+      ├─────────────────────────────────────────────────────────────────────────┤
+      │                                                                         │
+      │  ÜBERSICHT                                                              │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │                                                                         │
+      │  Abgeschlossen:  {TOTAL}                                                │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │  ✓ Gewonnen:     {WON}    │ CHF {WON_VALUE}    │ ████████████░░░░      │
+      │  ✗ Verloren:     {LOST}   │ CHF {LOST_VALUE}   │ ████░░░░░░░░░░░░      │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │  Win Rate:       {RATE}%                                                │
+      │                                                                         │
+      │  GEWONNENE DEALS                                                        │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │                                                                         │
+      │  Nach Source:                  Nach Branche:                            │
+      │  ├── REFERRAL:    {N}          ├── Finance:      {N}                   │
+      │  ├── INBOUND:     {N}          ├── Energy:       {N}                   │
+      │  ├── OUTBOUND:    {N}          ├── Public:       {N}                   │
+      │  └── EXISTING:    {N}          └── Other:        {N}                   │
+      │                                                                         │
+      │  Ø Sales Cycle:   {DAYS} Tage                                          │
+      │                                                                         │
+      │  VERLORENE DEALS                                                        │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │                                                                         │
+      │  Nach Konkurrent:              Nach Grund:                              │
+      │  ├── {COMPETITOR1}: {N}        ├── Preis:        {N}                   │
+      │  ├── {COMPETITOR2}: {N}        ├── Timing:       {N}                   │
+      │  └── Kein:         {N}         ├── Scope:        {N}                   │
+      │                                └── Andere:       {N}                   │
+      │                                                                         │
+      │  Bei welcher Stage verloren:                                            │
+      │  ├── QUALIFIED:    {N}  (zu früh qualifiziert?)                        │
+      │  ├── PROPOSAL:     {N}  (Angebot nicht überzeugend?)                   │
+      │  └── NEGOTIATION:  {N}  (Verhandlung gescheitert?)                     │
+      │                                                                         │
+      │  LESSONS LEARNED                                                        │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │  • {LESSON_1}                                                           │
+      │  • {LESSON_2}                                                           │
+      │  • {LESSON_3}                                                           │
+      │                                                                         │
+      │  CHURN (Ehemalige Kunden)                                               │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │  Churned:         {N}                                                   │
+      │  Vermeidbar:      {N} ({PERCENT}%)                                     │
+      │  Verlorener LTV:  CHF {LTV}                                            │
+      │                                                                         │
+      └─────────────────────────────────────────────────────────────────────────┘
+
+# =============================================================================
+# REPORT 6: OWNER DASHBOARD (Owner-spezifische Übersicht)
+# =============================================================================
+owner_dashboard:
+  id: RPT-006
+  name: "Owner Dashboard"
+  description: "Persönliche Pipeline-Übersicht für einen Owner"
+  use_case: "Persönliche Planung, 1:1 Meetings"
+  frequency: "Wöchentlich"
+
+  data_source:
+    primary: "lead-database.yaml"
+    filter: "relationship.owner = {OWNER}"
+
+  sections:
+    - name: "Header"
+      fields:
+        - owner_name: "{OWNER}"
+        - total_leads: "{COUNT}"
+        - pipeline_value: "{SUM opportunities.value_eur}"
+
+    - name: "My Pipeline"
+      fields:
+        - by_stage: "{GROUP BY stage}"
+        - by_phase: "{GROUP BY project_phase}"
+
+    - name: "My Actions This Week"
+      fields:
+        - actions: "WHERE next_action.date BETWEEN TODAY AND TODAY+7"
+
+    - name: "My Wins & Losses"
+      fields:
+        - recent_wins: "WHERE stage=WON AND date >= 30_DAYS_AGO"
+        - recent_losses: "WHERE stage=LOST AND date >= 30_DAYS_AGO"
+
+  output_format:
+    ascii_box: |
+      ┌─────────────────────────────────────────────────────────────────────────┐
+      │  👤 OWNER DASHBOARD: {OWNER}                              {DATE}        │
+      ├─────────────────────────────────────────────────────────────────────────┤
+      │                                                                         │
+      │  MEINE PIPELINE                                                         │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │  Leads:          {TOTAL}                                                │
+      │  Pipeline-Wert:  CHF {VALUE}                                           │
+      │                                                                         │
+      │  Nach Stage:                   Nach Phase:                              │
+      │  ├── PROSPECT:    {N}          ├── Phase 0:  {N}                       │
+      │  ├── QUALIFIED:   {N}          ├── Phase 1:  {N}                       │
+      │  ├── PROPOSAL:    {N}          ├── Phase 2:  {N}                       │
+      │  ├── NEGOTIATION: {N}          ├── Phase 3:  {N}                       │
+      │  └── ACTIVE:      {N}          └── Phase 5:  {N}                       │
+      │                                                                         │
+      │  MEINE AKTIONEN DIESE WOCHE                                             │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │  {DATE} │ {COMPANY} │ {ACTION_TYPE} │ {DESCRIPTION}                    │
+      │  ...                                                                    │
+      │                                                                         │
+      │  LETZTE 30 TAGE                                                         │
+      │  ─────────────────────────────────────────────────────────────────────  │
+      │  ✓ Gewonnen: {N}  │  ✗ Verloren: {N}  │  Win Rate: {RATE}%            │
+      │                                                                         │
+      └─────────────────────────────────────────────────────────────────────────┘
+
+# =============================================================================
+# SLASH COMMANDS FÜR REPORTS
+# =============================================================================
+slash_commands:
+  action_list:
+    command: "/action-list"
+    description: "Generiert Action List für alle Owner oder spezifischen Owner"
+    usage:
+      - "/action-list"
+      - "/action-list --owner EB"
+      - "/action-list --overdue"
+
+  pipeline_summary:
+    command: "/pipeline-summary"
+    description: "Generiert Pipeline Summary Report"
+    usage:
+      - "/pipeline-summary"
+      - "/pipeline-summary --period week"
+      - "/pipeline-summary --period quarter"
+
+  lead_card:
+    command: "/lead-card"
+    description: "Zeigt detaillierte Lead Card"
+    usage:
+      - "/lead-card LEAD-001"
+      - "/lead-card ALPLA"
+
+  forecast:
+    command: "/forecast"
+    description: "Generiert Forecast Report"
+    usage:
+      - "/forecast"
+      - "/forecast --quarter Q1-2026"
+      - "/forecast --scenario best"
+
+  win_loss:
+    command: "/win-loss"
+    description: "Generiert Win/Loss Analysis"
+    usage:
+      - "/win-loss"
+      - "/win-loss --quarter Q4-2025"
+      - "/win-loss --competitor McKinsey"
+
+  my_dashboard:
+    command: "/my-dashboard"
+    description: "Zeigt Owner Dashboard"
+    usage:
+      - "/my-dashboard"
+      - "/my-dashboard EB"

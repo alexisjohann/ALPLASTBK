@@ -1,0 +1,176 @@
+# Paper Integration Metrics Database
+# ==================================
+# Tracks timing and decision metrics for the /upgrade-paper workflow
+# Used for continuous improvement of the paper integration process
+#
+# Version: 1.1
+# Created: 2026-01-31
+# Updated: 2026-02-01
+# Purpose: Measure and optimize workflow efficiency
+#
+# SSOT HIERARCHY (Single Source of Truth):
+# ----------------------------------------
+# Priority 1: appendices/BM_METHOD-PAPERINT_*.tex (formal MECE-compliant definitions)
+# Priority 2: THIS FILE (workflow metrics)  <-- YOU ARE HERE
+# Priority 3: data/paper-integration-learnings.yaml (learnings)
+# Priority 4: data/paper-integration-queue.yaml (queue)
+# Priority 5: docs/frameworks/paper-database-quality-dimensions.md (summary)
+#
+# MECE-compliant 2D Classification (Axiom MECE-1):
+# - Content Level (L0-L3): Paper-internal information (what we know ABOUT the paper)
+# - Integration Level (I1-I5): EBF-specific linkages (how paper CONNECTS to EBF)
+# - Critical: Parameters (λ, β, γ) belong to Integration (I4), NOT Content!
+
+metadata:
+  version: "1.0"
+  created: "2026-01-31"
+  description: "Timing and decision metrics for paper integration workflow"
+
+  # Aggregierte Statistiken (automatisch aktualisiert)
+  statistics:
+    total_integrations: 2
+    choice_distribution:
+      automatic: 2
+      manual: 0
+      check_only: 0
+    average_choice_duration_seconds: 3.5
+    average_total_duration_minutes:
+      level_1: null
+      level_2: null
+      level_3: null
+      level_4: null
+      level_5: 8.2
+
+# Einzelne Workflow-Durchläufe
+# ============================
+entries:
+
+  - id: "PIM-2026-01-31-001"
+    paper_id: "PAP-dustmann2025immigration"
+    timestamp: "2026-01-31T14:30:00Z"
+
+    # Analyse-Ergebnisse
+    analysis:
+      content_level: 3
+      integration_level: 5
+      fulltext_chars: 52847
+      has_abstract: true
+      has_bibliography: true
+      has_structure: true
+
+    # Benutzer-Wahl
+    choice:
+      presented_at: "2026-01-31T14:30:00Z"
+      responded_at: "2026-01-31T14:30:03Z"
+      duration_seconds: 3
+      selected_mode: "automatic"  # automatic | manual | check_only
+
+    # Workflow-Dauer
+    workflow:
+      started_at: "2026-01-31T14:30:03Z"
+      completed_at: "2026-01-31T14:38:15Z"
+      total_duration_minutes: 8.2
+      steps_completed:
+        - step: "fulltext"
+          duration_seconds: 45
+        - step: "bibtex"
+          duration_seconds: 30
+        - step: "case_registry"
+          duration_seconds: 60
+        - step: "theory_catalog"
+          duration_seconds: 45
+        - step: "parameter_registry"
+          duration_seconds: 90
+        - step: "appendix_reference"
+          duration_seconds: 120
+        - step: "chapter_reference"
+          duration_seconds: 60
+        - step: "commit"
+          duration_seconds: 42
+
+  - id: "PIM-2026-01-31-002"
+    paper_id: "PAP-giner2025sustainable"
+    timestamp: "2026-01-31T15:45:00Z"
+
+    # Analyse-Ergebnisse
+    analysis:
+      content_level: 3
+      integration_level: 5
+      fulltext_chars: 21418
+      has_abstract: true
+      has_bibliography: true
+      has_structure: true
+
+    # Benutzer-Wahl
+    choice:
+      presented_at: "2026-01-31T15:45:00Z"
+      responded_at: "2026-01-31T15:45:04Z"
+      duration_seconds: 4
+      selected_mode: "automatic"
+
+    # Workflow-Dauer
+    workflow:
+      started_at: "2026-01-31T15:45:04Z"
+      completed_at: "2026-01-31T15:53:22Z"
+      total_duration_minutes: 8.3
+      steps_completed:
+        - step: "fulltext"
+          duration_seconds: 60
+        - step: "bibtex"
+          duration_seconds: 35
+        - step: "case_registry"
+          duration_seconds: 55
+        - step: "theory_catalog"
+          duration_seconds: 40
+        - step: "parameter_registry"
+          duration_seconds: 95
+        - step: "appendix_reference"
+          duration_seconds: 110
+        - step: "chapter_reference"
+          duration_seconds: 65
+        - step: "commit"
+          duration_seconds: 38
+
+# Schema-Dokumentation
+# ====================
+schema:
+  entry:
+    id: "PIM-YYYY-MM-DD-NNN"  # Paper Integration Metrics ID
+    paper_id: "PAP-..."       # Referenz auf Paper-ID
+    timestamp: "ISO 8601"
+
+    analysis:
+      content_level: "0-3"
+      integration_level: "1-5"
+      fulltext_chars: "integer"
+      has_abstract: "boolean"
+      has_bibliography: "boolean"
+      has_structure: "boolean"
+
+    choice:
+      presented_at: "ISO 8601"    # Zeitpunkt der Präsentation
+      responded_at: "ISO 8601"    # Zeitpunkt der Antwort
+      duration_seconds: "float"   # Zeit bis zur Entscheidung
+      selected_mode: "automatic | manual | check_only"
+
+    workflow:
+      started_at: "ISO 8601"
+      completed_at: "ISO 8601"
+      total_duration_minutes: "float"
+      steps_completed: "list of step objects"
+
+# Auswertungs-Queries (für Scripts)
+# =================================
+#
+# Durchschnittliche Entscheidungszeit:
+#   SELECT AVG(choice.duration_seconds) FROM entries
+#
+# Verteilung nach Modus:
+#   SELECT choice.selected_mode, COUNT(*) FROM entries GROUP BY choice.selected_mode
+#
+# Durchschnittliche Workflow-Dauer nach Level:
+#   SELECT analysis.integration_level, AVG(workflow.total_duration_minutes)
+#   FROM entries GROUP BY analysis.integration_level
+#
+# Langsamster Schritt:
+#   SELECT step, AVG(duration_seconds) FROM steps GROUP BY step ORDER BY AVG DESC

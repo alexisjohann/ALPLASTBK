@@ -1,0 +1,541 @@
+# =============================================================================
+# PAPER INTEGRATION LEARNINGS DATABASE
+# =============================================================================
+# Lessons Learned aus Paper-Integration und Bibliographie-Management
+#
+# Domain: INT
+# Kategorien: BIBTEX, LIT, THEORY, LEVEL, DOI, CLASSIFICATION
+#
+# SSOT HIERARCHY (Single Source of Truth):
+# ----------------------------------------
+# Priority 1: appendices/BM_METHOD-PAPERINT_*.tex (formal MECE-compliant definitions)
+# Priority 2: data/paper-integration-metrics.yaml (workflow metrics)
+# Priority 3: THIS FILE (learnings)  <-- YOU ARE HERE
+# Priority 4: data/paper-integration-queue.yaml (queue)
+# Priority 5: docs/frameworks/paper-database-quality-dimensions.md (summary)
+#
+# MECE-compliant 2D Classification (Axiom MECE-1):
+# - Content Level (L0-L3): Paper-internal information
+# - Integration Level (I1-I5): EBF-specific linkages
+# - Critical: Parameters (λ, β, γ) belong to Integration (I4), NOT Content!
+# =============================================================================
+
+version: "1.3"
+domain: "INT"
+description: "Learnings aus Paper-Integration Workflow"
+last_updated: "2026-02-01"
+total_learnings: 9
+
+# Referenz: .claude/commands/integrate-paper.md für vollständigen Workflow
+# Referenz: appendices/BM_METHOD-PAPERINT_*.tex für formale Definitionen
+
+categories:
+  BIBTEX:
+    name: "BibTeX Entries"
+    description: "BibTeX-Einträge und EBF-Felder"
+  LIT:
+    name: "LIT-Appendix Assignment"
+    description: "Zuordnung zu LIT-R, LIT-M, LIT-O"
+  THEORY:
+    name: "Theory Catalog"
+    description: "theory-catalog.yaml Integration"
+  LEVEL:
+    name: "Integration Level"
+    description: "Level 1-5 Klassifikation"
+  DOI:
+    name: "DOI Resolution"
+    description: "DOI-Lookup und Metadaten"
+  CLASSIFICATION:
+    name: "Paper Classification"
+    description: "7 Klassifikations-Kriterien"
+  API:
+    name: "API & Infrastructure"
+    description: "Externe APIs, Proxy-Einschränkungen, Workarounds"
+  CONTENT:
+    name: "Content Acquisition"
+    description: "Abstract/Full-Text Beschaffung, Open Access"
+
+# Integration Levels (aus CLAUDE.md)
+integration_levels:
+  1:
+    name: "MINIMAL"
+    components: ["BibTeX"]
+    time: "5 min"
+  2:
+    name: "STANDARD"
+    components: ["BibTeX", "theory_support", "Parameter (optional)"]
+    time: "10-15 min"
+  3:
+    name: "CASE"
+    components: ["BibTeX", "theory_support", "Case Registry"]
+    time: "15-20 min"
+  4:
+    name: "THEORY"
+    components: ["BibTeX", "Theory Catalog (MS-XX-XXX)", "Parameter"]
+    time: "20-30 min"
+  5:
+    name: "FULL"
+    components: ["All 8 components"]
+    time: "60-90 min"
+
+# Klassifikations-Kriterien
+classification_criteria:
+  new_theory_category:
+    weight: 5
+    indicators: ["new framework", "unified theory", "foundational"]
+  extends_existing_theory:
+    weight: 3
+    indicators: ["extends", "builds on", "application of"]
+  new_domain:
+    weight: 4
+    indicators: ["first study", "digital platform", "emerging"]
+  empirical_parameters:
+    weight: 2
+    indicators: ["we estimate", "coefficient", "λ =", "β ="]
+  policy_implications:
+    weight: 2
+    indicators: ["policy", "regulation", "nudge", "antitrust"]
+  field_experiment:
+    weight: 2
+    indicators: ["field experiment", "RCT", "natural experiment"]
+  case_study_worthy:
+    weight: 1
+    indicators: ["case study", "real-world", "practical"]
+
+learnings:
+  # =============================================================================
+  # API & INFRASTRUCTURE LEARNINGS
+  # =============================================================================
+
+  - id: "INT-L-2026-01-30-API-001"
+    date: "2026-01-30"
+    category: "API"
+    severity: "CRITICAL"
+    title: "Externe HTTP APIs durch Proxy blockiert"
+
+    problem: |
+      Externe HTTP APIs können NICHT direkt aufgerufen werden.
+      Alle Anfragen scheitern mit: "Tunnel connection failed: 403 Forbidden"
+
+    affected_apis:
+      - name: "Unpaywall API"
+        url: "https://api.unpaywall.org/v2/{doi}"
+        purpose: "Open Access PDF URLs finden"
+        status: "BLOCKED"
+      - name: "Semantic Scholar API"
+        url: "https://api.semanticscholar.org/graph/v1/paper/{id}"
+        purpose: "Paper Abstracts und Metadaten"
+        status: "BLOCKED"
+      - name: "CrossRef API"
+        url: "https://api.crossref.org/works/{doi}"
+        purpose: "DOI Metadaten Resolution"
+        status: "BLOCKED"
+      - name: "OpenAlex API"
+        url: "https://api.openalex.org/works/{id}"
+        purpose: "Open Access Paper Daten"
+        status: "BLOCKED"
+
+    workaround: |
+      Claude's WebSearch Tool funktioniert und umgeht die Proxy-Beschränkung.
+
+      WORKFLOW:
+      1. Scripts verwenden für Queue-Management und Tracking
+         → paper_queue_manager.py --status
+         → paper_queue_manager.py --next
+      2. Claude verwendet WebSearch für Content-Fetching
+         → WebSearch "{paper_title} {author} abstract"
+         → WebSearch "{paper_title} PDF"
+      3. Claude schreibt Content in Paper-Template
+         → data/paper-references/PAP-xxx.txt
+
+    concrete_example: |
+      VERSUCH (FEHLGESCHLAGEN):
+      ```python
+      url = f"https://api.unpaywall.org/v2/{doi}?email=test@example.com"
+      response = urllib.request.urlopen(url, timeout=30)
+      ```
+      ERROR: urllib.error.URLError: <urlopen error Tunnel connection failed: 403 Forbidden>
+
+      LÖSUNG (FUNKTIONIERT):
+      Claude führt aus: WebSearch "Kahneman Tversky 1979 Prospect Theory abstract"
+      → Erhält Abstract und Key Findings
+      → Schreibt in data/paper-references/PAP-kahneman1979prospectprospect.txt
+
+    prevention: |
+      NIEMALS versuchen:
+      - urllib.request.urlopen() für externe APIs
+      - requests.get() für externe APIs
+      - subprocess mit curl für externe APIs
+
+      IMMER verwenden:
+      - Claude's WebSearch Tool für Paper-Informationen
+      - Claude's WebFetch Tool für spezifische URLs (wenn bekannt)
+
+    scripts_affected:
+      - "scripts/paper_content_upgrader.py"
+      - "scripts/lookup_paper_dois.py"
+      - "scripts/batch_doi_by_journal.py"
+
+    tags: ["proxy", "api", "blocked", "websearch", "workaround"]
+
+  - id: "INT-L-2026-01-30-CONTENT-001"
+    date: "2026-01-30"
+    category: "CONTENT"
+    severity: "HIGH"
+    title: "2D Classification System für Paper Content"
+
+    problem: |
+      Die ursprüngliche Track A/B Klassifikation war verwirrend.
+      Track A = "Full-Text Ready", Track B = "Abstract Only" - aber was genau bedeutet das?
+
+    solution: |
+      2D Classification System implementiert:
+
+      DIMENSION 1: content_level (WAS haben wir?)
+      ├── 0 = METADATA ONLY (nur BibTeX)
+      ├── 1 = ABSTRACT (BibTeX + Abstract + Key Findings)
+      └── 2 = FULL-TEXT (kompletter Paper-Text)
+
+      DIMENSION 2: integration_level (WIE tief integriert?)
+      ├── 1 = MINIMAL (nur BibTeX in bcm_master.bib)
+      ├── 2 = STANDARD (+ theory_support, use_for Felder)
+      ├── 3 = CASE (+ Eintrag in case-registry.yaml)
+      ├── 4 = THEORY (+ Eintrag in theory-catalog.yaml)
+      └── 5 = FULL (+ dedizierter Appendix)
+
+    workflow: |
+      1. Paper kommt in Queue mit content_level=0, integration_level=1
+      2. Claude fetcht Abstract via WebSearch → content_level=1
+      3. Falls Open Access PDF verfügbar → content_level=2
+      4. Integration erhöht sich schrittweise: 1→2→3→4→5
+
+    scripts_affected:
+      - "scripts/paper_queue_manager.py"
+      - "data/paper-integration-queue.yaml"
+
+    tags: ["classification", "2d-system", "content-level", "integration-level"]
+
+quick_reference:
+  api_blocked:
+    message: "Externe APIs (Unpaywall, Semantic Scholar, CrossRef) sind durch Proxy blockiert"
+    solution: "Claude's WebSearch Tool verwenden"
+    see: "INT-L-2026-01-30-API-001"
+
+  content_levels:
+    "0": "METADATA ONLY - nur BibTeX"
+    "1": "ABSTRACT - BibTeX + Abstract + Key Findings"
+    "2": "FULL-TEXT - kompletter Paper-Text"
+    see: "INT-L-2026-01-30-CONTENT-001"
+
+  integration_levels:
+    "1": "MINIMAL - nur BibTeX"
+    "2": "STANDARD - + theory_support, use_for"
+    "3": "CASE - + Case Registry"
+    "4": "THEORY - + Theory Catalog"
+    "5": "FULL - + Appendix + Chapter"
+
+  content_level_thresholds:
+    "0": "0 chars (BibTeX only)"
+    "1": "~2k chars (Basic Template)"
+    "2": "~6k chars (Full Template)"
+    "3": ">20k chars + Structure"  # UPDATED 2026-01-31: Reduced from 50k, added structural requirements
+
+  # NEW: Structural Requirements for Content Level 3 (2026-01-31)
+  content_level_3_criteria:
+    char_threshold: 20000  # Reduced from 50,000
+    structural_requirements:
+      - "Abstract section present"
+      - "References/Bibliography section present"
+      - "Normal paper structure (numbered sections) OR EBF structure (KEY FINDINGS + EBF RELEVANCE)"
+    rationale: |
+      Structured comprehensive extractions with full paper content qualify as Level 3.
+      This includes:
+      - Verbatim OCR full text (traditional)
+      - Structured extractions with complete content (new)
+      Both represent complete paper content for EBF integration purposes.
+
+  # =============================================================================
+  # LEVEL UPGRADE LEARNINGS (aus Session 2026-01-31)
+  # =============================================================================
+
+  - id: "INT-L-2026-01-31-LEVEL-001"
+    date: "2026-01-31"
+    category: "LEVEL"
+    severity: "HIGH"
+    title: "Content Level 3 erfordert >50k chars, nicht nur Full Text"
+
+    problem: |
+      Missverständnis: "Full Text" bedeutet nicht automatisch Content Level 3.
+      Level 3 erfordert MINDESTENS 50,000 Zeichen (ca. 8,000 Wörter).
+      Ein Paper mit nur 20k chars ist Level 2, nicht Level 3.
+
+    solution: |
+      IMMER mit wc -c validieren:
+      ```bash
+      wc -c papers/fulltext/PAP-xxx.txt
+      # Ausgabe: 99273 papers/fulltext/PAP-bregolin2026advice.txt
+      # 99,273 > 50,000 → Level 3 ✓
+      ```
+
+    prevention: |
+      VOR dem Commit prüfen:
+      ```bash
+      CHARS=$(wc -c < papers/fulltext/PAP-xxx.txt)
+      if [ "$CHARS" -lt 50000 ]; then
+        echo "WARNING: Only $CHARS chars - Content Level 2, not 3!"
+      fi
+      ```
+
+    tags: ["content-level", "validation", "threshold"]
+
+  - id: "INT-L-2026-01-31-LEVEL-002"
+    date: "2026-01-31"
+    category: "LEVEL"
+    severity: "CRITICAL"
+    title: "Full Text auf origin/main prüfen bevor neu fetchen"
+
+    problem: |
+      Full Text wurde bereits auf origin/main committed, aber beim Upgrade
+      wurde versucht, ihn neu zu fetchen/erstellen.
+
+      Konkreter Fall: PAP-bregolin2026advice Full Text existierte auf main unter:
+      papers/fulltext/Using Advice Without Considering Its Quality...
+
+    solution: |
+      IMMER ZUERST prüfen ob Full Text bereits existiert:
+      ```bash
+      # 1. Remote aktualisieren
+      git fetch origin main
+
+      # 2. Prüfen ob Datei auf main existiert
+      git show origin/main:papers/fulltext/PAP-xxx.txt 2>/dev/null | wc -c
+
+      # 3. Falls ja, von main holen
+      git checkout origin/main -- papers/fulltext/PAP-xxx.txt
+      ```
+
+    prevention: |
+      Workflow-Schritt 0 (vor allem anderen):
+      "Existiert Full Text bereits auf origin/main?"
+
+      Falls ja: git checkout statt WebSearch/PDF-Download
+
+    concrete_example: |
+      # User sagte: "findest du das paper in main unter folgendem namen"
+      # → git show origin/main:papers/fulltext/... fand die Datei (99,273 bytes)
+      # → Kein neuer Download nötig, nur Datei umbenennen
+
+    tags: ["git", "main", "fulltext", "checkout"]
+
+  - id: "INT-L-2026-01-31-LEVEL-003"
+    date: "2026-01-31"
+    category: "LEVEL"
+    severity: "HIGH"
+    title: "Integration Level 5 erfordert APPENDIX UND CHAPTER Reference"
+
+    problem: |
+      Level 5 wurde als "Appendix Reference" verstanden, aber es erfordert BEIDES:
+      1. Appendix Reference (Paper im LIT-Appendix zitiert)
+      2. Chapter Reference (Paper in relevantem Kapitel zitiert)
+
+      Nur eines von beiden = Level 4.5, nicht Level 5.
+
+    solution: |
+      Level 5 Checkliste:
+      ☐ Level 4 komplett (BibTeX, Case, Theory, Parameter)
+      ☐ Appendix Reference: Paper in passendem LIT-Appendix
+      ☐ Chapter Reference: \citet{PAP-xxx} in relevantem Kapitel
+
+      Beide müssen erfüllt sein!
+
+    chapter_mapping: |
+      Thema → Kapitel → Section:
+      - Belief Updating, Advice → Ch.11 → §11.3 Motivated vs Informed Beliefs
+      - Loss Aversion → Ch.10 → §10.x FEPSDE
+      - Social Preferences → Ch.7 → §7.x Fairness
+      - Time Preferences → Ch.8 → §8.x Temporal
+      - Nudging → Ch.17 → §17.x Interventions
+
+    prevention: |
+      Bei Level 5 Upgrade:
+      1. grep -r "PAP-xxx" appendices/ → Appendix Reference vorhanden?
+      2. grep -r "PAP-xxx" chapters/ → Chapter Reference vorhanden?
+
+      BEIDE müssen Treffer liefern!
+
+    tags: ["level-5", "appendix", "chapter", "reference"]
+
+  - id: "INT-L-2026-01-31-LIT-001"
+    date: "2026-01-31"
+    category: "LIT"
+    severity: "MEDIUM"
+    title: "Advice/Belief-Updating Papers gehören in LIT-LEARNING"
+
+    problem: |
+      Unklar welcher LIT-Appendix für Papers über:
+      - Advice Demand
+      - Belief Updating
+      - Information Acquisition
+      - Experience Goods
+
+    solution: |
+      LRN_LIT-LEARNING_experience_goods_belief_updating.tex ist der richtige Ort für:
+      - Belief updating (Bayesian/non-Bayesian)
+      - Advice demand and quality
+      - Experience goods
+      - Information acquisition
+      - Learning from feedback
+
+      BibTeX: use_for = {LIT-LEARNING, ...}
+
+    prevention: |
+      Bei Papers mit Keywords:
+      "advice", "belief", "updating", "learning", "information", "experience good"
+      → Zuerst LIT-LEARNING prüfen
+
+    tags: ["lit-appendix", "learning", "belief-updating", "advice"]
+
+  - id: "INT-L-2026-01-31-BIBTEX-001"
+    date: "2026-01-31"
+    category: "BIBTEX"
+    severity: "MEDIUM"
+    title: "Citation Syntax: \\citet vs \\citep vs \\citealt"
+
+    problem: |
+      Falsche Citation-Syntax in Kapiteln führt zu Kompilierungsfehlern
+      oder unschönem Output.
+
+    solution: |
+      Richtige Syntax je nach Kontext:
+
+      \citet{PAP-xxx}  → "Bregolin et al. (2026) zeigen..."
+                         Autor als Subjekt im Satz
+
+      \citep{PAP-xxx}  → "...wie gezeigt wurde (Bregolin et al., 2026)."
+                         Referenz in Klammern am Satzende
+
+      \citealt{PAP-xxx} → "Bregolin et al. 2026"
+                          Ohne Klammern (für verschachtelte Zitate)
+
+    concrete_example: |
+      RICHTIG:
+      \citet{PAP-bregolin2026advice} test the reputational cheap-talk
+      model (\citealt{sobel1985theory}) in a laboratory setting.
+
+      FALSCH:
+      \cite{PAP-bregolin2026advice} test the reputational cheap-talk
+      model \cite{sobel1985theory} in a laboratory setting.
+
+    prevention: |
+      Faustregel:
+      - Autor ist Subjekt → \citet{}
+      - Referenz am Ende → \citep{}
+      - Verschachtelt (z.B. "nach X, basierend auf Y") → \citealt{} für Y
+
+    tags: ["bibtex", "citation", "latex", "syntax"]
+
+  - id: "INT-L-2026-01-31-LEVEL-004"
+    date: "2026-01-31"
+    category: "LEVEL"
+    severity: "HIGH"
+    title: "Content Level 3 Schwelle auf 20k reduziert + Strukturanforderungen"
+
+    problem: |
+      Die 50,000 Zeichen-Schwelle für Content Level 3 war zu restriktiv.
+      Gut strukturierte Extraktionen mit vollständigem Paper-Inhalt (Abstract,
+      alle Sections, Referenzen, EBF-Relevanz) wurden fälschlich als Level 2
+      klassifiziert, obwohl sie für EBF-Integration vollständig nutzbar waren.
+
+      Beispiel: PAP-dustmann2025immigration mit 29,287 Zeichen enthält:
+      - Vollständigen Abstract
+      - 10 nummerierte Sections (komplettes Paper)
+      - Referenzen-Sektion
+      - EBF Relevance Mapping
+      → Wurde als Level 2 klassifiziert trotz vollständiger Nutzbarkeit
+
+    solution: |
+      Content Level 3 Kriterien geändert zu:
+      1. >20,000 Zeichen (statt 50,000)
+      2. UND Abstract-Sektion vorhanden
+      3. UND Referenzen/Bibliographie vorhanden
+      4. UND normale Paper-Struktur (nummerierte Sections)
+         ODER EBF-Struktur (KEY FINDINGS + EBF RELEVANCE)
+
+    rationale: |
+      Für EBF-Integration zählt der NUTZBARE INHALT, nicht die Zeichenzahl.
+      Eine strukturierte Extraktion mit 25k Zeichen kann mehr EBF-Wert haben
+      als ein 150k OCR-Text mit Formatierungsartefakten.
+
+    affected_files:
+      - "scripts/upgrade_paper_integration.py"
+      - "data/paper-integration-learnings.yaml"
+      - ".claude/commands/upgrade-paper.md"
+
+    prevention: |
+      Bei Content Level Bestimmung IMMER prüfen:
+      1. Zeichenzahl > 20,000?
+      2. Abstract vorhanden?
+      3. Referenzen vorhanden?
+      4. Paper-Struktur vorhanden?
+
+      Alle 4 Kriterien müssen erfüllt sein für Level 3.
+
+    tags: ["content-level", "threshold", "structure", "methodology"]
+
+  - id: "INT-L-2026-01-31-METRICS-001"
+    date: "2026-01-31"
+    category: "LEVEL"
+    severity: "MEDIUM"
+    title: "Workflow-Metriken erfassen für kontinuierliche Verbesserung"
+
+    problem: |
+      Keine Daten verfügbar über:
+      - Wie lange dauert die A/M/C Entscheidung?
+      - Welche Workflow-Schritte sind Bottlenecks?
+      - Sind die Zeitschätzungen akkurat?
+      - Welcher Modus wird bevorzugt (A vs M vs C)?
+
+    solution: |
+      Metriken-Tracking-System implementiert:
+
+      1. Neue Datenbank: data/paper-integration-metrics.yaml
+      2. Erfasste Metriken:
+         - choice.duration_seconds: Zeit bis zur A/M/C Entscheidung
+         - workflow.steps_completed[].duration_seconds: Zeit pro Schritt
+         - workflow.total_duration_minutes: Gesamtdauer
+         - choice.selected_mode: Welcher Modus gewählt wurde
+
+      3. Aggregierte Statistiken:
+         - average_choice_duration_seconds
+         - choice_distribution (A/M/C Verteilung)
+         - average_total_duration_minutes nach Integration Level
+
+    implementation: |
+      Claude MUSS nach jedem Workflow einen Eintrag hinzufügen:
+
+      ```yaml
+      - id: "PIM-YYYY-MM-DD-NNN"
+        paper_id: "PAP-xxx"
+        choice:
+          presented_at: "ISO 8601"
+          responded_at: "ISO 8601"
+          duration_seconds: X.X
+          selected_mode: "automatic|manual|check_only"
+        workflow:
+          steps_completed:
+            - step: "fulltext"
+              duration_seconds: X
+            # ...
+      ```
+
+    affected_files:
+      - "data/paper-integration-metrics.yaml"
+      - ".claude/commands/upgrade-paper.md"
+
+    benefits:
+      - "Workflow-Optimierung: Welche Schritte dauern am längsten?"
+      - "User-Experience: Wie schnell entscheiden User?"
+      - "Zeitschätzung verbessern: Sind die geschätzten Zeiten akkurat?"
+      - "Bottleneck-Identifikation: Wo stockt der Workflow?"
+
+    tags: ["metrics", "timing", "continuous-improvement", "learning-loop"]
