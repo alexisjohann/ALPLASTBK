@@ -1,0 +1,165 @@
+# SPÖ MANDAT - LEARNINGS & VALIDIERUNGSREGELN
+#
+# Dokumentiert Fehler, Learnings und Präventionsregeln
+# für das SPÖ-Mandat zur kontinuierlichen Verbesserung.
+#
+# Version: 1.0
+# Erstellt: 2026-02-03
+
+---
+
+learnings:
+
+  # ===================================================================
+  # L-SPO-001: SYNCHRONIZATION_GAP - Review vs. Strategie
+  # ===================================================================
+  - id: "L-SPO-001"
+    datum: "2026-02-03"
+    titel: "Review-Template nicht mit finaler Strategie synchronisiert"
+    schweregrad: "KRITISCH"
+    fehlertyp: "SYNCHRONIZATION_GAP"
+
+    # Was ist passiert?
+    beschreibung: |
+      Das INTERAKTIVER_REVIEW_emrk_2026-02-03.md wurde VOR der Strategie-
+      Transformation erstellt und enthielt noch die ALTE Strategie:
+      - "14.156 Abschiebungen. Höchststand. 50% Straftäter."
+
+      Die finale Strategie "Ordnung statt Spalten" sagt EXPLIZIT:
+      - "Niemals '50% Straftäter' sagen"
+      - "Immer mit '95% EMRK-konform' beginnen"
+
+      Bei erneutem Laden des Reviews wurden dem User die ALTEN,
+      VERWORFENEN Optionen präsentiert → User-Frustration.
+
+    # Betroffene Dateien
+    betroffene_dateien:
+      veraltet: "database/INTERAKTIVER_REVIEW_emrk_2026-02-03.md"
+      korrekt: "deliverables/EMRK_STRATEGIE_KOMPLETT_2026-02-03.md"
+      ssot: "database/ANFRAGEN_REGISTER.yaml → kernaussagen{}"
+
+    # Grundursache
+    grundursache: |
+      Kein automatischer Sync-Mechanismus zwischen:
+      1. Review-Templates (INTERAKTIVER_REVIEW_*.md)
+      2. Final Deliverables (*_STRATEGIE_KOMPLETT_*.md)
+      3. Kernaussagen in ANFRAGEN_REGISTER.yaml
+
+      Bei Strategie-Updates wurde nur das Deliverable aktualisiert,
+      das Review-Template wurde vergessen.
+
+    # Auswirkung
+    auswirkung: |
+      - User erhält widersprüchliche Optionen
+      - Vertrauensverlust in den Prozess
+      - Zeitverschwendung durch Neustart
+      - Risiko: Alte Strategie könnte versehentlich umgesetzt werden
+
+    # Sofortmassnahme
+    sofortmassnahme:
+      - "Review-Dokument mit finaler Strategie synchronisieren"
+      - "Alle Q-Optionen basierend auf kernaussagen{} neu generieren"
+
+    # Langfristige Lösung
+    langfristige_loesung:
+      - "Validierungsregel V-SPO-001 implementieren"
+      - "Bei jedem Review-Load: Kernaussagen-Hash prüfen"
+      - "Bei Mismatch: Auto-Sync oder Warnung"
+
+---
+
+validierungsregeln:
+
+  # ===================================================================
+  # V-SPO-001: Review-Deliverable Konsistenz
+  # ===================================================================
+  - id: "V-SPO-001"
+    name: "Review-Deliverable Konsistenz"
+    ausloeser: "Laden eines INTERAKTIVER_REVIEW_*.md"
+    basiert_auf: "L-SPO-001"
+
+    # Prüflogik
+    prueflogik: |
+      1. Lade ANFRAGEN_REGISTER.yaml → kernaussagen{} für diese Anfrage
+      2. Lade INTERAKTIVER_REVIEW_*.md → Q-Optionen
+      3. Prüfe: Sind die "Aktuelle Formulierung" Texte in Q1.1, Q1.2, etc.
+         IDENTISCH mit kernaussagen.level_1, .level_2, .closer?
+      4. WENN NICHT:
+         → WARNUNG: "Review-Template ist veraltet!"
+         → Option: Auto-Sync oder manuelles Update
+
+    # Implementierung
+    implementierung:
+      typ: "Pre-Load Check"
+      wo: "Vor Präsentation des Reviews an User"
+      script: "scripts/validate_review_sync.py"  # TODO: erstellen
+
+    # Beispiel-Check
+    beispiel:
+      register_kernaussage_level_1: "95% aller Rückführungen waren EMRK-konform..."
+      review_aktuelle_formulierung_q11: "14.156 Abschiebungen. Höchststand..."
+      ergebnis: "MISMATCH → Review veraltet!"
+
+  # ===================================================================
+  # V-SPO-002: Strategie-Update Propagation
+  # ===================================================================
+  - id: "V-SPO-002"
+    name: "Strategie-Update Propagation"
+    ausloeser: "Änderung an kernaussagen{} in ANFRAGEN_REGISTER.yaml"
+    basiert_auf: "L-SPO-001"
+
+    # Prüflogik
+    prueflogik: |
+      WENN kernaussagen{} für eine Anfrage geändert werden:
+      1. Liste alle abhängigen Dokumente:
+         - INTERAKTIVER_REVIEW_*.md
+         - *_STRATEGIE_KOMPLETT_*.md
+         - TAKTIK_*.md, WORDING_*.md, BRIEFING_*.md
+      2. Prüfe Konsistenz
+      3. WARNUNG bei Inkonsistenzen
+      4. Optional: Auto-Update anbieten
+
+    # Implementierung
+    implementierung:
+      typ: "Post-Update Hook"
+      wo: "Nach Änderung an ANFRAGEN_REGISTER.yaml"
+      script: "scripts/propagate_strategy_updates.py"  # TODO: erstellen
+
+---
+
+# Workflow-Anpassungen basierend auf Learnings
+workflow_anpassungen:
+
+  # Neuer Schritt im Review-Workflow
+  review_workflow_erweiterung:
+    name: "Pre-Load Validation"
+    position: "VOR Präsentation des Reviews"
+    schritte:
+      - "Lade kernaussagen{} aus ANFRAGEN_REGISTER.yaml"
+      - "Vergleiche mit 'Aktuelle Formulierung' im Review"
+      - "Bei Mismatch: Warnung + Auto-Sync-Option"
+
+  # SSOT-Hierarchie für Kernaussagen
+  ssot_hierarchie:
+    beschreibung: "Klare Hierarchie welche Datei die Wahrheit enthält"
+    hierarchie:
+      1: "ANFRAGEN_REGISTER.yaml → kernaussagen{}"  # MASTER
+      2: "*_STRATEGIE_KOMPLETT_*.md"                 # Kunden-Deliverable
+      3: "INTERAKTIVER_REVIEW_*.md"                  # Abgeleitet, nie SSOT!
+    regel: |
+      kernaussagen{} ist IMMER die Single Source of Truth.
+      Alle anderen Dokumente MÜSSEN mit kernaussagen{} übereinstimmen.
+      Bei Änderungen: Zuerst kernaussagen{} updaten, dann propagieren.
+
+---
+
+# Statistiken
+statistiken:
+  gesamt_learnings: 1
+  nach_schweregrad:
+    kritisch: 1
+    hoch: 0
+    mittel: 0
+    niedrig: 0
+  validierungsregeln: 2
+  letzte_aktualisierung: "2026-02-03"

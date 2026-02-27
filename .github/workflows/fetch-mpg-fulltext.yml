@@ -1,0 +1,216 @@
+# =============================================================================
+# MPG PuRe FULL-TEXT FETCH WORKFLOW (L2 → L3 Upgrade)
+# =============================================================================
+# Scans MPG PuRe for INTERNAL_MANAGED PDFs and downloads them.
+# Two-phase approach:
+#   Phase 1 (find-internal): Scan all PuRe items, identify downloadable PDFs
+#   Phase 2 (fetch-internal): Download PDFs, convert to text, upgrade to L3
+#
+# Triggers:
+#   - Manual: workflow_dispatch
+#   - From sandbox: bash scripts/api.sh mpg fetch
+#
+# Runtime Estimation (measured 2026-02-18, Sutter):
+#   T = 40 + (N_api_calls × 0.5) + (N_pdfs × 5.5) + 15 seconds
+#   where N_api_calls = N_pagination_pages + N_dois + N_external_only
+#   Sutter: T = 40 + (453 × 0.5) + (25 × 5.5) + 15 = ~7 min
+#   Breakdown: Setup 40s | Scan 227s | Download 138s | Git 15s
+# =============================================================================
+
+name: Fetch MPG PuRe Full-Texts
+
+on:
+  workflow_dispatch:
+    inputs:
+      person_id:
+        description: 'PuRe person ID (e.g., persons206813)'
+        required: true
+        default: 'persons206813'
+      author_name:
+        description: 'Author filter for matching (e.g., sutter)'
+        required: true
+        default: 'sutter'
+      batch_size:
+        description: 'Max papers to download in fetch phase'
+        required: false
+        default: '50'
+      mode:
+        description: 'Run mode'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - 'find-only'
+          - 'fetch-only'
+          - 'both'
+      dry_run:
+        description: 'Dry run (scan only, no downloads)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+      target_branch:
+        description: 'Branch to commit results to'
+        required: false
+        default: 'claude/beatrix-hallucination-investigation-HLDWb'
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-mpg-fulltext:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_branch }}
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests pyyaml
+          sudo apt-get update && sudo apt-get install -y poppler-utils
+
+      - name: Verify tools
+        run: |
+          python --version
+          which pdftotext
+          pdftotext -v 2>&1 || true
+          echo "Dependencies OK"
+
+      # Phase 1: Find INTERNAL_MANAGED files
+      - name: "Phase 1: Find INTERNAL_MANAGED files"
+        if: ${{ inputs.mode == 'find-only' || inputs.mode == 'both' }}
+        run: |
+          echo "=========================================="
+          echo "Phase 1: Scanning PuRe for INTERNAL_MANAGED PDFs"
+          echo "=========================================="
+          echo "Person ID: ${{ inputs.person_id }}"
+          echo "Author: ${{ inputs.author_name }}"
+          echo ""
+
+          python scripts/fetch_mpg_fulltext.py \
+            --person-id "${{ inputs.person_id }}" \
+            --name "${{ inputs.author_name }}" \
+            --find-internal
+
+      - name: Show find-internal results
+        if: ${{ inputs.mode == 'find-only' || inputs.mode == 'both' }}
+        run: |
+          echo "=== FIND-INTERNAL LOG ==="
+          if [ -f data/mpg-find-internal-log.yaml ]; then
+            head -100 data/mpg-find-internal-log.yaml
+          else
+            echo "No find-internal log generated"
+          fi
+
+      # Phase 2: Fetch PDFs from found items
+      - name: "Phase 2: Fetch INTERNAL_MANAGED PDFs"
+        if: ${{ inputs.mode == 'fetch-only' || inputs.mode == 'both' }}
+        run: |
+          echo "=========================================="
+          echo "Phase 2: Downloading PDFs from PuRe"
+          echo "=========================================="
+          echo "Batch size: ${{ inputs.batch_size }}"
+          echo "Dry run: ${{ inputs.dry_run }}"
+          echo ""
+
+          ARGS="--person-id ${{ inputs.person_id }}"
+          ARGS="$ARGS --name ${{ inputs.author_name }}"
+          ARGS="$ARGS --batch ${{ inputs.batch_size }}"
+          ARGS="$ARGS --fetch-internal"
+
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+
+          echo "Running: python scripts/fetch_mpg_fulltext.py $ARGS"
+          python scripts/fetch_mpg_fulltext.py $ARGS
+
+      - name: Show fetch results
+        if: always()
+        run: |
+          echo "=== FETCH LOG ==="
+          if [ -f data/mpg-fulltext-fetch-log.yaml ]; then
+            head -200 data/mpg-fulltext-fetch-log.yaml
+          elif [ -f data/mpg-find-internal-log.yaml ]; then
+            head -200 data/mpg-find-internal-log.yaml
+          else
+            echo "No log files generated"
+          fi
+
+          echo ""
+          echo "=== NEW/UPDATED FILES ==="
+          git status --short data/paper-texts/ data/paper-references/ || true
+
+      - name: Upload log artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mpg-fulltext-fetch-logs
+          path: |
+            data/mpg-fulltext-fetch-log.yaml
+            data/mpg-find-internal-log.yaml
+
+      # Commit log in find-only mode (so sandbox can git pull to read diagnostics)
+      - name: Commit find-only log
+        if: ${{ inputs.mode == 'find-only' }}
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          git add data/mpg-find-internal-log.yaml data/mpg-fulltext-fetch-log.yaml 2>/dev/null || true
+
+          if git diff --staged --quiet; then
+            echo "No log changes to commit"
+          else
+            git commit -m "chore(mpg): Update find-internal log (diagnostics)
+
+          Mode: find-only
+          Author: ${{ inputs.author_name }}
+
+          https://claude.ai/code/session_015eQ5iY9wbAt5Q9xNrK2JoY"
+
+            git push
+            echo "Committed find-only log"
+          fi
+
+      - name: Commit results
+        if: ${{ inputs.dry_run == 'false' && (inputs.mode == 'fetch-only' || inputs.mode == 'both') }}
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          # Add new full texts, updated YAMLs, and logs
+          git add data/paper-texts/ data/paper-references/ \
+                  data/mpg-fulltext-fetch-log.yaml \
+                  data/mpg-find-internal-log.yaml
+
+          # Check if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            CHANGED=$(git diff --staged --name-only | wc -l)
+            git commit -m "feat(papers): Fetch $CHANGED MPG PuRe full texts (L2→L3)
+
+          Author: ${{ inputs.author_name }}
+          Person-ID: ${{ inputs.person_id }}
+          Batch size: ${{ inputs.batch_size }}
+          Mode: ${{ inputs.mode }}
+          Branch: ${{ inputs.target_branch }}
+
+          https://claude.ai/code/session_015eQ5iY9wbAt5Q9xNrK2JoY"
+
+            git push
+            echo "Committed and pushed $CHANGED files"
+          fi

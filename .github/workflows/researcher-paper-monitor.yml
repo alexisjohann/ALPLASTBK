@@ -1,0 +1,220 @@
+# =============================================================================
+# RESEARCHER PAPER MONITOR
+# =============================================================================
+# Periodically checks for new publications by tracked researchers.
+# - Fetches papers via SerpAPI (Google Scholar)
+# - Automatically adds new papers to researcher-registry.yaml
+# - Creates GitHub Issues for notification
+#
+# Triggers:
+#   - Weekly (every Monday at 9:00 UTC = 10:00 CH)
+#   - Manual dispatch
+# =============================================================================
+
+name: Researcher Paper Monitor
+
+on:
+  schedule:
+    # Every Monday at 9:00 UTC (= 10:00 Schweizer Zeit)
+    - cron: '0 9 * * 1'
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      researcher_id:
+        description: 'Specific researcher ID (e.g., RES-ENKE-B), or "all"'
+        required: false
+        default: 'all'
+      auto_add:
+        description: 'Automatically add new papers to registry?'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  # Fast pass-through for PRs (so Required Check passes immediately)
+  check-new-papers:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip on PR
+        run: echo "✅ Paper monitor skipped on PR (runs weekly)"
+
+  # Full paper check (schedule + manual only)
+  check-new-papers-full:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pyyaml requests
+
+      - name: Check for new papers
+        id: check_papers
+        env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+        run: |
+          python scripts/check_researcher_papers.py \
+            --registry data/researcher-registry.yaml \
+            --output new_papers.json \
+            --researcher "${{ github.event.inputs.researcher_id || 'all' }}"
+
+      # =========================================================================
+      # AUTO-ADD: New papers to researcher-registry.yaml
+      # =========================================================================
+      - name: Add new papers to registry
+        if: steps.check_papers.outputs.new_papers_found == 'true'
+        run: |
+          python << 'EOF'
+          import json
+          import yaml
+          from datetime import datetime
+
+          # Load new papers
+          with open('new_papers.json', 'r') as f:
+              new_papers = json.load(f)
+
+          # Load registry
+          with open('data/researcher-registry.yaml', 'r') as f:
+              registry = yaml.safe_load(f)
+
+          papers_added = 0
+
+          # Build lookup dict from researchers list
+          researchers_list = registry.get('researchers', [])
+          researchers_by_id = {}
+          for r in researchers_list:
+              rid = r.get('id') or r.get('superkey')
+              if rid:
+                  researchers_by_id[rid] = r
+
+          for researcher_id, papers in new_papers.items():
+              if researcher_id not in researchers_by_id:
+                  print(f"Warning: {researcher_id} not in registry")
+                  continue
+
+              researcher = researchers_by_id[researcher_id]
+
+              # Ensure paper_bibliography exists
+              if 'paper_bibliography' not in researcher:
+                  researcher['paper_bibliography'] = {
+                      'statistics': {'total_publications': 0, 'integrated_in_ebf': 0},
+                      'integrated': [],
+                      'not_integrated': []
+                  }
+
+              # Ensure not_integrated list exists
+              if 'not_integrated' not in researcher['paper_bibliography']:
+                  researcher['paper_bibliography']['not_integrated'] = []
+
+              # Get existing paper titles (lowercase for comparison)
+              existing_titles = set()
+              for p in researcher['paper_bibliography'].get('integrated', []):
+                  if 'title' in p:
+                      existing_titles.add(p['title'].lower())
+              for p in researcher['paper_bibliography'].get('not_integrated', []):
+                  if 'title' in p:
+                      existing_titles.add(p['title'].lower())
+
+              # Add new papers
+              for paper in papers:
+                  if paper.get('title', '').lower() in existing_titles:
+                      continue  # Skip duplicates
+
+                  new_entry = {
+                      'title': paper.get('title', 'Unknown'),
+                      'year': paper.get('year', datetime.now().year),
+                      'journal': paper.get('journal', 'Unknown'),
+                      'coauthors': paper.get('coauthors', []),
+                      'doi': paper.get('doi'),
+                      'status': 'pending_evaluation',
+                      'priority': 'MEDIUM',
+                      'added_by': 'GitHub Action',
+                      'added_date': datetime.now().strftime('%Y-%m-%d'),
+                      'evaluation': {
+                          'relevance_score': None,
+                          'methodology_fit': None,
+                          'parameter_extractable': None,
+                          'theory_support': None,
+                          'decision': 'PENDING',
+                          'reason': 'Auto-detected by Researcher Paper Monitor'
+                      }
+                  }
+
+                  researcher['paper_bibliography']['not_integrated'].append(new_entry)
+                  papers_added += 1
+                  print(f"Added: {paper.get('title', 'Unknown')[:50]}...")
+
+              # Update statistics
+              total = len(researcher['paper_bibliography'].get('integrated', [])) + \
+                      len(researcher['paper_bibliography'].get('not_integrated', []))
+              researcher['paper_bibliography']['statistics']['total_publications'] = total
+
+          # Update metadata
+          registry['metadata']['last_paper_check'] = datetime.now().strftime('%Y-%m-%d')
+
+          # Save registry
+          with open('data/researcher-registry.yaml', 'w') as f:
+              yaml.dump(registry, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+
+          print(f"\n✅ Total papers added: {papers_added}")
+          EOF
+
+      # =========================================================================
+      # CREATE GITHUB ISSUE for notification (optional - continues on error)
+      # =========================================================================
+      - name: Create issue for new papers
+        if: steps.check_papers.outputs.new_papers_found == 'true'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const newPapers = JSON.parse(fs.readFileSync('new_papers.json', 'utf8'));
+
+            for (const researcher of Object.keys(newPapers)) {
+              const papers = newPapers[researcher];
+              if (papers.length === 0) continue;
+
+              const paperList = papers.map(p =>
+                `- **${p.title}** (${p.year})\n  - DOI: ${p.doi || 'N/A'}\n  - Journal: ${p.journal || 'N/A'}`
+              ).join('\n\n');
+
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `📚 New papers detected: ${researcher}`,
+                body: `## New Publications Found\n\n**Researcher:** ${researcher}\n**Papers found:** ${papers.length}\n\n### Papers\n\n${paperList}\n\n---\n\n**Status:** ✅ Automatically added to \`data/researcher-registry.yaml\`\n\n**Next Steps:**\n1. Review papers in registry under \`not_integrated\`\n2. Run \`/integrate-paper\` for HIGH priority papers\n3. Complete 7-criteria evaluation\n\n*Auto-generated by Researcher Paper Monitor*`,
+                labels: ['paper-integration', 'auto-generated']
+              });
+            }
+
+      # =========================================================================
+      # COMMIT & PUSH changes
+      # =========================================================================
+      - name: Commit and push changes
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add data/researcher-registry.yaml
+          git diff --staged --quiet || git commit -m "feat(papers): Auto-add new papers to researcher registry
+
+          Papers detected by Researcher Paper Monitor workflow.
+          - Source: SerpAPI (Google Scholar)
+          - Status: pending_evaluation
+          - Review required for EBF integration decision"
+          git push || echo "No changes to push"

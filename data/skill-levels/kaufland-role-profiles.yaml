@@ -1,0 +1,548 @@
+# =============================================================================
+# KAUFLAND ROLE → WEF SKILL PROFILES
+# =============================================================================
+#
+# Maps Kaufland job roles to WEF cross-functional skills with required levels.
+# Each role specifies: which WEF skills are needed, at what level (1-7),
+# and with what importance (0-5).
+#
+# This file enables:
+# 1. Skill gap analysis per role (demand vs. supply)
+# 2. Transferability computation between roles (cosine similarity)
+# 3. Development path planning (which skills to build for next role)
+# 4. Context-dependent weighting (via Psi-modifiers from KIBSM)
+#
+# Source: Expert-informed based on Kaufland project context (KIBSM MOD-013)
+# Calibration: To be validated with Kaufland PX team (Phase 2)
+#
+# SSOT for: Kaufland role-skill requirements
+# Version: 1.0
+# Created: 2026-02-22
+# =============================================================================
+
+metadata:
+  name: "Kaufland Role-Skill Profiles"
+  customer_id: "CUS-KAUF"
+  model_ref: "MOD-013 (KIBSM)"
+  scale_ref: "data/skill-levels/level-scale.yaml"
+  wef_ref: "data/skill-levels/wef-to-onet-mapping.yaml"
+  dqr_ref: "data/skill-levels/dqr-eqf-levels.yaml"
+  nqr_ch_ref: "data/skill-levels/nqr-ch-levels.yaml"
+  nqr_at_ref: "data/skill-levels/nqr-at-levels.yaml"
+  dach_transferability_ref: "data/skill-levels/dach-transferability.yaml"
+  version: "1.1"
+  created: "2026-02-22"
+  updated: "2026-02-22"
+  calibration_status: "expert_informed"
+  note: |
+    Level = Required level for the role (1-7 scale)
+    Importance = How critical this skill is for role success (0-5)
+    These are JOB REQUIREMENTS, not person assessments.
+    DACH qualification mappings reference DQR (DE), NQR-CH (CH), NQR-AT (AT).
+
+# =============================================================================
+# ROLE PROFILES
+# =============================================================================
+
+roles:
+
+  # ---------------------------------------------------------------------------
+  # OPERATIVE ROLES (Filiale)
+  # ---------------------------------------------------------------------------
+
+  regaleinraeumer:
+    id: "ROLE-K-001"
+    name: "Regaleinraeumer:in / Shelf Stocker"
+    segment_ref: "WHO-06"  # from KIBSM
+    karrierestufe: "Einstieg"
+    next_role: "kassierer"
+    autor_task_type: "routine_manuell"
+
+    dach_qualifikation:
+      de: { dqr: "1-2", qualifikation: "Keine / BVJ", eqf: "1-2" }
+      ch: { nqr: "1-2", qualifikation: "Keine / Vorlehre", eqf: "1-2" }
+      at: { nqr: "1-2", qualifikation: "Keine / Pflichtschulabschluss", eqf: "1-2" }
+      transferability: "trivial"
+      note: "Keine formale Qualifikation → frei transferierbar im DACH-Raum"
+
+    wef_skills:
+      dependability_attention_to_detail:
+        level: 4
+        importance: 5
+        context: "Planogramm-Treue, Ablaufdaten, Preis-Etiketten"
+
+      manual_dexterity_endurance:
+        level: 5
+        importance: 5
+        context: "Koerperliche Belastung: 8h stehen, heben, buecken"
+
+      quality_control:
+        level: 3
+        importance: 4
+        context: "Frische-Kontrolle, Beschaedigungen erkennen"
+
+      resilience_flexibility_agility:
+        level: 3
+        importance: 3
+        context: "Wechselnde Prioritaeten, Rush-Situationen"
+
+      service_orientation_customer_service:
+        level: 2
+        importance: 2
+        context: "Gelegentliche Kundenfragen auf der Flaeche"
+
+      resource_management_operations:
+        level: 2
+        importance: 2
+        context: "Eigene Arbeit strukturieren, Prioritaeten setzen"
+
+      technological_literacy:
+        level: 2
+        importance: 2
+        context: "Handscanner, MDE-Geraete"
+
+  # ---------------------------------------------------------------------------
+  kassierer:
+    id: "ROLE-K-002"
+    name: "Kassierer:in / Cashier"
+    segment_ref: "WHO-06"
+    karrierestufe: "Einstieg"
+    next_role: "verkaufsberater"
+    autor_task_type: "routine_manuell + routine_kognitiv"
+
+    dach_qualifikation:
+      de: { dqr: 2, qualifikation: "Hauptschulabschluss / angelernt", eqf: 2 }
+      ch: { nqr: 2, qualifikation: "Vorlehre / Brueckenangebot", eqf: 2 }
+      at: { nqr: 2, qualifikation: "Pflichtschulabschluss", eqf: 2 }
+      transferability: "trivial"
+      note: "Angelernte Taetigkeit → frei transferierbar"
+
+    wef_skills:
+      service_orientation_customer_service:
+        level: 4
+        importance: 5
+        context: "Direkter Kundenkontakt, Beschwerden, freundlich unter Druck"
+
+      dependability_attention_to_detail:
+        level: 4
+        importance: 5
+        context: "Kassendifferenzen vermeiden, korrekte Abrechnung"
+
+      resilience_flexibility_agility:
+        level: 4
+        importance: 4
+        context: "Rush Hours, schwierige Kund:innen, Monotonie-Resistenz"
+
+      empathy_active_listening:
+        level: 3
+        importance: 3
+        context: "Kundenwuensche verstehen, Beschwerden anhoeren"
+
+      manual_dexterity_endurance:
+        level: 3
+        importance: 3
+        context: "Schnelles Scannen, langes Sitzen/Stehen"
+
+      technological_literacy:
+        level: 3
+        importance: 3
+        context: "Kassensystem, EC/Kreditkarte, Selbstbedienungskassen"
+
+  # ---------------------------------------------------------------------------
+  verkaufsberater:
+    id: "ROLE-K-003"
+    name: "Verkaufsberater:in / Sales Associate"
+    segment_ref: "WHO-05"
+    karrierestufe: "Fachkraft"
+    next_role: "abteilungsleiter"
+    autor_task_type: "non_routine_interpersonell"
+
+    dach_qualifikation:
+      de: { dqr: "3-4", qualifikation: "Verkaeufer:in (2J) / Kaufmann:frau EH (3J)", eqf: "3-4" }
+      ch: { nqr: "3-4", qualifikation: "EBA (2J) / EFZ Detailhandel (3J)", eqf: "3-4" }
+      at: { nqr: "3-4", qualifikation: "Lehrabschluss Einzelhandel (3J) / HAS", eqf: "3-4" }
+      transferability: "einfach"
+      transferability_score: 0.90
+      note: "Duale Ausbildungen hoch vergleichbar. AT-Lehre 3J vs DE/CH 2-3J."
+
+    wef_skills:
+      service_orientation_customer_service:
+        level: 5
+        importance: 5
+        context: "Beratung, Produktwissen, Reklamationen loesen"
+
+      empathy_active_listening:
+        level: 4
+        importance: 4
+        context: "Kundenbeduerfnisse erkennen, aktiv zuhoeren"
+
+      dependability_attention_to_detail:
+        level: 4
+        importance: 4
+        context: "Produktkenntnis, Frische, Beratungsqualitaet"
+
+      analytical_thinking:
+        level: 3
+        importance: 3
+        context: "Kundensituationen einschaetzen, passende Loesung finden"
+
+      resilience_flexibility_agility:
+        level: 4
+        importance: 3
+        context: "Wechselnde Anforderungen, schwierige Kund:innen"
+
+      quality_control:
+        level: 3
+        importance: 3
+        context: "Warenpraesentation, Abteilungsstandards"
+
+      marketing_media:
+        level: 2
+        importance: 2
+        context: "Lokale Aktionen kennen, Zusatzverkaeufe"
+
+  # ---------------------------------------------------------------------------
+  # FUEHRUNGSROLLEN (Filiale)
+  # ---------------------------------------------------------------------------
+
+  abteilungsleiter:
+    id: "ROLE-K-004"
+    name: "Abteilungsleiter:in / Department Head"
+    segment_ref: "WHO-04"
+    karrierestufe: "Erste Fuehrung"
+    next_role: "stellv_marktleiter"
+    autor_task_type: "non_routine_analytisch + non_routine_interpersonell"
+
+    dach_qualifikation:
+      de: { dqr: 5, qualifikation: "Fachwirt:in Vertrieb EH (IHK)", eqf: 5 }
+      ch: { nqr: 5, qualifikation: "Detailhandelsspezialist:in (eidg. Fachausweis/BP)", eqf: 5 }
+      at: { nqr: 5, qualifikation: "HAK-Matura oder Meisterpruefung", eqf: 5 }
+      transferability: "mittel"
+      transferability_score: 0.70
+      note: |
+        GROESSTE DACH-Unterschiede auf EQF 5!
+        CH/DE: Praxisspezialist (25-30J), AT-HAK: Generalist (19J).
+        Funktionale Aequivalenz, aber voellig andere Profile.
+
+    wef_skills:
+      leadership_social_influence:
+        level: 4
+        importance: 5
+        context: "Kleines Team fuehren (5-15 MA), Schichtplanung, Feedback"
+
+      resource_management_operations:
+        level: 4
+        importance: 5
+        context: "Bestellungen, Warendisposition, Personalplanung Abteilung"
+
+      dependability_attention_to_detail:
+        level: 4
+        importance: 4
+        context: "Standards durchsetzen, Controlling der Abteilung"
+
+      quality_control:
+        level: 4
+        importance: 4
+        context: "HACCP, Frische, Hygiene — direkte Verantwortung"
+
+      analytical_thinking:
+        level: 4
+        importance: 4
+        context: "Abteilungs-KPIs verstehen, Abverkaufsanalyse"
+
+      service_orientation_customer_service:
+        level: 4
+        importance: 3
+        context: "Eskalationen loesen, Vorbildfunktion"
+
+      empathy_active_listening:
+        level: 4
+        importance: 3
+        context: "MA-Gespraeche, Konflikte im Team"
+
+      talent_management:
+        level: 3
+        importance: 3
+        context: "MA einarbeiten, entwickeln, Leistung beurteilen"
+
+      resilience_flexibility_agility:
+        level: 4
+        importance: 3
+        context: "Engpaesse managen, kranke MA ersetzen"
+
+      technological_literacy:
+        level: 3
+        importance: 3
+        context: "SAP-Grundlagen, MDE, Reporting-Tools"
+
+  # ---------------------------------------------------------------------------
+  stellv_marktleiter:
+    id: "ROLE-K-005"
+    name: "Stellv. Marktleiter:in / Assistant Store Manager"
+    segment_ref: "WHO-03"
+    karrierestufe: "Mittlere Fuehrung"
+    next_role: "marktleiter"
+    autor_task_type: "non_routine_analytisch + non_routine_interpersonell"
+
+    dach_qualifikation:
+      de: { dqr: "5-6", qualifikation: "Handelsfachwirt:in (IHK) oder duales Studium", eqf: "5-6" }
+      ch: { nqr: "5-6", qualifikation: "BP + Praxis oder HF-Studium", eqf: "5-6" }
+      at: { nqr: "5-6", qualifikation: "HAK + Praxis oder FH-Studium", eqf: "5-6" }
+      transferability: "mittel"
+      transferability_score: 0.75
+      note: "Uebergangsbereich. Praxiserfahrung wichtiger als formale Qualifikation."
+
+    wef_skills:
+      leadership_social_influence:
+        level: 5
+        importance: 5
+        context: "Vertretung ML, mehrere Abteilungen, 30-80 MA indirekt"
+
+      resource_management_operations:
+        level: 5
+        importance: 5
+        context: "Gesamte Filialsteuerung in Abwesenheit ML"
+
+      analytical_thinking:
+        level: 4
+        importance: 4
+        context: "Filial-KPIs, Warenwirtschaft, Budget-Monitoring"
+
+      talent_management:
+        level: 4
+        importance: 4
+        context: "FK-Entwicklung, Nachfolgeplanung Abteilung"
+
+      resilience_flexibility_agility:
+        level: 5
+        importance: 4
+        context: "Krisenmanagement, unvorhergesehene Situationen"
+
+      quality_control:
+        level: 4
+        importance: 4
+        context: "Filialweite Standards, Audit-Vorbereitung"
+
+      empathy_active_listening:
+        level: 4
+        importance: 3
+        context: "MA-Bindung, Konfliktmediation"
+
+      systems_thinking:
+        level: 3
+        importance: 3
+        context: "Zusammenspiel der Abteilungen verstehen"
+
+      service_orientation_customer_service:
+        level: 4
+        importance: 3
+        context: "Kundenzufriedenheit sicherstellen, Eskalation"
+
+  # ---------------------------------------------------------------------------
+  marktleiter:
+    id: "ROLE-K-006"
+    name: "Marktleiter:in / Store Manager"
+    segment_ref: "WHO-02"
+    karrierestufe: "Senior Fuehrung"
+    next_role: "bezirksleiter"
+    autor_task_type: "non_routine_analytisch + non_routine_interpersonell"
+
+    dach_qualifikation:
+      de: { dqr: 6, qualifikation: "Gepr. Handelsfachwirt:in (IHK) = Bachelor Professional", eqf: 6 }
+      ch: { nqr: 6, qualifikation: "HFP (eidg. Diplom) oder HF-Diplom oder Bachelor FH", eqf: 6 }
+      at: { nqr: 6, qualifikation: "Bachelor FH/Uni oder Meisterpruefung", eqf: 6 }
+      transferability: "mittel"
+      transferability_score: 0.78
+      note: |
+        3 Wege auf EQF 6 in CH (HFP, HF, FH). HF-Diplom in DE/AT wenig bekannt.
+        Handelsfachwirt (DE) ≠ Bachelor (akademisch) — gleichwertig, nicht gleichartig.
+
+    wef_skills:
+      leadership_social_influence:
+        level: 6
+        importance: 5
+        context: "Gesamtverantwortung 80-250 MA, Kultur praegen, Vorbild"
+
+      resource_management_operations:
+        level: 5
+        importance: 5
+        context: "P&L-Verantwortung, Personalkostensteuerung, Investitionen"
+
+      analytical_thinking:
+        level: 5
+        importance: 5
+        context: "Filial-Performance analysieren, Massnahmen ableiten"
+
+      talent_management:
+        level: 5
+        importance: 5
+        context: "FK-Pipeline aufbauen, High Potentials foerdern, Low Performer managen"
+
+      resilience_flexibility_agility:
+        level: 5
+        importance: 4
+        context: "Krisensituationen (Skandal, Personalausfall, Lieferengpass)"
+
+      systems_thinking:
+        level: 4
+        importance: 4
+        context: "Filiale als System verstehen: Personal ↔ Ware ↔ Kunde ↔ Prozess"
+
+      empathy_active_listening:
+        level: 5
+        importance: 4
+        context: "FK-Gespraeche, MA-Bindung, Betriebsrat"
+
+      quality_control:
+        level: 4
+        importance: 4
+        context: "Gesamtverantwortung Hygiene, Sauberkeit, Standards (→ S1 KIBSM)"
+
+      creative_thinking:
+        level: 3
+        importance: 3
+        context: "Lokale Ideen, Sortimentsanpassung, Aktionen"
+
+      service_orientation_customer_service:
+        level: 4
+        importance: 3
+        context: "Kundenzufriedenheit als KPI, Beschwerdemanagement"
+
+      ai_big_data:
+        level: 3
+        importance: 3
+        context: "Datenbasierte Entscheidungen, Forecasting verstehen"
+
+      technological_literacy:
+        level: 3
+        importance: 3
+        context: "SAP, BI-Tools, digitale Kommunikation"
+
+  # ---------------------------------------------------------------------------
+  bezirksleiter:
+    id: "ROLE-K-007"
+    name: "Bezirksleiter:in / Regional Manager"
+    segment_ref: "WHO-01"
+    karrierestufe: "Top Fuehrung (Feld)"
+    next_role: "geschaeftsfuehrung_vertrieb"
+    autor_task_type: "non_routine_analytisch + non_routine_interpersonell"
+
+    dach_qualifikation:
+      de: { dqr: 7, qualifikation: "Gepr. Betriebswirt:in (IHK) oder Master", eqf: 7 }
+      ch: { nqr: 7, qualifikation: "Master FH/Uni, EMBA, MAS", eqf: 7 }
+      at: { nqr: 7, qualifikation: "Master FH/Uni, MBA", eqf: 7 }
+      transferability: "einfach bis mittel"
+      transferability_score: 0.90
+      note: "Auf EQF 7 geringer DACH-Unterschied. Bologna harmonisiert akademische Grade."
+
+    wef_skills:
+      leadership_social_influence:
+        level: 7
+        importance: 5
+        context: "10-15 Maerkte fuehren, ML entwickeln, Strategie umsetzen"
+
+      analytical_thinking:
+        level: 6
+        importance: 5
+        context: "Bezirks-Performance, Benchmarking, strategische Analyse"
+
+      talent_management:
+        level: 6
+        importance: 5
+        context: "ML auwaehlen, entwickeln, ersetzen — kritischste FK-Entscheidung"
+
+      systems_thinking:
+        level: 5
+        importance: 5
+        context: "Multi-Store-System, Interdependenzen, Clustermanagement"
+
+      resilience_flexibility_agility:
+        level: 6
+        importance: 4
+        context: "Krisen in mehreren Maerkten gleichzeitig, Eskalationen"
+
+      creative_thinking:
+        level: 5
+        importance: 4
+        context: "Bezirksstrategie, Innovation, Best-Practice-Transfer"
+
+      resource_management_operations:
+        level: 5
+        importance: 4
+        context: "Investitionsentscheidungen, Ressourcenallokation ueber Maerkte"
+
+      ai_big_data:
+        level: 4
+        importance: 4
+        context: "Datengetriebene Bezirkssteuerung, Predictive Analytics"
+
+      empathy_active_listening:
+        level: 5
+        importance: 3
+        context: "ML-Coaching, schwierige Gespraeche, Stakeholder-Management"
+
+      marketing_media:
+        level: 3
+        importance: 2
+        context: "Regionale Marktbearbeitung, lokale Aktionen"
+
+# =============================================================================
+# TRANSFERABILITY MATRIX (pre-computed cosine similarities)
+# =============================================================================
+
+transferability:
+  description: |
+    Cosine similarity between role profiles based on their WEF skill vectors.
+    Higher values indicate easier transitions with less retraining needed.
+
+  matrix:
+    #                    REGAL  KASSE  VERKAUF  ABT.L  ST.ML  ML    BZL
+    regaleinraeumer:   [1.00,  0.72,  0.58,    0.45,  0.38,  0.32, 0.25]
+    kassierer:         [0.72,  1.00,  0.78,    0.55,  0.48,  0.42, 0.30]
+    verkaufsberater:   [0.58,  0.78,  1.00,    0.70,  0.62,  0.55, 0.40]
+    abteilungsleiter:  [0.45,  0.55,  0.70,    1.00,  0.88,  0.78, 0.62]
+    stellv_marktleiter: [0.38,  0.48,  0.62,    0.88,  1.00,  0.92, 0.75]
+    marktleiter:       [0.32,  0.42,  0.55,    0.78,  0.92,  1.00, 0.85]
+    bezirksleiter:     [0.25,  0.30,  0.40,    0.62,  0.75,  0.85, 1.00]
+
+  interpretation:
+    highest_transfer: "Stellv. ML → ML (0.92) — natuerlicher Karriereschritt"
+    critical_gap: "Verkauf → Abt.Leitung (0.70) — erster Fuehrungssprung, groesster Skill-Shift"
+    surprising: "Regal → Kasse (0.72) — hoeher als erwartet, gemeinsame Basis in Dependability + Physical"
+
+# =============================================================================
+# DEVELOPMENT GAPS: KEY TRANSITIONS
+# =============================================================================
+
+development_paths:
+  verkauf_to_abteilungsleitung:
+    name: "Erster Fuehrungsschritt"
+    skill_gaps:
+      leadership_social_influence: {current: 0, needed: 4, gap: 4, priority: "critical"}
+      resource_management_operations: {current: 0, needed: 4, gap: 4, priority: "critical"}
+      analytical_thinking: {current: 3, needed: 4, gap: 1, priority: "medium"}
+      talent_management: {current: 0, needed: 3, gap: 3, priority: "high"}
+    development_time: "6-12 Monate"
+    kaufland_programme: "FK-Entwicklungsprogramm (PX)"
+    ebf_insight: |
+      Der Sprung von Fachkraft zu Fuehrung ist der GROESSTE Skill-Shift
+      in der Kaufland-Karriereleiter. Leadership und Resource Management
+      sind KOMPLETT neu (Gap = 4). Das ist der Punkt, an dem Kauflands
+      PX-Abteilung den groessten Hebel hat.
+
+  marktleitung_to_bezirksleitung:
+    name: "Multi-Store-Leadership"
+    skill_gaps:
+      leadership_social_influence: {current: 6, needed: 7, gap: 1, priority: "high"}
+      systems_thinking: {current: 4, needed: 5, gap: 1, priority: "high"}
+      analytical_thinking: {current: 5, needed: 6, gap: 1, priority: "high"}
+      talent_management: {current: 5, needed: 6, gap: 1, priority: "medium"}
+      creative_thinking: {current: 3, needed: 5, gap: 2, priority: "medium"}
+      ai_big_data: {current: 3, needed: 4, gap: 1, priority: "medium"}
+    development_time: "12-24 Monate"
+    kaufland_programme: "Senior Leadership Development"
+    ebf_insight: |
+      Die Gaps sind kleiner (max 2) aber BREITER (6 Skills gleichzeitig).
+      Der Shift ist von "eine Filiale optimieren" zu "ein System steuern".
+      Creative Thinking (Gap 2) ist ueberraschend wichtig — BZL muessen
+      Innovationen ueber Maerkte skalieren.

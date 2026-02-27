@@ -1,0 +1,378 @@
+
+# Automatic genre identification: a survey
+
+**Authors:** Taja Kuzman, Nikola Ljubešić
+**Journal:** Language Resources and Evaluation (2025)
+**DOI:** 10.1007/s10579-023-09695-8
+
+---
+
+## Abstract
+
+[cite_start]Automatic genre identification (AGI) is a text classification task focused on genres, i.e., text categories defined by the author's purpose, common function of the text, and the text's conventional form[cite: 860]. [cite_start]Obtaining genre information has been shown to be beneficial for a wide range of disciplines, including linguistics, corpus linguistics, computational linguistics, natural language processing, information retrieval and information security[cite: 861]. [cite_start]Consequently, in the past 20 years, numerous researchers have collected genre datasets with the aim to develop an efficient genre classifier[cite: 862]. [cite_start]However, their approaches to the definition of genre schemata, data collection and manual annotation vary substantially, resulting in significantly different datasets[cite: 863]. [cite_start]As most AGI experiments are dataset-dependent, a sufficient understanding of the differences between the available genre datasets is of great importance for the researchers venturing into this area[cite: 864]. [cite_start]In this paper, we present a detailed overview of different approaches to each of the steps of the AGI task, from the definition of the genre concept and the genre schema, to the dataset collection and annotation methods, and, finally, to machine learning strategies[cite: 865].
+
+---
+
+## 1. Introduction
+
+[cite_start]Genres are text categories, defined by the author's purpose, common function of the text, and the text's conventional form[cite: 882]. [cite_start]They have been studied already in Antiquity, as the Greek philosophers and orators recognized that the manner in which the information is conveyed plays an important role on the receivers' understanding of the message, as well as the efficiency of communication[cite: 883].
+
+[cite_start]The term is widely used in linguistics, rhetoric, literary theory, discourse studies, media theory, as well as computational linguistics and information retrieval studies[cite: 885]. [cite_start]The importance of providing information on genres included in a text collection was also recognized by the authors of reference corpora, such as the British National Corpus (BNC) and the Corpus of Contemporary American English (COCA)[cite: 886].
+
+[cite_start]Since the advent of the World Wide Web, there has been an increased interest in identifying genres in text collections, as the web allowed querying and collecting unprecedented quantities of texts[cite: 887]. [cite_start]There has been large interest in genre identification in the area of information retrieval, as the information on the genre in a query in information retrieval tools would allow users to find the texts that are relevant for them more efficiently[cite: 888]. [cite_start]Furthermore, collecting texts from the web has allowed a significantly faster and cheaper creation of corpora which are essential for language research and development of advanced language resources and technologies[cite: 889].
+
+[cite_start]To obtain the information on the genre of specific texts in large collections of text, automatic genre identification (AGI), a text classification method which categorizes texts into genres, is the only feasible option due to the high data volume[cite: 891]. [cite_start]AGI is primarily researched in the field of language technology which is concerned with computational processing of human languages[cite: 892].
+
+[cite_start]In addition to the benefits of genre identification for information retrieval and corpus creation and curation, it was shown that annotating documents with genre is also beneficial in many other NLP tasks[cite: 899]. For instance:
+* [cite_start]In part-of-speech (PoS) tagging of web corpora, using different granularity of PoS sets depending on the genres improves the tagging accuracy[cite: 900].
+* [cite_start]Automatic genre identification improves automatic summarization[cite: 901].
+* [cite_start]Genres were revealed to be beneficial for machine translation and zero-shot dependency parsing[cite: 902].
+* [cite_start]Genre has also been studied in the area of information security, where it can be used for automated genre-aware assessment of credibility of web documents[cite: 903].
+
+[cite_start]However, although various attempts have been made to provide schemata, genre-annotated datasets and classifiers, there are no reference datasets that can be directly used for building an AGI classifier which could be applied to any collection of web documents[cite: 906].
+
+---
+
+## 2. Genre definition
+
+[cite_start]One of the main challenges of studying genre is that there is no consensus among researchers on the definition of the genre phenomenon, or how to differentiate between genres[cite: 917].
+
+**Terminology:**
+[cite_start]While many researchers use the term "genre" and describe this task as "automatic genre identification" (AGI) or "web genre identification" (WGI), others avoid this term and prefer derived analogues, such as "registers", "functional text dimensions" or "text types"[cite: 922]. [cite_start]According to Lee (2002A), the largest difference between the concepts of genres and registers is that genres describe whole texts, while registers are defined based on internal linguistic patterns, which are independent of text-level structures[cite: 926].
+
+**Defining Characteristics:**
+[cite_start]In general, most definitions describe genre classes based on the socially recognized form of a document and its intended communicative purpose[cite: 928]. [cite_start]Some definitions also consider the target audience, expectations of the reader, style, or the content of the texts[cite: 929]. [cite_start]To identify genres, researchers observe their intrinsic features (text-internal perspective) or their extrinsic features (text-external or functional perspective)[cite: 930].
+
+**Challenges of Digital Texts:**
+Studying genres of digital texts is difficult due to several factors:
+1.  **Evolution:** Conventional characteristics of a genre category can change over time. [cite_start]The evolution of genres was especially notable after the introduction of the World Wide Web, when researchers observed emergence of new genres and existing genres that evolved[cite: 932, 933].
+2.  [cite_start]**Hybridity:** Some web documents can be hybrids, meaning a single text can display characteristics of multiple genres (e.g., an advertorial)[cite: 935].
+3.  [cite_start]**Lack of Characteristics:** Some web documents might not have any discernible characteristics of a genre class or can be too short to reveal the purpose[cite: 936, 937].
+4.  [cite_start]**Processing Issues:** Genre can only be realized in a complete text, which is not always available after extraction and boilerplate removal[cite: 939, 943].
+
+---
+
+## 3. Genre schemata
+
+[cite_start]An "inherent problem of web genre classification is that even humans are not able to consistently specify the genre of a given page"[cite: 945]. [cite_start]Thus, it is crucial for the reliability of a genre-annotated dataset that the genre schema supports the annotators[cite: 947].
+
+**Granularity and Structure:**
+Schemata used in previous work vary significantly. [cite_start]They range from seven classes to more than a hundred or almost 300 classes[cite: 949]. [cite_start]They are either hierarchical or not[cite: 950]. [cite_start]Most existing schemata consist of around 10 to 20 categories, while some comprise more than 50 genre classes[cite: 951]. [cite_start]Larger granularity usually increases annotation complexity, resulting in lower inter-annotator agreement[cite: 952].
+
+**Development Approaches:**
+* **Top-down:** Based on theoretical principles and expert knowledge. Rehm et al. (2008) [cite_start]proposed this approach to avoid choosing genre sets based solely on perception, deriving schemata from category sets proposed by various research groups[cite: 958, 959].
+* **Bottom-up:** Based on surveys of web users. [cite_start]This approach revealed to be problematic as respondents were not consistent or used unspecific terms[cite: 965, 966].
+
+**Classification of Schemata based on Aim:**
+1.  [cite_start]**High-coverage schemata:** Aim to cover the entire genre composition of the web (e.g., CORE, FTD, GINCO)[cite: 974, 975].
+2.  [cite_start]**Information retrieval schemata:** Created to provide genre identification inside search engines, consisting of categories useful for users (e.g., Genre-KI-04, 7-Web-Genre-Collection)[cite: 976, 977].
+3.  [cite_start]**Other schemata:** Limited sets used to analyze specific classes (e.g., academic genres, e-shop genres, poetry)[cite: 978].
+
+**Frequent Labels:**
+[cite_start]Analysis of 16 schemata shows that out of 280 genre labels, 177 are unique[cite: 991, 992]. [cite_start]The most frequent categories are FAQ and Instruction (7+ schemata), and News, Legal, Personal Home Page, and Review (6 schemata)[cite: 994].
+
+| Genre label | Occurrences in schemata |
+| :--- | :--- |
+| FAQ | 9 |
+| Instruction | 7 |
+| News | 6 |
+| Legal | 6 |
+| Personal home page | 6 |
+| Review | 6 |
+| Information | 5 |
+| Discussion | 5 |
+| Research article | 5 |
+| Interview | 5 |
+| Lyrical | 5 |
+
+[cite_start]*[cite: 987, 988]*
+
+**Variability in Definitions:**
+Labels that have same or similar names do not necessarily cover similar texts. [cite_start]For instance, the label "Article" in Genre-KI-04 includes research articles, reviews, and technical reports[cite: 1020, 1021].
+
+
+[cite_start]Similarly, "Journalistic" in the 20-Genre Collection includes news, reportages, editorials, interviews, and reviews[cite: 1024].
+
+
+[cite_start]In the CORE dataset, "News Report/Blog" varies from objective reports to opinionated blog-like posts[cite: 1098, 1099].
+
+
+---
+
+## 4. Genre-annotated datasets
+
+[cite_start]This section discusses the process of constructing datasets manually annotated for genre[cite: 1107]. [cite_start]Most datasets consist of texts originating from the web[cite: 1116].
+
+### 4.1 Data Selection
+
+**Collection Methods:**
+* **Designed corpora:** Texts are collected based on criteria defined by researchers. [cite_start]These facilitate annotation but may not be representative of the actual genre distribution on the web[cite: 1122, 1123].
+* [cite_start]**Crawled corpora:** Represent a "(more or less faithful) snapshot of the web"[cite: 1125].
+* **Search Engine Queries:** Retrieving top hits of automated queries. [cite_start]This can result in bias towards certain genres (e.g., e-shops) due to ranking algorithms favouring popular pages[cite: 1134, 1135].
+
+Recent works like Asheghi et al. (2016) and Kuzman et al. (2022b) [cite_start]assured temporal diversity of sources to avoid topic biases[cite: 1140].
+
+### 4.2 Annotation Practices
+
+Annotation is crucial for high-quality datasets.
+* [cite_start]**Expert vs. Crowd-sourcing:** While some used expert groups, large datasets like Leeds Web Genre Corpus and CORE used crowd-sourcing[cite: 1143, 1146]. Asheghi et al. (2016) [cite_start]argue this avoids bias from experts who developed the schema[cite: 1148].
+* **Hybridity Handling:** Hybrid texts and multi-class documents pose challenges. [cite_start]Some studies tackled this by allowing multi-label annotation (e.g., CORE, FTD, GINCO)[cite: 1162].
+* **Inter-annotator Agreement:** Achieving high agreement is challenging. [cite_start]For CORE, there was no majority agreement on one-third of texts for main categories[cite: 1169]. Kuzman et al. (2022b) [cite_start]achieved higher agreement (Krippendorff's alpha 0.71) by using expert annotators and detailed decision-tree guidelines[cite: 1177, 1181].
+* [cite_start]**Automatic Annotation:** Santini (2006) proposed "annotation by objective sources" (e.g., all texts from a specific domain like e-shops belong to one genre)[cite: 1182, 1183].
+
+### 4.3 Comparison of datasets
+
+[cite_start]Less than half of the existing datasets are available online[cite: 1193]. The most relevant are categorized below.
+
+**Overview of Datasets:**
+
+| Dataset | Size (texts) | Classes | Multi-label |
+| :--- | :--- | :--- | :--- |
+| Genre-KI-04 (Eissen & Stein, 2004) | 1239 (EN) | 8 | No |
+| 7-Web Genre Collection (Santini, 2007) | 1400 (EN) | 7 | No |
+| 20-Genre Collection (Vidulin et al., 2007) | 1539 (EN) | 20 | Yes |
+| Hierarchical genre collection (Stubbe & Ringlstetter, 2007) | 1280 (EN) | 7/32 | No |
+| CORE (Egbert et al., 2015) | 48,420 (EN) | 8/47 | Yes |
+| Leeds Web Genre Corpus (Asheghi et al., 2016) | 4964 (EN) | 20 | No |
+| FTD (Sharoff, 2018) | 1562 (EN), 1930 (RU) | 18 | Yes |
+| GINCO (Kuzman et al., 2022b) | 1002 (SL) | 24 | Yes |
+
+[cite_start]*[cite: 1200]*
+
+#### 4.3.1 High-coverage datasets
+
+**The Hierarchical Genre Collection (HGC):**
+Based on the genre set proposed by Dewe et al. (1998)[cite_start], this dataset uses a hierarchical schema of 7 main categories and 32 sub-categories[cite: 1256, 1260].
+
+
+**CORE (Corpus of Online Registers of English):**
+Result of extensive work using a bottom-up approach. [cite_start]The schema consists of 8 higher-level categories and 47 specific subcategories[cite: 1342, 1387]. [cite_start]It is one of the largest datasets (approx. 48,000 texts) but had low inter-annotator agreement[cite: 1393].
+
+
+**GINCO (Slovene Genre Identification Corpus):**
+Consists of 1,002 texts. [cite_start]The schema is based on the subcategory level of CORE but is not hierarchical and has lower granularity (23 categories + Other) to improve agreement[cite: 1397, 1423]. [cite_start]It used expert annotators and multi-labelling (primary, secondary, tertiary labels)[cite: 1425, 1427].
+
+
+**Functional Text Dimensions (FTD):**
+Instead of traditional classes, FTD uses 18 dimensions. [cite_start]Texts are annotated based on their similarity to prototypes (distance in FTD space)[cite: 1430, 1431]. [cite_start]The schema has 12 principal categories and 6 additional categories[cite: 1435].
+
+
+#### 4.3.2 Information retrieval datasets
+
+**Genre-KI-04:**
+[cite_start]Consists of 1,239 HTML files annotated with 8 categories (e.g., Help, Article, Discussion, Shop)[cite: 1448, 1449].
+
+**7-Web Genre Collection:**
+[cite_start]Consists of 1,400 texts annotated with 7 labels exclusive to the web (e.g., Blog, e-Shop, FAQs)[cite: 1451, 1452].
+
+**20-Genre Collection (MGC):**
+[cite_start]Consists of 1,539 texts classified into 20 genres including categories useful for filtering (e.g., Error message)[cite: 1454, 1456].
+
+Hier ist der nächste Teil des Dokuments, beginnend mit Abschnitt 4.3.3 bis zum Ende des Dokuments (einschließlich Referenzen), formatiert als Markdown.
+
+```markdown
+### 4.3.3 Other datasets
+
+**Leeds Web Genre Corpus:**
+[cite_start]The Leeds Web Genre Corpus is one of the largest English genre datasets, consisting of almost 5,000 texts[cite: 1466]. [cite_start]The dataset consists of two subcorpora, created with the aim of evaluating the proposed method for manual annotation: a balanced, manually collected subcorpus, and a random subcorpus, collected based on automated queries made to a search engine[cite: 1467]. [cite_start]The balanced subcorpus was used to test the reliability of the manual annotation on a more controlled set of texts, and then the annotation campaign was extended to the random subcorpus to test the method in realistic conditions[cite: 1468].
+
+[cite_start]The authors devised their own schema, constructed following the top-down approach, starting from the Genre-KI-04 schema[cite: 1469]. [cite_start]The schema consists of 20 specific genres, including Personal Homepage, Company/Business Homepage, Online Shops, Instruction/How to, Recipe, News Article, Editorial, and others[cite: 1470]. [cite_start]The categories were shown to be able to cover 74% of the texts in the Leeds Corpus, while the remaining were annotated with the category "Other"[cite: 1471].
+
+[cite_start]The dataset was annotated via crowd-sourcing where each text was annotated by 5 participants[cite: 1474]. [cite_start]The annotation campaign was shown to be successful and a high inter-annotator agreement was reported, with the percentage agreement of 88% and Fleiss' kappa of 0.87 on the balanced subcorpus, and the percentage agreement of 78% and Fleiss' kappa of 0.71 on the random subcorpus[cite: 1475].
+
+---
+
+## 5. Automatic genre identification
+
+[cite_start]Genre researchers used various technologies for automatic genre identification, mostly depending on the state-of-the-art of machine learning algorithms at the time of research[cite: 1477].
+
+**Traditional Machine Learning Methods:**
+* [cite_start]**Support Vector Machines (SVMs):** Frequently used in the past as they are suitable for text categorization[cite: 1478].
+* [cite_start]**Other Methods:** Discriminant analysis, decision tree classifiers (C4.5), Naive Bayes, and graph-based models using hyper-link connections[cite: 1482].
+* [cite_start]**Feature Analysis:** SVMs were used to analyze relevant feature sets[cite: 1483]. [cite_start]Linear SVMs were shown to be appropriate for linguistic analyses to guarantee the validity of results[cite: 1485].
+
+**Feature Sets:**
+Researchers experimented with:
+* [cite_start]Bag-of-words (lexical features like words, n-grams) and grammatical features (POS tags)[cite: 1486].
+* Punctuation and text statistics.
+* Visual features of HTML (tags, images).
+* URLs of web documents.
+
+[cite_start]Results revealed that discriminative features vary across studies, datasets, and genre classes[cite: 1487]. [cite_start]However, multiple studies showed that lexical features describe genres better than grammatical ones[cite: 1488]. [cite_start]Combining lexical and grammatical features was shown to provide better results than lexical information alone and assure more stable models capable of generalizing beyond training data[cite: 1490]. [cite_start]Recently, syntactic dependencies were shown to capture genre information better than lexical and POS features, potentially assuring that prediction is not topic-dependent [cite: 1491-1492].
+
+**Neural Networks:**
+Recent developments shifted focus to neural networks.
+* [cite_start]**Shallow Networks:** The linear fastText model is comparable to Convolutional Neural Networks (CNN) with pre-trained embeddings while being computationally more efficient[cite: 1495]. [cite_start]FastText outperforms traditional methods like SVMs, decision trees, and Naive Bayes[cite: 1500].
+
+**Transformer Models:**
+Transformer-based pre-trained language models led to a significant breakthrough.
+* [cite_start]**Performance:** They achieve strong performance on small amounts of training data, reaching around 30 points higher F1 scores than fastText [cite: 1501-1502].
+* [cite_start]**Why?** Likely because they incorporate syntax information and are capable of cross-lingual transfer [cite: 1503-1504].
+* [cite_start]**Cross-lingual Transfer:** Zero-shot cross-lingual experiments (trained on English CORE, tested on Finnish, French, Swedish) resulted in F1 scores between 0.61 and 0.69 [cite: 1505-1506].
+* [cite_start]**Multilingual Models:** Combining all four CORE datasets into a multilingual dataset improved performance (Micro F1 0.72–0.84) and zero-shot performance [cite: 1507-1508]. [cite_start]The XLM-ROBERTa model often outperformed other multilingual models and was comparable or better than monolingual models [cite: 1509-1510].
+
+**Challenges:**
+* [cite_start]**Handling Noise:** Dealing with texts that do not fit any category[cite: 1512].
+* **Hybrid Texts:** Performing multi-label classification. [cite_start]Approaches include applying several models trained on different datasets [cite: 1513][cite_start], using Predictive Clustering Trees (PCTs), BiLSTM classifiers, or Transformer models for multi-label classification [cite: 1514-1517].
+* **Stability:** Assuring models do not learn topic biases. [cite_start]Stability should join accuracy as a criterion for assessment [cite: 1523-1525]. [cite_start]Ensembles of pre-trained models and training on multiple datasets were shown to improve performance and stability [cite: 1531-1532].
+
+**Comparison of Results:**
+[cite_start]Previous experiments are often self-contained and corpus-dependent, making comparison difficult[cite: 1533]. Sharoff et al. (2010) [cite_start]compared older datasets using SVMs, revealing that high results on one dataset (e.g., 97.14% accuracy on 7-Web Genre Collection) were not transferable to others (cross-dataset scores mostly below 40%) [cite: 1535-1552].
+
+**Table 3: Accuracy obtained on the best-performing feature (SVM) from Sharoff et al. (2010)[cite_start]** [cite: 1521-1522]
+
+| Dataset | Accuracy |
+| :--- | :--- |
+| 7-Web Genre Collection (Santini, 2007) | 97.14 |
+| Genre-KI-04 (Eissen & Stein, 2004) | 85.81 |
+| Hierarchical genre collection (Stubbe & Ringlstetter, 2007) | 65.72 |
+| KRYS I (Berninger et al., 2008) | 62.02 |
+| I-EN-Sample (Sharoff, 2010) | 60.40 |
+| 20-Genre Collection (Vidulin et al., 2007) | 56.45 |
+
+[cite_start]**Table 4: Overview of results from recent in-dataset experiments** [cite: 1540-1541]
+
+| Research | Dataset | Number of labels | Model | Best score (per dataset) |
+| :--- | :--- | :--- | :--- | :--- |
+| Asheghi et al. (2014) | Leeds corpus | 15 | Graph-based | Accuracy: 0.90 |
+| Sharoff (2021) | FTD (EN/RU) | 10 | BiLSTM | Precision: 0.77, 0.75 |
+| Repo et al. (2021) | CORE (multilingual) | 7 | XLM-ROBERTa | F1: 0.73-0.83 |
+| Kuzman et al. (2022b) | GINCO | 12 | SloBERTa | Micro F1: 0.70 |
+| Laippala et al. (2022a) | CORE | 56 | BERT large | Micro F1: 0.68 |
+
+**Recent Comparability Studies:**
+Kuzman and Pollak (2022a) explored comparability between Slovene GINCO and English CORE by mapping them to a joint schema. [cite_start]Experiments showed the datasets are comparable enough to allow cross-dataset/lingual transfer [cite: 1556-1559]. [cite_start]Interestingly, despite CORE being much larger, the difference in size did not result in significantly better results, suggesting Transformer models might only need a few thousand instances to learn genres effectively [cite: 1563-1564].
+
+**Large-scale Application:**
+Recent breakthroughs allowed applying classifiers to massive corpora.
+* [cite_start]**Register Oscar:** A dataset of 351 million documents in 14 languages automatically annotated using a classifier trained on CORE [cite: 1585-1587].
+* [cite_start]**MaCoCu:** Corpora for 10 under-resourced European languages automatically annotated with GINCO-based classifiers [cite: 1593-1594].
+
+---
+
+## 6. Conclusion
+
+[cite_start]This survey presents an exhaustive overview of previous research on automatic genre identification, uncovering numerous challenges [cite: 1597-1598].
+
+**Main Challenges:**
+1.  [cite_start]**Lack of Consensus:** No agreement on terms, definitions, or label sets, leading to competing schemata[cite: 1599]. [cite_start]Analysis of 16 schemata showed very little overlap in labels[cite: 1605].
+2.  [cite_start]**Hybridity and Noise:** Web texts often lack prototypicality, are hybrid, or contain multiple texts, complicating annotation and classification[cite: 1600, 1607].
+3.  [cite_start]**Lack of Comparability:** Datasets are hard to find or unavailable, and older datasets lacked representativeness[cite: 1601, 1614].
+4.  [cite_start]**Stability:** Ensuring classifiers perform well in out-of-domain scenarios and are not dataset-dependent[cite: 1602].
+
+**Progress:**
+* [cite_start]**Data Collection:** Crawling tools enable fast collection of representative datasets[cite: 1618].
+* [cite_start]**Annotation:** Crowd-sourcing allows quick annotation of thousands of texts[cite: 1619].
+* [cite_start]**Technology:** Deep neural models (Transformers) classify genres drastically better than previous technology, even with small data, and enable cross-lingual transfer [cite: 1620-1621].
+
+**Current State:**
+[cite_start]Recent high-coverage schemata (FTD, CORE, GINCO) address previous lacks in representativeness and reliability [cite: 1623-1624]. [cite_start]However, dataset availability remains an issue; datasets must be published in certified repositories to ensure long-term access [cite: 1628-1629].
+
+**Future Directions:**
+[cite_start]The key to a general cross-lingual genre identifier could lie in merging comparable high-coverage datasets[cite: 1636]. By training on multiple datasets, models become less prone to biases. [cite_start]A cross-dataset analysis is necessary to merge CORE, FTD, and GINCO[cite: 1638]. Two promising directions are:
+1.  Merging datasets into one based on a joint schema.
+2.  [cite_start]Annotating texts with predictions from all three classifiers (GINCO-based, FTD-based, CORE-based) to allow users to choose relevant labels [cite: 1644-1645].
+
+[cite_start]The field needs further research on multi-label classification of hybrid texts, handling noise, and separating multi-text documents to provide truly useful classifiers for the web [cite: 1647-1648].
+
+---
+
+### Declarations
+
+* **Author contributions:** Literature search, data collection and analysis by TK. Draft written by TK and NL. [cite_start]All authors approved the final manuscript [cite: 1649-1652].
+* [cite_start]**Funding:** Funded by EU Connecting Europe Facility (MaCoCu) and Slovenian Research Agency [cite: 1653-1655].
+* [cite_start]**Availability of data:** All datasets analyzed are referenced in the article with links provided[cite: 1656].
+* [cite_start]**Conflict of interest:** None declared[cite: 1659].
+
+---
+
+### References
+
+* Abramson, M., & Aha, D.W. (2012). What's in a URL? [cite_start]Genre Classification from URLs. [cite: 1671]
+* Agrawal, S., et al. (2019). [cite_start]FACT-Fine grained assessment of web page Credibility. [cite: 1673]
+* Argamon, S., et al. (1998). [cite_start]Routing documents according to style. [cite: 1674]
+* Asheghi, N.R., et al. (2014). [cite_start]Semi-supervised graph-based genre classification for web pages. [cite: 1677]
+* Asheghi, N. R., Sharoff, S., & Markert, K. (2016). [cite_start]Crowdsourcing for web genre annotation. [cite: 1679]
+* Bañón, M., et al. (2022). [cite_start]MaCoCu: Massive collection and curation of monolingual and bilingual data. [cite: 1680]
+* Baroni, M., et al. (2009). [cite_start]The WaCky wide web. [cite: 1685]
+* Berninger, V.F., et al. (2008). [cite_start]Building a document genre corpus: a profile of the KRYS I corpus. [cite: 1687]
+* Biber, D., & Conrad, S. (2019). [cite_start]Register, genre, and style. [cite: 1689]
+* Biber, D., & Egbert, J. (2015). [cite_start]Using grammatical features for automatic register identification. [cite: 1690]
+* Boese, E.S. (2005). [cite_start]Stereotyping the web: Genre classification of web documents. [cite: 1693]
+* Bulygin, M., & Sharoff, S. (2018). [cite_start]Using machine translation for automatic genre classification in Arabic. [cite: 1695]
+* Chandler, D. (1997). [cite_start]An introduction to genre theory. [cite: 1697]
+* Cohen, J. (1960). [cite_start]A coefficient of agreement for nominal scales. [cite: 1698]
+* Conneau, A., et al. (2020). [cite_start]Unsupervised Cross-lingual Representation Learning at Scale. [cite: 1699]
+* Crowston, K., et al. (2010). [cite_start]Problems in the use-centered development of a taxonomy of web genres. [cite: 1704]
+* Davies, M. (2004/2008). [cite_start]British National Corpus / COCA. [cite: 1706-1707]
+* Davies, M., & Fuchs, R. (2015). [cite_start]Global Web-based English Corpus (GloWbE). [cite: 1708]
+* Dewdney, N., et al. (2001). [cite_start]The form is the substance: Classification of genres in text. [cite: 1710]
+* Dewe, J., et al. (1998). [cite_start]Assembling a balanced corpus from the internet. [cite: 1712]
+* Egbert, J., Biber, D., & Davies, M. (2015). [cite_start]Developing a bottom-up, user-based method of web register classification. [cite: 1714]
+* Erjavec, T., & Ljubešić, N. (2014). [cite_start]The slwac 2.0 corpus of the slovene web. [cite: 1716]
+* Feldman, S., et al. (2009). [cite_start]Part-of-speech histograms for genre classification. [cite: 1718]
+* Finn, A., & Kushmerick, N. (2006). [cite_start]Learning to classify documents according to genre. [cite: 1720]
+* Fleiss, J. L. (1971). [cite_start]Measuring nominal scale agreement among many raters. [cite: 1722]
+* Forsyth, R. S., & Sharoff, S. (2014). [cite_start]Document dissimilarity within and across languages. [cite: 1723]
+* Freund, L., et al. (2006). [cite_start]Towards genre classification for IR in the workplace. [cite: 1725]
+* Ganchev, K., & Pereira, F. (2007). [cite_start]Transductive structured classification through constrained min-cuts. [cite: 1727]
+* Giesbrecht, E., & Evert, S. (2009). [cite_start]Is part-of-speech tagging a solved task? [cite: 1729]
+* Jebari, C. (2014/2021). [cite_start]URL-based genre classification / Enhancing identification. [cite: 1732, 1734]
+* Joachims, T. (1998). [cite_start]Text categorization with support vector machines. [cite: 1736]
+* Joulin, A., et al. (2017). [cite_start]Bag of tricks for efficient text classification. [cite: 1738]
+* Kanaris, I., & Stamatatos, E. (2007/2009). [cite_start]Webpage genre identification using variable-length character n-grams. [cite: 1740, 1742]
+* Karlgren, J., & Cutting, D. (1994). [cite_start]Recognizing text genres with simple metrics. [cite: 1743]
+* Kennedy, A., & Shepherd, M. (2005). [cite_start]Automatic identification of home pages. [cite: 1745]
+* Kenton, J.D.M., & Toutanova, L.K. (2019). [cite_start]Bert: Pre-training of deep bidirectional transformers. [cite: 1746]
+* Kilgarriff, A. (2012). [cite_start]Getting to know your corpus. [cite: 1747]
+* Krippendorff, K. (2018). [cite_start]Content analysis: An introduction to its methodology. [cite: 1752]
+* Kuzman, T., & Ljubešić, N. (2022). [cite_start]Exploring the Impact of Lexical and Grammatical Features. [cite: 1757]
+* Kuzman, T., Rupnik, P., & Ljubešić, N. (2022). [cite_start]The GINCO training dataset. [cite: 1759]
+* Kuzman, T., & Pollak, S. (2022). [cite_start]Assessing comparability of genre datasets. [cite: 1761]
+* Laippala, V., et al. (2019/2020/2021/2022). [cite_start]Multiple works on multilingual identification, creating sub-corpora, and role of lexis/grammar. [cite: 1764-1778]
+* Lee, Y.-B., & Myaeng, S.H. (2002/2004). [cite_start]Text genre classification. [cite: 1779, 1781]
+* Lepekhin, M., & Sharoff, S. (2021/2022). [cite_start]Adversarial attacks / Estimating confidence of predictions. [cite: 1785-1786]
+* Levering, R., et al. (2008). [cite_start]Using visual features for fine-grained genre classification. [cite: 1788]
+* Lim, C. S., et al. (2005). [cite_start]Multiple sets of features for automatic genre classification. [cite: 1790]
+* Madjarov, G., et al. (2019). [cite_start]Web genre classification with methods for structured output prediction. [cite: 1793]
+* Maeda, A., & Hayashi, Y. (2009). [cite_start]Automatic genre classification using discriminant analysis. [cite: 1798]
+* Mason, J.E., et al. (2009). [cite_start]An n-gram based approach to automatically identifying web page genre. [cite: 1800]
+* Moessner, L. (2001). [cite_start]Genre, text type, style, register: A terminological maze? [cite: 1801]
+* Müller-Eberstein, M., et al. (2021). [cite_start]Genre as Weak Supervision for Cross-lingual Dependency Parsing. [cite: 1804]
+* Orlikowski, W. J., & Yates, J. (1994). [cite_start]Genre repertoire. [cite: 1806]
+* Petrenz, P., & Webber, B. (2011). [cite_start]Stable classification of text genres. [cite: 1808]
+* Piperski, A., et al. (2013). [cite_start]Big and diverse is beautiful: A large corpus of Russian. [cite: 1809]
+* Pomikálek, J. (2011). [cite_start]Removing boilerplate and duplicate content. [cite: 1812]
+* Pritsos, D., & Stamatatos, E. (2018). [cite_start]Open set evaluation of web genre identification. [cite: 1813]
+* Priyatam, P. N., et al. (2013). [cite_start]Don't use a lot when little will do: Genre identification using URLs. [cite: 1814]
+* Rehm, G., et al. (2002/2008). [cite_start]Towards automatic Web genre identification / Towards a reference corpus. [cite: 1816, 1818]
+* Repo, L., et al. (2021). [cite_start]Beyond the English web: Zero-shot cross-lingual... [cite: 1820]
+* Rezapour Asheghi, N. (2015). [cite_start]Human annotation and automatic detection of web genres. [cite: 1823]
+* Rönnqvist, S., et al. (2021/2022). [cite_start]Multilingual and zero-shot / Explaining Classes. [cite: 1826, 1824]
+* Rosso, M. A. (2008). [cite_start]User-based identification of Web genres. [cite: 1829]
+* Roussinov, D., et al. (2001). [cite_start]Genre based navigation on the web. [cite: 1830]
+* Santini, M. (2006/2007/2010). [cite_start]Common criteria / Automatic identification / Cross-testing. [cite: 1832-1836]
+* Sharoff, S. (2010/2018/2021). [cite_start]In the garden / Functional text dimensions / Genre annotation for the web. [cite: 1838-1840]
+* Sharoff, S., et al. (2010). [cite_start]The Web Library of Babel: Evaluating genre collections. [cite: 1844]
+* Shavrina, T. (2019). [cite_start]Genre classification problem. [cite: 1845]
+* Skantsi, V., & Laippala, V. (2023). [cite_start]Analyzing the unrestricted web: The finnish corpus. [cite: 1847]
+* Snow, R., et al. (2008). Cheap and fast-but is it good? [cite_start]Evaluating non-expert annotations. [cite: 1849]
+* Stamatatos, E., et al. (2000). [cite_start]Automatic text categorization in terms of genre and author. [cite: 1851]
+* Stein, B., et al. (2010). [cite_start]Web genre analysis. [cite: 1853]
+* Stewart, J. G., & Callan, J. (2009). [cite_start]Genre oriented summarization. [cite: 1855]
+* Ströbel, M., et al. (2018). [cite_start]Text genre classification based on linguistic complexity contours. [cite: 1856]
+* Stubbe, A., & Ringlstetter, C. (2007). [cite_start]Recognizing genres. [cite: 1858]
+* Stubbs, M. (1996). [cite_start]Text and corpus analysis. [cite: 1859]
+* Suárez, P.J.O., et al. (2019). [cite_start]Asynchronous pipeline for processing huge corpora. [cite: 1860]
+* Suchomel, V. (2020). [cite_start]Genre Annotation of Web Corpora: Scheme and Issues. [cite: 1862]
+* Ulčar, M., & Robnik-Šikonja, M. (2021). [cite_start]SloBERTa / Evaluation of contextual embeddings. [cite: 1863-1864]
+* Van der Wees, M., et al. (2018). [cite_start]Evaluation of machine translation performance across multiple genres. [cite: 1866]
+* Vidulin, V., et al. (2007). [cite_start]Using genres to improve search engines. [cite: 1868]
+* Williams, M., & Crowston, K. (2000). [cite_start]Reproduced and emergent genres. [cite: 1870]
+* Yogatama, D., et al. (2017). [cite_start]Generative and discriminative text classification. [cite: 1872]
+* Zhu, J., et al. (2011). [cite_start]Enhance web pages genre identification using neighboring pages. [cite: 1874]
+* Zu Eissen, S.M., & Stein, B. (2004). [cite_start]Genre classification of web pages. [cite: 1876]
+
+```
+
+```

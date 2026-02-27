@@ -1,0 +1,487 @@
+# =============================================================================
+# GRAPHIC MAPPING - Daten → Visualisierungen
+# =============================================================================
+# Definiert, welche Grafiken aus welchen Session-Daten generiert werden
+#
+# Version: 1.0
+# Date: January 2026
+# =============================================================================
+
+metadata:
+  name: "EBF Graphic Mapping"
+  version: "1.0"
+  created: "2026-01-26"
+  generators:
+    - "matplotlib"
+    - "plotly"
+    - "graphviz"
+    - "latex"
+
+# =============================================================================
+# CHART-TYPEN
+# =============================================================================
+
+chart_types:
+
+  # ---------------------------------------------------------------------------
+  # BAR CHART (horizontal bevorzugt)
+  # ---------------------------------------------------------------------------
+  bar_horizontal:
+    generator: "matplotlib"
+    suitable_for:
+      - "distribution"
+      - "comparison"
+      - "ranking"
+    settings:
+      orientation: "horizontal"
+      bar_width: 0.6
+      show_values: true
+      value_format: "{:.0%}"
+      grid: "x"
+      spine_visible: ["left"]
+
+  bar_vertical:
+    generator: "matplotlib"
+    suitable_for:
+      - "time_series_discrete"
+      - "categories"
+    settings:
+      orientation: "vertical"
+      bar_width: 0.7
+      show_values: true
+      grid: "y"
+
+  # ---------------------------------------------------------------------------
+  # LINE CHART
+  # ---------------------------------------------------------------------------
+  line:
+    generator: "matplotlib"
+    suitable_for:
+      - "trend"
+      - "decay"
+      - "continuous"
+    settings:
+      line_width: 2.5
+      marker: "o"
+      marker_size: 8
+      fill_under: false
+      grid: true
+
+  line_with_annotations:
+    generator: "matplotlib"
+    suitable_for:
+      - "decay_with_examples"
+      - "threshold"
+    settings:
+      line_width: 2.5
+      marker: "o"
+      marker_size: 10
+      annotations: true
+      annotation_offset: [10, 10]
+
+  # ---------------------------------------------------------------------------
+  # PIE / DONUT
+  # ---------------------------------------------------------------------------
+  pie:
+    generator: "matplotlib"
+    suitable_for:
+      - "composition"
+      - "share"
+    settings:
+      start_angle: 90
+      counterclock: false
+      show_percent: true
+      percent_format: "{:.0f}%"
+      explode_first: 0.02
+
+  donut:
+    generator: "matplotlib"
+    suitable_for:
+      - "composition"
+      - "sensitivity"
+    settings:
+      start_angle: 90
+      width: 0.4
+      show_percent: true
+      center_text: true
+
+  # ---------------------------------------------------------------------------
+  # HEATMAP
+  # ---------------------------------------------------------------------------
+  heatmap:
+    generator: "matplotlib"
+    suitable_for:
+      - "matrix"
+      - "correlation"
+      - "cross_tabulation"
+    settings:
+      cmap: "Blues"
+      annotate: true
+      annotation_format: "{:.2f}"
+      colorbar: true
+
+  # ---------------------------------------------------------------------------
+  # TABLE (als Grafik)
+  # ---------------------------------------------------------------------------
+  table_graphic:
+    generator: "matplotlib"
+    suitable_for:
+      - "small_data"
+      - "comparison_table"
+    settings:
+      header_color: "#024079"
+      header_text_color: "#FFFFFF"
+      row_colors: ["#FFFFFF", "#F3F5F7"]
+      edge_color: "#E0E0E0"
+      font_size: 12
+
+# =============================================================================
+# SPEZIELLE GRAFIKEN
+# =============================================================================
+
+special_graphics:
+
+  # ---------------------------------------------------------------------------
+  # FORMULA RENDER (LaTeX)
+  # ---------------------------------------------------------------------------
+  formula_render:
+    generator: "latex"
+    suitable_for:
+      - "mathematical_formula"
+      - "equation"
+    settings:
+      font_size: 24
+      color: "#25212A"
+      background: "transparent"
+      dpi: 300
+      format: "png"
+
+  # ---------------------------------------------------------------------------
+  # FLOWCHART
+  # ---------------------------------------------------------------------------
+  flowchart:
+    generator: "graphviz"
+    suitable_for:
+      - "process"
+      - "workflow"
+      - "decision_tree"
+    settings:
+      rankdir: "TB"  # Top to Bottom
+      node_shape: "box"
+      node_style: "rounded,filled"
+      node_fillcolor: "#F3F5F7"
+      node_fontcolor: "#25212A"
+      edge_color: "#024079"
+
+  # ---------------------------------------------------------------------------
+  # HIERARCHY
+  # ---------------------------------------------------------------------------
+  hierarchy:
+    generator: "graphviz"
+    suitable_for:
+      - "levels"
+      - "organization"
+      - "taxonomy"
+    settings:
+      rankdir: "TB"
+      node_shape: "box"
+      ranksep: 0.5
+      nodesep: 0.3
+
+# =============================================================================
+# AUTOMATISCHE GRAFIK-ERKENNUNG
+# =============================================================================
+
+auto_detection:
+
+  # Wenn dieses Feld existiert → diese Grafik generieren
+  triggers:
+
+    cognitive_hierarchy.distribution:
+      graphic_id: "cognitive_hierarchy_bar"
+      chart_type: "bar_horizontal"
+      title: "Cognitive Hierarchy: Wie weit denken Menschen?"
+      data_mapping:
+        labels: ["Level 0", "Level 1", "Level 2", "Level 3+"]
+        values: "proportion"
+        colors: "fa_sequence"
+      insights:
+        - "70% denken maximal 1 Schritt voraus"
+        - "Median: {median_level.value} Levels"
+
+    example_results.situations:
+      graphic_id: "situation_analysis"
+      chart_type: "line_with_annotations"
+      title: "Verständnis nach Systemkomplexität"
+      data_mapping:
+        x: "n"
+        y: "V"
+        labels: "name"
+        x_scale: "log"
+      insights:
+        - "Bei n > 10: V < 0.25"
+        - "Komplexität ist der Haupttreiber"
+
+    sensitivity.main_drivers:
+      graphic_id: "sensitivity_donut"
+      chart_type: "donut"
+      title: "Was treibt (mangelndes) Verständnis?"
+      data_mapping:
+        labels: "parameter"
+        values: "influence"
+        colors: "fa_sequence"
+      center_text: "Haupttreiber"
+
+    functional_form.formula:
+      graphic_id: "formula_render"
+      chart_type: "formula_render"
+      title: null  # Keine Überschrift für Formel
+
+    domain_exponents:
+      graphic_id: "domain_heatmap"
+      chart_type: "heatmap"
+      title: "Domain-spezifische Parameter"
+      data_mapping:
+        rows: "domain_names"
+        columns: ["α", "β", "γ"]
+        values: "exponent_values"
+
+# =============================================================================
+# GRAFIK-DEFINITIONEN FÜR EBF-SESSIONS
+# =============================================================================
+
+ebf_graphics:
+
+  # ---------------------------------------------------------------------------
+  # Cognitive Hierarchy Bar Chart
+  # ---------------------------------------------------------------------------
+  cognitive_hierarchy_bar:
+    type: "bar_horizontal"
+    data_source: "model.cognitive_hierarchy.distribution"
+
+    layout:
+      width: 8
+      height: 5
+      dpi: 150
+
+    style:
+      colors:
+        L0: "#549EDE"
+        L1: "#024079"
+        L2: "#A1A0C6"
+        L3_plus: "#7EBDAC"
+      title:
+        text: "Cognitive Hierarchy: Wie weit denken Menschen?"
+        fontsize: 16
+        color: "#024079"
+        fontweight: "bold"
+      xlabel:
+        text: "Anteil (%)"
+        fontsize: 12
+      ylabel:
+        text: null
+      annotations:
+        show: true
+        format: "{:.0%}"
+        fontsize: 11
+        color: "#25212A"
+
+    data_transform: |
+      # Erwartete Datenstruktur:
+      # {"L0": {"proportion": 0.21}, "L1": {"proportion": 0.49}, ...}
+      labels = ["Level 3+", "Level 2", "Level 1", "Level 0"]
+      values = [data["L3_plus"]["proportion"], data["L2"]["proportion"],
+                data["L1"]["proportion"], data["L0"]["proportion"]]
+
+  # ---------------------------------------------------------------------------
+  # V(n) Decay Line Chart
+  # ---------------------------------------------------------------------------
+  v_n_decay_line:
+    type: "line_with_annotations"
+    data_source: "model.example_results.situations"
+
+    layout:
+      width: 8
+      height: 5
+      dpi: 150
+
+    style:
+      line:
+        color: "#024079"
+        width: 2.5
+      marker:
+        style: "o"
+        size: 10
+        facecolor: "#024079"
+        edgecolor: "white"
+        edgewidth: 2
+      title:
+        text: "Verständnis V(n) nach Systemkomplexität"
+        fontsize: 16
+        color: "#024079"
+        fontweight: "bold"
+      xlabel:
+        text: "Anzahl Elemente (n)"
+        fontsize: 12
+      ylabel:
+        text: "Verständnis V"
+        fontsize: 12
+      xscale: "log"
+      grid:
+        show: true
+        alpha: 0.3
+      annotations:
+        show: true
+        fontsize: 10
+        color: "#25212A"
+        offset: [15, 5]
+
+    data_transform: |
+      # Erwartete Datenstruktur:
+      # [{"name": "...", "n": 2, "V": 0.78}, ...]
+      x = [d["n"] for d in data]
+      y = [d["V"] for d in data]
+      labels = [d["name"] for d in data]
+
+  # ---------------------------------------------------------------------------
+  # Sensitivity Donut Chart
+  # ---------------------------------------------------------------------------
+  sensitivity_donut:
+    type: "donut"
+    data_source: "model.sensitivity.main_drivers"
+
+    layout:
+      width: 6
+      height: 6
+      dpi: 150
+
+    style:
+      colors: ["#024079", "#549EDE", "#7EBDAC", "#DECB3F", "#A1A0C6"]
+      title:
+        text: "Was treibt (mangelndes) Verständnis?"
+        fontsize: 16
+        color: "#024079"
+        fontweight: "bold"
+      donut:
+        width: 0.4
+        start_angle: 90
+      labels:
+        show: true
+        fontsize: 11
+        format: "{parameter}\n{influence:.0%}"
+      center:
+        text: "n\n42%"
+        fontsize: 14
+        fontweight: "bold"
+        color: "#024079"
+
+    data_transform: |
+      # Erwartete Datenstruktur:
+      # [{"parameter": "n", "influence": 0.42}, ...]
+      labels = [d["parameter"] for d in data]
+      values = [d["influence"] for d in data]
+
+  # ---------------------------------------------------------------------------
+  # Formula Render
+  # ---------------------------------------------------------------------------
+  formula_render:
+    type: "formula_render"
+    data_source: "model.functional_form.formula"
+
+    layout:
+      width: 10
+      height: 1.5
+      dpi: 300
+
+    style:
+      fontsize: 24
+      color: "#25212A"
+      background: "transparent"
+
+    latex_template: |
+      $V(n) = \frac{(\kappa + \lambda \cdot E) \cdot \psi \cdot (1 + \mu \cdot S)}{n^{\alpha_d} \cdot (1+\tau)^{\beta_d} \cdot (1+\sigma)^{\gamma_d}}$
+
+  # ---------------------------------------------------------------------------
+  # Domain Heatmap
+  # ---------------------------------------------------------------------------
+  domain_heatmap:
+    type: "heatmap"
+    data_source: "model.domain_exponents"
+
+    layout:
+      width: 6
+      height: 4
+      dpi: 150
+
+    style:
+      cmap: "Blues"
+      title:
+        text: "Domain-spezifische Exponenten"
+        fontsize: 14
+        color: "#024079"
+      annotations:
+        show: true
+        format: "{:.2f}"
+        fontsize: 11
+      colorbar:
+        show: true
+        label: "Wert"
+
+    data_transform: |
+      # Erwartete Datenstruktur:
+      # {"SOC": {"alpha": 0.48, "beta": 0.32, "gamma": 0.58}, ...}
+      domains = ["SOC", "ECO", "ENV", "TEC"]
+      params = ["α", "β", "γ"]
+      matrix = [[data[d]["alpha"], data[d]["beta"], data[d]["gamma"]]
+                for d in domains]
+
+# =============================================================================
+# ILLUSTRATIONEN (aus Library oder AI)
+# =============================================================================
+
+illustrations:
+
+  title_illustration:
+    description: "Titelbild für Präsentation"
+    search_strategy:
+      library_keywords: ["brain", "network", "complexity", "thinking", "connection"]
+      library_path: "assets/illustrations/concepts/"
+
+    fallback_ai:
+      prompt_template: |
+        Professional illustration showing {concept}.
+        Style: Clean, modern, corporate.
+        Color scheme: Blue (#024079) as primary color.
+        Background: White or transparent.
+        No text in image.
+      concepts_by_domain:
+        COG: "a human brain trying to understand a complex network of interconnected nodes"
+        FIN: "financial charts and graphs with human figure analyzing them"
+        ENV: "nature and environment with interconnected systems"
+        HLT: "healthcare and wellness visualization"
+        default: "abstract interconnected network representing complexity"
+
+  implication_icons:
+    description: "Icons für Implikationen-Slide"
+    library_path: "assets/illustrations/icons/"
+    mapping:
+      complexity: "simplify.svg"
+      feedback: "visibility.svg"
+      delay: "time.svg"
+      abstract: "person.svg"
+      default: "lightbulb.svg"
+
+# =============================================================================
+# OUTPUT SETTINGS
+# =============================================================================
+
+output:
+  base_path: "assets/graphics/generated/{session_id}/"
+  formats:
+    charts: "png"
+    formulas: "png"
+    diagrams: "svg"
+  naming:
+    pattern: "{graphic_id}.{format}"
+  cleanup:
+    delete_after_embed: false  # Behalte generierte Grafiken

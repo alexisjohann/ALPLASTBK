@@ -1,0 +1,516 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# SWSM AUTHOR PROFILES
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Persönliche Schreibstil-Profile basierend auf Korpusanalyse.
+# Jedes Profil ist ein Vektor θ ∈ R^n der aus N Papers extrahiert wird.
+#
+# Verwendung:
+#   generate_text(content, author="fehr")
+#   generate_text(content, author=interpolate(["fehr", "thaler"], [0.7, 0.3]))
+#
+# Unterschied zu Genre Profiles (swsm-genre-profiles.yaml):
+#   - AUTHOR = WIE geschrieben wird (Stil, Vokabular, Satzlänge)
+#   - GENRE = WAS geschrieben wird (Struktur, Moves, Constraints)
+#
+# Kombination:
+#   θ_final = θ_genre ⊕ θ_author
+#   (Genre-Constraints + persönlicher Stil)
+#
+# Extraktion:
+#   python scripts/swsm_extract_profile.py --author "Fehr" --output fehr
+#
+# Referenz: Appendix SW (METHOD-SWSM)
+# ═══════════════════════════════════════════════════════════════════════════
+
+metadata:
+  version: "1.0.0"
+  created: "2026-01-29"
+  description: "SWSM Author Writing Style Profiles - Personal Style Parameters"
+  ssot: "appendices/SW_METHOD-SWSM_scientific_writing_structure_model.tex"
+  related:
+    genre_profiles: "data/swsm-genre-profiles.yaml"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PARAMETER SCHEMA DEFINITION
+# ═══════════════════════════════════════════════════════════════════════════
+
+parameter_schema:
+  description: "Definition aller extrahierbaren Stil-Parameter"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # θ_MOVE: Rhetorische Move-Parameter (aus E3 CARS Tagger)
+  # ─────────────────────────────────────────────────────────────────────────
+  theta_move:
+    territory:
+      length_sentences:
+        type: float
+        unit: sentences
+        description: "Durchschnittliche Länge des Territory-Moves"
+      strategy_distribution:
+        type: distribution
+        categories: [centrality_claiming, topic_generalization, literature_review]
+
+    niche:
+      marker_distribution:
+        type: distribution
+        categories: [however, yet, but, nevertheless, although, other]
+      strategy_distribution:
+        type: distribution
+        categories: [counter_claiming, gap_indication, question_raising]
+
+    occupy:
+      strategy_distribution:
+        type: distribution
+        categories: [purpose_statement, findings_preview, structure_indication]
+      hypothesis_explicit:
+        type: float
+        range: [0, 1]
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # θ_COHESION: Kohäsions-Parameter (aus E5 Cohesion Analyzer)
+  # ─────────────────────────────────────────────────────────────────────────
+  theta_cohesion:
+    lexical_density:
+      type: float
+      range: [0.40, 0.75]
+      description: "Content words / Total words"
+
+    reference_chain_length:
+      type: float
+      unit: sentences
+
+    conjunction_frequency:
+      type: float
+      unit: per_clause
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # θ_RST: Diskurs-Struktur-Parameter (aus E2 RST Parser)
+  # ─────────────────────────────────────────────────────────────────────────
+  theta_rst:
+    relation_distribution:
+      type: distribution
+      categories: [elaboration, evidence, cause, result, contrast, concession, condition, purpose, background, temporal]
+
+    tree_depth_mean:
+      type: float
+
+    nucleus_satellite_ratio:
+      type: float
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # θ_LEXICOGRAMMAR: Lexikogrammatische Parameter (aus E6/E7)
+  # ─────────────────────────────────────────────────────────────────────────
+  theta_lexicogrammar:
+    nominalization_rate:
+      type: float
+      range: [0, 0.15]
+
+    passive_rate:
+      type: float
+      range: [0, 0.40]
+
+    hedging_density:
+      type: float
+      range: [0, 0.30]
+      unit: per_clause
+
+    sentence_length:
+      mean:
+        type: float
+        unit: words
+        range: [8, 45]
+      std:
+        type: float
+
+    mood_distribution:
+      type: distribution
+      categories: [declarative, interrogative, imperative]
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # θ_INFO: Informationsstruktur-Parameter (aus E6)
+  # ─────────────────────────────────────────────────────────────────────────
+  theta_info:
+    given_new_ratio:
+      type: float
+      range: [0.3, 2.0]
+
+    theme_type_distribution:
+      type: distribution
+      categories: [topical, textual, interpersonal]
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # θ_VOCAB: Vokabular-Parameter
+  # ─────────────────────────────────────────────────────────────────────────
+  theta_vocab:
+    type_token_ratio:
+      type: float
+      range: [0.30, 0.80]
+
+    first_person_usage:
+      type: float
+      range: [0, 15]
+      unit: per_1000_words
+
+    technical_term_density:
+      type: float
+      range: [0.5, 25]
+      unit: per_100_words
+
+# ═══════════════════════════════════════════════════════════════════════════
+# AUTHOR PROFILES
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Status:
+#   - EXTRACTED: Profile aus Korpus extrahiert (produktionsreif)
+#   - ESTIMATED: Profile via LLMMC geschätzt (preliminary)
+#   - PLACEHOLDER: Noch nicht extrahiert
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+profiles:
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ERNST FEHR - Experimental Economics Pioneer
+  # ─────────────────────────────────────────────────────────────────────────
+  fehr:
+    metadata:
+      name: "Ernst Fehr"
+      affiliation: "University of Zurich"
+      status: "ESTIMATED"
+      corpus_size: 50
+      extraction_date: "2026-01-29"
+      journals: ["AER", "QJE", "Econometrica", "Science", "Nature"]
+      style_description: "Formal, precise, mathematical rigor with clear experimental design"
+
+    # Extrahierte/geschätzte Parameter
+    parameters:
+      theta_lexicogrammar:
+        nominalization_rate: 0.077
+        passive_rate: 0.125
+        hedging_density: 0.125
+        sentence_length:
+          mean: 16.2
+          std: 6.5
+        mood_distribution:
+          declarative: 0.92
+          interrogative: 0.05
+          imperative: 0.03
+
+      theta_cohesion:
+        lexical_density: 0.662
+        reference_chain_length: 5.2
+        conjunction_frequency: 0.28
+
+      theta_vocab:
+        type_token_ratio: 0.54
+        first_person_usage: 1.5  # "we" in co-authored papers
+        technical_term_density: 12.0
+
+      theta_info:
+        given_new_ratio: 0.48
+        theme_type_distribution:
+          topical: 0.72
+          textual: 0.22
+          interpersonal: 0.06
+
+    # Charakteristische Merkmale
+    characteristics:
+      strengths:
+        - "Clear experimental design descriptions"
+        - "Precise mathematical notation"
+        - "Systematic robustness checks"
+      patterns:
+        - "Results-first presentation"
+        - "Extensive footnotes for technical details"
+        - "Conservative hedging for causal claims"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # RICHARD THALER - Behavioral Economics Popularizer
+  # ─────────────────────────────────────────────────────────────────────────
+  thaler:
+    metadata:
+      name: "Richard Thaler"
+      affiliation: "University of Chicago"
+      status: "ESTIMATED"
+      corpus_size: 40
+      extraction_date: "2026-01-29"
+      journals: ["AER", "JEP", "JF", "Journal of Behavioral Decision Making"]
+      style_description: "Accessible, anecdote-rich, anomaly-driven argumentation"
+
+    parameters:
+      theta_lexicogrammar:
+        nominalization_rate: 0.026
+        passive_rate: 0.000
+        hedging_density: 0.000
+        sentence_length:
+          mean: 9.8
+          std: 4.2
+        mood_distribution:
+          declarative: 0.85
+          interrogative: 0.12
+          imperative: 0.03
+
+      theta_cohesion:
+        lexical_density: 0.624
+        reference_chain_length: 3.8
+        conjunction_frequency: 0.35
+
+      theta_vocab:
+        type_token_ratio: 0.48
+        first_person_usage: 6.8
+        technical_term_density: 6.5
+
+      theta_info:
+        given_new_ratio: 0.62
+        theme_type_distribution:
+          topical: 0.58
+          textual: 0.32
+          interpersonal: 0.10
+
+    characteristics:
+      strengths:
+        - "Memorable anecdotes and examples"
+        - "Clear anomaly identification"
+        - "Practical policy implications"
+      patterns:
+        - "Start with puzzling observation"
+        - "Use everyday language"
+        - "End with practical takeaway"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # DANIEL KAHNEMAN - Cognitive Psychology Foundation
+  # ─────────────────────────────────────────────────────────────────────────
+  kahneman:
+    metadata:
+      name: "Daniel Kahneman"
+      affiliation: "Princeton University"
+      status: "ESTIMATED"
+      corpus_size: 35
+      extraction_date: "2026-01-29"
+      journals: ["Psychological Review", "Science", "PNAS", "Cognitive Psychology"]
+      style_description: "Systematic, dual-system framing, careful experimental psychology"
+
+    parameters:
+      theta_lexicogrammar:
+        nominalization_rate: 0.052
+        passive_rate: 0.085
+        hedging_density: 0.095
+        sentence_length:
+          mean: 14.5
+          std: 5.8
+        mood_distribution:
+          declarative: 0.88
+          interrogative: 0.08
+          imperative: 0.04
+
+      theta_cohesion:
+        lexical_density: 0.645
+        reference_chain_length: 4.5
+        conjunction_frequency: 0.32
+
+      theta_vocab:
+        type_token_ratio: 0.51
+        first_person_usage: 3.2
+        technical_term_density: 9.5
+
+      theta_info:
+        given_new_ratio: 0.55
+        theme_type_distribution:
+          topical: 0.65
+          textual: 0.28
+          interpersonal: 0.07
+
+    characteristics:
+      strengths:
+        - "Systematic experimental design"
+        - "Clear System 1/System 2 framing"
+        - "Careful attention to cognitive mechanisms"
+      patterns:
+        - "Build from simple to complex"
+        - "Extensive pilot testing"
+        - "Multiple converging experiments"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # CASS SUNSTEIN - Legal Policy Scholar
+  # ─────────────────────────────────────────────────────────────────────────
+  sunstein:
+    metadata:
+      name: "Cass Sunstein"
+      affiliation: "Harvard Law School"
+      status: "ESTIMATED"
+      corpus_size: 60
+      extraction_date: "2026-01-29"
+      journals: ["Harvard Law Review", "Yale Law Journal", "Stanford Law Review"]
+      style_description: "Policy-focused, legal argumentation, cost-benefit framework"
+
+    parameters:
+      theta_lexicogrammar:
+        nominalization_rate: 0.065
+        passive_rate: 0.095
+        hedging_density: 0.080
+        sentence_length:
+          mean: 18.5
+          std: 7.2
+        mood_distribution:
+          declarative: 0.90
+          interrogative: 0.06
+          imperative: 0.04
+
+      theta_cohesion:
+        lexical_density: 0.658
+        reference_chain_length: 5.8
+        conjunction_frequency: 0.30
+
+      theta_vocab:
+        type_token_ratio: 0.52
+        first_person_usage: 2.5
+        technical_term_density: 8.0
+
+      theta_info:
+        given_new_ratio: 0.52
+        theme_type_distribution:
+          topical: 0.68
+          textual: 0.25
+          interpersonal: 0.07
+
+    characteristics:
+      strengths:
+        - "Clear policy recommendations"
+        - "Systematic cost-benefit analysis"
+        - "Legal implementation focus"
+      patterns:
+        - "Frame as regulatory choice"
+        - "Address objections systematically"
+        - "Provide implementation pathway"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # SENDHIL MULLAINATHAN - Machine Learning + Behavioral
+  # ─────────────────────────────────────────────────────────────────────────
+  mullainathan:
+    metadata:
+      name: "Sendhil Mullainathan"
+      affiliation: "University of Chicago"
+      status: "PLACEHOLDER"
+      corpus_size: 0
+      extraction_date: null
+      journals: ["AER", "QJE", "Science"]
+      style_description: "ML-infused, empirical rigor, poverty focus"
+
+    parameters: null
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # DAN ARIELY - Popular Science Communication
+  # ─────────────────────────────────────────────────────────────────────────
+  ariely:
+    metadata:
+      name: "Dan Ariely"
+      affiliation: "Duke University"
+      status: "PLACEHOLDER"
+      corpus_size: 0
+      extraction_date: null
+      journals: ["Management Science", "JCR", "Popular books"]
+      style_description: "Highly accessible, story-driven, consumer focus"
+
+    parameters: null
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PROFILE OPERATIONS
+# ═══════════════════════════════════════════════════════════════════════════
+
+operations:
+
+  # Interpolate between authors
+  interpolate:
+    formula: "θ_hybrid = Σ(w_i × θ_i) where Σw_i = 1"
+    example: "0.7 * fehr + 0.3 * thaler"
+    description: "Blend writing styles from multiple authors"
+
+  # Calculate distance between profiles
+  distance:
+    formula: "d(θ_a, θ_b) = √(Σ(θ_a_i - θ_b_i)²)"
+    description: "Euclidean distance in θ-space"
+
+  # Adapt profile to genre constraints
+  adapt:
+    formula: "θ_adapted = θ_author ⊕ constraints(genre)"
+    description: "Modify personal style to fit genre requirements"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PROFILE COMPARISON TABLE
+# ═══════════════════════════════════════════════════════════════════════════
+
+comparison:
+  description: "Key differences between author profiles"
+
+  table:
+    - author: fehr
+      lexical_density: 0.662
+      nominalization: 0.077
+      passive_rate: 0.125
+      hedging: 0.125
+      sentence_length: 16.2
+      first_person: 1.5
+
+    - author: thaler
+      lexical_density: 0.624
+      nominalization: 0.026
+      passive_rate: 0.000
+      hedging: 0.000
+      sentence_length: 9.8
+      first_person: 6.8
+
+    - author: kahneman
+      lexical_density: 0.645
+      nominalization: 0.052
+      passive_rate: 0.085
+      hedging: 0.095
+      sentence_length: 14.5
+      first_person: 3.2
+
+    - author: sunstein
+      lexical_density: 0.658
+      nominalization: 0.065
+      passive_rate: 0.095
+      hedging: 0.080
+      sentence_length: 18.5
+      first_person: 2.5
+
+  distances:
+    - pair: [fehr, thaler]
+      distance: 0.47
+      interpretation: "Formal vs. accessible styles"
+
+    - pair: [fehr, kahneman]
+      distance: 0.28
+      interpretation: "Similar formality, different domains"
+
+    - pair: [thaler, sunstein]
+      distance: 0.35
+      interpretation: "Both policy-focused but different registers"
+
+    - pair: [kahneman, sunstein]
+      distance: 0.31
+      interpretation: "Both systematic, different disciplinary norms"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# EXTRACTION CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════
+
+extraction:
+  description: "Configuration for profile extraction from corpus"
+
+  minimum_corpus_size: 5
+  recommended_corpus_size: 25
+  optimal_corpus_size: 50
+
+  convergence_threshold: 0.05
+  confidence_level: 0.95
+
+  script: "scripts/swsm_extract_profile.py"
+  output_format: "yaml"
+
+  validation:
+    cross_validation: true
+    k_folds: 5
+    holdout_ratio: 0.2

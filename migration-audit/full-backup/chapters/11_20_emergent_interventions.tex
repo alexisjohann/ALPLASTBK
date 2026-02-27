@@ -1,0 +1,850 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SECTION 11.20: EMERGENT INTERVENTION DESIGN
+% Connecting AWX Framework to EMERGE Algorithm (EIT-EMP-1/2)
+% Version: 1.0 (January 2026)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Note: Subsection header is in 11_awareness_master.tex
+
+The previous section showed how to \emph{diagnose} behavioral puzzles using the AWX framework. This section shows how to \emph{design interventions} that emerge optimally from the diagnosis---not selected from a menu of types, but computed from context.
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=\textbf{Key Insight: Interventions Emerge from Context}]
+
+Traditional approach: Select intervention type from predefined list \\
+$\Rightarrow$ ``Use nudge T3'' or ``Apply social norms intervention''
+
+\textbf{Emergent approach:} Compute optimal intervention profile from context \\
+$\Rightarrow$ $\vec{I}^* = \text{EMERGE}(\Psi, \Gamma(\Psi), B, K^*)$
+
+The intervention \emph{emerges} as the solution to an optimization problem, not as a choice from a typology.
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+\subsubsection{The Emergence Pipeline}
+\label{subsubsec:emergence-pipeline}
+%------------------------------------------------------------------------------
+
+Every intervention design follows the same five-step pipeline:
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.2cm, auto]
+    \node[draw, rounded corners, fill=gray!20, minimum width=2cm] (context) {Context $\Psi$};
+    \node[draw, rounded corners, fill=blue!20, minimum width=2cm, right=of context] (gamma) {$\gamma(\Psi)$};
+    \node[draw, rounded corners, fill=orange!20, minimum width=2cm, right=of gamma] (k) {$K^*(\Psi)$};
+    \node[draw, rounded corners, fill=green!20, minimum width=2cm, right=of k] (emerge) {EMERGE};
+    \node[draw, rounded corners, fill=yellow!20, minimum width=2cm, right=of emerge] (profile) {$\vec{I}^*$};
+
+    \draw[->, thick] (context) -- (gamma);
+    \draw[->, thick] (gamma) -- (k);
+    \draw[->, thick] (k) -- (emerge);
+    \draw[->, thick] (emerge) -- (profile);
+\end{tikzpicture}
+\end{center}
+
+\begin{enumerate}
+    \item \textbf{Context Encoding}: Translate situation into $\Psi \in [0,1]^8$
+    \item \textbf{Complementarity Matrix}: Compute $\gamma_{ij}(\Psi) = \gamma_0 + \sum_k \beta_k \Psi_k$
+    \item \textbf{Portfolio Size}: Compute $K^*(\Psi)$ based on budget, stage, education
+    \item \textbf{EMERGE Algorithm}: Optimize $\vec{I}^* = \arg\max E(\vec{I} | \Psi)$
+    \item \textbf{Mechanism Mapping}: Translate dimensions to concrete actions
+\end{enumerate}
+
+\begin{cross-reference}
+\textbf{Formal Specification:} The complete mathematical framework is documented in Appendix IE (CORE-EIT), Sections EIT-EMP-1 (Gamma Emergence) and EIT-EMP-2 (EMERGE Algorithm).
+\end{cross-reference}
+
+%------------------------------------------------------------------------------
+\subsubsection{The 80-Dimensional AWARE Space}
+\label{subsubsec:80d-space}
+%------------------------------------------------------------------------------
+
+For awareness interventions, the intervention space has 80 dimensions:
+
+\begin{equation}
+\vec{I} \in [0,1]^{80} = [0,1]^{8} \times [0,1]^{72}
+\end{equation}
+
+\textbf{Block A (8 dimensions):} Other 10C dimensions
+\begin{itemize}[nosep]
+    \item WHO, WHAT, HOW, WHEN, WHERE, READY, STAGE, HIER
+\end{itemize}
+
+\textbf{Block B (72 dimensions):} AWARE detail, structured as:
+\begin{equation}
+72 = \underbrace{2}_{\text{Referent}} \times \underbrace{3}_{\text{Utility}} \times \underbrace{6}_{\text{Domain}} \times \underbrace{2}_{\text{Valence}}
+\end{equation}
+
+\begin{center}
+\small
+\begin{tabular}{ll}
+\textbf{Factor} & \textbf{Values} \\
+\midrule
+Referent & Self, Community \\
+Utility Type & INU (unknown), KNU (known-not-used), IDN (identified) \\
+Domain & Financial, Emotional, Physical, Social, Development, Experience \\
+Valence & positive, negative \\
+\end{tabular}
+\end{center}
+
+\textbf{Example dimension:} \texttt{Self\_KNU\_F\_pos} = Awareness for \emph{positive financial effects} that the \emph{self} \emph{knows but doesn't use}.
+
+%------------------------------------------------------------------------------
+\subsubsection{K-Optimal: Dynamic Portfolio Size}
+\label{subsubsec:k-optimal}
+%------------------------------------------------------------------------------
+
+The number of active intervention dimensions $K^*$ is not arbitrary but \emph{emerges} from context:
+
+\begin{equation}
+\boxed{K^*(\Psi) = K_{base} + \delta_{budget} + \delta_{complexity} + \delta_{stage} + \delta_{crowding}}
+\end{equation}
+
+\begin{table}[htbp]
+\centering
+\caption{K-Optimal Adjustment Factors}
+\label{tab:k-factors}
+\small
+\begin{tabular}{@{}lllc@{}}
+\toprule
+\textbf{Factor} & \textbf{Condition} & \textbf{Adjustment} & \textbf{Source} \\
+\midrule
+$K_{base}$ & --- & 4 & Michie et al. (2013) \\
+$\delta_{budget}$ & $B > 2 \times B_{ref}$ & $+1$ per doubling & Resource constraint \\
+$\delta_{complexity}$ & High education/expertise & $+1$ & Miller (1956) \\
+$\delta_{stage}$ & Pre-contemplation & $-2$ & Prochaska (1983) \\
+$\delta_{stage}$ & Action & $+1$ & Prochaska (1983) \\
+$\delta_{crowding}$ & $P(\text{crowding}) > 0.3$ & $-1$ & Frey (1997) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Bounds:} $K^* \in [2, 9]$ based on cognitive capacity limits \citep{miller1956magical}.
+
+%==============================================================================
+% WORKED EXAMPLE 1: RETIREMENT SAVINGS
+%==============================================================================
+
+\subsubsection{Worked Example 1: Retirement Savings Intervention}
+\label{subsubsec:example-retirement}
+
+\paragraph{Situation.} A pension fund wants to increase contribution rates among employees aged 35-45. Current average: 5\%. Target: 10\%.
+
+\paragraph{Step 1: Context Encoding.}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Dimension} & \textbf{Value} & \textbf{Rationale} \\
+\midrule
+$\Psi_{economic}$ & 0.4 & Post-recession, some uncertainty \\
+$\Psi_{social}$ & 0.7 & Strong workplace norms \\
+$\Psi_{temporal}$ & 0.6 & Medium horizon (20-30 years) \\
+$\Psi_{institutional}$ & 0.8 & Strong pension system \\
+BCJ Stage & Contemplation & Aware but not acting \\
+Education & 0.6 & Mixed workforce \\
+Budget & CHF 100k & Moderate \\
+\textbf{Scope Level} & \textbf{$L_1$ (Strategic)} & Long-term behavior change (months--years) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Step 2: K-Optimal Computation (with Scope Adjustment).}
+
+\begin{align}
+K^*_{\text{base}} &= 4 + \underbrace{(+1)}_{\text{budget}} + \underbrace{(0)}_{\text{education}} + \underbrace{(-1)}_{\text{contemplation}} + \underbrace{(0)}_{\text{crowding}} = 4 \\
+K^*_{\text{scope}} &= 4 + \underbrace{(+1)}_{L_1 \text{ strategic}} = \mathbf{5}
+\end{align}
+
+\paragraph{Step 3: EMERGE Algorithm Output.}
+
+\begin{center}
+\begin{tabular}{@{}lcl@{}}
+\toprule
+\textbf{Dimension} & \textbf{Intensity} & \textbf{Rationale} \\
+\midrule
+\texttt{Self\_KNU\_F\_pos} & $I = 1.00$ & Activate known benefits \\
+\texttt{Self\_KNU\_F\_neg} & $I = 0.85$ & Loss salience (what they're losing) \\
+\texttt{WHEN} & $I = 0.72$ & Choice architecture \\
+\texttt{STAGE} & $I = 0.58$ & Stage-matched messaging \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Step 4: Concrete Intervention Mix.}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=\textbf{Retirement Savings Intervention Package}]
+
+\textbf{Primary: Self\_KNU\_F\_pos ($I = 1.00$)}
+\begin{itemize}[nosep]
+    \item \textbf{Future Self Visualization:} Age-progression photo app showing employee at retirement
+    \item \textbf{Compound Interest Demo:} Interactive calculator: ``CHF 100/month = CHF 48,000 in 20 years''
+    \item \textbf{Progress Tracker:} Monthly SMS with savings milestone
+\end{itemize}
+
+\textbf{Secondary: Self\_KNU\_F\_neg ($I = 0.85$)}
+\begin{itemize}[nosep]
+    \item \textbf{Daily Cost Framing:} ``Without increase, you lose CHF 8.50 per day in future income''
+    \item \textbf{Regret Preview:} Testimonials from older colleagues who wished they'd saved more
+\end{itemize}
+
+\textbf{Contextual: WHEN ($I = 0.72$)}
+\begin{itemize}[nosep]
+    \item \textbf{Default Escalation:} Auto-increase by 1\% annually (opt-out)
+    \item \textbf{Timing:} Prompt after salary increase or bonus
+\end{itemize}
+
+\textbf{Journey: STAGE ($I = 0.58$)}
+\begin{itemize}[nosep]
+    \item \textbf{Contemplation-Appropriate:} Present clear pro/con comparison
+    \item \textbf{No hard sell:} Information-focused, not pressure
+\end{itemize}
+
+\end{tcolorbox}
+
+\paragraph{Step 5: Detailed Intervention Specification (EIT-EMP-3-D4).}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=\textbf{Future Self Visualization --- Full Specification}]
+
+\begin{tabular}{@{}p{2.5cm}p{10cm}@{}}
+\textbf{ZIEL:} & Emotionale Verbindung zu langfristigen Konsequenzen aufbauen \\
+\midrule
+\textbf{IN-SCOPE:} &
+\begin{itemize}[nosep,leftmargin=*]
+    \item[\checkmark] Age-progression Foto-App (gealterte Version des Mitarbeiters)
+    \item[\checkmark] Brief an zukünftiges Selbst (``Lieber 65-jähriger Ich...'')
+    \item[\checkmark] Personalisierte Szenario-Projektion (Ruhestandsbudget-Simulation)
+\end{itemize} \\
+\midrule
+\textbf{OUT-OF-SCOPE:} &
+\begin{itemize}[nosep,leftmargin=*]
+    \item[$\times$] Angstmachende Armuts-Szenarien
+    \item[$\times$] Unrealistische Rendite-Versprechungen
+    \item[$\times$] Druck oder Beschämung
+\end{itemize} \\
+\midrule
+\textbf{LIEFER-OBJEKTE:} &
+\begin{itemize}[nosep,leftmargin=*]
+    \item[$\square$] Future Self App (Integration in HR-Portal)
+    \item[$\square$] Personalisierungs-Algorithmus (Segment-spezifisch)
+    \item[$\square$] Szenario-Templates (optimistisch/realistisch/konservativ)
+    \item[$\square$] Emotional Impact Assessment (Pre/Post-Befragung)
+\end{itemize} \\
+\end{tabular}
+
+\end{tcolorbox}
+
+\paragraph{Crowding-Out Check.}
+
+\begin{equation}
+\gamma(\text{Self\_KNU\_F\_pos}, \text{Self\_KNU\_F\_neg}) = +0.25 \cdot \gamma_{util}(\text{KNU}, \text{KNU}) + 0.25 \cdot \gamma_{val}(\text{pos}, \text{neg})
+\end{equation}
+\begin{equation}
+= 0.25 \cdot 0 + 0.25 \cdot (-0.50) = -0.125 > -0.15 \quad \checkmark \text{ OK}
+\end{equation}
+
+No crowding-out risk---positive and negative framings are complementary for financial awareness.
+
+%==============================================================================
+% WORKED EXAMPLE 2: HEALTH BEHAVIOR
+%==============================================================================
+
+\subsubsection{Worked Example 2: Smoking Cessation}
+\label{subsubsec:example-smoking}
+
+\paragraph{Situation.} Health insurer targets smokers (N=5,000) for cessation program. Previous information campaigns: 8\% quit rate. Target: 15\%.
+
+\paragraph{Step 1: Context Encoding.}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+$\Psi_{social}$ & 0.4 & Moderate anti-smoking norms \\
+$\Psi_{temporal}$ & 0.2 & Short horizon (addiction) \\
+BCJ Stage & Pre-contemplation & Most not considering quitting \\
+Budget & CHF 50k & Limited \\
+\textbf{Scope Level} & \textbf{$L_2$ (Tactical)} & Program-based (weeks--months) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Step 2: K-Optimal (with Scope Adjustment).}
+
+\begin{align}
+K^*_{\text{base}} &= 4 + (0) + (0) + (-2) + (0) = 2 \\
+K^*_{\text{scope}} &= 2 + \underbrace{(0)}_{L_2 \text{ tactical}} = \mathbf{2}
+\end{align}
+
+\textbf{Critical insight:} Pre-contemplation stage requires \emph{minimal} intervention complexity. Tactical scope ($L_2$) is appropriate for program-based intervention.
+
+\paragraph{Step 3: EMERGE Output.}
+
+\begin{center}
+\begin{tabular}{@{}lcl@{}}
+\toprule
+\textbf{Dimension} & \textbf{Intensity} & \textbf{Rationale} \\
+\midrule
+\texttt{Self\_INU\_E\_neg} & $I = 1.00$ & Emotional cost awareness \\
+\texttt{STAGE} & $I = 0.80$ & Pre-contemplation appropriate \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Why NOT Financial?}
+
+Financial arguments (\texttt{Self\_INU\_F\_neg}) have $\gamma < -0.15$ with emotional arguments in this context:
+\begin{itemize}[nosep]
+    \item Smokers already ``know'' financial costs (KNU, not INU)
+    \item Financial framing triggers defensive rationalization
+    \item Emotional framing bypasses cognitive defenses
+\end{itemize}
+
+\paragraph{Step 4: Concrete Intervention Mix.}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=\textbf{Smoking Cessation Intervention Package (Pre-Contemplation)}]
+
+\textbf{Primary: Self\_INU\_E\_neg ($I = 1.00$)}
+\begin{itemize}[nosep]
+    \item \textbf{Anticipated Regret:} ``How will you feel when your child asks why you smell like smoke?''
+    \item \textbf{Stress Preview:} Testimonial videos of smokers describing anxiety about health
+    \item \textbf{Emotional Cost Calculator:} ``Moments you'll miss'' (not money)
+\end{itemize}
+
+\textbf{Journey: STAGE ($I = 0.80$)}
+\begin{itemize}[nosep]
+    \item \textbf{No quit demand:} Only raise awareness, don't push action
+    \item \textbf{Ambivalence acknowledged:} ``Most smokers have mixed feelings''
+    \item \textbf{Seed planting:} ``When you're ready, help is available''
+\end{itemize}
+
+\textbf{NOT included (would backfire):}
+\begin{itemize}[nosep]
+    \item[$\times$] Financial arguments (triggers defensiveness)
+    \item[$\times$] Social pressure (reactance in pre-contemplation)
+    \item[$\times$] Action calls (too early in journey)
+\end{itemize}
+
+\end{tcolorbox}
+
+\paragraph{Step 5: Detailed Intervention Specification (EIT-EMP-3-D4).}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=\textbf{Anticipated Regret --- Full Specification}]
+
+\begin{tabular}{@{}p{2.5cm}p{10cm}@{}}
+\textbf{ZIEL:} & Emotionale Kosten des Rauchens bewusst machen ohne Defensivität auszulösen \\
+\midrule
+\textbf{IN-SCOPE:} &
+\begin{itemize}[nosep,leftmargin=*]
+    \item[\checkmark] Testimonial Videos von Ex-Rauchern (emotionale Reue)
+    \item[\checkmark] Zukunfts-Szenarien (``Momente die Sie verpassen'')
+    \item[\checkmark] Ambivalenz-anerkennende Botschaften
+\end{itemize} \\
+\midrule
+\textbf{OUT-OF-SCOPE:} &
+\begin{itemize}[nosep,leftmargin=*]
+    \item[$\times$] Schockbilder oder Angstappelle
+    \item[$\times$] Finanzielle Argumente (``Sie sparen X CHF'')
+    \item[$\times$] Direkter Aufruf zum Aufhören (Pre-Contemplation!)
+\end{itemize} \\
+\midrule
+\textbf{LIEFER-OBJEKTE:} &
+\begin{itemize}[nosep,leftmargin=*]
+    \item[$\square$] Video-Testimonial Library (5-8 authentische Geschichten)
+    \item[$\square$] Ambivalence-Messaging Templates
+    \item[$\square$] Stage-Gate Check (nur weiter wenn bereit)
+    \item[$\square$] Reaktanz-Monitoring Dashboard
+\end{itemize} \\
+\end{tabular}
+
+\end{tcolorbox}
+
+%==============================================================================
+% WORKED EXAMPLE 3: CLIMATE ACTION
+%==============================================================================
+
+\subsubsection{Worked Example 3: Household Energy Conservation}
+\label{subsubsec:example-climate}
+
+\paragraph{Situation.} Utility company wants to reduce residential energy consumption by 10\%. Population: 50,000 households. Most are aware of climate issues but don't act.
+
+\paragraph{Step 1: Context Encoding.}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+$\Psi_{social}$ & 0.8 & Strong environmental norms in region \\
+$\Psi_{economic}$ & 0.5 & Moderate income \\
+BCJ Stage & Preparation & Ready to act but haven't \\
+Budget & CHF 200k & Good resources \\
+\textbf{Scope Level} & \textbf{$L_1$--$L_3$ (Cascading)} & Campaign ($L_1$) $\to$ daily defaults ($L_3$) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Step 2: K-Optimal (with Scope Adjustment).}
+
+\begin{align}
+K^*_{\text{base}} &= 4 + (+2) + (0) + (0) + (0) = 6 \\
+K^*_{\text{scope}} &= 6 + \underbrace{(0)}_{L_1/L_2 \text{ mixed}} = \mathbf{6}
+\end{align}
+
+Higher budget enables more comprehensive intervention. \textbf{Cascading scope} allows strategic campaign ($L_1$) to trigger daily operative elements ($L_3$).
+
+\paragraph{Step 3: EMERGE Output.}
+
+\begin{center}
+\begin{tabular}{@{}lcl@{}}
+\toprule
+\textbf{Dimension} & \textbf{Intensity} & \textbf{Rationale} \\
+\midrule
+\texttt{Comm\_KNU\_S\_pos} & $I = 1.00$ & Community social proof \\
+\texttt{Self\_KNU\_F\_pos} & $I = 0.90$ & Personal savings \\
+\texttt{Self\_KNU\_Ex\_pos} & $I = 0.75$ & Experience of achievement \\
+\texttt{WHEN} & $I = 0.68$ & Easy actions, defaults \\
+\texttt{WHO} & $I = 0.55$ & Climate leader identity \\
+\texttt{STAGE} & $I = 0.50$ & Preparation-matched \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Crowding-Out Check: Social + Financial.}
+
+\begin{equation}
+\gamma(\texttt{Comm\_KNU\_S}, \texttt{Self\_KNU\_F}) = \frac{1}{4}[\underbrace{-0.30}_{\text{Self/Comm}} + 0 + \underbrace{-0.25}_{S/F} + 0] = -0.1375
+\end{equation}
+
+$-0.1375 > -0.15 \Rightarrow$ Acceptable, but close to threshold. Monitor for crowding-out.
+
+\paragraph{Mitigation:} Frame financial savings as \emph{consequence} of social action, not \emph{reason} for it.
+
+\paragraph{Step 4: Concrete Intervention Mix.}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=\textbf{Energy Conservation Intervention Package}]
+
+\textbf{Primary: Comm\_KNU\_S\_pos ($I = 1.00$)}
+\begin{itemize}[nosep]
+    \item \textbf{Social Proof:} ``73\% of your neighbors reduced energy use last month''
+    \item \textbf{Community Dashboard:} Neighborhood-level tracking and comparison
+    \item \textbf{Community Challenge:} ``Can Hauptstrasse beat Bahnhofstrasse?''
+\end{itemize}
+
+\textbf{Secondary: Self\_KNU\_F\_pos ($I = 0.90$)}
+\begin{itemize}[nosep]
+    \item \textbf{Savings Visualization:} Real-time savings display on app
+    \item \textbf{Framing:} ``Your neighbors are saving AND helping---here's your savings too''
+\end{itemize}
+
+\textbf{Experience: Self\_KNU\_Ex\_pos ($I = 0.75$)}
+\begin{itemize}[nosep]
+    \item \textbf{Achievement Celebrations:} Badges for milestones
+    \item \textbf{Impact Visualization:} ``Your savings = 2 trees planted''
+\end{itemize}
+
+\textbf{Structural: WHEN ($I = 0.68$)}
+\begin{itemize}[nosep]
+    \item \textbf{Smart Defaults:} Eco-mode as default on smart thermostats
+    \item \textbf{Automatic Tips:} Context-aware suggestions (``It's sunny, turn off lights'')
+\end{itemize}
+
+\textbf{Identity: WHO ($I = 0.55$)}
+\begin{itemize}[nosep]
+    \item \textbf{Climate Leader Label:} ``Join 5,000 Climate Leaders in your city''
+\end{itemize}
+
+\end{tcolorbox}
+
+\paragraph{Step 5: Detailed Intervention Specification (EIT-EMP-3-D4).}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=\textbf{Social Proof Reminder --- Full Specification}]
+
+\begin{tabular}{@{}p{2.5cm}p{10cm}@{}}
+\textbf{ZIEL:} & Soziale Norm aktivieren um Energiespar-Verhalten zu legitimieren und zu verstärken \\
+\midrule
+\textbf{IN-SCOPE:} &
+\begin{itemize}[nosep,leftmargin=*]
+    \item[\checkmark] Descriptive Norms (``73\% Ihrer Nachbarn haben letzten Monat reduziert'')
+    \item[\checkmark] Peer Comparison mit ähnlichen Haushalten (Größe, Alter)
+    \item[\checkmark] Community Dashboard mit Nachbarschafts-Ranking
+    \item[\checkmark] Real-Time Norm Display auf App/Smart Meter
+\end{itemize} \\
+\midrule
+\textbf{OUT-OF-SCOPE:} &
+\begin{itemize}[nosep,leftmargin=*]
+    \item[$\times$] Manipulierte oder falsche Statistiken
+    \item[$\times$] Beschämende Vergleiche (``Sie sind der schlechteste'')
+    \item[$\times$] Irrelevante Vergleichsgruppen (Gewerbe vs. Privat)
+\end{itemize} \\
+\midrule
+\textbf{LIEFER-OBJEKTE:} &
+\begin{itemize}[nosep,leftmargin=*]
+    \item[$\square$] Social Proof Message Library (10+ Varianten)
+    \item[$\square$] Peer Group Segmentierung (nach Haushaltsgröße, Region)
+    \item[$\square$] Real-Time Norm Display Integration
+    \item[$\square$] A/B Test Design für Norm-Framing Varianten
+    \item[$\square$] Community Challenge Gamification
+\end{itemize} \\
+\midrule
+\textbf{SCOPE:} & $L_1$--$L_3$ (Cascading) --- Strategic campaign triggers daily operative defaults \\
+\textbf{PRIMARY 10C:} & AWARE (Comm\_KNU\_S\_pos) \\
+\end{tabular}
+
+\end{tcolorbox}
+
+%==============================================================================
+% WORKED EXAMPLE 4: ORGANIZATIONAL CHANGE
+%==============================================================================
+
+\subsubsection{Worked Example 4: Digital Transformation Adoption}
+\label{subsubsec:example-org}
+
+\paragraph{Situation.} Manufacturing company (N=2,000 employees) implementing new ERP system. Previous IT rollouts: 40\% adoption after 6 months. Target: 80\%.
+
+\paragraph{Step 1: Context Encoding.}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+$\Psi_{institutional}$ & 0.7 & Strong management commitment \\
+$\Psi_{social}$ & 0.3 & Weak peer adoption so far \\
+$\Psi_{technological}$ & 0.4 & Mixed tech literacy \\
+BCJ Stage & Mixed & 30\% preparation, 70\% contemplation \\
+Education & 0.4 & Factory workers + office staff \\
+Budget & CHF 300k & High priority \\
+\textbf{Scope Level} & \textbf{$L_0$ (Systemic)} & Organizational transformation (months--years) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Step 2: K-Optimal (with Scope Adjustment).}
+
+\begin{align}
+K^*_{\text{base}} &= 4 + (+2) + (-1) + (-1) + (0) = 4 \\
+K^*_{\text{scope}} &= 4 + \underbrace{(+2)}_{L_0 \text{ systemic}} = \mathbf{6}
+\end{align}
+
+Despite high budget, lower education and mixed stages reduce base $K^*$. However, \textbf{systemic scope ($L_0$)} enables multi-level portfolio for organizational transformation.
+
+\paragraph{Critical Constraint: Identity Threat.}
+
+From CASE-07 and CASE-08 analysis, technology adoption triggers:
+\begin{itemize}[nosep]
+    \item $A^{self}_{IDN}(\text{competence threat}) = 0.8$
+    \item $A^{self}_{INU}(\text{disruption}) = 0.9$
+\end{itemize}
+
+\textbf{Rule:} Address identity BEFORE functionality.
+
+\paragraph{Step 3: EMERGE Output.}
+
+\begin{center}
+\begin{tabular}{@{}lcl@{}}
+\toprule
+\textbf{Dimension} & \textbf{Intensity} & \textbf{Rationale} \\
+\midrule
+\texttt{Self\_IDN\_F\_pos} & $I = 1.00$ & Progress on identified goals \\
+\texttt{WHO} & $I = 0.85$ & Identity protection \\
+\texttt{READY} & $I = 0.70$ & Self-efficacy building \\
+\texttt{WHEN} & $I = 0.60$ & Gradual rollout \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Why NOT Social (Comm\_KNU\_S)?}
+
+With $\Psi_{social} = 0.3$, social proof would \emph{backfire}:
+\begin{itemize}[nosep]
+    \item ``Only 30\% of colleagues use it'' $\Rightarrow$ Social proof for NOT adopting
+    \item Wait until adoption $> 50\%$ before adding social mechanisms
+\end{itemize}
+
+\paragraph{Step 4: Concrete Intervention Mix.}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=\textbf{ERP Adoption Intervention Package}]
+
+\textbf{Primary: Self\_IDN\_F\_pos ($I = 1.00$)}
+\begin{itemize}[nosep]
+    \item \textbf{Progress Tracking:} Personal dashboard showing mastery milestones
+    \item \textbf{Skill Badges:} ``ERP Navigator'', ``Data Master'' certifications
+    \item \textbf{Endowed Progress:} Start everyone at 20\% completion (first module pre-credited)
+\end{itemize}
+
+\textbf{Identity: WHO ($I = 0.85$)}
+\begin{itemize}[nosep]
+    \item \textbf{Expertise Transfer Framing:} ``Your 15 years of process knowledge makes you the ideal ERP expert''
+    \item \textbf{Role Continuity:} ``Same job, better tools''
+    \item \textbf{Avoid:} Any framing that implies current skills are obsolete
+\end{itemize}
+
+\textbf{Self-Efficacy: READY ($I = 0.70$)}
+\begin{itemize}[nosep]
+    \item \textbf{Micro-Learning:} 5-minute daily modules (not 8-hour training)
+    \item \textbf{Peer Coaches:} Early adopters as helpers (not trainers)
+    \item \textbf{Failure Tolerance:} ``Sandbox mode'' for practice without consequences
+\end{itemize}
+
+\textbf{Structural: WHEN ($I = 0.60$)}
+\begin{itemize}[nosep]
+    \item \textbf{Phased Rollout:} Department by department (prevent cascade resistance)
+    \item \textbf{Parallel Systems:} Keep old system available during transition
+\end{itemize}
+
+\textbf{Sequencing Note:}
+\begin{enumerate}[nosep]
+    \item Month 1-2: Identity + Self-efficacy only
+    \item Month 3-4: Add structural elements
+    \item Month 5+: Add social proof (once $> 50\%$ adoption)
+\end{enumerate}
+
+\end{tcolorbox}
+
+\paragraph{Step 5: Detailed Intervention Specification (EIT-EMP-3-D4).}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=\textbf{Identity Priming --- Full Specification}]
+
+\begin{tabular}{@{}p{2.5cm}p{10cm}@{}}
+\textbf{ZIEL:} & Selbstkonzept als Motivator für ERP-Adoption nutzen und Identitätsbedrohung neutralisieren \\
+\midrule
+\textbf{IN-SCOPE:} &
+\begin{itemize}[nosep,leftmargin=*]
+    \item[\checkmark] Expertise Transfer Framing (``Ihre 15 Jahre Prozesswissen macht Sie zum idealen ERP-Experten'')
+    \item[\checkmark] Role Continuity Messaging (``Gleicher Job, bessere Werkzeuge'')
+    \item[\checkmark] Self-Affirmation Exercises vor Training-Sessions
+    \item[\checkmark] Skill Badges und Zertifizierungen (``ERP Navigator'', ``Data Master'')
+\end{itemize} \\
+\midrule
+\textbf{OUT-OF-SCOPE:} &
+\begin{itemize}[nosep,leftmargin=*]
+    \item[$\times$] Framing das impliziert bestehende Skills sind obsolet
+    \item[$\times$] Beschämende Vergleiche mit ``Digital Natives''
+    \item[$\times$] Identitäts-Manipulation oder Zwangskonformität
+\end{itemize} \\
+\midrule
+\textbf{LIEFER-OBJEKTE:} &
+\begin{itemize}[nosep,leftmargin=*]
+    \item[$\square$] Identity Priming Message Set (nach Rolle/Abteilung)
+    \item[$\square$] Persona-Segment Mapping (Tech-affin vs. Tech-anxious)
+    \item[$\square$] Priming Timing Protocol (vor Training-Sessions)
+    \item[$\square$] Identity Threat Assessment Tool
+    \item[$\square$] Peer Coach Matching (Early Adopters $\to$ Skeptiker)
+\end{itemize} \\
+\midrule
+\textbf{SCOPE:} & $L_0$ (Systemic) --- Organizational transformation (months--years) \\
+\textbf{PRIMARY 10C:} & WHO (Identity protection before functionality) \\
+\end{tabular}
+
+\end{tcolorbox}
+
+%==============================================================================
+% COMPARISON TABLE
+%==============================================================================
+
+\subsubsection{Cross-Example Comparison}
+\label{subsubsec:comparison}
+
+\begin{table}[htbp]
+\centering
+\caption{Four Intervention Mixes: Emergent Design Comparison}
+\label{tab:intervention-comparison}
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+& \textbf{Retirement} & \textbf{Smoking} & \textbf{Energy} & \textbf{ERP} \\
+\midrule
+\textbf{Context} & & & & \\
+\quad Stage & Contemplation & Pre-Contempl. & Preparation & Mixed \\
+\quad Social norms & 0.7 & 0.4 & 0.8 & 0.3 \\
+\quad Budget & Moderate & Limited & High & High \\
+\quad \textbf{Scope Level} & $L_1$ Strategic & $L_2$ Tactical & $L_1$--$L_3$ Cascade & $L_0$ Systemic \\
+\midrule
+\textbf{K* (base $\to$ scope-adj.)} & $4 \to 5$ & $2 \to 2$ & $6 \to 6$ & $4 \to 6$ \\
+\midrule
+\textbf{Primary dimension} & Self\_KNU\_F+ & Self\_INU\_E- & Comm\_KNU\_S+ & Self\_IDN\_F+ \\
+\midrule
+\textbf{Avoided} & --- & Financial & --- & Social \\
+\textbf{(crowding-out risk)} & & (defensive) & & (backfire) \\
+\midrule
+\textbf{Key mechanisms} & & & & \\
+\quad Information & $\checkmark$ & --- & --- & --- \\
+\quad Salience & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
+\quad Social proof & --- & --- & $\checkmark$ & (later) \\
+\quad Defaults & $\checkmark$ & --- & $\checkmark$ & $\checkmark$ \\
+\quad Identity & --- & --- & $\checkmark$ & $\checkmark$ \\
+\quad Progress & $\checkmark$ & --- & $\checkmark$ & $\checkmark$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key Observation:} No two intervention mixes are identical because they \emph{emerge} from different contexts. The EMERGE algorithm produces tailored solutions, not generic recommendations.
+
+%------------------------------------------------------------------------------
+\subsubsection{When to Use Emergent Design}
+\label{subsubsec:when-to-use}
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black,
+    title=\textbf{Decision Framework: Emergent vs. Standard Design}]
+
+\textbf{Use Emergent Design when:}
+\begin{itemize}[nosep]
+    \item Multiple intervention dimensions are relevant
+    \item Crowding-out risk exists (especially Social + Financial)
+    \item Target population is heterogeneous
+    \item Budget allows for multi-component intervention
+    \item Precise effectiveness prediction is needed
+\end{itemize}
+
+\textbf{Use Standard Design when:}
+\begin{itemize}[nosep]
+    \item Single, clear intervention is obvious
+    \item Context is well-studied with known best practices
+    \item Resources are severely limited ($K^* \leq 2$)
+    \item Speed is more important than optimization
+\end{itemize}
+
+\end{tcolorbox}
+
+\begin{cross-reference}
+\textbf{Implementation:} The EMERGE algorithm is implemented in \texttt{scripts/emerge\_algorithm.py}. Usage: \texttt{python scripts/emerge\_algorithm.py --context "econ=0.3,social=0.8" --target "Self\_KNU\_F" -v}
+
+\textbf{Full Specification:} See Appendix IE (CORE-EIT):
+\begin{itemize}[nosep]
+    \item EIT-EMP-1: Gamma Emergence (complementarity matrix)
+    \item EIT-EMP-2: EMERGE Algorithm (portfolio optimization)
+    \item EIT-EMP-3: Scope Level Emergence (strategic/tactical/operative hierarchy)
+\end{itemize}
+
+\textbf{Data Files:} \texttt{gamma-emergence-specification.yaml}, \texttt{intervention-emergence-algorithm.yaml}, \texttt{k-optimal-specification.yaml}, \texttt{intervention-catalog.yaml}.
+\end{cross-reference}
+
+%------------------------------------------------------------------------------
+\subsubsection{Lifecycle Extension: From Point-in-Time to Decades}
+\label{subsubsec:lifecycle-extension}
+%------------------------------------------------------------------------------
+
+The EMERGE algorithm computes optimal interventions at a \emph{point in time}. But behavioral change unfolds over \textbf{months, years, and decades}. This section bridges to the lifecycle perspective.
+
+\paragraph{The Awareness Dynamics Problem.}
+
+EMERGE assumes $A(·)$ is static during intervention design. In reality:
+
+\begin{equation}
+\frac{dA}{dt} = \underbrace{\alpha \cdot T_1(t)}_{\text{Learning from intervention}} - \underbrace{\beta \cdot A(t)}_{\text{Decay without reinforcement}} + \underbrace{\lambda \cdot E(t)}_{\text{Bayesian update from experience}}
+\end{equation}
+
+Where:
+\begin{itemize}[nosep]
+    \item $\alpha$ = Awareness learning rate (from $I_{\text{AWARE}}$ interventions)
+    \item $\beta$ = Awareness decay rate (without reinforcement)
+    \item $\lambda$ = Bayesian update rate from observed outcomes
+    \item $T_1(t)$ = Intervention intensity at time $t$
+    \item $E(t)$ = Observed behavioral effects at time $t$
+\end{itemize}
+
+\paragraph{Domain-Specific Parameters.}
+
+\textbf{Critical insight:} The parameters $(\alpha, \beta, \lambda)$ \textbf{differ dramatically across domains}:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccccl@{}}
+\toprule
+\textbf{Domain} & $\alpha$ & $\beta$ & $A^*$ & \textbf{Time to $A^*$} & \textbf{Implication for EMERGE} \\
+\midrule
+Health & 0.05/wk & 0.02/wk & 0.75 & 5-10 years & Intensive early $\to$ maintenance \\
+Money & 0.005/wk & 0.01/wk & 0.35 & $\infty$ (no stable eq.) & Continuous $I_{\text{AWARE},\kappa}$ forever \\
+Career & episodic & --- & varies & Event-triggered & High intensity at transitions only \\
+Relationships & 0.02/wk & 0.03/wk & 0.60 & 10-15 years & Slow build, moderate maintenance \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{How EMERGE Output Evolves Over Life Stages.}
+
+The same person requires \emph{different} $\vec{I}^*$ at different life stages:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lp{4cm}p{5.5cm}@{}}
+\toprule
+\textbf{Age} & \textbf{Dominant EMERGE Target} & \textbf{Primary Mechanisms} \\
+\midrule
+20-26 & Health: $I_{\text{AWARE}}$ (INU$\to$KNU) & Info provision $\to$ salience $\to$ habit \\
+25-35 & Money: $I_{\text{WHEN}}$ (defaults) & Auto-enrollment, escalation \\
+30-45 & Career: $I_{\text{WHO}}$ (identity) & Role assignment at transitions \\
+45-60 & Money: $I_{\text{AWARE},\kappa}$ (feedback) & Portfolio review, projections \\
+60+ & Meaning: $I_{\text{WHO}}$ (legacy) & Identity priming, social connection \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{The Maintenance Paradox.}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black,
+    title=\textbf{Critical Design Principle: Maintenance vs. Acquisition}]
+
+\textbf{Fast-converging domains} (Health, Self-Governance):
+\begin{itemize}[nosep]
+    \item Need \textbf{intensive} $I_{\text{AWARE}}$ early (EMERGE: high $K^*$)
+    \item Then can switch to \textbf{maintenance} (EMERGE: low $K^*$, $I_{\text{AWARE},\kappa}$ only)
+\end{itemize}
+
+\textbf{Slow-converging domains} (Money, Meaning):
+\begin{itemize}[nosep]
+    \item Never reach stable equilibrium
+    \item Require \textbf{continuous} $I_{\text{AWARE},\kappa}$ across entire lifespan
+    \item EMERGE output must be \textbf{re-computed periodically} (not once-and-done)
+\end{itemize}
+
+\textbf{Episodic domains} (Career):
+\begin{itemize}[nosep]
+    \item EMERGE runs at \textbf{critical decision points} only
+    \item High $K^*$ during transitions; zero between transitions
+\end{itemize}
+
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black,
+    title=\textbf{Cross-Reference: Chapter 24 (Emergent Life Journeys)}]
+
+This section provides the \textbf{point-in-time} EMERGE algorithm. For the \textbf{lifecycle} extension:
+
+\textbf{Chapter 24} shows how intervention portfolios evolve over 30+ year horizons:
+\begin{itemize}[nosep]
+    \item \textbf{§24.2}: Domain-specific convergence mathematics ($\alpha$, $\beta$, $\lambda$ parameters)
+    \item \textbf{§24.3}: Characteristic life journey shapes (Health vs. Money vs. Career)
+    \item \textbf{§24.6}: Domain-specific intervention roadmaps (Age $\to$ $I^*$ mapping)
+    \item \textbf{§24.7}: Policy design framework (concentration vs. coverage tradeoffs)
+\end{itemize}
+
+\textbf{Key formula (from Chapter 24):}
+\begin{equation}
+A^*_{\text{domain}} = \frac{\alpha \cdot T_1^* + \lambda \cdot E^*}{\alpha + \beta + \lambda}
+\end{equation}
+
+\textbf{Notation bridge:}
+\begin{center}
+\small
+\begin{tabular}{@{}ll@{}}
+Chapter 11 & Chapter 24 \\
+\midrule
+$I_{\text{AWARE}}$ & $T_1$ (intervention intensity) \\
+$I_{\text{AWARE},\kappa}$ & Feedback loop component of $\lambda \cdot E$ \\
+$K^*$ & Varies by age/stage in lifecycle model \\
+\end{tabular}
+\end{center}
+
+\end{tcolorbox}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% END OF SECTION 11.20
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

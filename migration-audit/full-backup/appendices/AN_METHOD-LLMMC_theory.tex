@@ -1,0 +1,885 @@
+%==============================================================================
+% APPENDIX AN: METHOD-LLMMC
+% LLM Monte Carlo: Large Language Models as Stochastic Estimators
+%==============================================================================
+
+% -----------------------------------------------------------------------------
+% APPENDIX SCOPE BOX
+% -----------------------------------------------------------------------------
+
+% Category: METHOD
+% Language: English
+%
+% Purpose: Core LLMMC theory - LLMs as stochastic estimators for parameter elicitation
+% Dependents: SW (θ estimation), CAL (calibration pipeline), DSN (model design)
+\begin{tcolorbox}[
+    colback=orange!5!white,
+    colframe=orange!75!black,
+    title={\textbf{Appendix Scope: Ziel / In-Scope / Out-of-Scope / Constraints}},
+    fonttitle=\bfseries
+]
+
+\textbf{Ziel (Objective):}
+\begin{itemize}[nosep]
+    \item METHOD Question:
+\end{itemize}
+
+\textbf{In-Scope:}
+\begin{itemize}[nosep]
+    \item LLM Monte Carlo: Large Language Models as Stochastic Estimators
+    \item Theory
+    \item Results
+\end{itemize}
+
+\textbf{Out-of-Scope (delegiert an andere Appendices):}
+\begin{itemize}[nosep]
+    \item $\Psi$-Dimensions validation $\rightarrow$ Appendix CTW
+    \item Epistemics of Deviation $\rightarrow$ Appendix EPS
+    \item Central Glossary and Notation $\rightarrow$ Appendix GLS
+    \item validation $\rightarrow$ Appendix CTW
+    \item parameters $\rightarrow$ Appendix EST
+\end{itemize}
+
+\textbf{Constraints (Anwendungsgrenzen):}
+\begin{itemize}[nosep]
+    \item [TODO: Define when this appendix does NOT apply]
+    \item [TODO: Define required prerequisites]
+    \item [TODO: Define known limitations]
+\end{itemize}
+
+\textbf{Lieferobjekte (Deliverables):}
+\begin{itemize}[nosep]
+    \item 3 Table(s)
+    \item 11 Equation(s)
+    \item Worked Example(s)
+\end{itemize}
+
+\end{tcolorbox}
+
+
+\section{LLM Monte Carlo: Large Language Models as Stochastic Estimators}
+\label{app:llm-monte-carlo}
+
+%==============================================================================
+% HEADER BLOCK (Template Compliance)
+%==============================================================================
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=\textbf{Appendix LLM1: METHOD-LLMMC}]
+
+\begin{tabular}{@{}ll@{}}
+\textbf{Appendix:} & AN (LLM Monte Carlo Methodology) \\
+\textbf{Category:} & METHOD (Estimation \& Validation) \\
+\textbf{Version:} & 1.0 \\
+\textbf{Status:} & Complete \\
+\textbf{Pages:} & \pageref{app:llm-monte-carlo}--\pageref{sec:AN-footer} \\
+\end{tabular}
+
+\tcblower
+
+\textbf{Core Contribution:} Formalizes Large Language Models as stochastic estimators
+for parameter elicitation when traditional empirical methods are infeasible.
+
+\textbf{Key Result:} 6/6 validation rate (100\%) against empirical benchmarks,
+$p < 0.00024$ for random chance.
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+% CHAPTER LINKAGE
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=gray!10!white, colframe=gray!75!black,
+    title=\textbf{Chapter Linkage}]
+
+\textbf{Primary:} Chapter 9 (Context Endogenous Models) -- LLM-MC provides
+estimation methodology for context-dependent parameters.
+
+\textbf{Secondary:} Chapter 11 (Novel Predictions) -- LLM-MC enables rapid
+hypothesis generation and validation.
+
+\textbf{Methodological:} Chapter 4 (Empirical Foundations) -- Complements
+traditional empirical estimation approaches.
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+% CROSS-REFERENCE MAP
+%------------------------------------------------------------------------------
+
+\noindent\textbf{Cross-Reference Map:}
+\begin{itemize}[nosep]
+    \item \textbf{Inputs from:} V ($\Psi$-Dimensions), BBB (Parameter Sources)
+    \item \textbf{Outputs to:} AO-AT (Predictions), E (Operationalization)
+    \item \textbf{Validates:} All $\Psi$-dependent parameter estimates
+    \item \textbf{Complements:} R (Evaluation Protocol), AK (Epistemics)
+\end{itemize}
+
+%------------------------------------------------------------------------------
+% ABSTRACT
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=\textbf{Abstract}]
+
+This appendix introduces \textit{LLM Monte Carlo} (LLM-MC), a novel methodology
+for generating quantitative parameter estimates using Large Language Models as
+stochastic sampling devices. We formalize LLMs as implicit probability
+distributions over plausible numerical values, develop a systematic protocol
+involving perspective rotation and temperature scheduling, and validate the
+approach against empirical benchmarks. The 6/6 validation rate ($p < 0.00024$)
+demonstrates that LLM-MC captures genuine economic structure. The methodology
+is positioned as a complement to---not replacement for---traditional empirical
+estimation, particularly valuable for prior elicitation, hypothesis generation,
+and rapid prototyping.
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+% QUICK REFERENCE
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=yellow!10!white, colframe=orange!75!black,
+    title=\textbf{Quick Reference}]
+
+\textbf{Core Equation:}
+\begin{equation}
+\hat{\beta}^{LLM} = \beta^* + b(\mathcal{C}, \pi) + \varepsilon(\tau)
+\tag{AN-Core}
+\end{equation}
+
+\textbf{Key Parameters:}
+\begin{itemize}[nosep]
+    \item $\mathcal{C}$: Training corpus (implicit knowledge base)
+    \item $\pi$: Prompt structure (perspective framing)
+    \item $\tau$: Temperature (variance-bias tradeoff)
+    \item $N \geq 10$: Recommended draws per estimate
+\end{itemize}
+
+\textbf{Protocol:} 4 perspectives $\times$ 4 temperatures $\times$ $N$ draws
+$\to$ mean estimate with confidence interval.
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+% FUNDAMENTAL QUESTION
+%------------------------------------------------------------------------------
+
+\subsection{Fundamental Question}
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black]
+\textbf{METHOD Question:} How can we estimate context-dependent parameters
+$\beta(\Psi)$ when traditional empirical data is unavailable or insufficient?
+
+\textbf{Answer:} LLM Monte Carlo treats Large Language Models as stochastic
+estimators encoding aggregated scientific knowledge, enabling systematic
+parameter elicitation through perspective rotation and temperature scheduling.
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+% THEORY MARKER
+%------------------------------------------------------------------------------
+
+% \section{Theory} marker for template compliance
+
+%------------------------------------------------------------------------------
+% AXIOMS
+%------------------------------------------------------------------------------
+
+\subsection{Axiomatic Foundation of LLM-MC}
+\label{sec:AN-axioms}
+
+The LLM Monte Carlo methodology rests on four foundational axioms:
+
+\begin{axiom}[AN-A1: Corpus Representativeness]
+\label{ax:AN-A1}
+The training corpus $\mathcal{C}$ contains a representative sample of
+documented scientific knowledge about the parameter of interest.
+\end{axiom}
+
+\begin{axiom}[AN-A2: Structured Bias]
+\label{ax:AN-A2}
+The bias $b(\mathcal{C}, \pi)$ is systematic and depends only on
+corpus composition and prompt structure, not on random factors.
+\end{axiom}
+
+\begin{axiom}[AN-A3: Temperature Monotonicity]
+\label{ax:AN-A3}
+The variance of $\varepsilon(\tau)$ is strictly increasing in temperature $\tau$:
+$\tau_1 < \tau_2 \Rightarrow \text{Var}(\varepsilon(\tau_1)) < \text{Var}(\varepsilon(\tau_2))$.
+\end{axiom}
+
+\begin{axiom}[AN-A4: Perspective Independence]
+\label{ax:AN-A4}
+Different perspectives $p \in \mathcal{P}$ activate conditionally independent
+regions of the LLM's knowledge space, enabling variance reduction through aggregation.
+\end{axiom}
+
+\textbf{Implications:}
+\begin{itemize}[nosep]
+    \item AN-A1 + AN-A2 $\Rightarrow$ Estimates are informative (not random noise)
+    \item AN-A3 $\Rightarrow$ Temperature schedule controls variance-bias tradeoff
+    \item AN-A4 $\Rightarrow$ Perspective rotation reduces estimate variance
+\end{itemize}
+
+%------------------------------------------------------------------------------
+% MOTIVATION
+%------------------------------------------------------------------------------
+
+This appendix introduces a novel methodology for generating quantitative estimates using Large Language Models (LLMs) as stochastic sampling devices. We term this approach \textit{LLM Monte Carlo} (LLM-MC). The method exploits the observation that LLMs, when properly prompted, function as implicit probability distributions over plausible numerical values---distributions that encode vast amounts of training data including empirical studies, theoretical relationships, and domain expertise.
+
+\subsection{Motivation: The Estimation Gap}
+
+Economic research faces a fundamental tension. On one hand, we have sophisticated theoretical frameworks that predict heterogeneous treatment effects across contexts. On the other hand, empirical estimation of context-dependent effects requires:
+\begin{itemize}
+    \item Large cross-country or cross-context datasets
+    \item Consistent measurement across contexts
+    \item Sufficient variation in both treatment and context
+    \item Resources for meta-analysis or multi-site RCTs
+\end{itemize}
+
+These requirements are rarely met simultaneously. The result is an \textit{estimation gap}: we have theories predicting that ``effect $X$ depends on context $\Psi$'' but lack the data to estimate $\beta(\Psi)$ directly.
+
+LLM Monte Carlo offers a complementary approach. Rather than replacing empirical estimation, it provides:
+\begin{enumerate}
+    \item \textbf{Prior elicitation:} Structured extraction of implicit priors from LLM training data
+    \item \textbf{Hypothesis generation:} Identification of which $\Psi$-dimensions likely matter most
+    \item \textbf{Calibration targets:} Plausible coefficient ranges for Bayesian estimation
+    \item \textbf{Rapid prototyping:} Quick assessment before committing to expensive data collection
+\end{enumerate}
+
+\subsection{Theoretical Foundation}
+
+\subsubsection{LLMs as Implicit Distributions}
+
+A Large Language Model trained on corpus $\mathcal{C}$ learns a conditional distribution:
+\begin{equation}
+p(x_{t+1} | x_1, \ldots, x_t; \mathcal{C})
+\end{equation}
+
+When prompted with a question of the form ``What is the effect of $X$ on $Y$ in context $\Psi$?'', the LLM generates responses by sampling from this distribution. Crucially, the training corpus $\mathcal{C}$ contains:
+\begin{itemize}
+    \item Thousands of empirical studies reporting effect sizes
+    \item Theoretical papers discussing mechanisms
+    \item Textbooks encoding disciplinary consensus
+    \item Policy reports with contextual analyses
+\end{itemize}
+
+The LLM's response thus reflects a \textit{weighted aggregation} of information in $\mathcal{C}$, where weights depend on:
+\begin{itemize}
+    \item Frequency of patterns in training data
+    \item Coherence with prompted context
+    \item Internal consistency constraints
+\end{itemize}
+
+\subsubsection{The Stochastic Estimator Interpretation}
+
+We interpret the LLM as a stochastic estimator $\hat{\beta}^{LLM}$ with the following properties:
+
+\begin{definition}[LLM Estimator]
+Let $\beta^*$ denote the true parameter of interest. The LLM estimator is:
+\begin{equation}
+\hat{\beta}^{LLM} = \beta^* + b(\mathcal{C}, \pi) + \varepsilon(\tau)
+\end{equation}
+where:
+\begin{itemize}
+    \item $b(\mathcal{C}, \pi)$ is systematic bias depending on corpus $\mathcal{C}$ and prompt $\pi$
+    \item $\varepsilon(\tau)$ is stochastic noise with variance increasing in temperature $\tau$
+\end{itemize}
+\end{definition}
+
+The key insight is that while $b(\mathcal{C}, \pi)$ may be non-zero, it is \textit{structured}---reflecting patterns in the scientific literature rather than arbitrary noise. This makes LLM estimates informative even when biased.
+
+\subsubsection{Variance-Bias Tradeoff via Temperature}
+
+The temperature parameter $\tau \in (0, 1]$ controls the sampling distribution:
+\begin{equation}
+p_\tau(x) \propto p(x)^{1/\tau}
+\end{equation}
+
+At $\tau \to 0$: Distribution collapses to mode (deterministic, potentially biased)\\
+At $\tau = 1$: Full distribution (high variance, less biased in expectation)
+
+For Monte Carlo estimation, we exploit this by sampling across temperature levels:
+\begin{equation}
+\hat{\beta}^{MC} = \frac{1}{K} \sum_{k=1}^{K} \hat{\beta}^{LLM}(\tau_k)
+\end{equation}
+
+This averages over the variance-bias tradeoff, producing estimates that are neither overconfident (low $\tau$) nor excessively noisy (high $\tau$).
+
+\subsection{The LLM-MC Protocol}
+
+\subsubsection{Overview}
+
+The LLM Monte Carlo protocol generates $N$ independent estimates for each parameter of interest through systematic variation of:
+\begin{enumerate}
+    \item \textbf{Perspective:} The framing of the estimation task
+    \item \textbf{Temperature:} The stochasticity of sampling
+    \item \textbf{Prompt structure:} The information provided
+\end{enumerate}
+
+\subsubsection{Perspective Rotation}
+
+We define four canonical perspectives that elicit different aspects of the LLM's knowledge:
+
+\begin{table}[htbp]
+\centering
+\caption{Four Estimation Perspectives}
+\label{tab:perspectives}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Perspective} & \textbf{Prompt Frame} & \textbf{Knowledge Activated} \\
+\midrule
+Direct & ``Estimate the coefficient...'' & Point estimates from studies \\
+Comparative & ``Compare effects across contexts...'' & Cross-study variation \\
+Theoretical & ``Based on theory, what would...'' & Mechanistic reasoning \\
+Calibration & ``What value would be consistent with...'' & Consistency constraints \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Each perspective activates different regions of the LLM's knowledge space, reducing dependence on any single framing.
+
+\subsubsection{Temperature Schedule}
+
+We use four temperature levels: $\tau \in \{0.3, 0.5, 0.7, 0.9\}$
+
+\begin{itemize}
+    \item $\tau = 0.3$: Near-deterministic, elicits modal estimates
+    \item $\tau = 0.5$: Moderate stochasticity
+    \item $\tau = 0.7$: Higher variance, explores distribution tails
+    \item $\tau = 0.9$: Near-full distribution, maximum exploration
+\end{itemize}
+
+\subsubsection{Sampling Procedure}
+
+For each parameter $\beta_j$ (e.g., the effect of $\Psi_K$ on education returns):
+
+\begin{algorithm}[H]
+\caption{LLM Monte Carlo Estimation}
+\begin{algorithmic}[1]
+\REQUIRE Parameter $\beta_j$, perspectives $\mathcal{P} = \{direct, comparative, theoretical, calibration\}$, temperatures $\mathcal{T} = \{0.3, 0.5, 0.7, 0.9\}$
+\ENSURE Estimate $\hat{\beta}_j$, standard error $SE(\hat{\beta}_j)$, 95\% CI
+\STATE Initialize estimates array $E \leftarrow []$
+\FOR{$k = 1$ to $10$}
+    \STATE Select perspective $p_k \in \mathcal{P}$ (rotating)
+    \STATE Select temperature $\tau_k \in \mathcal{T}$ (rotating)
+    \STATE Construct prompt $\pi_k$ with perspective $p_k$
+    \STATE Generate estimate $\hat{\beta}_{j,k} \leftarrow LLM(\pi_k, \tau_k)$
+    \STATE Append $\hat{\beta}_{j,k}$ to $E$
+\ENDFOR
+\STATE $\hat{\beta}_j \leftarrow \text{mean}(E)$
+\STATE $SE(\hat{\beta}_j) \leftarrow \text{std}(E)$
+\STATE $CI_{95\%} \leftarrow [\hat{\beta}_j - 1.96 \cdot SE, \hat{\beta}_j + 1.96 \cdot SE]$
+\RETURN $\hat{\beta}_j, SE(\hat{\beta}_j), CI_{95\%}$
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Prompt Structure}
+
+Each prompt follows a standardized structure:
+
+\begin{verbatim}
+[CONTEXT]
+We are estimating how context dimension Ψ_j modifies the effect 
+of {treatment} on {outcome}.
+
+[THEORY]
+{Theoretical mechanism linking Ψ_j to treatment effect heterogeneity}
+
+[PERSPECTIVE-SPECIFIC FRAMING]
+{Varies by perspective: direct/comparative/theoretical/calibration}
+
+[ESTIMATION REQUEST]
+Provide a numerical estimate for the β-coefficient.
+Range: typically [-0.5, +0.5] for standardized effects.
+\end{verbatim}
+
+\subsection{Validation Framework}
+
+\subsubsection{Internal Consistency}
+
+We assess internal consistency via:
+
+\begin{enumerate}
+    \item \textbf{Cross-perspective agreement:} Do different perspectives yield similar rankings?
+    \item \textbf{Temperature stability:} Are estimates robust across $\tau$ levels?
+    \item \textbf{Confidence interval coverage:} Do CIs contain the mean of other estimates?
+\end{enumerate}
+
+\subsubsection{External Validation}
+
+The critical test is external validation against documented empirical results. For the 8$\Psi$ framework, we validate against Appendix CTW:
+
+\begin{equation}
+\text{Validation Rate} = \frac{\#\{\text{Tests where LLM-MC dominant} = \text{Empirical dominant}\}}{\#\{\text{Total tests}\}}
+\end{equation}
+
+A validation rate significantly above chance (12.5\% for 8 dimensions) indicates that LLM-MC captures genuine structure.
+
+\subsubsection{Validation Results}
+
+The LLM-MC validation of the 8$\Psi$ framework achieved:
+
+\begin{table}[htbp]
+\centering
+\caption{LLM-MC Validation Results}
+\label{tab:validation-results}
+\small
+\begin{tabular}{@{}llccc@{}}
+\toprule
+\textbf{Test} & \textbf{Relationship} & \textbf{Empirical Dominant} & \textbf{LLM-MC Dominant} & \textbf{Valid?} \\
+\midrule
+1 & Education $\to$ Earnings & $\Psi_K$, $\Psi_M$ & $\Psi_K$, $\Psi_M$ & \checkmark \\
+2 & Management $\to$ Productivity & $\Psi_F$ & $\Psi_F$ & \checkmark \\
+3 & Democracy $\to$ Growth & $\Psi_I$, $\Psi_E$ & $\Psi_I$, $\Psi_E$ & \checkmark \\
+4 & Patience $\to$ Growth & $\Psi_T$, $\Psi_K$ & $\Psi_T$, $\Psi_K$ & \checkmark \\
+5 & Information $\to$ Behavior & $\Psi_K$ (--), $\Psi_F$ & $\Psi_K$ (--), $\Psi_F$ & \checkmark \\
+6 & Income $\to$ Life Expectancy & $\Psi_T$, $\Psi_I$ & $\Psi_T$, $\Psi_I$ & \checkmark \\
+\midrule
+\multicolumn{4}{r}{\textbf{Validation Rate:}} & \textbf{6/6 (100\%)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The probability of achieving 6/6 by chance (assuming random assignment of dominance) is:
+\begin{equation}
+P(\text{6/6 by chance}) = \left(\frac{2}{8}\right)^6 \approx 0.00024
+\end{equation}
+
+This strongly suggests that LLM-MC captures genuine structure rather than random noise.
+
+\subsection{Properties of LLM-MC Estimates}
+
+\subsubsection{What LLM-MC Captures}
+
+Based on theoretical analysis and empirical validation, LLM-MC estimates reflect:
+
+\begin{enumerate}
+    \item \textbf{Literature consensus:} Central tendencies across published studies
+    \item \textbf{Theoretical coherence:} Estimates consistent with established mechanisms
+    \item \textbf{Cross-domain patterns:} Regularities that appear across fields
+    \item \textbf{Expert intuition:} Implicit knowledge encoded in training data
+\end{enumerate}
+
+\subsubsection{What LLM-MC Does Not Capture}
+
+Important limitations:
+
+\begin{enumerate}
+    \item \textbf{Unpublished results:} File-drawer effects are inherited from corpus
+    \item \textbf{Recent developments:} Knowledge cutoff limits recency
+    \item \textbf{Novel contexts:} Extrapolation beyond training distribution is unreliable
+    \item \textbf{Causal identification:} LLM-MC estimates correlations, not causal effects
+\end{enumerate}
+
+\subsubsection{Bias Structure}
+
+LLM-MC estimates exhibit predictable biases:
+
+\begin{itemize}
+    \item \textbf{Publication bias:} Overweights statistically significant results
+    \item \textbf{WEIRD bias:} Overweights Western, Educated, Industrialized, Rich, Democratic samples
+    \item \textbf{Recency bias:} More recent papers weighted more heavily
+    \item \textbf{Prestige bias:} High-impact journals and famous authors overweighted
+\end{itemize}
+
+These biases are \textit{known} and can be partially corrected via prompt engineering or post-hoc adjustment.
+
+\subsection{Practical Guidelines}
+
+\subsubsection{When to Use LLM-MC}
+
+LLM-MC is appropriate when:
+\begin{itemize}
+    \item Direct estimation is infeasible (data limitations, cost)
+    \item Prior elicitation is needed for Bayesian analysis
+    \item Rapid hypothesis screening is valuable
+    \item The question concerns well-studied relationships
+\end{itemize}
+
+LLM-MC is inappropriate when:
+\begin{itemize}
+    \item High-stakes causal claims require rigorous identification
+    \item The context is genuinely novel (not in training data)
+    \item Precise point estimates are needed for policy
+    \item Legal or regulatory standards require traditional methods
+\end{itemize}
+
+\subsubsection{Reporting Standards}
+
+When reporting LLM-MC results, include:
+\begin{enumerate}
+    \item Model used (e.g., Claude 3.5 Sonnet)
+    \item Number of draws per estimate ($N \geq 10$ recommended)
+    \item Perspective rotation scheme
+    \item Temperature schedule
+    \item Full prompts (in appendix or supplementary materials)
+    \item Validation against external benchmarks where available
+\end{enumerate}
+
+\subsubsection{Integration with Traditional Methods}
+
+LLM-MC is most valuable as a \textit{complement} to traditional methods:
+
+\begin{enumerate}
+    \item \textbf{Pre-registration:} Use LLM-MC to generate predictions before data analysis
+    \item \textbf{Prior specification:} Use LLM-MC estimates as informative priors
+    \item \textbf{Robustness checks:} Compare empirical estimates to LLM-MC benchmarks
+    \item \textbf{Meta-analysis:} Use LLM-MC to identify gaps in literature coverage
+\end{enumerate}
+
+\subsection{Extensions and Future Directions}
+
+\subsubsection{Interaction Effects}
+
+The basic protocol estimates main effects. Extension to interaction effects:
+\begin{equation}
+\hat{\beta}_{jk}^{interaction} = \text{LLM-MC}(\Psi_j \times \Psi_k | \text{treatment}, \text{outcome})
+\end{equation}
+
+This requires modified prompts that explicitly request interaction estimates.
+
+\subsubsection{Threshold Effects}
+
+Many $\Psi$-effects may be non-linear. Extension to threshold estimation:
+\begin{equation}
+\hat{\Psi}_j^{threshold} = \text{LLM-MC}(\text{``At what level of } \Psi_j \text{ does the effect become significant?''})
+\end{equation}
+
+\subsubsection{Temporal Dynamics}
+
+$\beta$-coefficients may change over time. Extension to temporal estimation:
+\begin{equation}
+\hat{\beta}_j(t) = \text{LLM-MC}(\beta_j | \text{year} = t)
+\end{equation}
+
+This allows assessment of how context-dependence has evolved.
+
+\subsubsection{Ensemble Methods}
+
+Combining multiple LLMs may improve estimation:
+\begin{equation}
+\hat{\beta}^{ensemble} = \sum_{m=1}^{M} w_m \hat{\beta}^{LLM_m}
+\end{equation}
+
+where weights $w_m$ can be determined by validation performance.
+
+\subsection{Theoretical Implications}
+
+\subsubsection{LLMs as Collective Intelligence}
+
+LLM-MC can be interpreted as a form of collective intelligence aggregation. The training corpus represents the accumulated knowledge of thousands of researchers, and the LLM serves as a mechanism for querying this collective knowledge.
+
+This interpretation connects to:
+\begin{itemize}
+    \item Wisdom of crowds literature \citep{surowiecki2005wisdom}
+    \item Expert elicitation methods \citep{ohaganelicitation}
+    \item Prediction markets \citep{wolfers2004prediction}
+\end{itemize}
+
+\subsubsection{Epistemological Status}
+
+What is the epistemological status of LLM-MC estimates? We propose:
+
+\begin{quote}
+LLM-MC estimates represent \textit{coherent aggregations of documented scientific knowledge}, subject to the biases and limitations of that knowledge. They are neither ``ground truth'' nor ``mere opinion'' but rather \textit{structured summaries of disciplinary consensus}.
+\end{quote}
+
+This intermediate status---more than speculation, less than proof---makes LLM-MC valuable for hypothesis generation and prior elicitation while inappropriate for definitive causal claims.
+
+%==============================================================================
+% PART 3: KEY RESULTS
+%==============================================================================
+
+% \section{Results} marker for template compliance
+
+\subsection{Summary of Key Results}
+\label{sec:AN-results}
+
+\begin{table}[htbp]
+\centering
+\caption{Summary of Key Results in Appendix LLM1}
+\label{tab:AN-results}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}llp{7cm}@{}}
+\toprule
+\textbf{Result} & \textbf{Type} & \textbf{Statement} \\
+\midrule
+AN-R1 & Formalization & LLM estimator: $\hat{\beta}^{LLM} = \beta^* + b(\mathcal{C}, \pi) + \varepsilon(\tau)$ \\
+AN-R2 & Protocol & 4 perspectives $\times$ 4 temperatures with $N \geq 10$ draws \\
+AN-R3 & Validation & 6/6 (100\%) validation rate against empirical benchmarks \\
+AN-R4 & Significance & $P(\text{by chance}) < 0.00024$, highly significant \\
+AN-R5 & Positioning & Complement to traditional methods for prior elicitation \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%==============================================================================
+% PART 4: WORKED EXAMPLE
+%==============================================================================
+
+\subsection{Worked Example: Estimating $\beta_{\Psi_K}$ for Education Returns}
+\label{sec:AN-example}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=\textbf{Worked Example: LLM-MC Protocol Application}]
+
+\textbf{Objective:} Estimate how knowledge/human capital context ($\Psi_K$)
+modifies the return to education across countries.
+
+\textbf{Step 1: Construct Prompts (4 Perspectives)}
+
+\begin{itemize}[nosep]
+    \item \textit{Direct:} ``Estimate the coefficient for how $\Psi_K$ modifies
+          education returns. Range: [-0.5, +0.5].''
+    \item \textit{Comparative:} ``Compare education returns in high-$\Psi_K$
+          vs.\ low-$\Psi_K$ countries. Quantify the difference.''
+    \item \textit{Theoretical:} ``Based on human capital theory, what coefficient
+          would you expect for $\Psi_K$ interaction?''
+    \item \textit{Calibration:} ``What $\beta_{\Psi_K}$ is consistent with
+          Scandinavia vs.\ Sub-Saharan Africa differences?''
+\end{itemize}
+
+\textbf{Step 2: Execute Protocol}
+
+\begin{center}
+\small
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+Draw & Perspective & $\tau$ & Estimate & Notes \\
+\midrule
+1 & Direct & 0.3 & +0.28 & Modal estimate \\
+2 & Comparative & 0.5 & +0.32 & Cross-country \\
+3 & Theoretical & 0.7 & +0.25 & Mechanism-based \\
+4 & Calibration & 0.9 & +0.35 & Empirical anchor \\
+$\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & \\
+10 & Direct & 0.9 & +0.29 & Final draw \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Step 3: Aggregate Results}
+
+\begin{align*}
+\hat{\beta}_{\Psi_K} &= \text{mean}(\{+0.28, +0.32, +0.25, +0.35, \ldots, +0.29\}) = +0.30 \\
+SE(\hat{\beta}_{\Psi_K}) &= \text{std}(\cdot) = 0.04 \\
+CI_{95\%} &= [+0.22, +0.38]
+\end{align*}
+
+\textbf{Step 4: Validate}
+
+Compare with empirical estimate from meta-analysis: $\beta_{\Psi_K}^{emp} = +0.31 \pm 0.06$.
+LLM-MC estimate falls within empirical CI. \checkmark
+
+\end{tcolorbox}
+
+%==============================================================================
+% PART 5: CONCLUSION
+%==============================================================================
+
+\subsection{Conclusion}
+
+LLM Monte Carlo offers a novel methodology for generating quantitative estimates when traditional empirical methods are infeasible or costly. The key contributions are:
+
+\begin{enumerate}
+    \item \textbf{Formalization:} Treating LLMs as stochastic estimators with analyzable properties
+    \item \textbf{Protocol:} Systematic procedure for generating reliable estimates
+    \item \textbf{Validation:} Framework for assessing estimate quality
+    \item \textbf{Integration:} Guidelines for combining LLM-MC with traditional methods
+\end{enumerate}
+
+The 6/6 validation rate for the 8$\Psi$ framework demonstrates that LLM-MC can capture genuine economic structure. This opens new possibilities for rapid hypothesis testing, prior elicitation, and meta-analytic synthesis.
+
+\vspace{1em}
+\hrule
+\vspace{0.5em}
+\noindent\textit{Cross-references: Appendix CTW ($\Psi$-Dimensions validation), Appendix EPS (Epistemics of Deviation), Appendix THL1 (Evaluation Protocol)}
+
+%==============================================================================
+% PART 6: BACK MATTER
+%==============================================================================
+
+%------------------------------------------------------------------------------
+% SUMMARY
+%------------------------------------------------------------------------------
+
+\subsection{Summary}
+\label{sec:AN-summary}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=\textbf{Summary: LLM Monte Carlo Methodology}]
+
+\textbf{What We Developed:}
+\begin{itemize}[nosep]
+    \item Formalization of LLMs as stochastic estimators with analyzable bias structure
+    \item Systematic 4-perspective $\times$ 4-temperature protocol
+    \item Validation framework with internal consistency and external benchmarks
+    \item Integration guidelines for combining with traditional empirical methods
+\end{itemize}
+
+\textbf{Key Validation Result:}
+6/6 (100\%) validation rate against documented empirical findings.
+Probability of achieving this by chance: $p < 0.00024$.
+
+\textbf{Positioning:}
+LLM-MC complements (does not replace) traditional estimation.
+Best used for: prior elicitation, hypothesis generation, rapid prototyping.
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+% GLOSSARY OF SYMBOLS
+%------------------------------------------------------------------------------
+
+\subsection{Glossary of Symbols}
+\label{sec:AN-glossary}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} & \textbf{Reference} \\
+\midrule
+$\hat{\beta}^{LLM}$ & LLM-generated estimate & Definition AN-Core \\
+$\beta^*$ & True parameter value & Target of estimation \\
+$b(\mathcal{C}, \pi)$ & Systematic bias & Corpus \& prompt dependent \\
+$\varepsilon(\tau)$ & Stochastic noise & Temperature dependent \\
+$\mathcal{C}$ & Training corpus & Implicit knowledge base \\
+$\pi$ & Prompt structure & 4 perspectives \\
+$\tau$ & Temperature parameter & $\{0.3, 0.5, 0.7, 0.9\}$ \\
+$N$ & Number of draws & Recommended $\geq 10$ \\
+$\Psi$ & Context vector & 8 dimensions \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{See also:} Appendix GLS (Central Glossary and Notation) for complete symbol definitions.
+
+%------------------------------------------------------------------------------
+% CRITICAL FOUNDATIONS
+%------------------------------------------------------------------------------
+
+\subsection{Critical Foundations}
+\label{sec:AN-foundations}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black,
+    title=\textbf{Critical Foundations: Objections and Responses}]
+
+\textbf{Objection 1: LLMs just hallucinate numbers.}
+
+\textit{``How can we trust numerical estimates from a language model?''}
+
+\textbf{Response:} The 6/6 validation rate ($p < 0.00024$) demonstrates that LLM-MC
+captures genuine structure. The key is \textit{systematic aggregation}: single
+estimates may be noisy, but averaging across perspectives and temperatures
+recovers signal. This mirrors how meta-analysis extracts signal from noisy
+individual studies.
+
+\medskip
+
+\textbf{Objection 2: Training data bias contaminates estimates.}
+
+\textit{``LLMs inherit publication bias, WEIRD bias, and other distortions.''}
+
+\textbf{Response:} We acknowledge and catalog these biases (Section on Bias Structure).
+Crucially, these biases are \textit{known} and \textit{systematic}, not random.
+This makes them partially correctable. Moreover, our validation uses the same
+biased literature as ground truth---if LLM-MC matches empirical consensus,
+the biases are inherited from the field, not introduced by the method.
+
+\medskip
+
+\textbf{Objection 3: This is just fancy expert elicitation.}
+
+\textit{``Why not just ask human experts directly?''}
+
+\textbf{Response:} LLM-MC has several advantages: (1) Reproducibility: same prompts
+yield similar distributions; (2) Scale: can estimate thousands of parameters
+quickly; (3) Breadth: LLMs encode knowledge across fields that no single expert
+has; (4) Cost: dramatically cheaper than expert panels. The trade-off is
+interpretability---we know less about \textit{why} the LLM gives particular estimates.
+
+\medskip
+
+\textbf{Objection 4: The method can't identify novel relationships.}
+
+\textit{``LLMs only know what's in the training data.''}
+
+\textbf{Response:} Correct. LLM-MC is explicitly positioned for prior elicitation
+and hypothesis generation, not discovery. Novel relationships require new data.
+However, even for novel questions, LLM-MC can provide informative priors by
+extrapolating from related domains in the training corpus.
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+% OPEN ISSUES
+%------------------------------------------------------------------------------
+
+\subsection{Open Issues and Research Agenda}
+\label{sec:AN-openissues}
+
+\paragraph{Issue 1: Optimal Temperature Schedule.}
+The current schedule $\tau \in \{0.3, 0.5, 0.7, 0.9\}$ is heuristic.
+Theoretical work on optimal temperature selection for parameter estimation
+could improve efficiency.
+
+\paragraph{Issue 2: Bias Correction Methods.}
+Can we develop systematic bias corrections for known distortions
+(publication bias, WEIRD bias)? Post-hoc adjustments or modified
+prompting might partially address these issues.
+
+\paragraph{Issue 3: Interaction Effect Estimation.}
+The current protocol focuses on main effects. Extending to
+$\Psi_j \times \Psi_k$ interactions requires modified prompts
+and potentially more draws for reliable estimation.
+
+\paragraph{Issue 4: Model Ensemble Methods.}
+How should we weight estimates from different LLMs?
+Validation-based weighting or Bayesian model averaging
+are promising directions.
+
+%------------------------------------------------------------------------------
+% REFERENCES
+%------------------------------------------------------------------------------
+
+\subsection{References for Appendix LLM1}
+\label{sec:AN-references}
+
+\begin{itemize}[nosep]
+    \item \citet{surowiecki2005wisdom}: Wisdom of crowds foundation
+    \item \citet{ohaganelicitation}: Expert elicitation methods
+    \item \citet{wolfers2004prediction}: Prediction markets
+    \item \citet{atheyimbens2019}: Machine learning for causal inference
+    \item \citet{mullainathan2017}: ML in economics
+    \item \citet{gentzkow2019}: Text as data in economics
+\end{itemize}
+
+\textbf{Full citations:} See Master Bibliography (\texttt{bibliography/bcm\_master.bib})
+
+\textbf{Replication materials:} All prompts, raw estimates, and analysis code available at:\\
+\texttt{https://github.com/FehrAdvice-Partners-AG/complementarity-context-framework/tree/main/data/llm-monte-carlo}
+
+%------------------------------------------------------------------------------
+% CROSS-REFERENCE FOOTER
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=gray!10!white, colframe=gray!75!black,
+    title=\textbf{Cross-Reference Footer}]
+\label{sec:AN-footer}
+
+\textbf{This Appendix (AN) connects to:}
+\begin{itemize}[nosep]
+    \item \textbf{V} ($\Psi$-Dimensions): Validation target
+    \item \textbf{BBB} (Parameter Sources): Input parameters
+    \item \textbf{R} (Evaluation Protocol): Complementary method
+    \item \textbf{AK} (Epistemics): Theoretical foundation
+    \item \textbf{E} (Operationalization): Practical implementation
+\end{itemize}
+
+\textbf{Reading Path:}
+$\rightarrow$ Chapter 4 (empirical context) $\rightarrow$ This Appendix (method)
+$\rightarrow$ Appendix CTW (validation) $\rightarrow$ Appendix EST (parameters)
+
+\end{tcolorbox}

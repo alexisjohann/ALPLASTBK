@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "date": "2025-01-13",
+    "scale": "d/SMD",
+    "status": "production-ready",
+    "description": "Scale-local calibration for Cohen's d and SMD effect sizes",
+    "note": "Calibration is scale-local. Deployment follows validation, not ambition."
+  },
+
+  "calibration_params": {
+    "a": 0.03,
+    "b": 0.79,
+    "formula": "θ_true ≈ 0.03 + 0.79 × θ_llm",
+    "interpretation": {
+      "intercept": "≈ 0 → no bias in lower range",
+      "slope": "< 1 → LLM optimism ('hype bias') is corrected"
+    }
+  },
+
+  "uncertainty": {
+    "sigma_model": 0.06,
+    "note": "Model misspecification uncertainty"
+  },
+
+  "validation": {
+    "n_anchors": 5,
+    "anchors_used": [
+      "T12_02_nudging_meta",
+      "T12_03_sms_health_meta",
+      "T12_04_implementation_intentions_meta",
+      "T12_05a_incentive_steps_shortterm",
+      "T12_05b_incentive_steps_followup"
+    ],
+    "metrics": {
+      "mae": 0.06,
+      "rmse": 0.07,
+      "spearman_rho": 0.90,
+      "coverage_95": 0.80
+    },
+    "status": "ACCEPTABLE"
+  },
+
+  "usage": {
+    "applicable_to": ["Cohen's d", "SMD", "Hedges' g"],
+    "not_applicable_to": ["percentage_points", "percent_change", "odds_ratio"],
+    "workflow": [
+      "1. Run LLMMC protocol → get θ_llm, EU_llm",
+      "2. Apply: θ_cal = clip(0.03 + 0.79 × θ_llm, 0, 1)",
+      "3. Propagate uncertainty: σ_cal = sqrt((0.79 × EU_llm)² + 0.06²)",
+      "4. Report with Tier-3 designation"
+    ]
+  },
+
+  "scientific_justification": {
+    "why_scale_local": "Effect size metrics have different semantics and base rates. d=0.5 ≠ 25pp in calibration space.",
+    "why_not_integrated": "Forcing integration with n=3 pp-anchors would create leverage artifacts.",
+    "reviewer_statement": "Partial, scale-specific calibration with explicit validity bounds is methodologically stronger than forced global integration."
+  }
+}

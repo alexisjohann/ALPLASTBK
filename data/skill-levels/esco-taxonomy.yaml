@@ -1,0 +1,640 @@
+# =============================================================================
+# ESCO — European Skills, Competences, Qualifications and Occupations
+# =============================================================================
+# Version: 1.0.0
+# Quelle: ESCO v1.2.1 (EU-Kommission, DG EMPL + Cedefop)
+# URL: https://esco.ec.europa.eu
+# Lizenz: EUPL 1.2 (Open Source)
+# Erstellt: 2026-02-22
+# Zweck: EU-weite Skill-Referenz fuer Kaufland (8 EU-Laender)
+# =============================================================================
+
+# =============================================================================
+# WAS IST ESCO?
+# =============================================================================
+#
+# ESCO ist die "gemeinsame Sprache" des europaeischen Arbeitsmarkts.
+#
+# Stell dir vor: Eine Kassiererin in Kaufland Deutschland heisst "Kassiererin".
+# In Kaufland Polen heisst dieselbe Rolle "Kasjer/ka". In Kaufland Rumaenien
+# "Casier/a". Aber welche SKILLS brauchen alle drei? Sind es dieselben?
+# Kann die deutsche Kassiererin in Polen arbeiten?
+#
+# ESCO beantwortet genau diese Fragen:
+# - 3'039 Berufe in 28 Sprachen (inkl. alle Kaufland-Laender)
+# - 13'939 Skills/Kompetenzen/Wissen als gemeinsames Vokabular
+# - Qualifikationen ueber EQF/DQR verknuepft
+#
+# WARUM BRAUCHEN WIR ESCO?
+# Kaufland operiert in 8 EU-Laendern (DE, PL, CZ, SK, RO, BG, HR, MD).
+# O*NET ist US-zentriert. WEF ist global aber abstrakt.
+# ESCO ist der EU-Standard — seit 2021 PFLICHT fuer EURES (EU-Jobportal).
+#
+# WAS ESCO NICHT IST:
+# - Kein Skill-LEVEL-Modell (ESCO sagt WAS, nicht WIE GUT)
+# - Kein psychometrisches Konstrukt (keine latenten Faehigkeiten)
+# - Kein Assessment-Tool (misst nichts, klassifiziert nur)
+#
+# DESHALB: ESCO = Vokabular, O*NET = Messskala, WEF = Meta-Skills
+# =============================================================================
+
+metadata:
+  name: "ESCO — European Skills, Competences, Qualifications and Occupations"
+  version_esco: "1.2.1"
+  version_file: "1.0.0"
+  maintainer: "EU-Kommission, DG Employment + Cedefop"
+  release_date: "2024-05 (v1.2), late 2024 (v1.2.1)"
+  languages: 28
+  license: "EUPL 1.2"
+  api: "https://esco.ec.europa.eu/en/use-esco/use-esco-services-api"
+  download: "https://esco.ec.europa.eu/en/use-esco/download"
+  formats: ["CSV", "JSON-LD", "ODS", "RDF", "TTL", "XML"]
+
+# =============================================================================
+# DREI SAEULEN
+# =============================================================================
+
+three_pillars:
+  occupations:
+    description: |
+      3'039 Berufe, hierarchisch nach ISCO-08 (Level 1-4) + ESCO-Erweiterung (Level 5+).
+      Jeder Beruf hat: Beschreibung, alternative Bezeichnungen, essentielle Skills,
+      optionale Skills, essentielles Wissen, optionales Wissen.
+    count: 3039
+    hierarchy_basis: "ISCO-08 (ILO)"
+    levels: "5+ (ISCO 4 Levels + ESCO Sub-Levels)"
+    retail_relevant_isco_codes:
+      - code: "522"
+        name: "Shop Salespersons"
+        esco_occupations:
+          - "Shop sales assistant"
+          - "Shopkeeper"
+          - "Shop supervisor"
+          - "Bakery shop assistant"
+          - "Delicatessen seller"
+      - code: "5230"
+        name: "Checkout Operators"
+        esco_occupations:
+          - "Checkout operator"
+      - code: "5222"
+        name: "Shop Supervisors"
+        esco_occupations:
+          - "Shop supervisor"
+
+  skills_and_competences:
+    description: |
+      13'939 Skill/Kompetenz/Wissens-Konzepte in 4 Sub-Klassifikationen.
+      3-stufige Hierarchie (Level 1 = Kategorien, Level 2 = Cluster, Level 3 = Einzelkonzepte).
+      Jedes Skill-Konzept hat ein "reusability level": transversal, cross-sectoral,
+      sector-specific, oder occupation-specific.
+    total_concepts: 13939
+    sub_classifications:
+      S: "Skills"
+      K: "Knowledge"
+      T: "Transversal skills and competences"
+      L: "Language skills and knowledge"
+    knowledge_concepts: 2903
+    hierarchy_levels: 3
+    hierarchy_origin: |
+      Level 2 basiert auf O*NET's 332 Intermediate Work Activities (IWA).
+      Level 1 und 2 zusaetzlich aus Canadian Skills Glossary.
+      → ESCO und O*NET sind NICHT unabhaengig — sie teilen DNA.
+
+  qualifications:
+    description: |
+      Qualifikationen aus nationalen Datenbanken, verknuepft mit EQF-Levels.
+      Kein fester Katalog sondern wachsendes Repository.
+    framework: "EQF (European Qualifications Framework)"
+    levels: 8
+    participating_countries: 41
+    referenced_countries: 36
+
+# =============================================================================
+# SKILLS-SAEULEN (S) — 8 Kategorien Level 1
+# =============================================================================
+
+skills_pillar_categories:
+  - code: "S1"
+    name: "Communication, collaboration and creativity"
+  - code: "S2"
+    name: "Information skills"
+  - code: "S3"
+    name: "Assisting and caring"
+  - code: "S4"
+    name: "Management skills"
+  - code: "S5"
+    name: "Working with computers"
+  - code: "S6"
+    name: "Handling and moving"
+  - code: "S7"
+    name: "Constructing"
+  - code: "S8"
+    name: "Working with machinery and specialised equipment"
+
+# =============================================================================
+# TRANSVERSAL SKILLS (T) — Das Herzstück fuer Kaufland
+# =============================================================================
+#
+# Transversal Skills = hoechstes Reusability-Level in ESCO.
+# Gelten ueber ALLE Sektoren und Berufe hinweg.
+# Grundlegend ueberarbeitet in ESCO v1.1 (Januar 2022).
+#
+# Struktur: 6 Kategorien → 24 Cluster → ~97 Einzelkompetenzen
+#
+# Design-Logik: Konzentrische Kreise
+# Kern (T1: Core) → Denken (T2) → Selbstmanagement (T3)
+# → Soziale Interaktion (T4) → Physische Faehigkeiten (T5)
+# → Lebenskompetenzen (T6: aeusserer Ring)
+# =============================================================================
+
+transversal_skills:
+  summary:
+    categories_L1: 6
+    clusters_L2: 24
+    concepts_L3: 97  # approximate
+
+  T1:
+    code: "T1"
+    name: "Core skills and competences"
+    name_de: "Kernkompetenzen"
+    description: "Grundlegende Faehigkeiten die alle anderen ermoeglichen"
+    clusters:
+      T1_1:
+        code: "T1.1"
+        name: "Applying knowledge (literacy)"
+        name_de: "Wissen anwenden (Lesen/Schreiben)"
+        concepts:
+          - "apply knowledge"
+          - "gather information"
+          - "use reference sources"
+          - "read with understanding"
+          - "write clearly"
+        retail_relevance: "high"
+        retail_example: "Produktinformationen lesen und verstehen, Bestellungen schriftlich erfassen"
+
+      T1_2:
+        code: "T1.2"
+        name: "Applying numeracy and mathematical skills"
+        name_de: "Rechnen und mathematische Faehigkeiten"
+        concepts:
+          - "apply numeracy skills"
+          - "perform calculations"
+          - "use measurement instruments"
+          - "interpret data"
+        retail_relevance: "high"
+        retail_example: "Kassenabrechnungen, Bestandszaehlung, Preiskalkulation"
+
+      T1_3:
+        code: "T1.3"
+        name: "Working with digital devices and applications"
+        name_de: "Digitale Geraete und Anwendungen nutzen"
+        concepts:
+          - "use digital tools"
+          - "manage digital information"
+          - "use digital communication"
+          - "collaborate through digital channels"
+          - "manage digital identity and data"
+        retail_relevance: "very_high"
+        retail_example: "Warenwirtschaftssystem (SAP), Kassensystem, Tablets fuer Bestandsmanagement"
+
+  T2:
+    code: "T2"
+    name: "Thinking skills and competences"
+    name_de: "Denkfaehigkeiten und -kompetenzen"
+    description: "Kognitive Faehigkeiten fuer Informationsverarbeitung und Problemloesung"
+    clusters:
+      T2_1:
+        code: "T2.1"
+        name: "Processing information, ideas, and concepts"
+        name_de: "Information, Ideen und Konzepte verarbeiten"
+        concepts:
+          - "think analytically"
+          - "think critically"
+          - "identify patterns and connections"
+          - "synthesise information"
+          - "judge and evaluate"
+        retail_relevance: "medium"
+        retail_example: "Verkaufszahlen interpretieren, Kundenverhalten analysieren"
+
+      T2_2:
+        code: "T2.2"
+        name: "Planning and organizing"
+        name_de: "Planen und Organisieren"
+        concepts:
+          - "plan and schedule"
+          - "organise tasks and resources"
+          - "set priorities"
+          - "coordinate actions"
+        retail_relevance: "very_high"
+        retail_example: "Personalplanung, Warenbestellung, Aktionsplanung"
+
+      T2_3:
+        code: "T2.3"
+        name: "Dealing with problems"
+        name_de: "Probleme loesen"
+        concepts:
+          - "identify problems"
+          - "analyse problems"
+          - "find solutions"
+          - "implement solutions"
+          - "evaluate outcomes"
+        retail_relevance: "high"
+        retail_example: "Reklamationen loesen, Lieferengpaesse managen, Kundenprobleme"
+
+      T2_4:
+        code: "T2.4"
+        name: "Thinking creatively and innovatively"
+        name_de: "Kreativ und innovativ denken"
+        concepts:
+          - "generate ideas"
+          - "think unconventionally"
+          - "explore possibilities"
+          - "take initiative in innovation"
+        retail_relevance: "medium"
+        retail_example: "Warenpraesentation verbessern, neue Aktionsideen entwickeln"
+
+  T3:
+    code: "T3"
+    name: "Self-management skills and competences"
+    name_de: "Selbstmanagement"
+    description: "Faehigkeiten zur Steuerung des eigenen Verhaltens und der eigenen Entwicklung"
+    clusters:
+      T3_1:
+        code: "T3.1"
+        name: "Working efficiently"
+        name_de: "Effizient arbeiten"
+        concepts:
+          - "attend to detail"
+          - "maintain concentration for long periods"
+          - "manage quality"
+          - "manage time"
+          - "meet commitments"
+          - "work efficiently"
+          - "work independently"
+        retail_relevance: "very_high"
+        retail_example: "MHD-Kontrolle (Detail), Kassenschicht durchhalten (Konzentration), Zeitmanagement bei Veraeumung"
+
+      T3_2:
+        code: "T3.2"
+        name: "Taking a proactive approach"
+        name_de: "Proaktiv handeln"
+        concepts:
+          - "demonstrate initiative"
+          - "act proactively"
+          - "show entrepreneurial spirit"
+          - "drive for results"
+        retail_relevance: "high"
+        retail_example: "Kunden aktiv ansprechen, Probleme eigenstaendig loesen"
+
+      T3_3:
+        code: "T3.3"
+        name: "Maintaining a positive attitude"
+        name_de: "Positive Haltung bewahren"
+        concepts:
+          - "cope with pressure"
+          - "adapt to change"
+          - "handle uncertainty"
+          - "demonstrate resilience"
+          - "show optimism"
+        retail_relevance: "very_high"
+        retail_example: "Stosszeiten (Druck), Sortimentswechsel (Veraenderung), schwierige Kunden (Resilienz)"
+
+      T3_4:
+        code: "T3.4"
+        name: "Demonstrating willingness to learn"
+        name_de: "Lernbereitschaft zeigen"
+        concepts:
+          - "identify own learning needs"
+          - "pursue own learning"
+          - "reflect on own performance"
+          - "accept feedback"
+          - "learn from experience"
+        retail_relevance: "high"
+        retail_example: "Neue Kassensysteme lernen, Feedback von Marktleitung annehmen"
+
+  T4:
+    code: "T4"
+    name: "Social and communication skills and competences"
+    name_de: "Soziale und kommunikative Kompetenzen"
+    description: "Faehigkeiten fuer Zusammenarbeit, Kommunikation und Fuehrung"
+    clusters:
+      T4_1:
+        code: "T4.1"
+        name: "Communicating"
+        name_de: "Kommunizieren"
+        concepts:
+          - "communicate verbally"
+          - "communicate in writing"
+          - "listen actively"
+          - "present information"
+          - "negotiate"
+          - "influence"
+        retail_relevance: "very_high"
+        retail_example: "Kundenberatung, Uebergabeprotokoll, Verhandlung mit Lieferanten (ML)"
+
+      T4_2:
+        code: "T4.2"
+        name: "Supporting others"
+        name_de: "Andere unterstuetzen"
+        concepts:
+          - "advise and assist"
+          - "mentor and coach"
+          - "provide customer service"
+          - "show empathy"
+        retail_relevance: "very_high"
+        retail_example: "Kundenservice, Einarbeitung neuer Kolleg:innen, Coaching als AL"
+
+      T4_3:
+        code: "T4.3"
+        name: "Collaborating in teams and networks"
+        name_de: "In Teams und Netzwerken zusammenarbeiten"
+        concepts:
+          - "work in teams"
+          - "build relationships"
+          - "manage conflicts"
+          - "work across cultures"
+          - "network professionally"
+        retail_relevance: "high"
+        retail_example: "Schichtuebergabe, Abteilungsuebergreifende Zusammenarbeit, interkulturelle Teams"
+
+      T4_4:
+        code: "T4.4"
+        name: "Leading others"
+        name_de: "Andere fuehren"
+        concepts:
+          - "direct and motivate"
+          - "delegate tasks"
+          - "supervise work"
+          - "develop teams"
+          - "manage performance"
+        retail_relevance: "high"
+        retail_example: "Ab Abteilungsleiter: Schichtfuehrung, Mitarbeitergespraeche, Teambuilding"
+
+      T4_5:
+        code: "T4.5"
+        name: "Following ethical code of conduct"
+        name_de: "Ethische Verhaltensregeln einhalten"
+        concepts:
+          - "act honestly and transparently"
+          - "respect confidentiality"
+          - "apply ethical principles"
+          - "demonstrate integrity"
+        retail_relevance: "high"
+        retail_example: "Umgang mit Kundendaten, Kassendifferenzen ehrlich melden, Compliance"
+
+  T5:
+    code: "T5"
+    name: "Physical and manual skills and competences"
+    name_de: "Physische und manuelle Kompetenzen"
+    description: "Koerperliche Faehigkeiten und Umgang mit Objekten/Geraeten"
+    clusters:
+      T5_1:
+        code: "T5.1"
+        name: "Manipulating and controlling objects and equipment"
+        name_de: "Objekte und Geraete bedienen"
+        concepts:
+          - "handle objects carefully"
+          - "operate equipment"
+          - "use tools"
+          - "perform precise movements"
+          - "assemble components"
+        retail_relevance: "high"
+        retail_example: "Warenverlaeumung, Gabelstapler (Lager), Kassenhardware bedienen"
+
+      T5_2:
+        code: "T5.2"
+        name: "Responding to physical circumstances"
+        name_de: "Auf physische Gegebenheiten reagieren"
+        concepts:
+          - "maintain physical fitness"
+          - "endure physical strain"
+          - "respond to emergencies"
+          - "maintain balance and coordination"
+        retail_relevance: "very_high"
+        retail_example: "8h Stehen, schwere Paletten, Kuehlhausarbeit, Notfallverhalten"
+
+  T6:
+    code: "T6"
+    name: "Life skills and competences"
+    name_de: "Lebenskompetenzen"
+    description: "Kompetenzen fuer gesellschaftliches, kulturelles und unternehmerisches Handeln"
+    clusters:
+      T6_1:
+        code: "T6.1"
+        name: "Applying health-related skills and competences"
+        name_de: "Gesundheitsbezogene Kompetenzen"
+        concepts:
+          - "maintain hygiene standards"
+          - "apply health and safety regulations"
+          - "manage own health"
+        retail_relevance: "very_high"
+        retail_example: "Lebensmittelhygiene (HACCP), Arbeitsschutz, Ergonomie bei Veraeumung"
+
+      T6_2:
+        code: "T6.2"
+        name: "Applying environmental skills and competences"
+        name_de: "Umweltbezogene Kompetenzen"
+        concepts:
+          - "minimise environmental impact"
+          - "apply environmental regulations"
+          - "promote sustainability"
+        retail_relevance: "medium"
+        retail_example: "Abfalltrennung, Energieeinsparung, nachhaltige Sortimentsgestaltung"
+
+      T6_3:
+        code: "T6.3"
+        name: "Applying civic skills and competences"
+        name_de: "Buergerschaftliche Kompetenzen"
+        concepts:
+          - "exercise civic responsibilities"
+          - "understand legal frameworks"
+          - "participate in democratic processes"
+        retail_relevance: "low"
+
+      T6_4:
+        code: "T6.4"
+        name: "Applying cultural skills and competences"
+        name_de: "Kulturelle Kompetenzen"
+        concepts:
+          - "demonstrate intercultural awareness"
+          - "communicate across cultures"
+          - "value diversity"
+        retail_relevance: "high"
+        retail_example: "Diverse Belegschaft (PL, RO, TR, SY), diverse Kundschaft"
+
+      T6_5:
+        code: "T6.5"
+        name: "Applying entrepreneurial and financial skills and competences"
+        name_de: "Unternehmerische und finanzielle Kompetenzen"
+        concepts:
+          - "manage budgets"
+          - "understand financial information"
+          - "identify opportunities"
+          - "take calculated risks"
+        retail_relevance: "high"
+        retail_example: "Ab AL: Umsatzverantwortung, Budgetplanung, Schicht-Effizienz"
+
+      T6_6:
+        code: "T6.6"
+        name: "Applying general knowledge"
+        name_de: "Allgemeinwissen anwenden"
+        concepts:
+          - "apply general knowledge"
+          - "use contextual knowledge"
+        retail_relevance: "low"
+
+# =============================================================================
+# ESCO-RELEVANTE RETAIL-BERUFE (Shop Sales Assistant Profil)
+# =============================================================================
+
+retail_occupation_profile:
+  name: "Shop sales assistant"
+  isco_code: "5223"
+  description: |
+    Assists in shopkeeping and other shop activities. Helps shopkeepers with
+    ordering and refilling of goods. Provides customer advice, sells products,
+    and maintains the shop.
+
+  essential_knowledge:
+    - "Product comprehension (functionalities, properties, legal/regulatory requirements)"
+    - "Company policies"
+
+  essential_skills:
+    - "Operating a cash register"
+    - "Directing customers to merchandise"
+    - "Customer service fundamentals"
+
+  optional_skills:
+    - "Sales promotion techniques"
+    - "Teamwork principles"
+    - "Visual merchandising"
+    - "Stock management"
+    - "Digital tools for retail"
+
+  career_pathways:
+    - "Visual merchandiser"
+    - "Shop manager"
+    - "Merchandiser"
+    - "Drugstore/garage manager"
+
+# =============================================================================
+# KAUFLAND-LAENDER UND ESCO-STATUS
+# =============================================================================
+
+kaufland_countries_esco_status:
+  DE:
+    country: "Deutschland"
+    esco_occupations_mapped: true
+    esco_skills_mapped: false
+    nqf: "DQR"
+    eqf_referenced: true
+    note: "Berufe gemappt, Skills noch nicht"
+  PL:
+    country: "Polen"
+    esco_occupations_mapped: true
+    esco_skills_mapped: false
+    nqf: "PRK (Polska Rama Kwalifikacji)"
+    eqf_referenced: true
+  CZ:
+    country: "Tschechien"
+    esco_occupations_mapped: true
+    esco_skills_mapped: false
+    nqf: "NSK"
+    eqf_referenced: true
+  SK:
+    country: "Slowakei"
+    esco_occupations_mapped: true
+    esco_skills_mapped: false
+    nqf: "SKKR"
+    eqf_referenced: true
+  RO:
+    country: "Rumaenien"
+    esco_occupations_mapped: true
+    esco_skills_mapped: false
+    nqf: "CNC"
+    eqf_referenced: true
+  BG:
+    country: "Bulgarien"
+    esco_occupations_mapped: true
+    esco_skills_mapped: false
+    nqf: "NQF-BG"
+    eqf_referenced: true
+  HR:
+    country: "Kroatien"
+    esco_occupations_mapped: true
+    esco_skills_mapped: false
+    nqf: "CROQF (HKO)"
+    eqf_referenced: true
+  MD:
+    country: "Moldau"
+    esco_occupations_mapped: false
+    esco_skills_mapped: false
+    nqf: "NQF-MD"
+    eqf_referenced: true
+    note: "Nicht EU-Mitglied, aber EQF-Teilnehmer"
+
+# =============================================================================
+# ESCO IM VERGLEICH ZU ANDEREN FRAMEWORKS
+# =============================================================================
+
+framework_comparison:
+  esco:
+    scope: "Berufe + Skills + Qualifikationen"
+    geographic: "EU/EEA (28 Sprachen)"
+    occupations: 3039
+    skills: 13939
+    strength: "Mehrsprachig, EU-Standard, EURES-Pflicht"
+    weakness: "Kein Level-Modell (sagt WAS, nicht WIE GUT)"
+    use_in_our_architecture: "Vokabular + EU-Vergleichbarkeit"
+
+  onet:
+    scope: "Berufe + detaillierte Deskriptoren"
+    geographic: "USA"
+    occupations: 1000
+    skills: "52 Abilities + 35 Skills + 33 Knowledge"
+    strength: "Psychometrisch fundiert, Level-Skalen"
+    weakness: "US-zentriert, keine EU-Sprachen"
+    use_in_our_architecture: "Latente Faehigkeiten + Messskala"
+
+  wef:
+    scope: "Globale Skill-Taxonomie"
+    geographic: "International"
+    occupations: 0
+    skills: "~120 (4-Level-Hierarchie)"
+    strength: "Zukunftsorientiert, Attitudes inkludiert"
+    weakness: "Abstrakt, keine Berufs-Zuordnung"
+    use_in_our_architecture: "Meta-Skill-Layer (Level 3)"
+
+  dqr_eqf:
+    scope: "Qualifikationsrahmen"
+    geographic: "DE / EU"
+    occupations: 0
+    skills: 0
+    strength: "Regulatorische Realitaet, Berufsabschluesse"
+    weakness: "Nur 8 Niveaus, keine Skill-Taxonomie"
+    use_in_our_architecture: "Qualifikations-Niveaus + Karrierepfade"
+
+  crosswalk_note: |
+    ESCO und O*NET haben einen offiziellen Crosswalk (AI-basiert + manuell validiert).
+    ESCO's Skill-Hierarchie nutzt O*NET's 332 Intermediate Work Activities als Grundlage.
+    → Die Frameworks sind NICHT unabhaengig — sie teilen strukturelle DNA.
+
+# =============================================================================
+# ZAHLEN AUF EINEN BLICK
+# =============================================================================
+
+statistics:
+  occupations: 3039
+  total_skill_concepts: 13939
+  knowledge_concepts: 2903
+  transversal_L1_categories: 6
+  transversal_L2_clusters: 24
+  transversal_L3_concepts: 97
+  languages: 28
+  rdf_triples: 6500000
+  implementing_organizations: 113
+  eu_retail_employment: "~13.7 Mio. Sales Workers (7% EU-Beschaeftigung)"
+  version_history:
+    v1_0: { date: "2017-07", occupations: 2942, skills: 13485 }
+    v1_1: { date: "2022-01", occupations: 3010, skills: 13997 }
+    v1_2: { date: "2024-05", occupations: 3039, skills: 13939 }

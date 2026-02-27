@@ -1,0 +1,412 @@
+# =============================================================================
+# 10C MODEL: SAVE & INVEST PILOT
+# =============================================================================
+# Project: UBS_037 - BEATRIX Pilot Save & Invest
+# Version: 0.1.0 (Initial skeleton - to be refined with BEATRIX)
+# Created: 2026-01-27
+# =============================================================================
+
+metadata:
+  model_id: "MOD-UBS-037-001"
+  model_name: "Save & Invest Behavioral Model"
+  version: "0.1.0"
+  status: "draft"
+  created: "2026-01-27"
+
+  purpose: |
+    Model the behavioral dynamics that drive (or block) investment
+    decisions among UBS Mobile Banking users when they encounter
+    the Save & Invest landing page.
+
+# =============================================================================
+# WHO: Target Population (Welfare Hierarchy)
+# =============================================================================
+
+who:
+  core_question: "Wer soll das Verhalten ändern?"
+
+  primary_target:
+    segment: "UBS Mobile Banking Users - Non-Investors"
+    size: "95% of UBS mobile users"
+    characteristics:
+      - "Currently hold cash instead of investing"
+      - "Have access to simple retail investment solutions"
+      - "Use UBS Mobile Banking app"
+
+  hypothesized_segments:
+    - segment_id: "SEG-01"
+      name: "Cautious Savers"
+      description: "Risk-averse, loss-focused, prefer safety"
+      estimated_share: 0.40
+      primary_barriers: ["BB-02 Loss Aversion", "BB-03 Mistrust"]
+
+    - segment_id: "SEG-02"
+      name: "Overwhelmed Avoiders"
+      description: "Low financial interest, perceive high effort"
+      estimated_share: 0.30
+      primary_barriers: ["BB-01 Low Interest", "BB-04 Perceived Effort"]
+
+    - segment_id: "SEG-03"
+      name: "Myth Believers"
+      description: "Hold misconceptions about investing"
+      estimated_share: 0.15
+      primary_barriers: ["BB-05 Financial Myths", "BB-06 Monitoring Burden"]
+
+    - segment_id: "SEG-04"
+      name: "Ready but Confused"
+      description: "Interested but overwhelmed by product choice"
+      estimated_share: 0.15
+      primary_barriers: ["Product complexity", "Decision paralysis"]
+
+  welfare_levels:
+    L0_individual: "Better returns, wealth accumulation, financial security"
+    L1_household: "Family financial stability, generational wealth"
+    L2_community: "Increased investment literacy"
+    L3_society: "Capital market participation, economic growth"
+
+# =============================================================================
+# WHAT: Target Behavior and Utility Dimensions
+# =============================================================================
+
+what:
+  core_question: "Welches Verhalten soll erreicht werden?"
+
+  target_behavior:
+    current: "Holding cash, not investing despite available solutions"
+    desired_primary: "Open UBS Key4 Smart Investing account"
+    desired_secondary: "Request appointment with advisor"
+    behavioral_gap: "95% non-investment rate"
+
+  utility_dimensions:
+    u_F:
+      description: "Financial utility"
+      current_perception: "Cash = safe, no losses possible"
+      target_perception: "Investing = better long-term returns with manageable risk"
+      barriers:
+        - "Loss aversion (lambda > 2)"
+        - "Inflation blindness"
+
+    u_P:
+      description: "Psychological utility (comfort, security)"
+      current_perception: "Cash = peace of mind, no monitoring needed"
+      target_perception: "Key4 Smart = automated, stress-free investing"
+      barriers:
+        - "Fear of complexity"
+        - "Monitoring burden myth"
+
+    u_S:
+      description: "Social utility"
+      current_perception: "Investing = for rich/experts"
+      target_perception: "Investing = normal, responsible behavior"
+      potential_interventions:
+        - "Social proof: 'X% of similar users invest'"
+
+    u_X:
+      description: "Identity utility (self-image)"
+      current_perception: "I'm not an investor type"
+      target_perception: "Smart savers invest"
+      barriers:
+        - "Identity mismatch"
+
+# =============================================================================
+# HOW: Intervention Mix and Complementarity
+# =============================================================================
+
+how:
+  core_question: "Wie interagieren die Interventionen?"
+
+  landing_page_elements:
+    description: "Landing page design as intervention portfolio"
+
+    proposed_interventions:
+      - intervention_id: "INT-01"
+        type: "T3_ChoiceArchitecture"
+        element: "Simplified product choice"
+        target: "Reduce decision paralysis"
+        10c_target: "WHERE"
+
+      - intervention_id: "INT-02"
+        type: "T1_Information"
+        element: "Loss framing reframe"
+        target: "Address loss aversion"
+        10c_target: "AWARE"
+
+      - intervention_id: "INT-03"
+        type: "T2_Salience"
+        element: "Highlight Key4 Smart as default"
+        target: "Simplify choice"
+        10c_target: "AWARE"
+
+      - intervention_id: "INT-04"
+        type: "T6_Social"
+        element: "Social proof messaging"
+        target: "Normalize investing"
+        10c_target: "WHAT (u_S)"
+
+      - intervention_id: "INT-05"
+        type: "T1_Information"
+        element: "Myth-busting content"
+        target: "Address misconceptions"
+        10c_target: "AWARE"
+
+      - intervention_id: "INT-06"
+        type: "T3_ChoiceArchitecture"
+        element: "Friction reduction"
+        target: "Lower perceived effort"
+        10c_target: "WHERE"
+
+  complementarity_hypotheses:
+    positive:
+      - pair: ["INT-03 Salience", "INT-06 Friction"]
+        gamma: "+0.25"
+        rationale: "Clear default + easy path = reinforcement"
+
+      - pair: ["INT-04 Social", "INT-05 Myth-busting"]
+        gamma: "+0.20"
+        rationale: "Social norm + knowledge = confidence"
+
+    potential_negative:
+      - pair: ["Too much information", "Simplicity"]
+        gamma: "-0.15"
+        rationale: "Information overload can increase overwhelm"
+
+# =============================================================================
+# WHEN: Temporal Context
+# =============================================================================
+
+when:
+  core_question: "Wann ist der optimale Interventionszeitpunkt?"
+
+  trigger_moment:
+    event: "User taps 'Save & Invest' tab"
+    context: "Already in app, some intent signal"
+    opportunity_window: "Seconds to minutes"
+
+  temporal_factors:
+    - factor: "App session context"
+      description: "User already engaged with banking"
+      implication: "Warm lead, not cold"
+
+    - factor: "Life events"
+      description: "Salary deposit, bonus, inheritance"
+      implication: "Higher receptivity after cash inflow"
+
+    - factor: "Market context"
+      description: "Market sentiment affects risk perception"
+      implication: "Adjust messaging to market conditions"
+
+# =============================================================================
+# WHERE: Choice Architecture Context
+# =============================================================================
+
+where:
+  core_question: "In welchem Kontext findet die Entscheidung statt?"
+
+  physical_context:
+    environment: "Mobile app (smartphone)"
+    attention: "Limited, easily distracted"
+    constraints: "Small screen, short session"
+
+  choice_architecture:
+    current_state:
+      default: "User must actively choose from multiple products"
+      friction: "High (multiple steps, choices, information)"
+      clarity: "Low (too many options)"
+
+    proposed_state:
+      default: "Key4 Smart Investing as recommended option"
+      friction: "Low (streamlined flow)"
+      clarity: "High (clear primary CTA)"
+
+  kappa_parameters:
+    kappa_ARCH: "Choice architecture strength"
+    kappa_FRIC: "Friction level"
+    kappa_SAL: "Salience of key information"
+
+# =============================================================================
+# AWARE: Knowledge and Awareness
+# =============================================================================
+
+aware:
+  core_question: "Was wissen die Zielgruppen (nicht)?"
+
+  awareness_gaps:
+    - gap_id: "GAP-01"
+      gap: "Inflation erosion of cash"
+      current_awareness: 0.30
+      target_awareness: 0.70
+      intervention: "Visualize purchasing power loss"
+
+    - gap_id: "GAP-02"
+      gap: "Key4 Smart simplicity"
+      current_awareness: 0.20
+      target_awareness: 0.80
+      intervention: "Clear, simple explanation"
+
+    - gap_id: "GAP-03"
+      gap: "Historical market returns"
+      current_awareness: 0.25
+      target_awareness: 0.60
+      intervention: "Long-term perspective visualization"
+
+    - gap_id: "GAP-04"
+      gap: "Low monitoring requirement"
+      current_awareness: 0.20
+      target_awareness: 0.70
+      intervention: "Emphasize automation"
+
+  financial_myths_to_address:
+    - myth: "You need a lot of money to start"
+      reality: "Key4 starts from CHF 500"
+    - myth: "You need to monitor constantly"
+      reality: "Automated rebalancing"
+    - myth: "Investing is gambling"
+      reality: "Diversified, long-term approach"
+
+# =============================================================================
+# READY: Willingness to Act
+# =============================================================================
+
+ready:
+  core_question: "Wie handlungsbereit ist die Zielgruppe?"
+
+  willingness_assessment:
+    W_base: 0.15  # Low baseline (95% don't invest)
+    theta: 0.60   # High activation threshold
+
+  barriers_to_action:
+    - barrier: "Loss aversion"
+      type: "emotional"
+      severity: "high"
+      parameter: "lambda = 2.5 (estimated)"
+      intervention: "Loss framing reframe, guarantees messaging"
+
+    - barrier: "Complexity perception"
+      type: "cognitive"
+      severity: "high"
+      intervention: "Simplify, single CTA, visual flow"
+
+    - barrier: "Trust deficit"
+      type: "emotional"
+      severity: "medium"
+      parameter: "tau = 0.50 (estimated)"
+      intervention: "Social proof, track record, UBS brand"
+
+    - barrier: "Effort perception"
+      type: "cognitive"
+      severity: "high"
+      intervention: "Friction reduction, progress indicators"
+
+# =============================================================================
+# STAGE: Behavioral Change Journey Position
+# =============================================================================
+
+stage:
+  core_question: "Wo steht die Zielgruppe in der Journey?"
+
+  bcj_phase_distribution:
+    unaware: 0.30        # Don't know about options
+    aware: 0.40          # Know but haven't considered
+    considering: 0.15    # Thinking about it
+    intending: 0.10      # Plan to act
+    acting: 0.04         # Currently investing
+    maintaining: 0.01    # Regular investors
+
+  landing_page_journey_goal:
+    primary: "Move users from Aware → Considering → Intending"
+    secondary: "Support Intending → Acting (account opening)"
+    fallback: "Capture Considering users for advisor follow-up"
+
+  phase_specific_strategies:
+    unaware_to_aware:
+      intervention: "Attention-grabbing entry point"
+      kpi: "Tab tap rate"
+
+    aware_to_considering:
+      intervention: "Address barriers, show benefits"
+      kpi: "Time on landing page, scroll depth"
+
+    considering_to_intending:
+      intervention: "Clear CTA, reduce friction"
+      kpi: "CTA click rate"
+
+    intending_to_acting:
+      intervention: "Streamlined account opening"
+      kpi: "Account opening completion rate"
+
+# =============================================================================
+# HIERARCHY: Decision Levels
+# =============================================================================
+
+hierarchy:
+  core_question: "Auf welcher Ebene wird entschieden?"
+
+  decision_levels:
+    L0_automatic:
+      description: "Default avoidance, status quo bias"
+      implication: "Need to overcome automatic cash preference"
+
+    L1_heuristic:
+      description: "'Investing is risky', 'I'm not the type'"
+      implication: "Need to address mental shortcuts"
+
+    L2_deliberate:
+      description: "Weighing pros/cons of investing"
+      implication: "Provide clear, simple information"
+
+    L3_meta:
+      description: "Financial responsibility, future self"
+      implication: "Connect to values and long-term goals"
+
+  intervention_targeting:
+    primary_level: "L1_heuristic"
+    rationale: "Most non-investors are blocked by heuristics, not deliberation"
+
+# =============================================================================
+# PREDICTIONS (To be refined with BEATRIX)
+# =============================================================================
+
+predictions:
+  baseline:
+    metric: "Conversion rate: Tab tap → Account opening"
+    current_estimate: "2-5%"  # TBD with actual data
+
+  target:
+    optimistic: "+50% lift"
+    realistic: "+25% lift"
+    conservative: "+10% lift"
+
+  secondary_metrics:
+    - "Tab engagement rate"
+    - "Time on landing page"
+    - "CTA click rate"
+    - "Appointment request rate"
+
+# =============================================================================
+# BEATRIX APPLICATION NOTES
+# =============================================================================
+
+beatrix_application:
+  modeling_focus:
+    - "Segment-specific barrier profiles"
+    - "Intervention effectiveness simulation"
+    - "Optimal intervention combinations"
+
+  simulation_scenarios:
+    - scenario: "Current landing page"
+      purpose: "Baseline behavioral diagnosis"
+
+    - scenario: "Simplified choice architecture"
+      purpose: "Test friction reduction impact"
+
+    - scenario: "Social proof prominent"
+      purpose: "Test social norm effect by segment"
+
+    - scenario: "Loss aversion addressed"
+      purpose: "Test reframing effectiveness"
+
+  expected_insights:
+    - "Which segments respond to which interventions"
+    - "Optimal intervention portfolio"
+    - "Hidden barriers not yet identified"
+    - "Risk of backfire effects"

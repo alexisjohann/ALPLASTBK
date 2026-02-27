@@ -1,0 +1,492 @@
+# ============================================================================
+# INTERAKTIVER REVIEW WORKFLOW
+# User-geführter Feedback-Prozess mit Choice Architecture & Konsequenz-Analyse
+# ============================================================================
+# Version: 1.0
+# Erstellt: 2026-02-03
+# Typ: Wiederverwendbarer Workflow für alle SPÖ-Anfragen
+# ============================================================================
+
+metadata:
+  workflow_id: "WF-SPO-REVIEW-001"
+  name: "Interaktiver Review mit Konsequenz-Analyse"
+  version: "1.1"
+  created: "2026-02-03"
+  updated: "2026-02-03"
+  author: "FehrAdvice EBF System"
+  applicable_to:
+    - "SPÖ Strategische Kommunikation"
+    - "Wording-Reviews"
+    - "Policy-Positionierungen"
+
+# ============================================================================
+# SESSION-SCHEMA
+# ============================================================================
+
+session_schema:
+  id_format: "REV-{ANFRAGE_KURZ}-{ITERATION}-{SEQ}"
+  beispiele:
+    - "REV-EMRK-I1-001"      # EMRK, Iteration 1, Session 1
+    - "REV-EMRK-I1-002"      # EMRK, Iteration 1, Session 2 (Fortsetzung)
+    - "REV-EMRK-I2-001"      # EMRK, Iteration 2, Session 1
+    - "REV-SOG-I1-001"       # Social Media, Iteration 1, Session 1
+
+  komponenten:
+    prefix: "REV"
+    anfrage_kurz:
+      beschreibung: "Kurzform des Themas (max 6 Zeichen)"
+      beispiele:
+        - "EMRK"    # ANF-2026-02-02-001
+        - "SOG"     # ANF-2026-01-30-001 (Social Media Ordnungs-Gesetz)
+        - "SPITAL"  # ANF-2026-01-27-001
+    iteration:
+      format: "I{N}"
+      beschreibung: "Welche Überarbeitungs-Iteration"
+    seq:
+      format: "NNN"
+      beschreibung: "Laufende Nummer innerhalb der Iteration"
+
+  session_status:
+    - "gestartet"       # Session begonnen
+    - "pausiert"        # Unterbrochen, kann fortgesetzt werden
+    - "abgeschlossen"   # Alle Fragen beantwortet
+    - "abgebrochen"     # Vorzeitig beendet
+
+  session_output:
+    datei: "REVIEW_SESSION_{session_id}_{date}.yaml"
+    pfad: "database/"
+
+# ============================================================================
+# WORKFLOW-STRUKTUR
+# ============================================================================
+
+workflow:
+  name: "Interaktiver Review"
+  description: |
+    Maschinengeführter Review-Prozess, der den User durch Outputs führt
+    und bei jeder Option die Konsequenzen transparent macht.
+
+  trigger:
+    - "Review starten"
+    - "Feedback geben"
+    - "/review"
+    - "Iteration feedbacken"
+
+  # --------------------------------------------------------------------------
+  # PHASE 0: INITIALISIERUNG
+  # --------------------------------------------------------------------------
+  phase_0_init:
+    name: "Initialisierung"
+    steps:
+      - step: "Anfrage-ID laden"
+        action: "read"
+        source: "ANFRAGEN_REGISTER.yaml"
+
+      - step: "Outputs identifizieren"
+        action: "list"
+        sources:
+          - "wordings/*.md"
+          - "reports/*.md"
+          - "briefings/*.md"
+
+      - step: "Axiome laden"
+        action: "read"
+        source: "strategie/AXIOME_*.yaml"
+
+      - step: "Review-Session erstellen"
+        action: "create"
+        output: "database/REVIEW_SESSION_{date}.yaml"
+
+  # --------------------------------------------------------------------------
+  # PHASE 1: REVIEW-FRAGEN GENERIEREN
+  # --------------------------------------------------------------------------
+  phase_1_generate:
+    name: "Fragen generieren"
+    description: "Aus Outputs und Axiomen Review-Fragen ableiten"
+
+    question_types:
+      - type: "kernaussage"
+        description: "Bewertung der Hauptbotschaft"
+        applicable_to: ["wording", "briefing"]
+
+      - type: "closer"
+        description: "Bewertung des Schluss-Statements"
+        applicable_to: ["wording"]
+
+      - type: "differenzierung"
+        description: "Abgrenzung zu anderen Parteien"
+        applicable_to: ["wording", "report", "briefing"]
+
+      - type: "level_check"
+        description: "Prüfung der 3 Levels (L1/L2/L3)"
+        applicable_to: ["wording", "report"]
+
+      - type: "interview_situation"
+        description: "Antwort auf kritische Fragen"
+        applicable_to: ["wording", "briefing"]
+
+      - type: "tonalitaet"
+        description: "Gesamttonalität bewerten"
+        applicable_to: ["wording", "report", "briefing"]
+
+  # --------------------------------------------------------------------------
+  # PHASE 2: OPTION-TEMPLATE (für jede Frage)
+  # --------------------------------------------------------------------------
+  phase_2_options:
+    name: "Options-Struktur"
+    description: "Jede Frage hat 4 Optionen mit Konsequenz-Analyse"
+
+    option_template:
+      option_a:
+        label: "✅ PASST SO"
+        description: "Output unverändert belassen"
+        requires:
+          - konsequenz_axiome: true
+          - konsequenz_parameter: true
+          - konsequenz_parteien: true
+          - risiko_analyse: true
+
+      option_b:
+        label: "🔄 VARIANTE"
+        description: "Anpassung innerhalb des Rahmens"
+        requires:
+          - varianten_liste: true  # mind. 2-3 Varianten
+          - konsequenz_pro_variante: true
+
+      option_c:
+        label: "⚠️ ANPASSEN"
+        description: "Tonalität oder Richtung ändern"
+        requires:
+          - richtung_optionen: ["härter", "weicher", "staatstragender"]
+          - warnung_bei_risiko: true
+
+      option_d:
+        label: "❌ KOMPLETT NEU"
+        description: "Neuformulierung erforderlich"
+        requires:
+          - neuformulierung_vorschlaege: true  # mind. 3-4
+          - empfehlung_markieren: true
+
+  # --------------------------------------------------------------------------
+  # PHASE 3: KONSEQUENZ-ANALYSE (pro Option)
+  # --------------------------------------------------------------------------
+  phase_3_consequences:
+    name: "Konsequenz-Analyse"
+    description: "Was bedeutet jede Wahl?"
+
+    analyse_dimensionen:
+      axiome:
+        description: "Welche Axiome (K1-K10) werden erfüllt/verletzt?"
+        format: "Tabelle mit ✅/⚠️/❌"
+        source: "strategie/AXIOME_ordnung_statt_spalten.yaml"
+
+      parameter:
+        description: "Wie ändern sich U_IND, U_COLL, U_IDN?"
+        format: "Numerische Werte mit Erklärung"
+        constraints:
+          - "U_IDN sollte ≤ 0.2 bleiben (Ordnung statt Spalten)"
+          - "U_COLL sollte ≥ 0.5 sein"
+
+      parteien:
+        description: "Wie positioniert sich SPÖ vs. andere?"
+        format: "Vergleichstabelle"
+        parties:
+          - "FPÖ"
+          - "ÖVP"
+          - "Grüne"
+          - "NEOS"
+        metrics:
+          - "überschneidung_prozent"
+          - "differenzierung_staerke"
+          - "kann_auch_sagen"
+
+      risiko:
+        description: "Welche Risiken entstehen?"
+        categories:
+          - "fpoe_naehe"
+          - "linke_flanke"
+          - "glaubwuerdigkeit"
+          - "medien_reaktion"
+
+  # --------------------------------------------------------------------------
+  # PHASE 4: BEWUSSTSEINS-CHECK
+  # --------------------------------------------------------------------------
+  phase_4_awareness:
+    name: "Bewusstseins-Check"
+    description: "User bestätigt Verständnis der Konsequenzen"
+
+    template: |
+      ┌─────────────────────────────────────────────────────────────────────────┐
+      │  Sie haben Option {OPTION} gewählt. Sind Sie sich bewusst, dass:       │
+      │                                                                         │
+      │  • {KONSEQUENZ_1}                                                       │
+      │  • {KONSEQUENZ_2}                                                       │
+      │  • {KONSEQUENZ_3}                                                       │
+      │                                                                         │
+      │  Bestätigen Sie diese Wahl?                                             │
+      │                                                                         │
+      │  [{OPTION}1] ✅ JA, so belassen                                         │
+      │  [{OPTION}2] 🔧 FEINADJUSTIEREN                                         │
+      │  [{OPTION}3] ↩️ ANDERE OPTION WÄHLEN                                    │
+      │                                                                         │
+      └─────────────────────────────────────────────────────────────────────────┘
+
+    feinadjustierung:
+      description: "Falls User feinadjustieren will"
+      options:
+        - "Marker hinzufügen (z.B. SPÖ-Handschrift)"
+        - "Tonalität leicht anpassen"
+        - "Zusätzliches Element integrieren"
+        - "Freitext-Anpassung"
+
+  # --------------------------------------------------------------------------
+  # PHASE 5: FEEDBACK-SAMMLUNG
+  # --------------------------------------------------------------------------
+  phase_5_collect:
+    name: "Feedback sammeln"
+    description: "Alle Wahlen in strukturierter Form speichern"
+
+    output_format:
+      file: "database/REVIEW_FEEDBACK_{anfrage_id}_{date}.yaml"
+      structure:
+        metadata:
+          - anfrage_id
+          - review_date
+          - reviewer
+          - iteration_number
+
+        decisions:
+          - frage_id: "1.1"
+            frage_text: "Kernaussage"
+            wahl: "{A/B/C/D}"
+            variante: "{falls B/C/D}"
+            bestaetigt: true/false
+            feinadjustierung: "{falls gewählt}"
+            freitext: "{optional}"
+
+        summary:
+          - axiom_compliance_vorher: "X/11"
+          - axiom_compliance_nachher: "Y/11"
+          - hauptaenderungen: []
+          - offene_punkte: []
+
+  # --------------------------------------------------------------------------
+  # PHASE 6: KONSISTENZ-CHECK
+  # --------------------------------------------------------------------------
+  phase_6_consistency:
+    name: "Konsistenz prüfen"
+    description: "Widersprechen sich die Wahlen?"
+
+    checks:
+      - check: "tonalitaet_konsistent"
+        rule: "Nicht gleichzeitig 'härter' und 'weicher' wählen"
+
+      - check: "axiom_kompatibel"
+        rule: "Wahlen dürfen nicht K1-K10 widersprechen"
+
+      - check: "u_idn_limit"
+        rule: "Gesamte U_IDN-Aktivierung < 0.5"
+        warning: "Bei U_IDN > 0.3 → Warnung anzeigen"
+
+      - check: "partei_differenzierung"
+        rule: "FPÖ-Überschneidung sollte < 50% bleiben"
+
+  # --------------------------------------------------------------------------
+  # PHASE 7: ITERATION 2 GENERIEREN
+  # --------------------------------------------------------------------------
+  phase_7_iterate:
+    name: "Iteration 2 erstellen"
+    description: "Basierend auf Feedback neue Version generieren"
+
+    steps:
+      - step: "Änderungen zusammenfassen"
+        output: "AENDERUNGEN_iteration2.md"
+
+      - step: "Outputs aktualisieren"
+        targets:
+          - "wordings/{file}_v{n+1}.md"
+          - "reports/{file}_v{n+1}.md"
+          - "briefings/{file}_v{n+1}.md"
+
+      - step: "Axiom-Compliance neu berechnen"
+        output: "Update ANFRAGEN_REGISTER.yaml"
+
+      - step: "Zweiten Review anbieten"
+        prompt: "Möchten Sie die Iteration 2 erneut reviewen?"
+
+# ============================================================================
+# REVIEW-FRAGEN KATALOG (wiederverwendbar)
+# ============================================================================
+
+fragen_katalog:
+
+  # --- KERNBOTSCHAFTEN ---
+  kernaussage:
+    id: "Q-KERN"
+    frage: "Wie bewerten Sie die Kernaussage?"
+    typ: "single_choice"
+    optionen:
+      A: "Passt so"
+      B: "Zahlen/Formulierung anpassen"
+      C: "Tonalität anpassen"
+      D: "Komplett neu"
+    konsequenz_dimensionen:
+      - axiome: [K2, K3, K4]
+      - parameter: [U_IND, U_COLL]
+      - parteien: [FPÖ, ÖVP]
+
+  closer:
+    id: "Q-CLOSE"
+    frage: "Wie bewerten Sie den Closer (letzte 15 Sekunden)?"
+    typ: "single_choice"
+    optionen:
+      A: "Passt so"
+      B: "Variante testen"
+      C: "Anpassen"
+      D: "Komplett neu"
+    konsequenz_dimensionen:
+      - axiome: [K3, K10]
+      - parameter: [U_COLL, U_IDN]
+      - merkbarkeit: true
+
+  # --- DIFFERENZIERUNG ---
+  diff_fpoe:
+    id: "Q-DIFF-FPOE"
+    frage: "Ist die FPÖ/Kickl-Differenzierung stark genug?"
+    typ: "single_choice"
+    optionen:
+      A: "Stark genug"
+      B: "Schärfer"
+      C: "Softer"
+      D: "Anders differenzieren"
+    konsequenz_dimensionen:
+      - axiome: [K1, K6, K10]
+      - parameter: [U_IDN]
+      - warnung: "Schärfer → U_IDN steigt"
+
+  diff_daenemark:
+    id: "Q-DIFF-DK"
+    frage: "Wie soll Dänemark/Frederiksen behandelt werden?"
+    typ: "single_choice"
+    optionen:
+      A: "Respektvoll-abgrenzend"
+      B: "Zahlen-Fokus"
+      C: "Nicht thematisieren"
+      D: "Warnung aussprechen"
+    konsequenz_dimensionen:
+      - axiome: [K1, K2, K6]
+      - killer_fakt: "Pro-Kopf AT 156 vs. DK 16"
+
+  # --- LEVELS ---
+  level_1:
+    id: "Q-L1"
+    frage: "Sind die Level-1-Fakten (Policy/Zahlen) ausreichend?"
+    typ: "single_choice"
+    optionen:
+      A: "Ausreichend"
+      B: "Mehr Fakten nötig"
+      C: "Weniger Fakten"
+      D: "Andere Fakten"
+    konsequenz_dimensionen:
+      - axiome: [K2]
+
+  level_2:
+    id: "Q-L2"
+    frage: "Ist der Level-2-Frame (Kommunikation) richtig gesetzt?"
+    typ: "single_choice"
+    optionen:
+      A: "Frame passt"
+      B: "Frame anpassen"
+      C: "Mehr Werte-Frame"
+      D: "Anderen Frame"
+    konsequenz_dimensionen:
+      - axiome: [K3, K9]
+
+  level_3:
+    id: "Q-L3"
+    frage: "Ist Level 3 (Werte/Geschichte) richtig dosiert?"
+    typ: "single_choice"
+    optionen:
+      A: "Richtige Dosierung"
+      B: "Mehr Pathos"
+      C: "Weniger Pathos"
+      D: "Level 3 weglassen"
+    konsequenz_dimensionen:
+      - axiome: [K5, K7]
+
+  # --- INTERVIEW ---
+  interview_kritisch:
+    id: "Q-INT"
+    frage: "Wie soll auf kritische Interview-Fragen geantwortet werden?"
+    typ: "per_situation"
+    situationen:
+      - "EMRK reformieren?"
+      - "Abschiebung nach Syrien/Afghanistan?"
+      - "Warum nicht wie Dänemark?"
+    optionen:
+      A: "So antworten"
+      B: "Differenzierter"
+      C: "Umlenken"
+      D: "Erklären"
+
+  # --- GESAMT ---
+  tonalitaet:
+    id: "Q-TON"
+    frage: "Wie bewerten Sie die Gesamttonalität?"
+    typ: "single_choice"
+    optionen:
+      A: "Genau richtig"
+      B: "Zu weich"
+      C: "Zu hart"
+      D: "Inkonsistent"
+    konsequenz_dimensionen:
+      - axiome: [K1, K9, K10]
+      - parameter: [U_IND, U_COLL, U_IDN]
+
+  fehlende_elemente:
+    id: "Q-MISS"
+    frage: "Was fehlt in den Outputs?"
+    typ: "multi_choice"
+    optionen:
+      A: "Mehr Zahlen/Fakten"
+      B: "Mehr emotionale Elemente"
+      C: "Mehr Angriff auf FPÖ"
+      D: "Mehr positive Vision"
+      E: "Mehr konkrete Massnahmen"
+      F: "Mehr historischer Kontext"
+      G: "Mehr Dänemark-Differenzierung"
+      H: "Mehr ÖVP-Differenzierung"
+      I: "Nichts fehlt"
+
+  prioritaet:
+    id: "Q-PRIO"
+    frage: "Was soll ZUERST überarbeitet werden?"
+    typ: "ranking"
+    max_selections: 3
+
+# ============================================================================
+# SKILL-AUFRUF
+# ============================================================================
+
+skill_integration:
+  command: "/review"
+  alias: ["/interaktiver-review", "/feedback"]
+
+  usage:
+    - "/review"                          # Startet Review für aktive Anfrage
+    - "/review ANF-2026-02-02-001"       # Spezifische Anfrage
+    - "/review --frage Q-KERN"           # Springt zu spezifischer Frage
+    - "/review --zusammenfassung"        # Zeigt Feedback-Zusammenfassung
+
+  modes:
+    schnell:
+      description: "Nur Kernfragen (5 min)"
+      fragen: [Q-KERN, Q-DIFF-FPOE, Q-TON]
+
+    standard:
+      description: "Alle Hauptfragen (15 min)"
+      fragen: [Q-KERN, Q-CLOSE, Q-DIFF-FPOE, Q-DIFF-DK, Q-L1, Q-L2, Q-L3, Q-TON]
+
+    vollstaendig:
+      description: "Alle Fragen inkl. Interview (30 min)"
+      fragen: "alle"

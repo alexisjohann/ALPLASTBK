@@ -1,0 +1,351 @@
+# =============================================================================
+# TEMPLATE: Portfolio-Kaskadierung (Strategic → Tactical → Operative)
+# =============================================================================
+# Version: 1.0 (Januar 2026)
+# Canonical Location: templates/portfolio-cascade.yaml
+# Theory Reference: Chapter 20, Sec. 20-hierarchical
+# Method Reference: Appendix HHH (METHOD-TOOLKIT)
+#
+# USAGE:
+# 1. Kopiere dieses Template in dein Projekt-Verzeichnis
+# 2. Fülle die [PLACEHOLDER] Werte aus
+# 3. Führe die Optimierung durch (erst unrestringiert, dann mit Constraints)
+# 4. Validiere mit scripts/validate_portfolio_cascade.py
+# =============================================================================
+
+metadata:
+  project_id: "[PROJECT_ID]"
+  version: "1.0"
+  created: "[YYYY-MM-DD]"
+  author: "[NAME]"
+
+# =============================================================================
+# PHASE 1: UNRESTRINGIERTE OPTIMIERUNG
+# =============================================================================
+# Berechne optimalen Interventionsvektor OHNE Constraints
+# →I* = argmax E[ΔW(→I)] = f(β, λ, θ, W_base, φ, Ψ, L)
+
+unconstrained_optimization:
+  description: |
+    Optimaler Interventionsvektor ohne Nebenbedingungen.
+    Basiert auf Segment-Parametern und Schätzfunktion aus Ch.17.
+
+  # Pro Segment: Parameter → Schätzlogik → Optimaler Vektor
+  segments:
+    "[SEGMENT_1]":
+      # Input: Verhaltensparameter (aus Segment-Profil)
+      parameters:
+        beta: "[0.0-1.0]"        # Present Bias
+        lambda: "[1.0-3.0]"      # Verlustaversion
+        theta: "[0.0-1.0]"       # Aktivierungsschwelle
+        W_base: "[0.0-1.0]"      # Baseline Willingness
+        phi: "[unaware|aware|considering|intending|acting|maintaining]"
+        L: "[individual|household|group|community]"
+
+      # Schätzung: Mapping Rules anwenden
+      estimation:
+        base_vector: [0.00, 0.15, 0.05, 0.15, 0.05, 0.25, 0.15, 0.05, 0.00]
+        #            WHO   WHAT  HOW   WHEN  WHERE AWARE READY STAGE HIER
+
+        delta_parameter:
+          # Automatisch berechnet aus mapping_rules
+          delta_beta: "[Vektor basierend auf β-Regel]"
+          delta_lambda: "[Vektor basierend auf λ-Regel]"
+          delta_theta: "[Vektor basierend auf θ-Regel]"
+          delta_W_base: "[Vektor basierend auf W_base-Regel]"
+
+        delta_phase: "[Vektor basierend auf φ-Regel]"
+        delta_level: "[Vektor basierend auf L-Regel]"
+
+      # Output: Unrestringiertes Optimum
+      optimal_vector_unconstrained:
+        raw: "[Summe aller Deltas]"
+        normalized: "[Normalisiert auf Summe = 1.0]"
+        dominant_dimension: "[WHEN|WHAT|AWARE|...]"
+        interpretation: "[Was bedeutet dieser Vektor?]"
+
+    "[SEGMENT_2]":
+      # ... analog
+
+# =============================================================================
+# PHASE 2: CONSTRAINT-PRÜFUNG
+# =============================================================================
+# Prüfe ob unrestringiertes Optimum die Constraints C1-C6 verletzt
+
+constraint_check:
+  description: |
+    Systematische Prüfung aller Constraints.
+    Bei Verletzung: Identifiziere Mitigation-Strategie.
+
+  segments:
+    "[SEGMENT_1]":
+      C1_budget:
+        status: "[✓|⚠️|❌]"
+        details: "[Prüfung Budget-Einhaltung]"
+        violation: "[null | Beschreibung der Verletzung]"
+        mitigation: "[null | Lösungsstrategie]"
+
+      C2_crowding:
+        status: "[✓|⚠️|❌]"
+        details: "[Prüfung auf konfligierende I_WHAT(u_S) + I_WHAT(u_F)]"
+        violation: "[null | 'Simultane Social + Financial Aktivierung']"
+        mitigation: "[null | 'Temporal Sequencing: u_S Phase 1, u_F Phase 2']"
+
+      C3_timing:
+        status: "[✓|⚠️|❌]"
+        details: "[Prüfung AWARE→WHAT→WHEN Sequenz]"
+        violation: "[null | Beschreibung]"
+        mitigation: "[null | Lösungsstrategie]"
+
+      C4_capacity:
+        status: "[✓|⚠️|❌]"
+        details: "[Prüfung Kapazitätsengpässe]"
+        violation: "[null | Beschreibung]"
+        mitigation: "[null | Lösungsstrategie]"
+
+      C5_ethical:
+        status: "[✓|⚠️|❌]"
+        details: "[Prüfung Autonomie-Score ≥ η_min]"
+        violation: "[null | Beschreibung]"
+        mitigation: "[null | Lösungsstrategie]"
+
+      C6_segment:
+        status: "[✓|⚠️|❌]"
+        details: "[Prüfung Segment-Eignung σ ≥ σ_min]"
+        violation: "[null | Beschreibung]"
+        mitigation: "[null | Lösungsstrategie]"
+
+# =============================================================================
+# PHASE 3: RESTRINGIERTE OPTIMIERUNG
+# =============================================================================
+# Anpassung des Vektors unter Berücksichtigung der Constraints
+
+constrained_optimization:
+  description: |
+    Optimaler Interventionsvektor MIT Nebenbedingungen.
+    Vektor kann gleich bleiben, aber Implementation ändert sich.
+
+  segments:
+    "[SEGMENT_1]":
+      optimal_vector_constrained:
+        vector: "[Finaler Vektor nach Constraint-Anpassung]"
+        changes_from_unconstrained: "[Was hat sich geändert?]"
+
+      # Kaskadierung: Strategic → Tactical → Operative
+      cascade:
+        # =====================================================================
+        # STRATEGISCHE EBENE
+        # =====================================================================
+        strategic:
+          time_horizon: "3-12 Jahre"
+          decision_frequency: "jährlich"
+
+          # Ableitung aus optimalem Vektor
+          dimension_weights:
+            # Aggregiert aus →I* über alle Segmente
+            AWARE: "[Gewicht]"
+            WHAT: "[Gewicht]"
+            WHEN: "[Gewicht]"
+            READY: "[Gewicht]"
+            other: "[Gewicht]"
+            # Summe = 1.0
+
+          segment_priority:
+            phase_1: {segments: ["[SEG]"], duration: "[Jahre]", rationale: "[...]"}
+            phase_2: {segments: ["[SEG]"], duration: "[Jahre]", rationale: "[...]"}
+
+          module_priority:
+            core: "[Modul]"
+            supporting: ["[Module]"]
+            optional: ["[Module]"]
+
+          resource_allocation:
+            strategic_share: "[%]"
+            tactical_share: "[%]"
+            operative_share: "[%]"
+
+        # =====================================================================
+        # TAKTISCHE EBENE
+        # =====================================================================
+        tactical:
+          time_horizon: "3-24 Monate"
+          decision_frequency: "quartalsweise"
+
+          # Ableitung aus strategischen Vorgaben
+          alignment_check:
+            strategic_weights: "[Von oben]"
+            tactical_coverage: "[Wie gut decken Kampagnen die Weights ab?]"
+            gap_analysis: "[Welche Dimensionen sind unterrepräsentiert?]"
+
+          campaigns:
+            - name: "[Kampagnen-Name]"
+              # Vektor muss zu strategischen Weights passen
+              target_vector: "[Kampagnen-spezifischer Vektor]"
+              emphasis: "[Welche I_c dominiert?]"
+              channel: "[Kanal]"
+              timing: "[Wann?]"
+              budget: "[CHF]"
+              expected_outcome: "[KPI]"
+
+              # C2-Konformität: Sequenzierung bei Crowding-Risiko
+              crowding_mitigation:
+                risk: "[Ja/Nein]"
+                phase_1_focus: "[I_c]"
+                phase_2_focus: "[I_c]"
+
+            - name: "[Kampagne 2]"
+              # ... analog
+
+        # =====================================================================
+        # OPERATIVE EBENE
+        # =====================================================================
+        operative:
+          time_horizon: "1 Tag - 3 Monate"
+          decision_frequency: "wöchentlich / bei Trigger"
+
+          # Ableitung aus taktischen Kampagnen
+          alignment_check:
+            campaign_vectors: "[Von oben]"
+            touchpoint_coverage: "[Wie gut decken Touchpoints die Kampagnen ab?]"
+
+          touchpoints:
+            trigger_responses:
+              - event: "[Trigger-Event]"
+                response_time: "[< Xh]"
+                vector: "[Touchpoint-Vektor]"
+                actions:
+                  - "[Aktion 1]"
+                  - "[Aktion 2]"
+
+            nudge_moments:
+              - moment: "[Moment]"
+                channel: "[Kanal]"
+                vector: "[Vektor]"
+                message: "[Botschaft]"
+
+            content_assets:
+              - asset: "[Brief / E-Mail / Flyer / ...]"
+                campaign_link: "[Zu welcher Kampagne?]"
+                vector_alignment: "[Wie gut passt der Vektor?]"
+
+# =============================================================================
+# PHASE 4: VALIDIERUNG
+# =============================================================================
+# Prüfung der Konsistenz über alle Ebenen
+
+validation:
+  cascade_consistency:
+    description: |
+      Prüft ob die Vektoren über Ebenen hinweg konsistent sind:
+      - Tactical Σ ≈ Strategic Weights
+      - Operative Σ ≈ Tactical Vectors
+
+    strategic_to_tactical:
+      alignment_score: "[0.0-1.0]"
+      gaps: "[Welche Dimensionen fehlen?]"
+      recommendation: "[Anpassung nötig?]"
+
+    tactical_to_operative:
+      alignment_score: "[0.0-1.0]"
+      gaps: "[Welche Touchpoints fehlen?]"
+      recommendation: "[Anpassung nötig?]"
+
+  constraint_satisfaction:
+    C1_budget: "[✓|❌]"
+    C2_crowding: "[✓|❌]"
+    C3_timing: "[✓|❌]"
+    C4_capacity: "[✓|❌]"
+    C5_ethical: "[✓|❌]"
+    C6_segment: "[✓|❌]"
+    all_satisfied: "[true|false]"
+
+  expected_outcomes:
+    total_E_delta_W: "[Erwartete Wirkung]"
+    segment_specific:
+      "[SEGMENT_1]":
+        delta_W_base: "[+X.XX]"
+        bcj_shift: "[Phase → Phase (+Xpp)]"
+        conversion_rate: "[X%]"
+
+# =============================================================================
+# PHASE 5: IMPLEMENTATION ROADMAP
+# =============================================================================
+
+implementation:
+  timeline:
+    phase_1:
+      name: "[Phase-Name]"
+      duration: "[Wochen/Monate]"
+      focus: "[Strategisch/Taktisch/Operativ]"
+      activities:
+        - "[Aktivität 1]"
+        - "[Aktivität 2]"
+      milestones:
+        - "[Meilenstein 1]"
+      kpis:
+        - metric: "[KPI]"
+          target: "[Zielwert]"
+
+    phase_2:
+      # ... analog
+
+  feedback_loop:
+    measurement_frequency: "[Wöchentlich/Monatlich/Quartalsweise]"
+    adjustment_triggers:
+      - condition: "[Wenn KPI < X]"
+        action: "[Dann Anpassung Y]"
+    learning_integration:
+      - "[Wie fließen Learnings zurück?]"
+
+# =============================================================================
+# APPENDIX: MAPPING RULES REFERENCE
+# =============================================================================
+# Kopie der Schätzregeln aus model.yaml für Referenz
+
+mapping_rules_reference:
+  parameter_rules:
+    beta:
+      - condition: "beta < 0.75"
+        delta: {I_WHEN: +0.20, I_HOW: +0.10}
+      - condition: "0.75 <= beta < 0.85"
+        delta: {I_WHEN: +0.10}
+      - condition: "beta >= 0.85"
+        delta: {}
+
+    lambda:
+      - condition: "lambda > 2.3"
+        delta: {I_WHAT: +0.15, I_AWARE: +0.05}
+      - condition: "2.0 <= lambda <= 2.3"
+        delta: {I_WHAT: +0.05}
+      - condition: "lambda < 2.0"
+        delta: {}
+
+    theta:
+      - condition: "theta > 0.75"
+        delta: {I_READY: +0.15, I_AWARE: +0.10}
+      - condition: "0.65 <= theta <= 0.75"
+        delta: {I_READY: +0.05}
+      - condition: "theta < 0.65"
+        delta: {}
+
+    W_base:
+      - condition: "W_base < 0.25"
+        delta: {I_AWARE: +0.15, I_WHAT: +0.10, I_READY: +0.10}
+      - condition: "0.25 <= W_base < 0.35"
+        delta: {I_AWARE: +0.10, I_READY: +0.05}
+      - condition: "W_base >= 0.35"
+        delta: {I_AWARE: +0.05}
+
+  phase_rules:
+    unaware: {I_AWARE: +0.35, I_STAGE: +0.10}
+    aware: {I_AWARE: +0.15, I_WHAT: +0.10, I_READY: +0.05}
+    considering: {I_WHEN: +0.15, I_READY: +0.10, I_WHAT: +0.05}
+    intending: {I_WHEN: +0.20, I_HOW: +0.10}
+    acting: {I_HOW: +0.15, I_READY: +0.10}
+    maintaining: {I_HOW: +0.10}
+
+  level_rules:
+    individual: {I_WHO: 0.0}
+    household: {I_WHO: +0.05, I_WHAT: +0.05}
+    group: {I_WHO: +0.15, I_WHAT: +0.10}
+    community: {I_WHO: +0.20, I_WHAT: +0.15, I_STAGE: +0.05}

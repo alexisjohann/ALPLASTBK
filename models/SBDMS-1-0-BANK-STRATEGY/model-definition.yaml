@@ -1,0 +1,339 @@
+# ============================================================================
+# SBDMS 1.0: Strategic Bank Decision-Making System
+# Single Source of Truth for hierarchical bank decision modeling
+# ============================================================================
+
+metadata:
+  version: "1.0"
+  created: "2026-01-15"
+  status: "EXPERIMENTAL"
+  confidence: "MEDIUM-HIGH"
+  data_quality: "Framework-level (requires bank-specific calibration)"
+  next_major_event: "Phase 1 Pilot (Q1-Q2 2026)"
+  out_of_sample_test: "2026 decision accuracy validation"
+
+# ============================================================================
+# MODEL OVERVIEW
+# ============================================================================
+
+model_id: "SBDMS-1.0"
+model_type: "HIERARCHICAL-DECISION"
+system_type: "STRATEGIC-BANK-DECISIONS"
+primary_use: "Support strategic decisions across Board, Division, Operations levels"
+secondary_use: "Decision validation, risk appetite enforcement, learning from outcomes"
+
+description: |
+  Strategic Bank Decision-Making System v1.0 (SBDMS) is a hierarchical framework
+  for modeling strategic decisions across three operational tiers of global financial
+  institutions.
+
+  Core Insight: Strategic banking decisions exhibit complementarities and trade-offs
+  that cannot be captured by independent models. SBDMS integrates multiple decision
+  dimensions (Financial, Strategic, Risk, Practical, Emotional, Regulatory) with
+  explicit complementarity parameters.
+
+  Hierarchical Structure:
+  - Level 1 (Board): Sets risk appetite, approves M&A, strategic direction
+  - Level 2 (Division): Allocates capital, approves product launches, customer segments
+  - Level 3 (Operations): Customer on-boarding, transaction approval, deal-by-deal
+
+  Three Decision Types:
+  1. Market Entry Decisions (3-5 year horizon, low reversibility)
+  2. Credit/Risk Classification (days-weeks horizon, medium reversibility)
+  3. Capital Allocation & M&A (3-5 year horizon, low reversibility)
+
+  Context-Dependent Weighting: Decision weights adjust based on environment
+  (Normal, Growth, Crisis) and institutional constraints.
+
+# ============================================================================
+# HIERARCHICAL PARAMETERS (by organizational level)
+# ============================================================================
+
+hierarchical_parameters:
+  - level: "board"
+    description: "Board of Directors strategic decisions"
+    intercept: 0.8
+    weights:
+      financial: 0.30
+      strategic: 0.40
+      risk: 0.20
+      practical: 0.05
+      emotional: 0.03
+      regulatory: 0.02
+    risk_appetite_constraint: 1.0
+    decision_horizon: "3-5 years"
+    reversibility: "Low (strategic commitments)"
+
+  - level: "division"
+    description: "Business division tactical decisions"
+    intercept: 0.6
+    weights:
+      financial: 0.35
+      strategic: 0.25
+      risk: 0.25
+      practical: 0.10
+      emotional: 0.03
+      regulatory: 0.02
+    risk_appetite_constraint: 0.80
+    decision_horizon: "1-2 years"
+    reversibility: "Medium (can adjust tactics)"
+
+  - level: "operational"
+    description: "Front-line operational decisions"
+    intercept: 0.4
+    weights:
+      financial: 0.30
+      risk: 0.35
+      regulatory: 0.20
+      practical: 0.10
+      strategic: 0.03
+      emotional: 0.02
+    risk_appetite_constraint: 0.50
+    decision_horizon: "Days-weeks"
+    reversibility: "High (can reverse quickly)"
+
+# ============================================================================
+# COMPLEMENTARITY PARAMETERS (γ interactions)
+# ============================================================================
+
+complementarity_parameters:
+
+  - parameter: "γ_FS"
+    symbols: ["F", "S"]
+    value: 0.15
+    interpretation: |
+      Positive synergy between Financial and Strategic dimensions.
+      Decision that is both profitable AND strategically aligned creates
+      synergistic advantage (multiplicative, not additive).
+      Example: High-growth market aligned with stated strategy
+
+  - parameter: "γ_FR"
+    symbols: ["F", "R"]
+    value: -0.20
+    interpretation: |
+      Negative trade-off (conflict) between Financial and Risk dimensions.
+      Market opportunities with exceptional returns typically come with
+      elevated risk (underpriced opportunities). Common in financial markets.
+      Example: 25% ROI opportunity usually has >15% default probability
+
+  - parameter: "γ_RP"
+    symbols: ["R", "P"]
+    value: -0.15
+    interpretation: |
+      Negative interaction: High risk + High operational complexity = Double problem.
+      Complex implementations are harder to reverse if market deteriorates.
+      Compounds both execution risk and financial risk.
+
+  - parameter: "γ_SE"
+    symbols: ["S", "E"]
+    value: 0.12
+    interpretation: |
+      Positive synergy between Strategic and Emotional dimensions.
+      When management is convinced about strategic direction, execution
+      tends to succeed (commitment + resources). Absence of conviction
+      often leads to under-execution.
+
+  - parameter: "γ_RegP"
+    symbols: ["Reg", "P"]
+    value: 0.10
+    interpretation: |
+      Positive synergy between Regulatory compliance and Practical feasibility.
+      Decisions that are both compliant and operationally feasible are
+      sustainable long-term. Compliance + execution creates institutional durability.
+
+  - parameter: "γ_FE"
+    symbols: ["F", "E"]
+    value: 0.08
+    interpretation: |
+      Weak positive synergy between Financial and Emotional dimensions.
+      Decisions with strong financial cases tend to attract management
+      conviction (enthusiasm follows successful metrics).
+
+  - parameter: "γ_SR"
+    symbols: ["S", "R"]
+    value: -0.10
+    interpretation: |
+      Weak negative interaction: Strategic ambition can lead to risk-taking.
+      Growth-oriented strategies sometimes necessitate risk acceptance.
+      Tension between risk aversion and strategic necessity.
+
+# ============================================================================
+# CONTEXT FACTORS (Ψ)
+# ============================================================================
+
+context_factors:
+  - name: "market_volatility"
+    scale: "0-80 (VIX-like)"
+    impact: "Higher volatility → Higher risk weight"
+    normal_range: "10-25"
+    crisis_threshold: "40+"
+
+  - name: "regulatory_tightness"
+    scale: "0-1"
+    impact: "Higher tightness → Higher regulatory weight"
+    normal_range: "0.3-0.5"
+    crisis_threshold: "0.7+"
+
+  - name: "capital_position"
+    scale: "0-1 (deficit to surplus)"
+    impact: "Lower capital → Higher financial weight, risk aversion"
+    normal_range: "0.5-0.8"
+    constraint: "If <0.3, financial constraints dominate"
+
+  - name: "management_risk_appetite"
+    scale: "0-1 (conservative to aggressive)"
+    impact: "Modulates acceptable risk levels"
+    normal_range: "0.4-0.7"
+    board_constraint: "Board sets this; Division must not exceed"
+
+  - name: "economic_cycle"
+    scale: "expansion / normal / contraction"
+    impact: "Cycle determines strategic vs risk emphasis"
+    expansion: "Strategic weight ↑, Risk aversion ↓"
+    contraction: "Risk aversion ↑, Strategic weight ↓"
+
+# ============================================================================
+# DECISION THRESHOLDS
+# ============================================================================
+
+decision_thresholds:
+  market_entry:
+    go: 0.70
+    conditional: 0.50
+    no_go: 0.00
+    recommendation_logic: |
+      P > 0.70 → GO (high confidence)
+      0.50 < P < 0.70 → CONDITIONAL (needs further analysis)
+      P < 0.50 → NO-GO (insufficient support)
+
+  credit_classification:
+    approve: 0.80
+    conditional: 0.60
+    committee_review: 0.40
+    reject: 0.00
+    recommendation_logic: |
+      P > 0.80 → APPROVE at standard terms
+      0.60 < P < 0.80 → APPROVE WITH CONDITIONS (enhanced monitoring, lower LTV)
+      0.40 < P < 0.60 → COMMITTEE REVIEW (elevated risk, needs exception approval)
+      P < 0.40 → REJECT or hard decline
+
+  capital_allocation:
+    go: 0.75
+    conditional: 0.50
+    no_go: 0.00
+    recommendation_logic: |
+      P > 0.75 → GO (proceed to negotiation)
+      0.50 < P < 0.75 → CONDITIONAL (needs due diligence)
+      P < 0.50 → NO-GO or restructure
+
+# ============================================================================
+# VALIDATION DATA
+# ============================================================================
+
+validation:
+  accuracy: 0.00
+  confidence: "PENDING"
+  data_points: 0
+  notes: |
+    Model is FRAMEWORK-level (validated conceptually, not empirically).
+    Requires calibration with bank-specific decision data.
+    Will be validated on 2026 decisions (prospective).
+
+  planned_validation:
+    phase_1_q1_2026: "Pilot with 10-20 division-level decisions"
+    phase_2_q2_2026: "Extend to operational level (50+ credit decisions)"
+    phase_3_q3_2026: "Full rollout with learning loop"
+
+# ============================================================================
+# KNOWN LIMITATIONS
+# ============================================================================
+
+known_limitations:
+  - name: "No crisis scenarios modeled"
+    severity: "MEDIUM"
+    fix: "Phase 1.1: Add binary shock scenarios (war, credit crisis)"
+
+  - name: "Political/geopolitical risk underspecified"
+    severity: "MEDIUM"
+    fix: "Phase 1.1: Add geopolitical variables to context"
+
+  - name: "Behavioral biases not modeled"
+    severity: "MEDIUM"
+    fix: "Phase 2.0: Add cognitive constraints (anchoring, herding)"
+
+  - name: "No real-time calibration"
+    severity: "HIGH"
+    fix: "Phase 2.0: Implement streaming parameter updates"
+
+  - name: "Assumes rational decision-making"
+    severity: "MEDIUM"
+    fix: "Phase 2.0: Add organizational friction and politics"
+
+  - name: "Single-bank calibration required"
+    severity: "HIGH"
+    fix: "Each bank must calibrate β and γ with own historical data"
+
+# ============================================================================
+# ROADMAP
+# ============================================================================
+
+roadmap:
+  v1_0_current:
+    status: "EXPERIMENTAL"
+    date: "2026-01-15"
+    deliverables:
+      - "3 decision types (Market, Credit, M&A)"
+      - "Hierarchical levels (Board, Division, Operations)"
+      - "Generic complementarity matrix"
+      - "Context modulation framework"
+
+  v1_1_q2_2026:
+    status: "PLANNED"
+    date: "2026-04-30"
+    deliverables:
+      - "Crisis scenario module"
+      - "Real-time parameter updates"
+      - "Learning loop implementation"
+      - "First pilot results"
+
+  v2_0_q3_2026:
+    status: "PLANNED"
+    date: "2026-07-31"
+    deliverables:
+      - "Behavioral integration (cognitive biases)"
+      - "Organizational friction modeling"
+      - "Multi-bank benchmarking"
+      - "Dashboard + decision support UI"
+
+  v3_0_2027:
+    status: "PLANNED"
+    date: "2027-01-01"
+    deliverables:
+      - "Reinforcement learning module"
+      - "Autonomous decision support"
+      - "Integration with bank systems"
+
+# ============================================================================
+# NEXT STEPS
+# ============================================================================
+
+next_steps:
+  immediate:
+    - "Q1 2026: Pilot with 3-5 division-level decisions"
+    - "Collect decision data (dimensions, outcomes)"
+    - "Calibrate β and γ with bank-specific data"
+
+  short_term:
+    - "Q2 2026: Extend to operational level (credit decisions)"
+    - "Implement learning loop (outcomes → parameter updates)"
+    - "Build decision dashboard for stakeholders"
+
+  medium_term:
+    - "Q3-Q4 2026: Full production rollout"
+    - "Train decision-makers on model usage"
+    - "Monitor accuracy, iterate on parameters"
+
+  long_term:
+    - "2027+: Multi-bank benchmarking"
+    - "Industry best practices codification"
+    - "Regulatory framework integration"

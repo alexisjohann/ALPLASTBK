@@ -1,0 +1,588 @@
+# ============================================================================
+# EBF CONTEXT DIMENSIONS DATABASE
+# ============================================================================
+#
+# Verbindet die 5 Kontext-Extraktionsfragen mit:
+# 1. Case Registry WHEN-Feldern
+# 2. Parameter-Modifikatoren (wie ändert sich λ, σ, etc. je nach Kontext?)
+# 3. Interventions-Effektivität pro Kontext
+#
+# SSOT für: Kapitel 25 (7-Step Workflow), CLAUDE.md Context-First Rule
+#
+# Version: 1.0
+# Erstellt: 2026-01-25
+# ============================================================================
+
+version: "1.0"
+created: "2026-01-25"
+description: "Context dimensions database linking user questions to EBF parameters"
+
+# ============================================================================
+# DIE 5 KONTEXT-DIMENSIONEN
+# ============================================================================
+
+dimensions:
+
+  # =========================================================================
+  # DIMENSION 1: PHYSICAL (Wo?)
+  # =========================================================================
+  physical:
+    question: "Wo findet das Verhalten statt?"
+    question_en: "Where does the behavior occur?"
+    icon: "📍"
+
+    options:
+      home:
+        label: "Zuhause"
+        label_en: "Home"
+        case_registry_map:
+          psi_dominant: "other"
+          social_setting: ["solo", "dyadic"]
+        parameter_modifiers:
+          lambda: 1.0       # Loss aversion baseline
+          beta: 0.85        # Present bias slightly higher (comfort)
+          social_norm_strength: 0.3  # Low social visibility
+        intervention_effectiveness:
+          defaults: 0.9     # Very effective (own environment)
+          social_norms: 0.4 # Less effective (low visibility)
+          reminders: 0.8    # Effective (personal devices)
+
+      workplace:
+        label: "Arbeitsplatz"
+        label_en: "Workplace"
+        case_registry_map:
+          psi_dominant: "institutional"
+          social_setting: ["small_group", "large_group"]
+        parameter_modifiers:
+          lambda: 1.3       # Higher loss aversion (career stakes)
+          beta: 0.95        # Less present-biased (professional mode)
+          social_norm_strength: 0.7  # High social visibility
+        intervention_effectiveness:
+          defaults: 0.85    # Effective (employer can set)
+          social_norms: 0.8 # Very effective (peer pressure)
+          financial_incentives: 0.6  # Moderate (crowding-out risk)
+
+      store:
+        label: "Geschäft/Einkauf"
+        label_en: "Store/Shopping"
+        case_registry_map:
+          psi_dominant: "framing"
+          social_setting: ["public", "anonymous"]
+        parameter_modifiers:
+          lambda: 2.5       # High loss aversion (spending money)
+          beta: 0.7         # High present bias (impulse buying)
+          social_norm_strength: 0.2  # Low (strangers)
+        intervention_effectiveness:
+          defaults: 0.95    # Extremely effective (opt-out)
+          framing: 0.85     # Very effective (price anchoring)
+          social_norms: 0.3 # Low (anonymous setting)
+
+      online:
+        label: "Online/Digital"
+        label_en: "Online/Digital"
+        case_registry_map:
+          psi_dominant: "information"
+          social_setting: ["solo", "anonymous"]
+        parameter_modifiers:
+          lambda: 1.8       # Moderate-high (less tangible)
+          beta: 0.6         # Very present-biased (instant gratification)
+          attention_span: 0.4  # Low attention
+          social_norm_strength: 0.5  # Moderate (reviews, ratings)
+        intervention_effectiveness:
+          defaults: 0.95    # Extremely effective
+          reminders: 0.7    # Effective but noise
+          framing: 0.8      # Effective (UI design)
+          friction: 0.9     # Very effective (extra clicks)
+
+      public:
+        label: "Öffentlicher Raum"
+        label_en: "Public Space"
+        case_registry_map:
+          psi_dominant: "social_context"
+          social_setting: ["public", "large_group"]
+        parameter_modifiers:
+          lambda: 1.5       # Moderate
+          beta: 0.8         # Moderate present bias
+          social_norm_strength: 0.8  # High (being watched)
+        intervention_effectiveness:
+          social_norms: 0.9 # Very effective (visibility)
+          defaults: 0.6     # Moderate (less control)
+          signage: 0.7      # Effective
+
+      healthcare:
+        label: "Gesundheitseinrichtung"
+        label_en: "Healthcare Setting"
+        case_registry_map:
+          psi_dominant: "institutional"
+          social_setting: ["dyadic", "small_group"]
+        parameter_modifiers:
+          lambda: 3.0       # Very high (health stakes)
+          beta: 0.9         # Less present-biased (serious context)
+          trust_authority: 0.8  # High trust in doctors
+        intervention_effectiveness:
+          defaults: 0.85    # Effective
+          information: 0.7  # Moderate (already high awareness)
+          social_norms: 0.6 # Moderate
+          physician_recommendation: 0.9  # Very effective
+
+  # =========================================================================
+  # DIMENSION 2: SOCIAL (Mit wem?)
+  # =========================================================================
+  social:
+    question: "Wer ist dabei / wer beobachtet?"
+    question_en: "Who is present / who observes?"
+    icon: "👥"
+
+    options:
+      alone:
+        label: "Allein"
+        label_en: "Alone"
+        case_registry_map:
+          social_setting: "solo"
+        parameter_modifiers:
+          social_norm_strength: 0.1   # Minimal
+          self_image_concern: 0.5     # Only internal
+          accountability: 0.2         # Low
+        intervention_effectiveness:
+          social_norms: 0.2           # NOT effective
+          commitment_devices: 0.6     # Moderate
+          defaults: 0.9               # Very effective
+          self_tracking: 0.7          # Effective
+
+      family:
+        label: "Mit Familie"
+        label_en: "With Family"
+        case_registry_map:
+          social_setting: "dyadic"
+        parameter_modifiers:
+          social_norm_strength: 0.6   # Moderate-high
+          self_image_concern: 0.7     # Role model effect
+          other_regarding: 0.8        # High
+        intervention_effectiveness:
+          social_norms: 0.7           # Effective
+          family_framing: 0.85        # Very effective
+          future_self: 0.8            # Effective (children)
+
+      peers:
+        label: "Mit Kollegen/Peers"
+        label_en: "With Colleagues/Peers"
+        case_registry_map:
+          social_setting: "small_group"
+        parameter_modifiers:
+          social_norm_strength: 0.85  # Very high
+          competitive_drive: 0.7      # Comparison active
+          conformity_pressure: 0.8    # High
+        intervention_effectiveness:
+          social_norms: 0.9           # SEHR effektiv
+          peer_comparison: 0.85       # Very effective
+          public_commitment: 0.8      # Effective
+          financial_incentives: 0.4   # CAUTION: Crowding-out!
+
+      authority:
+        label: "Mit Vorgesetzten/Autorität"
+        label_en: "With Authority/Supervisor"
+        case_registry_map:
+          social_setting: "small_group"
+        parameter_modifiers:
+          social_norm_strength: 0.9   # Very high
+          compliance_tendency: 0.8    # High
+          autonomy_reactance: 0.6     # Potential for backfire
+        intervention_effectiveness:
+          mandates: 0.7               # Effective but reactance risk
+          social_norms: 0.5           # Moderate (seen as pressure)
+          choice_architecture: 0.8    # Effective (subtle)
+          recognition: 0.85           # Very effective
+
+      strangers:
+        label: "Mit Fremden"
+        label_en: "With Strangers"
+        case_registry_map:
+          social_setting: ["public", "anonymous"]
+        parameter_modifiers:
+          social_norm_strength: 0.4   # Low-moderate
+          impression_management: 0.6  # Some concern
+          anonymity_effect: 0.7       # Reduces inhibition
+        intervention_effectiveness:
+          social_norms: 0.5           # Moderate
+          anonymity_preservation: 0.8 # Important
+          defaults: 0.85              # Very effective
+
+  # =========================================================================
+  # DIMENSION 3: TEMPORAL (Wann?)
+  # =========================================================================
+  temporal:
+    question: "Wann passiert es? Unter welchem Zeitdruck?"
+    question_en: "When does it happen? Under what time pressure?"
+    icon: "⏰"
+
+    options:
+      morning:
+        label: "Morgens (frisch)"
+        label_en: "Morning (fresh)"
+        case_registry_map:
+          temporal: "stable"
+        parameter_modifiers:
+          cognitive_capacity: 0.9     # High
+          willpower: 0.85             # High
+          beta: 0.9                   # Less present-biased
+        intervention_effectiveness:
+          complex_decisions: 0.8      # Good time for
+          information: 0.75           # Can process
+
+      evening:
+        label: "Abends (müde)"
+        label_en: "Evening (tired)"
+        case_registry_map:
+          temporal: "variable"
+        parameter_modifiers:
+          cognitive_capacity: 0.5     # Low (ego depletion)
+          willpower: 0.4              # Low
+          beta: 0.6                   # More present-biased
+        intervention_effectiveness:
+          defaults: 0.95              # Critical! User won't think
+          complex_decisions: 0.3      # Avoid
+          simple_choices: 0.7         # OK
+
+      deadline:
+        label: "Unter Zeitdruck"
+        label_en: "Under Time Pressure"
+        case_registry_map:
+          temporal: "acute"
+        parameter_modifiers:
+          cognitive_capacity: 0.4     # Very low
+          stress_level: 0.8           # High
+          beta: 0.5                   # Very present-biased
+          lambda: 2.0                 # Higher loss aversion
+        intervention_effectiveness:
+          defaults: 0.95              # CRITICAL
+          simplification: 0.9         # Very effective
+          complex_choices: 0.1        # AVOID
+          reminders: 0.6              # Moderate (may add stress)
+
+      routine:
+        label: "Regelmäßig/Routine"
+        label_en: "Regular/Routine"
+        case_registry_map:
+          temporal: "stable"
+        parameter_modifiers:
+          habit_strength: 0.8         # High automaticity
+          cognitive_capacity: 0.7     # Moderate (autopilot)
+          change_resistance: 0.7      # Status quo bias
+        intervention_effectiveness:
+          habit_disruption: 0.6       # Moderate difficulty
+          defaults: 0.8               # Effective
+          implementation_intentions: 0.85  # Very effective
+
+      one_time:
+        label: "Einmalig"
+        label_en: "One-time"
+        case_registry_map:
+          temporal: "acute"
+        parameter_modifiers:
+          decision_weight: 0.9        # High stakes feeling
+          information_seeking: 0.7    # Will research
+          regret_anticipation: 0.8    # High
+        intervention_effectiveness:
+          information: 0.8            # Effective
+          framing: 0.85               # Very effective
+          social_proof: 0.75          # Effective
+
+      life_transition:
+        label: "Lebensübergang"
+        label_en: "Life Transition"
+        case_registry_map:
+          temporal: "variable"
+        parameter_modifiers:
+          openness_to_change: 0.9     # Very high (fresh start)
+          habit_strength: 0.2         # Low (disrupted)
+          identity_malleability: 0.8  # High
+        intervention_effectiveness:
+          fresh_start: 0.95           # EXTREMELY effective
+          identity_based: 0.85        # Very effective
+          defaults: 0.9               # Very effective
+
+  # =========================================================================
+  # DIMENSION 4: INSTITUTIONAL (Welche Regeln?)
+  # =========================================================================
+  institutional:
+    question: "Welche Regeln/Strukturen gelten?"
+    question_en: "What rules/structures apply?"
+    icon: "📋"
+
+    options:
+      no_rules:
+        label: "Keine formalen Regeln"
+        label_en: "No Formal Rules"
+        case_registry_map:
+          institutional_framework: "other"
+        parameter_modifiers:
+          freedom: 0.9                # High
+          default_power: 0.95         # Very high (nothing competes)
+          norm_reliance: 0.7          # Social norms fill gap
+        intervention_effectiveness:
+          defaults: 0.95              # EXTREMELY effective
+          social_norms: 0.8           # Very effective
+          mandates: 0.2               # Not applicable
+
+      soft_defaults:
+        label: "Weiche Defaults"
+        label_en: "Soft Defaults"
+        case_registry_map:
+          institutional_framework: "market"
+        parameter_modifiers:
+          freedom: 0.8                # High
+          default_power: 0.85         # High
+          opt_out_friction: 0.5       # Moderate
+        intervention_effectiveness:
+          defaults: 0.9               # Very effective
+          choice_architecture: 0.85   # Very effective
+
+      hard_defaults:
+        label: "Harte Defaults (Opt-out)"
+        label_en: "Hard Defaults (Opt-out)"
+        case_registry_map:
+          institutional_framework: "hierarchy"
+        parameter_modifiers:
+          freedom: 0.6                # Moderate
+          default_power: 0.95         # Very high
+          opt_out_friction: 0.8       # High
+        intervention_effectiveness:
+          defaults: 0.95              # EXTREMELY effective
+
+      regulations:
+        label: "Regulierungen/Vorschriften"
+        label_en: "Regulations/Rules"
+        case_registry_map:
+          institutional_framework: "hierarchy"
+        parameter_modifiers:
+          freedom: 0.3                # Low
+          compliance_baseline: 0.7    # Most comply
+          reactance_risk: 0.5         # Moderate
+        intervention_effectiveness:
+          enforcement: 0.8            # Effective
+          information: 0.6            # Moderate (already know rules)
+          incentives: 0.5             # Moderate
+
+      social_norms:
+        label: "Starke soziale Normen"
+        label_en: "Strong Social Norms"
+        case_registry_map:
+          psi_dominant: "social_context"
+        parameter_modifiers:
+          norm_strength: 0.9          # Very high
+          deviance_cost: 0.8          # High
+          conformity: 0.85            # High
+        intervention_effectiveness:
+          norm_highlighting: 0.9      # Very effective
+          descriptive_norms: 0.85     # Very effective
+          individual_incentives: 0.4  # CAUTION: Can backfire
+
+  # =========================================================================
+  # DIMENSION 5: COGNITIVE (Welcher Zustand?)
+  # =========================================================================
+  cognitive:
+    question: "In welchem mentalen Zustand ist die Person?"
+    question_en: "What mental state is the person in?"
+    icon: "🧠"
+
+    options:
+      relaxed:
+        label: "Entspannt"
+        label_en: "Relaxed"
+        case_registry_map:
+          temporal: "stable"
+        parameter_modifiers:
+          cognitive_capacity: 0.9     # High
+          willpower: 0.85             # High
+          beta: 0.9                   # Less present-biased
+          risk_tolerance: 0.5         # Balanced
+        intervention_effectiveness:
+          information: 0.8            # Effective
+          complex_choices: 0.75       # Can handle
+          reflection: 0.85            # Very effective
+
+      stressed:
+        label: "Gestresst"
+        label_en: "Stressed"
+        case_registry_map:
+          temporal: "acute"
+        parameter_modifiers:
+          cognitive_capacity: 0.4     # Low
+          willpower: 0.3              # Very low
+          beta: 0.5                   # Very present-biased
+          lambda: 2.5                 # High loss aversion
+          risk_aversion: 0.8          # High
+        intervention_effectiveness:
+          defaults: 0.95              # CRITICAL
+          simplification: 0.9         # Very effective
+          information: 0.3            # NOT effective
+          complex_choices: 0.1        # AVOID
+          calming_framing: 0.7        # Helpful
+
+      tired:
+        label: "Müde/Erschöpft"
+        label_en: "Tired/Exhausted"
+        case_registry_map:
+          temporal: "variable"
+        parameter_modifiers:
+          cognitive_capacity: 0.3     # Very low
+          willpower: 0.2              # Depleted
+          beta: 0.4                   # Very present-biased
+          default_reliance: 0.95      # Very high
+        intervention_effectiveness:
+          defaults: 0.98              # CRITICAL - will take any default
+          simple_choices: 0.6         # OK
+          complex_decisions: 0.1      # AVOID COMPLETELY
+
+      distracted:
+        label: "Abgelenkt"
+        label_en: "Distracted"
+        case_registry_map:
+          temporal: "variable"
+        parameter_modifiers:
+          attention: 0.3              # Low
+          information_processing: 0.4 # Low
+          peripheral_processing: 0.8  # High (heuristics)
+        intervention_effectiveness:
+          salient_cues: 0.8           # Effective (attention grabbing)
+          subtle_nudges: 0.4          # Less effective
+          defaults: 0.9               # Very effective
+
+      motivated:
+        label: "Motiviert"
+        label_en: "Motivated"
+        case_registry_map:
+          temporal: "stable"
+        parameter_modifiers:
+          willpower: 0.9              # High
+          goal_commitment: 0.85       # High
+          beta: 0.95                  # Little present bias
+          intrinsic_motivation: 0.8   # High
+        intervention_effectiveness:
+          goal_setting: 0.9           # Very effective
+          progress_tracking: 0.85     # Very effective
+          financial_incentives: 0.3   # CAUTION: Crowding-out risk!
+          information: 0.8            # Effective
+
+      emotional:
+        label: "Emotional (Freude/Angst/Ärger)"
+        label_en: "Emotional (Joy/Fear/Anger)"
+        case_registry_map:
+          temporal: "acute"
+        parameter_modifiers:
+          cognitive_capacity: 0.5     # Reduced
+          risk_perception: "variable" # Depends on emotion
+          impulsivity: 0.7            # Higher
+          lambda: "variable"          # Fear increases, joy decreases
+        intervention_effectiveness:
+          cooling_off_period: 0.85    # Very effective
+          defaults: 0.8               # Effective
+          emotional_appeals: 0.7      # Can work but ethical concerns
+          rational_arguments: 0.3     # NOT effective in moment
+
+# ============================================================================
+# KONTEXT-KOMBINATIONS-REGELN
+# ============================================================================
+
+combination_rules:
+
+  # Kritische Kombinationen die Sonderbehandlung erfordern
+  critical_combinations:
+
+    - name: "Stressed + Deadline + Alone"
+      dimensions:
+        cognitive: "stressed"
+        temporal: "deadline"
+        social: "alone"
+      warning: "HÖCHSTE PRIORITÄT für Defaults"
+      recommendation: "Nur einfachste Choices, maximale Default-Nutzung"
+      intervention_multiplier: 0.3  # Alles außer Defaults ineffektiv
+
+    - name: "Peers + Financial Incentives"
+      dimensions:
+        social: "peers"
+      intervention_type: "financial_incentives"
+      warning: "CROWDING-OUT RISIKO"
+      recommendation: "Soziale Anreize nutzen statt finanzielle"
+      crowding_out_gamma: -0.3
+
+    - name: "Motivated + Financial Incentives"
+      dimensions:
+        cognitive: "motivated"
+      intervention_type: "financial_incentives"
+      warning: "CROWDING-OUT RISIKO"
+      recommendation: "Intrinsische Motivation nicht untergraben"
+      crowding_out_gamma: -0.4
+
+    - name: "Life Transition + Any Context"
+      dimensions:
+        temporal: "life_transition"
+      priority: "HIGH"
+      recommendation: "Fresh-Start-Effekt nutzen - beste Zeit für Verhaltensänderung"
+      intervention_multiplier: 1.5  # Alles 50% effektiver
+
+# ============================================================================
+# MAPPING ZUR CASE REGISTRY
+# ============================================================================
+
+case_registry_query_mapping:
+  description: "Wie die 5 Fragen auf Case Registry WHEN-Felder mappen"
+
+  physical:
+    maps_to: ["psi_dominant", "social_setting"]
+    query_example: "/case --psi_dominant institutional --social_setting small_group"
+
+  social:
+    maps_to: ["social_setting"]
+    query_example: "/case --social_setting solo"
+
+  temporal:
+    maps_to: ["temporal"]
+    query_example: "/case --temporal acute"
+
+  institutional:
+    maps_to: ["institutional_framework", "psi_dominant"]
+    query_example: "/case --psi_dominant institutional"
+
+  cognitive:
+    maps_to: ["temporal"]  # Approximation - no direct field
+    note: "Cognitive state not directly in schema - use temporal as proxy"
+
+# ============================================================================
+# PARAMETER LOOKUP TABLE
+# ============================================================================
+
+default_parameters:
+  description: "Baseline-Parameter ohne Kontext-Spezifikation"
+  warning: "Diese Werte sind Durchschnitte - IMMER kontext-spezifisch anpassen!"
+
+  lambda: 2.25        # Loss aversion (Kahneman & Tversky baseline)
+  beta: 0.85          # Present bias (quasi-hyperbolic)
+  delta: 0.99         # Long-run discount factor
+  alpha: 0.88         # Probability weighting (gains)
+  gamma_loss: 0.69    # Probability weighting (losses)
+
+  note: |
+    Diese Parameter gelten für:
+    - Physical: neutral (lab setting)
+    - Social: anonymous
+    - Temporal: no pressure
+    - Institutional: no defaults
+    - Cognitive: neutral state
+
+    In JEDEM anderen Kontext: Parameter anpassen gemäß Modifikatoren oben!
+
+# ============================================================================
+# VERSION & CHANGELOG
+# ============================================================================
+
+changelog:
+  - version: "1.0"
+    date: "2026-01-25"
+    changes:
+      - "Initial creation"
+      - "5 dimensions with options defined"
+      - "Parameter modifiers per option"
+      - "Intervention effectiveness ratings"
+      - "Critical combination rules"
+      - "Case registry mapping"

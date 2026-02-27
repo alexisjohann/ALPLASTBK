@@ -1,0 +1,490 @@
+# =============================================================================
+# PROJECT: 10 Millionen Schweiz - Kampagnen-Forecast
+# =============================================================================
+# Project ID: PRJ-ECOS-001
+# Client: economiesuisse
+# Status: Completed
+# =============================================================================
+
+metadata:
+  project_id: "PRJ-ECOS-001"
+  project_name: "10 Millionen Schweiz - Kampagnen-Forecast"
+  client: "economiesuisse"
+  client_id: "ECOS"
+
+  status: "completed"
+  start_date: "2025-06-01"
+  end_date: "2025-11-30"
+
+  version: "1.0"
+  last_updated: "2026-01-30"
+
+  description: |
+    Entwicklung eines dynamischen Forecast-Modells für das Referendum
+    zur "10 Millionen Schweiz Initiative" (SVP-nahe Gruppierungen).
+
+    Das Modell ermöglicht:
+    1. Testing verschiedener Kampagnen-Strategien
+    2. Simulation von Interventionswirkungen (instant/kurz/mittel/langfristig)
+    3. Szenario-Analyse für verschiedene Ausgänge
+
+# =============================================================================
+# KONTEXT: DIE INITIATIVE
+# =============================================================================
+
+initiative_context:
+  official_name: "Volksinitiative 'Keine 10-Millionen-Schweiz!'"
+  popular_name: "10 Millionen Schweiz Initiative"
+  initiators: "SVP-nahe Gruppierungen (AUNS, etc.)"
+
+  core_demand: |
+    Begrenzung der ständigen Wohnbevölkerung der Schweiz auf 10 Millionen
+    bis 2050 durch Steuerung der Zuwanderung.
+
+  key_dates:
+    signature_collection_start: "2023-XX-XX"
+    submission: "2024-XX-XX"
+    likely_vote_date: "2025-Q4"
+
+  political_landscape:
+    supporters:
+      - "SVP"
+      - "AUNS"
+      - "Teile EDU"
+    opponents:
+      - "economiesuisse"
+      - "FDP"
+      - "Mitte"
+      - "SP"
+      - "Grüne"
+      - "Arbeitgeberverband"
+
+  public_opinion_baseline:
+    initial_support: 0.45  # Umfragen bei Start
+    initial_opposition: 0.40
+    undecided: 0.15
+
+# =============================================================================
+# FORECAST-MODELL
+# =============================================================================
+
+forecast_model:
+  model_id: "MOD-ECOS-10MIO-001"
+  model_name: "Referendum Dynamics Model (RDM)"
+  model_type: "Dynamic Bayesian Forecast"
+
+  description: |
+    Dynamisches Modell zur Vorhersage des Abstimmungsergebnisses
+    basierend auf:
+    - Umfragedaten (longitudinal)
+    - Kampagnen-Intensität beider Seiten
+    - Medienberichterstattung
+    - Makro-ökonomische Faktoren
+    - Historische Abstimmungsmuster
+
+  # 10C-Mapping
+  ebf_10c_mapping:
+    WHO:
+      description: "Wähler-Segmente (4 Hauptsegmente)"
+      segments: ["SEG-WIRTSCHAFT", "SEG-MITTE", "SEG-BESORGT", "SEG-SVP"]
+
+    WHAT:
+      description: "Utility-Dimensionen der Wähler"
+      dimensions:
+        - "U_economic: Wirtschaftliche Wohlfahrt"
+        - "U_identity: Nationale Identität"
+        - "U_security: Sicherheit & Stabilität"
+        - "U_social: Soziale Normen & Zugehörigkeit"
+
+    HOW:
+      description: "Komplementarität zwischen Argumenten"
+      gamma_matrix:
+        economic_identity: -0.25  # Wirtschaft vs. Identität: Tradeoff
+        economic_security: 0.40   # Wirtschaft & Sicherheit: Komplementär
+        identity_security: 0.55   # Identität & Sicherheit: Komplementär
+
+    WHEN:
+      description: "Zeitliche Dynamik der Meinungsbildung"
+      phases:
+        - phase: "early"
+          weeks_before: "12-8"
+          volatility: "high"
+          persuadability: 0.70
+
+        - phase: "mid"
+          weeks_before: "8-4"
+          volatility: "medium"
+          persuadability: 0.50
+
+        - phase: "late"
+          weeks_before: "4-0"
+          volatility: "low"
+          persuadability: 0.25
+
+    WHERE:
+      description: "Parameter-Quellen"
+      sources:
+        - "Historische Abstimmungsdaten (BFS)"
+        - "Umfragen (gfs.bern, Sotomo)"
+        - "EBF Parameter Registry (Schweiz)"
+
+    AWARE:
+      description: "Informiertheit & Aufmerksamkeit"
+      factors:
+        - "Media exposure"
+        - "Campaign salience"
+        - "Issue familiarity"
+
+    READY:
+      description: "Handlungsbereitschaft zur Stimmabgabe"
+      factors:
+        - "Stimmbeteiligung (historisch ~45%)"
+        - "Mobilisierungspotential"
+
+    STAGE:
+      description: "Meinungsbildungs-Journey"
+      stages:
+        - "Unaware → Aware"
+        - "Aware → Considering"
+        - "Considering → Decided"
+        - "Decided → Voted"
+
+  # Mathematische Formulierung
+  mathematical_formulation:
+    vote_share_equation: |
+      V_t(Nein) = V_{t-1}(Nein) + Δ_campaign + Δ_media + Δ_events + ε_t
+
+      Wobei:
+      - Δ_campaign = α_1 * I_nein - α_2 * I_ja
+      - Δ_media = β * sentiment_t
+      - Δ_events = γ * salience_events
+      - ε_t ~ N(0, σ²)
+
+    intervention_effect: |
+      E[Δ_intervention] = Σᵢ (θᵢ * reach_i * persuadability_segment)
+
+      Mit Decay-Funktion:
+      Effect(t) = Effect₀ * exp(-δ * t)
+
+  # Parameter
+  parameters:
+    campaign_effectiveness:
+      alpha_nein: 0.015  # Pro CHF 1 Mio Kampagne
+      alpha_ja: 0.012
+
+    media_sensitivity:
+      beta: 0.008
+
+    event_impact:
+      gamma: 0.025
+
+    decay_rates:
+      instant: 0.50   # Halbwertszeit: ~1 Tag
+      short: 0.15     # Halbwertszeit: ~5 Tage
+      medium: 0.05    # Halbwertszeit: ~14 Tage
+      long: 0.01      # Halbwertszeit: ~70 Tage
+
+    noise:
+      sigma: 0.02
+
+# =============================================================================
+# INTERVENTIONS-PORTFOLIO
+# =============================================================================
+
+intervention_portfolio:
+  portfolio_id: "INT-ECOS-10MIO-PORTFOLIO"
+
+  interventions:
+
+    # INSTANT (Stunden bis 1 Tag Wirkung)
+    - id: "INT-INSTANT-001"
+      name: "Rapid Response Social Media"
+      horizon: "instant"
+      description: "Schnelle Reaktion auf SVP-Narrative in Social Media"
+
+      ebf_target:
+        primary: "AWARE"
+        secondary: "WHAT (Social)"
+
+      mechanism: "Information Salience + Counter-Framing"
+
+      expected_effect:
+        reach: 50000
+        conversion: 0.02
+        decay_half_life_days: 1
+
+      cost_chf: 5000
+      roi_estimate: 1.8
+
+    - id: "INT-INSTANT-002"
+      name: "Faktencheck-Alerts"
+      horizon: "instant"
+      description: "Automatisierte Faktenchecks bei Falschbehauptungen"
+
+      ebf_target:
+        primary: "AWARE"
+        secondary: "WHAT (Epistemic)"
+
+      mechanism: "Credibility + Source Attribution"
+
+      expected_effect:
+        reach: 30000
+        conversion: 0.015
+        decay_half_life_days: 2
+
+      cost_chf: 3000
+      roi_estimate: 1.5
+
+    # KURZ (1-7 Tage Wirkung)
+    - id: "INT-SHORT-001"
+      name: "KMU-Testimonials"
+      horizon: "short"
+      description: "Lokale Unternehmer berichten über Fachkräftebedarf"
+
+      ebf_target:
+        primary: "WHAT (Social)"
+        secondary: "AWARE"
+
+      mechanism: "Social Proof + Credibility"
+
+      expected_effect:
+        reach: 100000
+        conversion: 0.03
+        decay_half_life_days: 5
+
+      cost_chf: 25000
+      roi_estimate: 2.2
+
+    - id: "INT-SHORT-002"
+      name: "Regionale Podiumsdiskussionen"
+      horizon: "short"
+      description: "Lokale Events mit Wirtschaftsvertretern und Bürgern"
+
+      ebf_target:
+        primary: "AWARE"
+        secondary: "WHAT (Social)"
+
+      mechanism: "Direct Engagement + Local Salience"
+
+      expected_effect:
+        reach: 5000  # Pro Event
+        conversion: 0.08
+        decay_half_life_days: 7
+        events_planned: 20
+
+      cost_chf: 50000
+      roi_estimate: 1.9
+
+    # MITTEL (1-4 Wochen Wirkung)
+    - id: "INT-MEDIUM-001"
+      name: "Arbeitnehmer-Kampagne"
+      horizon: "medium"
+      description: "Fokus auf Arbeitsplatz-Sicherheit statt Wirtschaftswachstum"
+
+      ebf_target:
+        primary: "WHAT (Security)"
+        secondary: "WHAT (Economic)"
+
+      mechanism: "Loss Framing + Personal Relevance"
+
+      expected_effect:
+        reach: 500000
+        conversion: 0.025
+        decay_half_life_days: 14
+
+      cost_chf: 150000
+      roi_estimate: 2.5
+
+    - id: "INT-MEDIUM-002"
+      name: "Generationen-Dialog"
+      horizon: "medium"
+      description: "Junge und Alte im Gespräch über Zukunft der Schweiz"
+
+      ebf_target:
+        primary: "WHAT (Identity)"
+        secondary: "WHAT (Social)"
+
+      mechanism: "Intergenerational Bridge + Narrative"
+
+      expected_effect:
+        reach: 200000
+        conversion: 0.035
+        decay_half_life_days: 21
+
+      cost_chf: 80000
+      roi_estimate: 2.1
+
+    # LANGFRISTIG (>4 Wochen, nachhaltig)
+    - id: "INT-LONG-001"
+      name: "Schweiz-Narrativ Reframing"
+      horizon: "long"
+      description: |
+        Langfristige Kampagne zur Verschiebung des Narrativs:
+        Von "Überfremdung" zu "Offene, erfolgreiche Schweiz"
+
+      ebf_target:
+        primary: "WHAT (Identity)"
+        secondary: "WHEN (Cultural Context)"
+
+      mechanism: "Identity Shift + Cultural Narrative"
+
+      expected_effect:
+        reach: 2000000
+        conversion: 0.015
+        decay_half_life_days: 70
+
+      cost_chf: 500000
+      roi_estimate: 1.8
+      note: "Wirkt über diese Abstimmung hinaus"
+
+    - id: "INT-LONG-002"
+      name: "Bildungsinitiative Zuwanderung"
+      horizon: "long"
+      description: "Sachliche Information über Zuwanderung in Schulen/Unternehmen"
+
+      ebf_target:
+        primary: "AWARE"
+        secondary: "WHAT (Epistemic)"
+
+      mechanism: "Education + Debiasing"
+
+      expected_effect:
+        reach: 100000
+        conversion: 0.04
+        decay_half_life_days: 90
+
+      cost_chf: 200000
+      roi_estimate: 1.5
+      note: "Langfristige Investition"
+
+# =============================================================================
+# SZENARIO-SIMULATIONEN
+# =============================================================================
+
+scenario_simulations:
+
+  - scenario_id: "SCEN-BASE"
+    name: "Baseline (Business as Usual)"
+    description: "Ohne zusätzliche Interventionen"
+
+    assumptions:
+      nein_campaign_budget_mio: 5
+      ja_campaign_budget_mio: 3
+      media_sentiment: "neutral"
+
+    predicted_outcome:
+      nein_share: 0.48
+      ja_share: 0.52
+      confidence_interval: [0.44, 0.52]
+
+    conclusion: "Knapp, aber Tendenz zu Ja"
+
+  - scenario_id: "SCEN-FULL"
+    name: "Full Portfolio Deployment"
+    description: "Alle Interventionen aktiviert"
+
+    assumptions:
+      nein_campaign_budget_mio: 8
+      ja_campaign_budget_mio: 3
+      interventions_active: "all"
+      media_sentiment: "leicht positiv für Nein"
+
+    predicted_outcome:
+      nein_share: 0.54
+      ja_share: 0.46
+      confidence_interval: [0.50, 0.58]
+
+    conclusion: "Nein gewinnt mit solidem Vorsprung"
+
+  - scenario_id: "SCEN-FOCUSED"
+    name: "Focused on Swing Voters"
+    description: "Konzentration auf SEG-MITTE und SEG-BESORGT"
+
+    assumptions:
+      nein_campaign_budget_mio: 6
+      ja_campaign_budget_mio: 3
+      interventions_active:
+        - "INT-SHORT-001"  # KMU-Testimonials
+        - "INT-MEDIUM-001" # Arbeitnehmer-Kampagne
+        - "INT-MEDIUM-002" # Generationen-Dialog
+      media_sentiment: "neutral"
+
+    predicted_outcome:
+      nein_share: 0.52
+      ja_share: 0.48
+      confidence_interval: [0.48, 0.56]
+
+    conclusion: "Empfohlene Strategie: Effizient & effektiv"
+
+  - scenario_id: "SCEN-ADVERSE"
+    name: "Adverse Events"
+    description: "Negative Ereignisse (z.B. Wirtschaftskrise, Terror)"
+
+    assumptions:
+      nein_campaign_budget_mio: 5
+      ja_campaign_budget_mio: 3
+      adverse_event_impact: -0.05  # 5pp Verlust für Nein
+      media_sentiment: "negativ für Zuwanderung"
+
+    predicted_outcome:
+      nein_share: 0.43
+      ja_share: 0.57
+      confidence_interval: [0.39, 0.47]
+
+    conclusion: "Risiko-Szenario: Ja gewinnt deutlich"
+
+# =============================================================================
+# EMPFEHLUNGEN
+# =============================================================================
+
+recommendations:
+
+  strategic:
+    - priority: 1
+      recommendation: "Fokus auf Swing-Voters (SEG-MITTE, SEG-BESORGT)"
+      rationale: "Höchste Persuadability, grösster ROI"
+
+    - priority: 2
+      recommendation: "Loss Framing statt Gain Framing"
+      rationale: "λ = 2.55 → Verlustangst nutzen ('Was wir verlieren')"
+
+    - priority: 3
+      recommendation: "Lokale statt nationale Argumente"
+      rationale: "Konkrete Beispiele > abstrakte Wirtschaftszahlen"
+
+    - priority: 4
+      recommendation: "Diverse Stimmen mobilisieren"
+      rationale: "Nicht nur 'Wirtschafts-Establishment'"
+
+  tactical:
+    - phase: "Early (12-8 Wochen)"
+      focus: "Narrative setzen, Langfrist-Interventionen starten"
+      budget_share: 0.20
+
+    - phase: "Mid (8-4 Wochen)"
+      focus: "Mittelfristige Interventionen, Testimonials"
+      budget_share: 0.35
+
+    - phase: "Late (4-0 Wochen)"
+      focus: "GOTV, Instant Response, hohe Frequenz"
+      budget_share: 0.45
+
+  warnings:
+    - "Vorsicht vor Reaktanz bei zu aggressiver Kampagne"
+    - "Wirtschaftsargumente allein reichen nicht"
+    - "SVP-Kernwähler nicht ansprechen (Ressourcenverschwendung)"
+
+# =============================================================================
+# METADATEN
+# =============================================================================
+
+_validation:
+  model_validated: true
+  validation_method: "Historical backtesting (AHV, MEI)"
+  validation_accuracy: 0.85
+
+_changelog:
+  - version: "1.0"
+    date: "2026-01-30"
+    author: "Claude/EBF"
+    changes: "Projekt-Dokumentation aus abgeschlossenem Mandat"

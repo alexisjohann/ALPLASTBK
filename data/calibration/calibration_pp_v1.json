@@ -1,0 +1,75 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "date": "2025-01-13",
+    "scale": "percentage_points",
+    "status": "production-ready",
+    "description": "Scale-local calibration for percentage point effect sizes",
+    "note": "Calibration is scale-local. Deployment follows validation, not ambition."
+  },
+
+  "calibration_params": {
+    "a": -0.48,
+    "b": 1.007,
+    "formula": "pp_true ≈ -0.48 + 1.007 × pp_llm",
+    "sigma_model": 3.54,
+    "r_squared": 0.991,
+    "interpretation": {
+      "intercept": "≈ 0 → no systematic bias",
+      "slope": "≈ 1 → LLM well-calibrated in pp space"
+    }
+  },
+
+  "validation": {
+    "n_anchors": 7,
+    "support_range": "4–87 pp",
+    "anchors_used": [
+      "T12_01_default_401k",
+      "T12_07_vaccine_reminder_cochrane",
+      "T12_08_clinical_reminder_review",
+      "T12_09_organ_donation_austria",
+      "T12_10_green_energy_default_germany",
+      "T12_11_pension_auto_escalation",
+      "T12_12_tax_compliance_letters"
+    ],
+    "loo_metrics": {
+      "mae_pp": 3.49,
+      "rmse_pp": 3.95,
+      "coverage_95": 1.00,
+      "spearman_rho": 1.00
+    },
+    "five_point_checklist": {
+      "check1_support": "PASS - 4–87pp covers full range",
+      "check2_intercept": "PASS - |a| = 0.48 < 5pp",
+      "check3_slope": "PASS - b = 1.007 ∈ [0.85, 1.05]",
+      "check4_coverage": "PASS - 100% ≥ 90%",
+      "check5_domain": "PASS - defaults consistent"
+    },
+    "status": "DEPLOY"
+  },
+
+  "usage": {
+    "applicable_to": ["percentage_points", "enrollment rates", "compliance rates"],
+    "not_applicable_to": ["Cohen's d", "SMD", "percent_change"],
+    "workflow": [
+      "1. Run LLMMC protocol → get pp_llm, EU_llm (in pp units)",
+      "2. Apply: pp_cal = -0.48 + 1.007 × pp_llm",
+      "3. Propagate uncertainty: σ_cal = sqrt((1.007 × EU_llm)² + 3.54²)",
+      "4. Report with Tier-3 designation",
+      "5. Optional: map to θ-scale using pp/50 (for integration)"
+    ]
+  },
+
+  "scientific_justification": {
+    "why_scale_local": "pp effects have different base rates and ceiling effects than standardized effect sizes",
+    "why_separate_from_d": "Forcing pp onto d-scale loses information; calibrate in native units first",
+    "key_insight": "After adding A9-A12 (high-pp defaults), leverage artifacts disappeared",
+    "reviewer_statement": "Percentage-point effects are calibrated on Tier-1/2 anchors spanning the full support (4–87 pp)."
+  },
+
+  "relation_to_d_calibration": {
+    "note": "This calibration is INDEPENDENT of calibration_d_v1.json",
+    "integration": "Both can be used; choose based on effect metric in source study",
+    "mapping": "If needed, map calibrated pp to θ via: θ = min(1, pp/50)"
+  }
+}

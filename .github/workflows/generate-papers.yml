@@ -1,0 +1,113 @@
+name: Generate Papers from Appendices
+
+on:
+  workflow_dispatch:
+    inputs:
+      appendix:
+        description: 'Appendix file to generate from (e.g., appendices/LIT-META_metascience_integration.tex)'
+        required: true
+        type: string
+      style:
+        description: 'Style profile'
+        required: true
+        default: 'ernst_fehr'
+        type: choice
+        options:
+          # Academic profiles
+          - ernst_fehr
+          - kahneman_tversky
+          - academic_standard
+          - ebf_appendix
+          # High-impact journals
+          - nature
+          - science
+          - pnas
+          - nber_working_paper
+          # Professional profiles
+          - policy_brief
+          - practitioner
+          - harvard_business_review
+          - mckinsey_quarterly
+          - mit_sloan_review
+          # Business/Finance journalism
+          - financial_times
+          - wall_street_journal
+          - forbes
+          - economist
+          # General journalism
+          - der_spiegel
+          - nyt_science
+          - wissenschaft_de
+          - the_atlantic
+          - wired
+          # Presentation
+          - ted_talk
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pyyaml
+
+      - name: Generate paper
+        run: |
+          python scripts/generate_paper.py "${{ inputs.appendix }}" \
+            --style "${{ inputs.style }}" \
+            --no-compile
+
+      - name: Compile LaTeX documents
+        uses: xu-cheng/latex-action@v3
+        with:
+          working_directory: papers
+          root_file: "*.tex"
+          glob_root_file: true
+          latexmk_use_xelatex: false
+          latexmk_shell_escape: true
+          continue_on_error: true
+
+      - name: List generated files
+        run: |
+          echo "Generated files:"
+          ls -la papers/*.tex papers/*.pdf 2>/dev/null || echo "No files found"
+
+      - name: Upload papers as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-papers
+          path: |
+            papers/*.tex
+            papers/*.pdf
+          retention-days: 30
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "docs(paper): Auto-generate paper from ${{ inputs.appendix }}"
+          title: "[Auto] Generated paper from ${{ inputs.appendix }}"
+          body: |
+            ## Automatically Generated Paper
+
+            **Source:** `${{ inputs.appendix }}`
+            **Style:** `${{ inputs.style }}`
+
+            This paper was automatically generated using the EBF paper generator.
+
+            ### Review Checklist
+            - [ ] Content accuracy
+            - [ ] Style consistency
+            - [ ] References completeness
+            - [ ] PDF compiles correctly
+          branch: auto/generate-paper-${{ github.run_number }}
+          delete-branch: true

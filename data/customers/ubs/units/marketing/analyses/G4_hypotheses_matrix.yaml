@@ -1,0 +1,562 @@
+# =============================================================================
+# G4: HYPOTHESES MATRIX — Testable Hypotheses with Expected β-Values
+# =============================================================================
+# UBS Growth Marketing: Mortgage Custom GPT & Travel-eSIM
+# Derived from: B1 (Algorithm Aversion), B2 (TAM/UTAUT2), B3 (Brand Extension)
+# Calibrated with: G1 (Survey Mapping), G2 (Swiss Benchmarks), G3 (Competitors)
+# Date: 2026-02-25
+# =============================================================================
+
+metadata:
+  analysis_id: "G4"
+  title: "Testbare Hypothesen-Matrix mit erwarteten Effektstärken"
+  purpose: "Alle pre-registrierbaren Hypothesen mit β-Werten, Power-Anforderungen und Survey-Fragen-Mapping"
+  derives_from: ["B1", "B2", "B3", "G1", "G2", "G3"]
+  total_hypotheses: 28
+  mortgage_hypotheses: 12
+  esim_hypotheses: 10
+  cross_topic_hypotheses: 6
+
+# =============================================================================
+# 1. MORTGAGE CUSTOM GPT — HYPOTHESES (H_M01–H_M12)
+# =============================================================================
+
+mortgage_hypotheses:
+
+  # --- MAIN EFFECTS ---
+
+  H_M01:
+    statement: "Trust has a positive effect on behavioral intention to use the Mortgage GPT"
+    formal: "β(Trust → BI) > 0"
+    expected_beta: 0.38
+    ci_68: [0.28, 0.48]
+    source: "B2: Kim 2009 (mobile banking), Gefen 2003 (Trust-TAM)"
+    rationale: "Trust is the dominant predictor for financial digital services. B2 Trust-Kaskade total effect = 0.55, direct = 0.21, via PU = 0.34. In mortgage context with high stakes, direct trust path expected stronger."
+    measurement: "Q_M07 (Trust scale, 7-point Likert, 4 items from Gefen 2003)"
+    dv: "Q_M14 (Behavioral Intention, 7-point Likert)"
+    analysis: "SEM path coefficient; control for age, digital literacy"
+    power_requirement:
+      effect_size: "medium (f² = 0.15)"
+      alpha: 0.05
+      power: 0.80
+      min_n: 85
+    priority: "CRITICAL"
+
+  H_M02:
+    statement: "Performance Expectancy has a positive effect on behavioral intention to use the Mortgage GPT"
+    formal: "β(PE → BI) > 0"
+    expected_beta: 0.32
+    ci_68: [0.22, 0.42]
+    source: "B2: Davis 1989 (PU 0.42-0.66), adjusted for AI context; Venkatesh 2003 (UTAUT)"
+    rationale: "PE is the strongest UTAUT predictor. Swiss benchmark G2 shows high functional expectations (accuracy, speed, 24/7). Adjusted downward from original TAM because trust partially mediates PE effect in financial AI."
+    measurement: "Q_M08 (PE scale, 7-point Likert, 4 items from UTAUT2)"
+    dv: "Q_M14 (Behavioral Intention)"
+    analysis: "SEM path coefficient"
+    power_requirement:
+      effect_size: "medium (f² = 0.10)"
+      alpha: 0.05
+      power: 0.80
+      min_n: 110
+    priority: "HIGH"
+
+  H_M03:
+    statement: "Algorithm Aversion has a negative effect on behavioral intention to use the Mortgage GPT"
+    formal: "β(AlgoAversion → BI) < 0"
+    expected_beta: -0.25
+    ci_68: [-0.35, -0.15]
+    source: "B1: Dietvorst 2015 (base aversion α = 0.68); B2 integration"
+    rationale: "68% show base aversion (B1). High-stakes financial context amplifies aversion (Burton 2020: -0.20 stakes penalty). Net effect after Swiss AI-adoption context (G2: 45% daily GenAI use) provides partial offset."
+    measurement: "Q_M04 (Algorithm Aversion scale, 3 items from Dietvorst 2015)"
+    dv: "Q_M14 (Behavioral Intention)"
+    analysis: "SEM path coefficient; test with and without moderators"
+    power_requirement:
+      effect_size: "medium (f² = 0.08)"
+      alpha: 0.05
+      power: 0.80
+      min_n: 130
+    priority: "CRITICAL"
+
+  H_M04:
+    statement: "Modifiability of GPT output has a positive effect on willingness to use"
+    formal: "β(Modifiability → Usage) > 0; Δ(modifiable vs. fixed) > 0.30"
+    expected_beta: 0.41
+    ci_68: [0.33, 0.49]
+    source: "B1: Dietvorst 2018 (73% with modification vs. 32% without = 41pp)"
+    rationale: "THE critical design lever. Modifiability restores sense of control and reduces uniqueness neglect. B1 shows delta_AI jumps from 0.31 (fixed) to 0.72 (modifiable) in trust cascade."
+    measurement: "Q_M05 (Modifiability Preference, 2 items from Dietvorst 2018)"
+    dv: "Q_M14 (BI) + Q_M15 (WTP for premium features)"
+    experimental_test: "2×2 design Factor 2: modifiable vs. fixed output"
+    analysis: "ANOVA main effect + SEM path; Cohen's d for group comparison"
+    power_requirement:
+      effect_size: "large (d = 0.60)"
+      alpha: 0.05
+      power: 0.90
+      min_n_per_cell: 60
+    priority: "CRITICAL"
+
+  H_M05:
+    statement: "Perceived task objectivity moderates algorithm aversion: higher objectivity reduces aversion"
+    formal: "β(Objectivity × AlgoAversion → BI) > 0 (interaction attenuates negative effect)"
+    expected_beta_interaction: 0.38
+    ci_68: [0.25, 0.51]
+    source: "B1: Castelo & Ward 2019; Logg 2019 (appreciation for objective tasks)"
+    rationale: "Mortgage rate calculation is highly objective (number-in, number-out). When framed as calculation (not advice), aversion shifts to appreciation. G3 confirms NO competitor offers this framing yet."
+    measurement: "Q_M06 (Task Objectivity, 2 items from Castelo 2019)"
+    moderates: "H_M03 (Algorithm Aversion → BI)"
+    analysis: "Moderated regression; interaction term AlgoAversion × Objectivity"
+    power_requirement:
+      effect_size: "small-medium (f² = 0.06)"
+      alpha: 0.05
+      power: 0.80
+      min_n: 180
+    priority: "HIGH"
+
+  H_M06:
+    statement: "Uniqueness Neglect perception has a negative indirect effect on behavioral intention via perceived personalization"
+    formal: "β(UniquenessNeglect → PerceivedPersonalization → BI) < 0"
+    expected_indirect_effect: -0.18
+    ci_68: [-0.25, -0.11]
+    source: "B1: Longoni 2019 (indirect effect -0.83 on provider choice; scaled to BI)"
+    rationale: "Full Longoni effect (-0.83) is on provider switching. For BI within a single tool, the effect is scaled by ~0.22 (single-channel effect). Visible input personalization (showing income, LTV, canton) should mitigate."
+    measurement: "Q_M06 (Uniqueness Neglect, 3 items from Longoni 2019)"
+    mediator: "Perceived Personalization (2 items, ad hoc scale)"
+    dv: "Q_M14 (Behavioral Intention)"
+    analysis: "Mediation analysis (Hayes PROCESS Model 4); bootstrap CI"
+    power_requirement:
+      effect_size: "small (f² = 0.04)"
+      alpha: 0.05
+      power: 0.80
+      min_n: 250
+    priority: "MEDIUM"
+
+  H_M07:
+    statement: "Social Influence has a positive effect on BI, moderated by age (stronger for older users)"
+    formal: "β(SI → BI) > 0; β(SI × Age → BI) > 0"
+    expected_beta: 0.18
+    expected_moderation: "+0.08 per age decade above 35"
+    ci_68: [0.10, 0.26]
+    source: "B2: Venkatesh 2003 (UTAUT, age moderates SI → BI); B2 moderator_analysis"
+    rationale: "Advisor recommendation (SI for mortgage) matters more for older, traditional segments. G2 Swiss benchmark: older segments trust human advisors significantly more."
+    measurement: "Q_M10 (Social Influence, 3 items from UTAUT); age as moderator"
+    dv: "Q_M14 (Behavioral Intention)"
+    analysis: "Moderated regression; subgroup analysis by age bracket"
+    power_requirement:
+      effect_size: "small (f² = 0.04)"
+      alpha: 0.05
+      power: 0.80
+      min_n: 250
+    priority: "MEDIUM"
+
+  H_M08:
+    statement: "Effort Expectancy has a positive effect on BI (easy interaction increases adoption)"
+    formal: "β(EE → BI) > 0"
+    expected_beta: 0.14
+    ci_68: [0.06, 0.22]
+    source: "B2: Kim 2009 (reduced for conversational UI); Venkatesh 2012"
+    rationale: "Conversational UI (chat) has inherently lower effort barrier than form-based tools. Reduced beta vs. traditional digital tools because GPT interaction is more natural."
+    measurement: "Q_M09 (Effort Expectancy, 3 items from UTAUT2)"
+    dv: "Q_M14 (Behavioral Intention)"
+    analysis: "SEM path coefficient"
+    power_requirement:
+      effect_size: "small (f² = 0.03)"
+      alpha: 0.05
+      power: 0.80
+      min_n: 300
+    priority: "LOW"
+
+  # --- EXPERIMENTAL HYPOTHESES (2×2 Design) ---
+
+  H_M09:
+    statement: "AI disclosure (transparent vs. hidden) has a main effect on trust: disclosure initially reduces trust but increases post-interaction trust"
+    formal: "β(Disclosure → Trust_pre) < 0; β(Disclosure → Trust_post | positive_experience) > 0"
+    expected_effect_pre: -0.12
+    expected_effect_post: "+0.08"
+    source: "B1: Dietvorst 2015 (disclosure triggers scrutiny); Logg 2019 (post-experience trust increase for objective tasks)"
+    experimental_test: "2×2 design Factor 1: disclosed AI vs. undisclosed"
+    rationale: "Swiss regulation (G2: 75% demand AI labeling) means disclosure is likely mandatory. Testing effect size to prepare framing strategy."
+    measurement: "Trust measured pre and post interaction in experimental vignette"
+    analysis: "Mixed ANOVA (between: disclosure × within: pre/post)"
+    priority: "HIGH"
+
+  H_M10:
+    statement: "There is an interaction effect between AI disclosure and modifiability on behavioral intention"
+    formal: "β(Disclosure × Modifiability → BI) > 0 (synergy: disclosed + modifiable is best)"
+    expected_interaction: "+0.15"
+    ci_68: [0.05, 0.25]
+    source: "B1 integration: Dietvorst 2015/2018 combined logic"
+    rationale: "Disclosed AI with modification option signals transparency AND control — the dual-assurance combination. This is the theoretically optimal cell in the 2×2 design."
+    experimental_test: "2×2 interaction term"
+    expected_cell_means:
+      disclosed_modifiable: 5.8    # Best
+      disclosed_fixed: 3.9         # Worst (aversion + no control)
+      undisclosed_modifiable: 5.2  # Good (control but less trust)
+      undisclosed_fixed: 4.5       # Moderate (no aversion trigger, no control)
+    analysis: "2-way ANOVA interaction; planned contrasts"
+    power_requirement:
+      effect_size: "small-medium (f = 0.20)"
+      alpha: 0.05
+      power: 0.80
+      min_n_per_cell: 65
+    priority: "HIGH"
+
+  # --- SEGMENT HYPOTHESES ---
+
+  H_M11:
+    statement: "Algorithm aversion differs significantly across customer segments"
+    formal: "F(segment → AlgoAversion) significant; η² > 0.06"
+    expected_differences:
+      tech_savvy_young: "W_algo = 0.70 (LOW aversion)"
+      first_time_buyers: "W_algo = 0.50 (MEDIUM aversion)"
+      refinancers: "W_algo = 0.60 (LOW-MEDIUM aversion)"
+      traditional_affluent: "W_algo = 0.35 (HIGH aversion)"
+    source: "B1 segment analysis; G2 Swiss digital adoption data"
+    rationale: "B1 maps 4 segments with distinct aversion profiles. G2 confirms digital fatigue in young segment (daily app use dropped 33%→9%) which may increase aversion beyond B1 estimate."
+    measurement: "Q_M04 (Algorithm Aversion) × Q_M01 (Segment classification from demographics)"
+    analysis: "One-way ANOVA with planned contrasts; Tukey HSD post-hoc"
+    power_requirement:
+      effect_size: "medium (f = 0.25, 4 groups)"
+      alpha: 0.05
+      power: 0.80
+      min_n_per_group: 45
+    priority: "HIGH"
+
+  H_M12:
+    statement: "AI-Human complementarity: users who intend to consult a human advisor AFTER GPT interaction show higher overall BI than GPT-only users"
+    formal: "BI(GPT+Human) > BI(GPT-only); γ_ai_human = 0.35"
+    expected_difference: "+0.35 (on 7-point scale)"
+    ci_68: [0.20, 0.50]
+    source: "B1: γ_ai_human = 0.35; Dietvorst 2018 (highest trust in human-AI combo); Prahl 2017"
+    rationale: "Positioning GPT as 'Schritt 1 vor dem Berater' leverages complementarity. G3 confirms no competitor offers this seamless handoff."
+    measurement: "Q_M12 (Post-GPT advisor intention) as moderator of Q_M14 (BI)"
+    analysis: "t-test or moderation analysis; compare BI by advisor intention group"
+    priority: "MEDIUM"
+
+# =============================================================================
+# 2. UBS TRAVEL-eSIM — HYPOTHESES (H_E01–H_E10)
+# =============================================================================
+
+esim_hypotheses:
+
+  # --- MAIN EFFECTS ---
+
+  H_E01:
+    statement: "Price Value has the strongest positive effect on BI for eSIM adoption"
+    formal: "β(PV → BI) > β(other_predictors → BI)"
+    expected_beta: 0.28
+    ci_68: [0.20, 0.36]
+    source: "B2: Venkatesh 2012 (UTAUT2 PV); B3 extension price meta-beta = -0.10 (favorable pricing)"
+    rationale: "Roaming cost savings is the primary rational driver. G2 Swiss benchmark: roaming remains expensive outside Roam-like-home zones. G3: competitor pricing (Airalo CHF 4.50/GB, Holafly unlimited ~CHF 10/day) sets strong reference points."
+    measurement: "Q_E08 (Price Value, 3 items from UTAUT2)"
+    dv: "Q_E10 (Behavioral Intention)"
+    analysis: "SEM path coefficient; compare standardized betas"
+    power_requirement:
+      effect_size: "medium (f² = 0.10)"
+      alpha: 0.05
+      power: 0.80
+      min_n: 110
+    priority: "CRITICAL"
+
+  H_E02:
+    statement: "Habit (existing UBS app usage) has a positive effect on eSIM adoption intention"
+    formal: "β(Habit → BI) > 0"
+    expected_beta: 0.26
+    ci_68: [0.18, 0.34]
+    source: "B2: Venkatesh 2012 (UTAUT2 Habit β = 0.26)"
+    rationale: "Existing UBS mobile banking users have established app habits. G2: 65% UBS mobile banking penetration. Higher app usage frequency → lower friction for in-app eSIM purchase. CRITICAL: pilot phase uses external landing page → habit effect = 0 for pilot."
+    measurement: "Q_E09 (Habit, 3 items from UTAUT2; UBS app usage frequency)"
+    dv: "Q_E10 (Behavioral Intention)"
+    analysis: "SEM path; test for pilot vs. final adoption intention separately"
+    pilot_note: "Habit β = 0.00 for pilot (landing page), 0.26 for final (in-app)"
+    power_requirement:
+      effect_size: "medium (f² = 0.08)"
+      alpha: 0.05
+      power: 0.80
+      min_n: 130
+    priority: "HIGH"
+
+  H_E03:
+    statement: "Performance Expectancy (network quality, coverage) has a positive effect on BI"
+    formal: "β(PE → BI) > 0"
+    expected_beta: 0.22
+    ci_68: [0.14, 0.30]
+    source: "B2: UTAUT2 adapted; G3 competitor benchmark (Airalo 4.5★, Holafly 4.6★ Trustpilot)"
+    rationale: "Network quality and coverage are functional prerequisites. G3 shows high competitor ratings on connectivity → UBS must match baseline performance expectations."
+    measurement: "Q_E06 (PE scale, 4 items adapted from UTAUT2 for eSIM context)"
+    dv: "Q_E10 (Behavioral Intention)"
+    analysis: "SEM path coefficient"
+    priority: "HIGH"
+
+  H_E04:
+    statement: "Perceived Brand Extension Fit has a positive effect on eSIM adoption intention"
+    formal: "β(BEF → BI) > 0"
+    expected_beta: 0.20
+    ci_68: [0.12, 0.28]
+    source: "B3: Voelckner & Sattler 2006 (meta β = 0.41); B2 integration (β = 0.20 in UTAUT2 model)"
+    rationale: "Raw fit meta-beta is 0.41 but within UTAUT2 model with other predictors, unique contribution is ~0.20. B3 shows current BFS = 0.405 (moderate), enhanceable to 0.57 with travel ecosystem framing."
+    measurement: "Q_E04 (Brand Extension Fit, 4 items from Voelckner 2006)"
+    dv: "Q_E10 (Behavioral Intention)"
+    analysis: "SEM path; test fit as both direct effect and moderator of Trust"
+    priority: "CRITICAL"
+
+  H_E05:
+    statement: "Facilitating Conditions (eSIM-capable device, tech comfort) have a positive effect on adoption"
+    formal: "β(FC → BI) > 0"
+    expected_beta: 0.15
+    ci_68: [0.08, 0.22]
+    source: "B2: Venkatesh 2012 (UTAUT2 FC β = 0.15)"
+    rationale: "Device compatibility is a binary enabler: no eSIM slot → no adoption. G2: eSIM penetration est. 20-30% of Swiss devices. FC also captures technical comfort with digital activation."
+    measurement: "Q_E07 (Facilitating Conditions, 3 items from UTAUT2)"
+    dv: "Q_E10 (Behavioral Intention)"
+    analysis: "SEM path; also test as pre-screening variable"
+    priority: "MEDIUM"
+
+  # --- BRAND EXTENSION HYPOTHESES ---
+
+  H_E06:
+    statement: "Travel Ecosystem Framing increases perceived brand extension fit"
+    formal: "Δ(BEF | travel_frame) > Δ(BEF | standalone); expected increase +0.08"
+    expected_delta: "+0.08 (on 0-1 BFS scale)"
+    ci_68: [0.03, 0.13]
+    source: "B3: Broniarczyk 1994 (category bridges increase fit); B3 fit enhancement strategy"
+    rationale: "Framing eSIM alongside existing UBS travel services (currency exchange, travel insurance, travel money) creates a category bridge. B3 estimates total enhancement potential BFS 0.405 → 0.57."
+    measurement: "Q_E04 (BEF) measured before and after exposure to travel ecosystem framing"
+    experimental_design: "Within-subjects pre/post or between-subjects frame manipulation"
+    analysis: "Paired t-test or independent t-test depending on design"
+    priority: "HIGH"
+
+  H_E07:
+    statement: "UBS prestige brand positioning reduces category distance penalty for eSIM extension"
+    formal: "β(BrandPrestige × CategoryDistance → BEF) > 0"
+    expected_effect: "38% reduction in distance penalty (Park 1991)"
+    source: "B3: Park et al. 1991 (prestige vs. functional brands); UBS 60% prestige / 40% functional"
+    rationale: "Prestige brands can extend to more distant categories. UBS positions on exclusivity and global reach. G3 confirms N26/Revolut (functional neobanks) also extend successfully → prestige provides additional advantage."
+    measurement: "Q_E05 (Brand Prestige, 3 items); Category Distance (2 items)"
+    analysis: "Moderation analysis; compare β(BEF → BI) at different prestige perception levels"
+    priority: "MEDIUM"
+
+  H_E08:
+    statement: "Dilution concern is low and does not significantly reduce parent brand evaluation"
+    formal: "β(DilutionConcern → ParentBrandEval) ≈ 0 (not significant)"
+    expected_beta: -0.05
+    ci_68: [-0.12, 0.02]
+    source: "B3: Loken & John 1993; net dilution risk = 0.08; brand typicality 0.85"
+    rationale: "Strong typical brands resist dilution. eSIM is distant from core banking → failure attributed to extension, not brand. Low price point → low stakes. G3: N26 eSIM launch shows no brand dilution evidence."
+    measurement: "Q_E05 (Dilution Concern, 2 items from Loken 1993)"
+    dv: "Parent brand evaluation (3 items, Aaker 1990)"
+    analysis: "Regression; expect non-significance (null hypothesis is informative)"
+    priority: "LOW"
+
+  # --- PILOT vs. FINAL ---
+
+  H_E09:
+    statement: "Pilot-phase adoption intention is significantly lower than final-phase (in-app) adoption intention"
+    formal: "BI_pilot < BI_final; modifier = 0.75"
+    expected_ratio: 0.75
+    ci_68: [0.65, 0.85]
+    source: "B2: pilot_vs_final_differences (EE penalty -0.15, habit 0, trust penalty -0.10)"
+    rationale: "Pilot uses SEPARATE LANDING PAGE at third-party provider. This removes habit effect (β=0.26→0), adds effort (β=-0.15), and reduces trust halo (β=-0.10). Net = 25% reduction. Multiply pilot results by 1.33× to estimate final adoption."
+    measurement: "Q_E11 (split: pilot scenario vs. final scenario vignette)"
+    dv: "Q_E10 (BI measured for both scenarios)"
+    analysis: "Within-subjects t-test; calculate adoption modifier ratio"
+    priority: "CRITICAL"
+
+  H_E10:
+    statement: "Swiss analytic thinking style moderates fit evaluation: stricter fit assessment than holistic cultures"
+    formal: "β(AnalyticThinking × BEF → BI) < 0 (analytic thinkers are stricter)"
+    expected_moderation: "Fit beta × 1.15 (Monga & John 2010)"
+    source: "B3: Monga & John 2010; Swiss German = analytic dominant"
+    rationale: "Analytic thinkers evaluate fit more strictly. B3 calculates adjusted threshold: BFS ≥ 0.45 needed (vs. 0.35 for holistic). Current BFS = 0.405 is below. G2 Swiss context confirms precision-oriented culture."
+    measurement: "Language region as proxy (DE-CH = analytic, FR-CH = more holistic)"
+    analysis: "Multi-group SEM; compare β(BEF → BI) across language regions"
+    priority: "MEDIUM"
+
+# =============================================================================
+# 3. CROSS-TOPIC HYPOTHESES (H_C01–H_C06)
+# =============================================================================
+
+cross_topic_hypotheses:
+
+  H_C01:
+    statement: "Trust is a significant predictor of BI for BOTH products, but the trust composition differs"
+    formal: "β(Trust → BI_mortgage) > 0 AND β(Trust → BI_esim) > 0; β_mortgage > β_esim"
+    expected_betas:
+      mortgage: 0.38
+      esim: 0.22
+    source: "B2: Trust total effect 0.55; decomposed differently per product"
+    rationale: "Mortgage involves higher financial stakes → trust matters more. eSIM is low-stakes → trust still matters (brand extension context) but less dominant. B2 Trust-Kaskade (6-layer) applies to mortgage; B3 brand trust applies to eSIM."
+    analysis: "Compare standardized trust betas across two SEM models"
+    priority: "HIGH"
+
+  H_C02:
+    statement: "Performance Expectancy is a significant predictor for BOTH products but ranks higher for mortgage"
+    formal: "β(PE → BI) > 0 for both; rank_mortgage > rank_esim"
+    expected_betas:
+      mortgage: 0.32
+      esim: 0.22
+    source: "B2: UTAUT2 PE betas adjusted per context"
+    rationale: "For mortgage, PE = rate accuracy and time savings (functional utility). For eSIM, PE = network quality (table stakes). Price Value outranks PE for eSIM."
+    analysis: "Compare standardized PE betas; rank-order within each model"
+    priority: "MEDIUM"
+
+  H_C03:
+    statement: "Age moderates adoption intention for both products, but in different patterns"
+    formal: "β(Age → BI_mortgage) = inverted-U; β(Age → BI_esim) = negative linear"
+    expected_patterns:
+      mortgage: "Peak at 35-45 (digital native first-time buyers); declines for 55+"
+      esim: "Linear decline: younger = more likely to adopt (travel frequency, tech comfort)"
+    source: "B1 segment analysis; B2 moderator analysis (Venkatesh 2003)"
+    rationale: "Mortgage GPT serves a specific life-stage need (home purchase). eSIM is a general convenience product favoring digital-native travelers."
+    measurement: "Age demographics × product-specific BI"
+    analysis: "Polynomial regression (mortgage: quadratic); linear (eSIM)"
+    priority: "MEDIUM"
+
+  H_C04:
+    statement: "Existing UBS product breadth (multi-product holders) increases adoption for BOTH products"
+    formal: "β(ProductBreadth → BI) > 0 for both"
+    expected_beta: 0.15
+    ci_68: [0.08, 0.22]
+    source: "B3: Parent Brand Experience meta-beta = 0.19; adapted"
+    rationale: "Multi-product customers have deeper brand relationship → higher trust baseline → more openness to new extensions. This applies to both AI tools (mortgage) and non-financial extensions (eSIM)."
+    measurement: "Number of UBS products held (from CRM data or survey question)"
+    analysis: "Regression with product count as predictor"
+    priority: "LOW"
+
+  H_C05:
+    statement: "Digital literacy moderates the PE→BI relationship: higher literacy strengthens the effect"
+    formal: "β(DigitalLiteracy × PE → BI) > 0 for both products"
+    expected_moderation: "+0.10 (per SD of digital literacy)"
+    source: "B2: UTAUT2 experience moderator; G2 Swiss digital adoption data"
+    rationale: "Digitally literate users can better evaluate performance benefits. G2 shows 45% daily GenAI use among Swiss adults — a proxy for digital readiness that moderates how PE translates to BI."
+    measurement: "Q_M02/Q_E02 (digital competence items)"
+    analysis: "Moderated regression; interaction term PE × DigitalLiteracy"
+    priority: "LOW"
+
+  H_C06:
+    statement: "Channel preference moderates adoption: users who prefer digital channels show higher BI for both products"
+    formal: "β(ChannelPref_digital → BI) > 0"
+    expected_beta: 0.20
+    ci_68: [0.12, 0.28]
+    source: "A3 channel analysis; G2 mobile banking penetration 73%"
+    rationale: "A3 shows distinct channel preferences across segments. Digital-first users (app, website) are pre-qualified for both AI tools and digital-only products. Branch-dependent users may prefer human mortgage advisory."
+    measurement: "Q_M03/Q_E03 (channel preference items from A3)"
+    analysis: "Multi-group analysis by channel preference cluster"
+    priority: "MEDIUM"
+
+# =============================================================================
+# 4. HYPOTHESES SUMMARY TABLE
+# =============================================================================
+
+summary_table:
+  mortgage_gpt:
+    model: "Trust-UTAUT2 + Algorithm Aversion"
+    expected_R_squared: "0.62-0.68"
+    n_hypotheses: 12
+    critical_hypotheses: ["H_M01 (Trust)", "H_M03 (Aversion)", "H_M04 (Modifiability)"]
+    ranked_predictors:
+      - {rank: 1, construct: "Trust", beta: 0.38, hypothesis: "H_M01"}
+      - {rank: 2, construct: "PE", beta: 0.32, hypothesis: "H_M02"}
+      - {rank: 3, construct: "Algo Aversion", beta: -0.25, hypothesis: "H_M03"}
+      - {rank: 4, construct: "SI × Age", beta: 0.18, hypothesis: "H_M07"}
+      - {rank: 5, construct: "EE", beta: 0.14, hypothesis: "H_M08"}
+    experimental_design:
+      type: "2×2 between-subjects"
+      factor_1: "AI Disclosure (disclosed vs. undisclosed)"
+      factor_2: "Modifiability (adjustable vs. fixed)"
+      hypotheses: ["H_M09", "H_M10"]
+      min_n_total: 260  # 65 per cell × 4 cells
+
+  esim:
+    model: "UTAUT2 + Brand Extension Fit"
+    expected_R_squared: "0.55-0.65"
+    n_hypotheses: 10
+    critical_hypotheses: ["H_E01 (Price Value)", "H_E04 (Brand Fit)", "H_E09 (Pilot vs Final)"]
+    ranked_predictors:
+      - {rank: 1, construct: "Price Value", beta: 0.28, hypothesis: "H_E01"}
+      - {rank: 2, construct: "Habit", beta: 0.26, hypothesis: "H_E02"}
+      - {rank: 3, construct: "PE", beta: 0.22, hypothesis: "H_E03"}
+      - {rank: 4, construct: "Brand Ext. Fit", beta: 0.20, hypothesis: "H_E04"}
+      - {rank: 5, construct: "FC", beta: 0.15, hypothesis: "H_E05"}
+    experimental_design:
+      type: "Single group + moderators + pilot/final vignette"
+      key_manipulation: "Pilot scenario (landing page) vs. final scenario (in-app)"
+      hypotheses: ["H_E06", "H_E09", "H_E10"]
+
+# =============================================================================
+# 5. SAMPLE SIZE REQUIREMENTS
+# =============================================================================
+
+sample_size_planning:
+  binding_constraint: "H_M10 (2×2 interaction) requires n=260; H_M06 (mediation) requires n=250"
+  recommended_total_n:
+    mortgage_survey: 300
+    esim_survey: 200
+    justification: "300 covers all mortgage hypotheses including 2×2 design (65/cell + attrition buffer). 200 covers all eSIM hypotheses including moderation and pilot/final within-subjects."
+  attrition_buffer: "15% (Swiss online panel typical completion rate 82-88%)"
+  gross_sample:
+    mortgage: 350
+    esim: 235
+
+  allocation_by_design:
+    mortgage_experimental:
+      cell_1_disclosed_modifiable: 75
+      cell_2_disclosed_fixed: 75
+      cell_3_undisclosed_modifiable: 75
+      cell_4_undisclosed_fixed: 75
+      total: 300
+    esim_correlational:
+      main_sample: 200
+      pilot_vignette_subsample: "all (within-subjects)"
+
+# =============================================================================
+# 6. SURVEY QUESTION MAPPING (G1 → G4 CROSS-REFERENCE)
+# =============================================================================
+
+question_to_hypothesis_mapping:
+  mortgage:
+    Q_M01: ["H_M11 (segment classification)"]
+    Q_M02: ["H_C05 (digital literacy moderator)"]
+    Q_M03: ["H_C06 (channel preference moderator)"]
+    Q_M04: ["H_M03 (algorithm aversion)", "H_M05 (objectivity moderator)", "H_M11 (segment differences)"]
+    Q_M05: ["H_M04 (modifiability effect)"]
+    Q_M06: ["H_M05 (task objectivity)", "H_M06 (uniqueness neglect)"]
+    Q_M07: ["H_M01 (trust)", "H_C01 (cross-topic trust)"]
+    Q_M08: ["H_M02 (PE)", "H_C02 (cross-topic PE)"]
+    Q_M09: ["H_M08 (effort expectancy)"]
+    Q_M10: ["H_M07 (social influence)"]
+    Q_M11: ["H_M03 (risk perception covariate)"]
+    Q_M12: ["H_M12 (AI-human complementarity)"]
+    Q_M13: ["H_M04 (personalization perception)"]
+    Q_M14: ["H_M01-H_M12 (primary DV: behavioral intention)"]
+    Q_M15: ["H_M04 (WTP for premium), H_C04 (product breadth)"]
+
+  esim:
+    Q_E01: ["H_E09 (travel frequency as moderator)"]
+    Q_E02: ["H_C05 (digital literacy), H_E05 (facilitating conditions)"]
+    Q_E03: ["H_C06 (channel preference)"]
+    Q_E04: ["H_E04 (brand extension fit)", "H_E06 (framing effect)", "H_E07 (prestige moderator)"]
+    Q_E05: ["H_E07 (brand prestige)", "H_E08 (dilution concern)"]
+    Q_E06: ["H_E03 (PE)"]
+    Q_E07: ["H_E05 (facilitating conditions)"]
+    Q_E08: ["H_E01 (price value)"]
+    Q_E09: ["H_E02 (habit)"]
+    Q_E10: ["H_E01-H_E10 (primary DV: behavioral intention)"]
+    Q_E11: ["H_E09 (pilot vs. final adoption)"]
+
+# =============================================================================
+# 7. PRE-REGISTRATION CHECKLIST
+# =============================================================================
+
+pre_registration_notes:
+  recommended_platform: "AsPredicted or OSF Registries"
+  confirmatory_hypotheses:
+    description: "Hypotheses with clear directional predictions and power analysis"
+    list: ["H_M01", "H_M02", "H_M03", "H_M04", "H_E01", "H_E02", "H_E04", "H_E09"]
+  exploratory_hypotheses:
+    description: "Hypotheses where direction is predicted but effect size is uncertain"
+    list: ["H_M05", "H_M06", "H_M07", "H_E06", "H_E07", "H_E10", "H_C01-H_C06"]
+  analysis_plan:
+    primary: "Structural Equation Modeling (SEM) with lavaan/Mplus"
+    experimental: "2×2 ANOVA with planned contrasts (mortgage)"
+    mediation: "Hayes PROCESS Model 4 (uniqueness neglect)"
+    moderation: "Multi-group SEM (age, culture, segment)"
+    robustness: "Bootstrap CI (5000 iterations); sensitivity analysis for missing data"

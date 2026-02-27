@@ -1,0 +1,57 @@
+# =============================================================================
+# Daily Deadline Check
+# =============================================================================
+# Tägliche Prüfung auf fällige Deadlines und E-Mail-Erinnerungen
+#
+# Schedule: Jeden Tag um 07:00 Uhr CET (06:00 UTC)
+# =============================================================================
+
+name: Daily Deadline Check
+
+on:
+  schedule:
+    # Jeden Tag um 07:00 Uhr CET (06:00 UTC)
+    - cron: '0 6 * * *'
+
+  # Manueller Trigger für Tests
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Test-Modus (keine echten E-Mails)'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  check-deadlines:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: pip install pyyaml
+
+      - name: Check Deadlines and Send Reminders
+        env:
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+        run: |
+          echo "📅 Tägliche Deadline-Prüfung: $(date)"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+          if [ "${{ github.event.inputs.dry_run }}" == "true" ] || [ -z "$SMTP_USER" ]; then
+            echo "🧪 Test-Modus aktiv"
+            python scripts/send_lead_notification.py --check-deadlines --dry-run
+          else
+            python scripts/send_lead_notification.py --check-deadlines
+          fi

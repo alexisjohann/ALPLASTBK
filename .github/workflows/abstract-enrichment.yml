@@ -1,0 +1,359 @@
+# =============================================================================
+# ABSTRACT ENRICHMENT WORKFLOW
+# =============================================================================
+# Fetches abstracts for papers in bcm_master.bib using:
+#   1. OpenAlex (free, ~80% coverage)
+#   2. SerpApi/Google Scholar (fallback for missing)
+#
+# Triggers:
+#   - Manual (workflow_dispatch)
+#   - Can be scheduled weekly
+# =============================================================================
+
+name: Abstract Enrichment
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Max papers to process (0 = all)'
+        required: false
+        default: '100'
+      source:
+        description: 'API source'
+        type: choice
+        required: true
+        default: 'openalex'
+        options:
+          - openalex
+          - serpapi
+          - both
+      dry_run:
+        description: 'Dry run (no changes)'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  enrich-abstracts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pyyaml
+
+      - name: Create enrichment script
+        run: |
+          cat > enrich_abstracts.py << 'SCRIPT'
+          #!/usr/bin/env python3
+          """
+          Abstract Enrichment Script
+          ==========================
+          Fetches abstracts from OpenAlex and SerpApi (Google Scholar).
+          """
+
+          import os
+          import re
+          import json
+          import time
+          import yaml
+          import requests
+          from pathlib import Path
+
+          # Configuration
+          BIB_FILE = Path("bibliography/bcm_master.bib")
+          PAPER_REFS_DIR = Path("data/paper-references")
+          OPENALEX_API = "https://api.openalex.org/works"
+          SERPAPI_URL = "https://serpapi.com/search"
+
+          SERPAPI_KEY = os.environ.get("SERPAPI_KEY", "")
+          LIMIT = int(os.environ.get("LIMIT", "100"))
+          SOURCE = os.environ.get("SOURCE", "openalex")
+          DRY_RUN = os.environ.get("DRY_RUN", "false").lower() == "true"
+
+          # Statistics
+          stats = {"processed": 0, "found": 0, "not_found": 0, "errors": 0}
+
+          def parse_bibtex():
+              """Parse BibTeX file and extract papers with DOIs."""
+              papers = []
+              with open(BIB_FILE, 'r', encoding='utf-8') as f:
+                  content = f.read()
+
+              # Simple regex parsing
+              entries = re.findall(r'@(\w+)\{([^,]+),([^@]*)', content, re.DOTALL)
+
+              for entry_type, key, fields in entries:
+                  paper = {'key': key, 'type': entry_type}
+
+                  # Extract DOI
+                  doi_match = re.search(r'doi\s*=\s*[{"]([^}"]+)[}"]', fields, re.I)
+                  if doi_match:
+                      paper['doi'] = doi_match.group(1)
+
+                  # Extract title
+                  title_match = re.search(r'title\s*=\s*[{"](.+?)[}"]', fields, re.I | re.DOTALL)
+                  if title_match:
+                      paper['title'] = re.sub(r'\s+', ' ', title_match.group(1)).strip()
+
+                  # Extract author
+                  author_match = re.search(r'author\s*=\s*[{"](.+?)[}"]', fields, re.I | re.DOTALL)
+                  if author_match:
+                      paper['author'] = author_match.group(1)
+
+                  # Check if abstract already exists
+                  abstract_match = re.search(r'abstract\s*=\s*[{"]', fields, re.I)
+                  paper['has_abstract'] = bool(abstract_match)
+
+                  if paper.get('title'):
+                      papers.append(paper)
+
+              return papers
+
+          def get_abstract_openalex(doi=None, title=None):
+              """Fetch abstract from OpenAlex."""
+              try:
+                  if doi:
+                      url = f"{OPENALEX_API}/doi:{doi}"
+                  else:
+                      url = f"{OPENALEX_API}?filter=title.search:{title[:100]}"
+
+                  headers = {"User-Agent": "EBF-Research/1.0 (mailto:research@fehradvice.com)"}
+                  resp = requests.get(url, headers=headers, timeout=30)
+
+                  if resp.status_code != 200:
+                      return None
+
+                  data = resp.json()
+
+                  # Handle search results vs direct lookup
+                  if 'results' in data:
+                      if not data['results']:
+                          return None
+                      data = data['results'][0]
+
+                  # Reconstruct abstract from inverted index
+                  abstract_index = data.get('abstract_inverted_index', {})
+                  if not abstract_index:
+                      return None
+
+                  try:
+                      # Handle empty position lists
+                      all_positions = [pos for positions in abstract_index.values() for pos in positions]
+                      if not all_positions:
+                          return None
+                      max_pos = max(all_positions)
+                      words = [''] * (max_pos + 1)
+                      for word, positions in abstract_index.items():
+                          for pos in positions:
+                              if 0 <= pos <= max_pos:
+                                  words[pos] = word
+                      return ' '.join(words).strip()
+                  except (ValueError, TypeError):
+                      return None
+
+              except Exception as e:
+                  print(f"    OpenAlex error: {e}")
+                  return None
+
+          def get_abstract_serpapi(title, author=None):
+              """Fetch abstract from Google Scholar via SerpApi."""
+              if not SERPAPI_KEY:
+                  print("    SerpApi key not configured")
+                  return None
+
+              try:
+                  query = title
+                  if author:
+                      first_author = author.split(' and ')[0].split(',')[0]
+                      query = f"{first_author} {title}"
+
+                  params = {
+                      "engine": "google_scholar",
+                      "q": query[:200],
+                      "api_key": SERPAPI_KEY,
+                      "num": 1
+                  }
+
+                  resp = requests.get(SERPAPI_URL, params=params, timeout=30)
+                  data = resp.json()
+
+                  results = data.get('organic_results', [])
+                  if results:
+                      # Google Scholar returns snippet, not full abstract
+                      snippet = results[0].get('snippet', '')
+                      if len(snippet) > 50:
+                          return snippet
+
+                  return None
+
+              except Exception as e:
+                  print(f"    SerpApi error: {e}")
+                  return None
+
+          def save_to_yaml(key, abstract, doi=None):
+              """Save abstract to paper-references YAML."""
+              # Handle keys that already have PAP- prefix
+              if key.startswith('PAP-'):
+                  yaml_path = PAPER_REFS_DIR / f"{key}.yaml"
+              else:
+                  yaml_path = PAPER_REFS_DIR / f"PAP-{key}.yaml"
+
+              if yaml_path.exists():
+                  try:
+                      with open(yaml_path, 'r') as f:
+                          data = yaml.safe_load(f) or {}
+                  except yaml.YAMLError:
+                      print(f"    Warning: YAML parse error in {yaml_path.name}, using new data")
+                      data = {}
+              else:
+                  # Ensure proper PAP- prefix
+                  paper_id = key if key.startswith('PAP-') else f'PAP-{key}'
+                  bibtex_key = key if key.startswith('PAP-') else key
+                  data = {'id': paper_id, 'bibtex_key': bibtex_key}
+
+              data['abstract'] = abstract
+              if doi:
+                  data['doi'] = doi
+              data['abstract_source'] = SOURCE
+              data['abstract_fetched'] = time.strftime('%Y-%m-%d')
+
+              if not DRY_RUN:
+                  PAPER_REFS_DIR.mkdir(parents=True, exist_ok=True)
+                  with open(yaml_path, 'w') as f:
+                      yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
+
+              return yaml_path
+
+          def has_yaml_abstract(key):
+              """Check if YAML file already has a substantial abstract."""
+              clean_key = key[4:] if key.startswith('PAP-') else key
+              yaml_path = PAPER_REFS_DIR / f"PAP-{clean_key}.yaml"
+              if not yaml_path.exists():
+                  return False
+              try:
+                  with open(yaml_path, 'r') as f:
+                      data = yaml.safe_load(f) or {}
+                  abstract = data.get('abstract', '')
+                  return abstract and len(str(abstract)) > 30
+              except:
+                  return False
+
+          def main():
+              print("=" * 60)
+              print("ABSTRACT ENRICHMENT")
+              print("=" * 60)
+              print(f"Source: {SOURCE}")
+              print(f"Limit: {LIMIT}")
+              print(f"Dry run: {DRY_RUN}")
+              print()
+
+              # Parse bibliography
+              papers = parse_bibtex()
+              print(f"Total papers in bibliography: {len(papers)}")
+
+              # Filter to papers without abstract in BibTeX
+              no_bib_abstract = [p for p in papers if not p.get('has_abstract')]
+              print(f"Papers without abstract in BibTeX: {len(no_bib_abstract)}")
+
+              # Also check YAML files for existing abstracts
+              to_process = [p for p in no_bib_abstract if not has_yaml_abstract(p['key'])]
+              print(f"Papers without abstract in YAML: {len(to_process)}")
+
+              if LIMIT > 0:
+                  to_process = to_process[:LIMIT]
+              print(f"Processing: {len(to_process)}")
+              print("-" * 60)
+
+              for i, paper in enumerate(to_process):
+                  key = paper['key']
+                  doi = paper.get('doi')
+                  title = paper.get('title', '')
+                  author = paper.get('author', '')
+
+                  print(f"[{i+1}/{len(to_process)}] {key[:40]}...")
+                  stats['processed'] += 1
+
+                  abstract = None
+
+                  # Try OpenAlex first
+                  if SOURCE in ['openalex', 'both']:
+                      abstract = get_abstract_openalex(doi, title)
+                      if abstract:
+                          print(f"    ✓ OpenAlex: {len(abstract)} chars")
+
+                  # Fallback to SerpApi
+                  if not abstract and SOURCE in ['serpapi', 'both']:
+                      abstract = get_abstract_serpapi(title, author)
+                      if abstract:
+                          print(f"    ✓ SerpApi: {len(abstract)} chars")
+
+                  if abstract:
+                      yaml_path = save_to_yaml(key, abstract, doi)
+                      print(f"    → Saved to {yaml_path.name}")
+                      stats['found'] += 1
+                  else:
+                      print(f"    ✗ Not found")
+                      stats['not_found'] += 1
+
+                  # Rate limiting
+                  time.sleep(0.5)
+
+              # Summary
+              print()
+              print("=" * 60)
+              print("SUMMARY")
+              print("=" * 60)
+              print(f"Processed:  {stats['processed']}")
+              print(f"Found:      {stats['found']}")
+              print(f"Not found:  {stats['not_found']}")
+              print(f"Success:    {stats['found']/max(stats['processed'],1)*100:.1f}%")
+
+              if DRY_RUN:
+                  print("\n[DRY RUN] No files were modified")
+
+              # Write summary for GitHub Actions
+              with open('enrichment_summary.json', 'w') as f:
+                  json.dump(stats, f)
+
+          if __name__ == '__main__':
+              main()
+          SCRIPT
+
+      - name: Run enrichment
+        env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI }}
+          LIMIT: ${{ inputs.limit }}
+          SOURCE: ${{ inputs.source }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: python enrich_abstracts.py
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: enrichment-results
+          path: enrichment_summary.json
+
+      - name: Commit changes
+        if: ${{ inputs.dry_run == false }}
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/paper-references/
+          git diff --staged --quiet || git commit -m "feat(abstracts): Enrich papers with abstracts
+
+          Source: ${{ inputs.source }}
+          Limit: ${{ inputs.limit }}
+
+          https://claude.ai/code/session_018owGuHoers2muZN9fKKg6A"
+          git push

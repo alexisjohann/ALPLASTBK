@@ -1,0 +1,573 @@
+# =============================================================================
+# ESCO Transversal Skills → WEF Global Skills Taxonomy Mapping
+# =============================================================================
+# Version: 1.0.0
+# Erstellt: 2026-02-22
+# Zweck: Bruecke zwischen EU-Standard (ESCO) und globalem Standard (WEF)
+# Methode: Konzeptuelles Mapping basierend auf Skill-Definitionen
+# =============================================================================
+#
+# WARUM DIESES MAPPING?
+#
+# ESCO (97 Transversal Skills) und WEF (~35 Level-3 Skills) beschreiben
+# DASSELBE KONZEPT mit unterschiedlichem Vokabular:
+#
+#   ESCO sagt: "T2.2 Planning and organizing"
+#   WEF sagt:  "Resource Management" (unter Management Skills)
+#
+#   ESCO sagt: "T4.4 Leading others"
+#   WEF sagt:  "Leadership and Social Influence" (unter Working with Others)
+#
+# Ohne Mapping koennen wir nicht:
+# - EU-Daten (ESCO) mit globalen Benchmarks (WEF) vergleichen
+# - Kaufland-Skills gleichzeitig in beiden Sprachen beschreiben
+# - O*NET-Abilities (via wef-to-onet-mapping.yaml) indirekt an ESCO anbinden
+#
+# ARCHITEKTUR:
+#   ESCO T-Skills → [dieses Mapping] → WEF L3 → [wef-to-onet] → O*NET Abilities
+#                                                                      ↓
+#                                                              Kaufland Rollen
+# =============================================================================
+
+metadata:
+  version: "1.0.0"
+  method: "expert_informed_conceptual"
+  confidence: "medium"
+  note: |
+    Mapping basiert auf Skill-Definitionen und konzeptuellem Overlap.
+    Kein empirisches Faktor-Analyse-Mapping. Zu validieren mit ESCO-O*NET
+    Crosswalk-Daten (https://esco.ec.europa.eu/en/about-esco/data-science-and-esco).
+
+# =============================================================================
+# MAPPING-LEGENDE
+# =============================================================================
+#
+# match_type:
+#   primary   = Hauptzuordnung (1:1 oder nahe 1:1)
+#   secondary = Teilueberlappung (Konzept traegt bei, ist aber breiter/enger)
+#   partial   = Nur ein Aspekt ueberlappt
+#
+# coverage: 0.0-1.0
+#   1.0 = ESCO-Cluster wird vollstaendig durch WEF-Skill abgedeckt
+#   0.5 = Circa die Haelfte der ESCO-Konzepte findet sich im WEF-Skill
+#   0.0 = Keine Ueberlappung
+#
+# =============================================================================
+
+# =============================================================================
+# NAME CROSSWALK: Names used in this file → Official WEF Taxonomy IDs
+# =============================================================================
+#
+# This file uses WEF skill names from the Future of Jobs Report (2025) naming
+# convention. The official WEF Global Skills Taxonomy (wef-taxonomy-official.yaml)
+# uses different names and hierarchical IDs. This crosswalk resolves the gap.
+#
+# For programmatic joins, use wef_official_id (added to each mapping entry).
+# =============================================================================
+name_crosswalk:
+  # Names that MATCH official taxonomy (no change needed)
+  "Analytical Thinking": {official_id: "WEF-L4-CS-01-02", match: "exact_L4"}
+  "Creative Thinking": {official_id: "WEF-L4-CS-01-01", match: "exact_L4"}
+  "Systems Thinking": {official_id: "WEF-L4-CS-01-03", match: "exact_L4"}
+  "Empathy and Active Listening": {official_id: "WEF-L3-WO-01", match: "exact_L3"}
+  "Leadership and Social Influence": {official_id: "WEF-L3-WO-03", match: "exact_L3"}
+  "Resilience, Flexibility and Agility": {official_id: "WEF-L3-SE-04", match: "exact_L3"}
+  "Curiosity and Lifelong Learning": {official_id: "WEF-L3-SE-02", match: "exact_L3"}
+  "Environmental Stewardship": {official_id: "WEF-L3-ET-02", match: "exact_L3"}
+  "Dependability and Attention to Detail": {official_id: "WEF-L3-SE-03", match: "exact_L3"}
+  "Motivation and Self-Awareness": {official_id: "WEF-L3-SE-01", match: "exact_L3"}
+  "Manual Dexterity, Endurance, and Precision": {official_id: "WEF-L3-PA-01", match: "exact_L3"}
+
+  # Names that DIFFER from official taxonomy (FoJ naming or composite)
+  "Reading, Writing, and Mathematics":
+    official_ids: ["WEF-L3-CS-03", "WEF-L3-CS-02"]
+    match: "composite"
+    note: "FoJ composite — maps to speaking_writing_languages (L3) + mathematical_statistical_thinking (L3)"
+  "Active Learning and Learning Strategies":
+    official_id: "WEF-L3-SE-02"
+    match: "renamed"
+    note: "FoJ name — official taxonomy uses 'curiosity_lifelong_learning'"
+  "Complex Problem-Solving":
+    official_id: "WEF-L3-CS-01"
+    match: "renamed"
+    note: "FoJ name — official taxonomy uses 'creativity_problem_solving'"
+  "Digital Literacy and Technology Use":
+    official_id: "WEF-L3-TS-01"
+    match: "renamed"
+    note: "FoJ name — official taxonomy uses 'technology_literacy'"
+  "Technology Design, Engineering, and Maintenance":
+    official_ids: ["WEF-L3-TS-02", "WEF-L3-TS-03"]
+    match: "composite"
+    note: "FoJ composite — maps to programming (L3) + design_user_experience (L3)"
+  "Self-Awareness and Self-Management":
+    official_id: "WEF-L3-SE-01"
+    match: "renamed"
+    note: "FoJ name — official taxonomy uses 'motivation_self_awareness'"
+  "Multi-lingualism":
+    official_id: "WEF-L4-CS-03-05"
+    match: "exact_L4"
+    note: "L4 skill within speaking_writing_languages"
+  "Global Citizenship":
+    official_id: "WEF-L4-ET-01-01"
+    match: "renamed_L4"
+    note: "FoJ name — official taxonomy uses 'civic_responsibility'"
+  "Teaching and Mentoring":
+    official_id: "WEF-L3-WO-02"
+    match: "close"
+    note: "Official name is 'teaching_mentoring_coaching' (includes coaching)"
+  "Service Orientation and Customer Service":
+    official_ids: ["WEF-L4-WO-01-04", "WEF-L4-MS-05-02"]
+    match: "composite_L4"
+    note: "Spans service_orientation (WO) + customer_experience (MS)"
+  "Talent Management":
+    official_id: "WEF-L3-MS-01"
+    match: "exact_L3"
+    note: "Officially under Management Skills (L2-MS), not Working with Others"
+  "Resource Management":
+    official_id: "WEF-L3-MS-02"
+    match: "renamed"
+    note: "Official name is 'operations_logistics'"
+  "Operations Management":
+    official_id: "WEF-L3-MS-02"
+    match: "renamed"
+    note: "Same as Resource Management — both map to operations_logistics"
+  "Quality Control":
+    official_id: "WEF-L3-MS-04"
+    match: "close"
+    note: "Official name is 'quality_management'"
+  "Ethics and Social Responsibility":
+    official_id: "WEF-L3-ET-01"
+    match: "renamed"
+    note: "Official name is 'ethical_leadership'"
+
+mappings:
+
+  # =========================================================================
+  # T1: CORE SKILLS → WEF Cognitive + Technology
+  # =========================================================================
+
+  T1_1:
+    esco_code: "T1.1"
+    esco_name: "Applying knowledge (literacy)"
+    wef_mappings:
+      - wef_L3: "Reading, Writing, and Mathematics"
+        wef_official_ids: ["WEF-L3-CS-03", "WEF-L3-CS-02"]
+        wef_cluster: "Cognitive Skills"
+        match_type: "primary"
+        coverage: 0.85
+        note: "ESCO literacy ≈ WEF speaking_writing_languages + mathematical_statistical_thinking"
+      - wef_L3: "Active Learning and Learning Strategies"
+        wef_official_id: "WEF-L3-SE-02"
+        wef_cluster: "Cognitive Skills"
+        match_type: "secondary"
+        coverage: 0.3
+        note: "FoJ name — official: curiosity_lifelong_learning (Self-Efficacy, not Cognitive)"
+
+  T1_2:
+    esco_code: "T1.2"
+    esco_name: "Applying numeracy and mathematical skills"
+    wef_mappings:
+      - wef_L3: "Reading, Writing, and Mathematics"
+        wef_official_ids: ["WEF-L3-CS-03", "WEF-L3-CS-02"]
+        wef_cluster: "Cognitive Skills"
+        match_type: "primary"
+        coverage: 0.9
+        note: "Numeracy maps to WEF mathematical_statistical_thinking (WEF-L3-CS-02)"
+
+  T1_3:
+    esco_code: "T1.3"
+    esco_name: "Working with digital devices and applications"
+    wef_mappings:
+      - wef_L3: "Digital Literacy and Technology Use"
+        wef_official_id: "WEF-L3-TS-01"
+        wef_cluster: "Technology Skills"
+        match_type: "primary"
+        coverage: 0.9
+        note: "FoJ name — official: technology_literacy"
+      - wef_L3: "Technology Design, Engineering, and Maintenance"
+        wef_official_ids: ["WEF-L3-TS-02", "WEF-L3-TS-03"]
+        wef_cluster: "Technology Skills"
+        match_type: "partial"
+        coverage: 0.2
+        note: "FoJ composite — official: programming + design_user_experience"
+
+  # =========================================================================
+  # T2: THINKING SKILLS → WEF Cognitive + Management
+  # =========================================================================
+
+  T2_1:
+    esco_code: "T2.1"
+    esco_name: "Processing information, ideas, and concepts"
+    wef_mappings:
+      - wef_L3: "Analytical Thinking"
+        wef_official_id: "WEF-L4-CS-01-02"
+        wef_cluster: "Cognitive Skills"
+        match_type: "primary"
+        coverage: 0.8
+      - wef_L3: "Systems Thinking"
+        wef_official_id: "WEF-L4-CS-01-03"
+        wef_cluster: "Cognitive Skills"
+        match_type: "secondary"
+        coverage: 0.4
+        note: "'identify patterns and connections' hat Systems-Thinking-Anteil"
+
+  T2_2:
+    esco_code: "T2.2"
+    esco_name: "Planning and organizing"
+    wef_mappings:
+      - wef_L3: "Resource Management"
+        wef_official_id: "WEF-L3-MS-02"
+        wef_cluster: "Management Skills"
+        match_type: "primary"
+        coverage: 0.7
+        note: "FoJ name — official: operations_logistics"
+      - wef_L3: "Operations Management"
+        wef_official_id: "WEF-L3-MS-02"
+        wef_cluster: "Management Skills"
+        match_type: "secondary"
+        coverage: 0.5
+        note: "Same official ID as Resource Management — both map to operations_logistics"
+
+  T2_3:
+    esco_code: "T2.3"
+    esco_name: "Dealing with problems"
+    wef_mappings:
+      - wef_L3: "Complex Problem-Solving"
+        wef_official_id: "WEF-L3-CS-01"
+        wef_cluster: "Cognitive Skills"
+        match_type: "primary"
+        coverage: 0.85
+        note: "FoJ name — official: creativity_problem_solving"
+      - wef_L3: "Analytical Thinking"
+        wef_official_id: "WEF-L4-CS-01-02"
+        wef_cluster: "Cognitive Skills"
+        match_type: "secondary"
+        coverage: 0.4
+
+  T2_4:
+    esco_code: "T2.4"
+    esco_name: "Thinking creatively and innovatively"
+    wef_mappings:
+      - wef_L3: "Creative Thinking"
+        wef_official_id: "WEF-L4-CS-01-01"
+        wef_cluster: "Cognitive Skills"
+        match_type: "primary"
+        coverage: 0.9
+
+  # =========================================================================
+  # T3: SELF-MANAGEMENT → WEF Self-Efficacy
+  # =========================================================================
+
+  T3_1:
+    esco_code: "T3.1"
+    esco_name: "Working efficiently"
+    wef_mappings:
+      - wef_L3: "Self-Awareness and Self-Management"
+        wef_official_id: "WEF-L3-SE-01"
+        wef_cluster: "Self-Efficacy"
+        match_type: "primary"
+        coverage: 0.6
+        note: "FoJ name — official: motivation_self_awareness"
+      - wef_L3: "Dependability and Attention to Detail"
+        wef_official_id: "WEF-L3-SE-03"
+        wef_cluster: "Self-Efficacy"
+        match_type: "primary"
+        coverage: 0.8
+        note: "'attend to detail', 'manage quality', 'meet commitments'"
+
+  T3_2:
+    esco_code: "T3.2"
+    esco_name: "Taking a proactive approach"
+    wef_mappings:
+      - wef_L3: "Motivation and Self-Awareness"
+        wef_official_id: "WEF-L3-SE-01"
+        wef_cluster: "Self-Efficacy"
+        match_type: "primary"
+        coverage: 0.7
+      - wef_L3: "Talent Management"
+        wef_official_id: "WEF-L3-MS-01"
+        wef_cluster: "Management Skills"
+        match_type: "partial"
+        coverage: 0.2
+        note: "'show entrepreneurial spirit' hat Leadership-Anteil"
+
+  T3_3:
+    esco_code: "T3.3"
+    esco_name: "Maintaining a positive attitude"
+    wef_mappings:
+      - wef_L3: "Resilience, Flexibility and Agility"
+        wef_official_id: "WEF-L3-SE-04"
+        wef_cluster: "Self-Efficacy"
+        match_type: "primary"
+        coverage: 0.9
+        note: "Fast 1:1 — 'cope with pressure', 'adapt to change', 'resilience'"
+
+  T3_4:
+    esco_code: "T3.4"
+    esco_name: "Demonstrating willingness to learn"
+    wef_mappings:
+      - wef_L3: "Active Learning and Learning Strategies"
+        wef_official_id: "WEF-L3-SE-02"
+        wef_cluster: "Cognitive Skills"
+        match_type: "primary"
+        coverage: 0.85
+        note: "FoJ name — official: curiosity_lifelong_learning (Self-Efficacy)"
+      - wef_L3: "Curiosity and Lifelong Learning"
+        wef_official_id: "WEF-L3-SE-02"
+        wef_cluster: "Self-Efficacy"
+        match_type: "primary"
+        coverage: 0.8
+
+  # =========================================================================
+  # T4: SOCIAL & COMMUNICATION → WEF Working with Others + Management
+  # =========================================================================
+
+  T4_1:
+    esco_code: "T4.1"
+    esco_name: "Communicating"
+    wef_mappings:
+      - wef_L3: "Leadership and Social Influence"
+        wef_official_id: "WEF-L3-WO-03"
+        wef_cluster: "Working with Others"
+        match_type: "secondary"
+        coverage: 0.4
+        note: "'negotiate' und 'influence' sind Leadership-Skills"
+      - wef_L3: "Empathy and Active Listening"
+        wef_official_id: "WEF-L3-WO-01"
+        wef_cluster: "Working with Others"
+        match_type: "primary"
+        coverage: 0.6
+        note: "'listen actively', 'communicate verbally'"
+      - wef_L3: "Teaching and Mentoring"
+        wef_official_id: "WEF-L3-WO-02"
+        wef_cluster: "Working with Others"
+        match_type: "partial"
+        coverage: 0.3
+        note: "Official: teaching_mentoring_coaching (includes coaching)"
+
+  T4_2:
+    esco_code: "T4.2"
+    esco_name: "Supporting others"
+    wef_mappings:
+      - wef_L3: "Empathy and Active Listening"
+        wef_official_id: "WEF-L3-WO-01"
+        wef_cluster: "Working with Others"
+        match_type: "primary"
+        coverage: 0.7
+        note: "'show empathy', 'advise and assist'"
+      - wef_L3: "Teaching and Mentoring"
+        wef_official_id: "WEF-L3-WO-02"
+        wef_cluster: "Working with Others"
+        match_type: "primary"
+        coverage: 0.8
+        note: "'mentor and coach' — official: teaching_mentoring_coaching"
+      - wef_L3: "Service Orientation and Customer Service"
+        wef_official_ids: ["WEF-L4-WO-01-04", "WEF-L4-MS-05-02"]
+        wef_cluster: "Working with Others"
+        match_type: "primary"
+        coverage: 0.9
+        note: "Composite — spans service_orientation (WO) + customer_experience (MS)"
+
+  T4_3:
+    esco_code: "T4.3"
+    esco_name: "Collaborating in teams and networks"
+    wef_mappings:
+      - wef_L3: "Leadership and Social Influence"
+        wef_official_id: "WEF-L3-WO-03"
+        wef_cluster: "Working with Others"
+        match_type: "secondary"
+        coverage: 0.5
+      - wef_L3: "Empathy and Active Listening"
+        wef_official_id: "WEF-L3-WO-01"
+        wef_cluster: "Working with Others"
+        match_type: "secondary"
+        coverage: 0.4
+      - wef_L3: "Multi-lingualism"
+        wef_official_id: "WEF-L4-CS-03-05"
+        wef_cluster: "Working with Others"
+        match_type: "partial"
+        coverage: 0.3
+        note: "L4 skill in speaking_writing_languages — 'work across cultures'"
+
+  T4_4:
+    esco_code: "T4.4"
+    esco_name: "Leading others"
+    wef_mappings:
+      - wef_L3: "Leadership and Social Influence"
+        wef_official_id: "WEF-L3-WO-03"
+        wef_cluster: "Working with Others"
+        match_type: "primary"
+        coverage: 0.9
+      - wef_L3: "Talent Management"
+        wef_official_id: "WEF-L3-MS-01"
+        wef_cluster: "Management Skills"
+        match_type: "primary"
+        coverage: 0.7
+        note: "'develop teams', 'manage performance'"
+
+  T4_5:
+    esco_code: "T4.5"
+    esco_name: "Following ethical code of conduct"
+    wef_mappings:
+      - wef_L3: "Ethics and Social Responsibility"
+        wef_official_id: "WEF-L3-ET-01"
+        wef_cluster: "Ethics"
+        match_type: "primary"
+        coverage: 0.9
+        note: "FoJ name — official: ethical_leadership"
+
+  # =========================================================================
+  # T5: PHYSICAL & MANUAL → WEF Physical Abilities
+  # =========================================================================
+
+  T5_1:
+    esco_code: "T5.1"
+    esco_name: "Manipulating and controlling objects and equipment"
+    wef_mappings:
+      - wef_L3: "Manual Dexterity, Endurance, and Precision"
+        wef_official_id: "WEF-L3-PA-01"
+        wef_cluster: "Physical Abilities"
+        match_type: "primary"
+        coverage: 0.8
+
+  T5_2:
+    esco_code: "T5.2"
+    esco_name: "Responding to physical circumstances"
+    wef_mappings:
+      - wef_L3: "Manual Dexterity, Endurance, and Precision"
+        wef_official_id: "WEF-L3-PA-01"
+        wef_cluster: "Physical Abilities"
+        match_type: "primary"
+        coverage: 0.7
+        note: "'endure physical strain', 'maintain balance'"
+
+  # =========================================================================
+  # T6: LIFE SKILLS → WEF Ethics + Self-Efficacy (teilweise)
+  # =========================================================================
+
+  T6_1:
+    esco_code: "T6.1"
+    esco_name: "Applying health-related skills"
+    wef_mappings:
+      - wef_L3: "Ethics and Social Responsibility"
+        wef_official_id: "WEF-L3-ET-01"
+        wef_cluster: "Ethics"
+        match_type: "partial"
+        coverage: 0.3
+        note: "FoJ name — official: ethical_leadership. Hygiene/Sicherheit haben ethische Dimension"
+    gaps:
+      - "WEF hat KEINEN expliziten Health & Safety Skill — ESCO ist hier detaillierter"
+      - "Fuer Retail (Lebensmittelhygiene, HACCP) ist das eine kritische Luecke im WEF"
+
+  T6_2:
+    esco_code: "T6.2"
+    esco_name: "Applying environmental skills"
+    wef_mappings:
+      - wef_L3: "Environmental Stewardship"
+        wef_official_id: "WEF-L3-ET-02"
+        wef_cluster: "Ethics"
+        match_type: "primary"
+        coverage: 0.85
+
+  T6_3:
+    esco_code: "T6.3"
+    esco_name: "Applying civic skills"
+    wef_mappings:
+      - wef_L3: "Global Citizenship"
+        wef_official_id: "WEF-L4-ET-01-01"
+        wef_cluster: "Ethics"
+        match_type: "primary"
+        coverage: 0.6
+        note: "FoJ name — official: civic_responsibility (L4)"
+
+  T6_4:
+    esco_code: "T6.4"
+    esco_name: "Applying cultural skills"
+    wef_mappings:
+      - wef_L3: "Multi-lingualism"
+        wef_official_id: "WEF-L4-CS-03-05"
+        wef_cluster: "Working with Others"
+        match_type: "secondary"
+        coverage: 0.4
+      - wef_L3: "Global Citizenship"
+        wef_official_id: "WEF-L4-ET-01-01"
+        wef_cluster: "Ethics"
+        match_type: "secondary"
+        coverage: 0.5
+        note: "FoJ name — official: civic_responsibility (L4)"
+
+  T6_5:
+    esco_code: "T6.5"
+    esco_name: "Applying entrepreneurial and financial skills"
+    wef_mappings:
+      - wef_L3: "Resource Management"
+        wef_official_id: "WEF-L3-MS-02"
+        wef_cluster: "Management Skills"
+        match_type: "primary"
+        coverage: 0.6
+        note: "FoJ name — official: operations_logistics"
+      - wef_L3: "Quality Control"
+        wef_official_id: "WEF-L3-MS-04"
+        wef_cluster: "Management Skills"
+        match_type: "partial"
+        coverage: 0.3
+        note: "Official: quality_management"
+
+  T6_6:
+    esco_code: "T6.6"
+    esco_name: "Applying general knowledge"
+    wef_mappings: []
+    gaps:
+      - "Zu generisch fuer WEF-Zuordnung — kein Mapping moeglich"
+
+# =============================================================================
+# COVERAGE-ZUSAMMENFASSUNG
+# =============================================================================
+
+coverage_summary:
+  total_esco_clusters: 24
+  mapped_to_wef: 23
+  unmapped: 1  # T6.6 (too generic)
+
+  mapping_quality:
+    primary_matches: 28    # Anzahl primary match_type Zuordnungen
+    secondary_matches: 12
+    partial_matches: 7
+    total_mappings: 47
+
+  gaps_esco_not_in_wef:
+    - skill: "Health & Safety (T6.1)"
+      impact: "HOCH — Lebensmittelhygiene, HACCP, Arbeitsschutz fehlen im WEF"
+      workaround: "Direkt in Kaufland-Profil als Zusatz-Skill aufnehmen"
+    - skill: "General Knowledge (T6.6)"
+      impact: "NIEDRIG — zu abstrakt fuer praktische Nutzung"
+
+  gaps_wef_not_in_esco:
+    - skill: "AI and Big Data (WEF Technology)"
+      impact: "MITTEL — ESCO T1.3 deckt 'digital tools' ab, aber nicht explizit AI"
+    - skill: "Programming and Coding (WEF Technology)"
+      impact: "NIEDRIG — fuer Retail-Operationen nicht relevant"
+    - skill: "Networks and Cybersecurity (WEF Technology)"
+      impact: "NIEDRIG — IT-Infrastruktur ist nicht Aufgabe der Filialmitarbeitenden"
+
+# =============================================================================
+# TRANSITIVITAETS-KETTE: ESCO → WEF → O*NET
+# =============================================================================
+#
+# Durch dieses Mapping + wef-to-onet-mapping.yaml entsteht:
+#
+#   ESCO T4.4 "Leading others"
+#     → WEF "Leadership and Social Influence" (coverage 0.9)
+#       → O*NET: Oral Expression (0.8), Social Perceptiveness (0.7),
+#                Originality (0.5), Problem Sensitivity (0.6)
+#
+#   ESCO T3.3 "Maintaining a positive attitude"
+#     → WEF "Resilience, Flexibility and Agility" (coverage 0.9)
+#       → O*NET: Problem Sensitivity (0.6), Flexibility of Closure (0.5),
+#                Selective Attention (0.5)
+#
+# VORSICHT: Transitive Mappings verlieren Praezision bei jedem Schritt.
+# Coverage 0.9 × 0.8 = effektiv 0.72.
+# Fuer operatives Kaufland-Skill-Management sind DIREKTE Zuordnungen besser.
+# Die Kette ist nuetzlich fuer THEORETISCHE Vergleichbarkeit und Forschung.
+# =============================================================================

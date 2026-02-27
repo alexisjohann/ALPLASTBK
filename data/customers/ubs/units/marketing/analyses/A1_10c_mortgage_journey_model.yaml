@@ -1,0 +1,483 @@
+# =============================================================================
+# ANALYSE A1: 10C MORTGAGE JOURNEY MODELL — MORTGAGE CUSTOM GPT
+# =============================================================================
+# Superkey: ANA-UBS-GM-A1-JOURNEY
+# Created: 2026-02-25
+# Purpose: 10C-basierte Customer Journey für Eigenheimfinanzierung via GPT
+# Model-Ref: MOD-UBS-GMA-001, CAS-888 (GKB Cross-Selling), MS-CJ-001
+# =============================================================================
+
+metadata:
+  id: "ANA-UBS-GM-A1-JOURNEY"
+  name: "10C Mortgage Journey Modell: Custom GPT"
+  version: "1.0.0"
+  created: "2026-02-25"
+  customer: "UBS"
+  unit: "Marketing / Growth Marketing"
+  topic: "Mortgage Custom GPT"
+
+# =============================================================================
+# 1. ZIELGRUPPEN-SEGMENTIERUNG (WHO)
+# =============================================================================
+
+WHO:
+  total_addressable_market:
+    description: "Schweizer, die sich aktiv mit Eigenheimfinanzierung befassen"
+    data_points:
+      - fact: "CH-EIG-07: 88'000 Immobilien-Transaktionen/Jahr (2024)"
+      - fact: "CH-EIG-06: 32'000 Immobilien-Erbschaften/Jahr (2024)"
+      - fact: "CH-EIG-01: 36.8% Wohneigentumsquote (niedrigste Europa)"
+      - fact: "MKT-POS-03: UBS Marktanteil Hypotheken = 22%"
+      - fact: "MKT-KUN-01: 3.5 Mio UBS Privatkunden CH"
+    estimate: |
+      UBS-relevante Hypothekar-Kontakte/Jahr:
+      - Neuabschlüsse: 88'000 × 0.22 = ~19'400
+      - Anschlussfinanzierungen: ~250'000/Jahr × 0.22 = ~55'000
+      - Informationssuchende (3× Neuabschlüsse): ~58'200
+      → Total adressierbarer Markt für GPT: ~132'600/Jahr
+      → Pro Monat: ~11'000 potenzielle GPT-Nutzer
+
+  primary_segments:
+    segment_1_erstkaeufer:
+      name: "Erstkäufer:innen"
+      size_estimate: "~40% der GPT-Nutzer"
+      profile:
+        age: "30-45"
+        trigger: "Hauskauf (Life Transition)"
+        knowledge: "NIEDRIG (erste Hypothek)"
+        emotional_state: "Aufgeregt + ängstlich"
+        information_need: "HOCH (was kostet, was brauche ich, wie funktioniert)"
+      10c_profile:
+        AWARE: 0.20  # Wissen fast nichts über Tragbarkeit, SARON vs Fix
+        READY_W: 0.70  # Wollen unbedingt (Life Dream)
+        READY_A: 0.30  # Können nicht (Wissen fehlt)
+        STAGE: "CONSIDERING"
+      gpt_fit: "SEHR HOCH"
+      reason: |
+        Erstkäufer haben den höchsten Informationsbedarf und die niedrigste
+        Hemmschwelle, ein digitales Tool zu nutzen ("Ich weiss ja noch nichts,
+        ich probiere das mal"). Life Transition Multiplier = 1.5.
+
+    segment_2_anschlussfinanzierer:
+      name: "Anschlussfinanzierer:innen"
+      size_estimate: "~35% der GPT-Nutzer"
+      profile:
+        age: "40-60"
+        trigger: "Hypothek läuft aus (Routine/Deadline)"
+        knowledge: "MITTEL (haben schon eine Hypothek)"
+        emotional_state: "Pragmatisch, preissensitiv"
+        information_need: "MITTEL (Vergleich, aktuelle Konditionen)"
+      10c_profile:
+        AWARE: 0.55  # Wissen einiges, aber nicht aktuell
+        READY_W: 0.60  # Müssen sowieso (Ablauf)
+        READY_A: 0.65  # Kennen den Prozess
+        STAGE: "INTENDING"
+      gpt_fit: "HOCH"
+      reason: |
+        Wollen schnell aktuelle Konditionen → GPT liefert in 30 Sekunden.
+        Aber: Wechselbereitschaft niedrig (Status Quo Bias, τ_switching_cost = 0.70).
+        GPT-Aufgabe: bestehende Kunden BEHALTEN durch proaktive Info.
+
+    segment_3_erben:
+      name: "Immobilien-Erb:innen"
+      size_estimate: "~10% der GPT-Nutzer"
+      profile:
+        age: "45-65"
+        trigger: "Erbschaft (Life Transition)"
+        knowledge: "NIEDRIG-MITTEL (oft überfordert)"
+        emotional_state: "Trauer + Überforderung + Pflichtgefühl"
+        information_need: "HOCH (Behalten? Verkaufen? Finanzierung?)"
+      10c_profile:
+        AWARE: 0.25  # Oft keine Ahnung von Erbschaftsplanung
+        READY_W: 0.40  # Ambivalent (emotional + pragmatisch)
+        READY_A: 0.35  # Komplex (Erbengemeinschaft, Steuern)
+        STAGE: "AWARE_PASSIVE"
+      gpt_fit: "MITTEL"
+      reason: |
+        Hoher Informationsbedarf, aber emotionaler Kontext.
+        GPT muss EMPATHISCH sein, nicht nur rechnen.
+        Life Transition Multiplier = 1.5, aber Vorsicht mit Ton.
+
+    segment_4_informationssuchende:
+      name: "Allgemeine Informationssuchende"
+      size_estimate: "~15% der GPT-Nutzer"
+      profile:
+        age: "25-55"
+        trigger: "Neugier, Lebensplanung, 'Was wäre wenn'"
+        knowledge: "VARIABEL"
+        emotional_state: "Explorativ, unverbindlich"
+        information_need: "NIEDRIG-MITTEL (generelle Orientierung)"
+      10c_profile:
+        AWARE: 0.40  # Basiswissen vorhanden
+        READY_W: 0.30  # Noch kein konkreter Plan
+        READY_A: 0.50  # Könnten theoretisch
+        STAGE: "UNAWARE → AWARE_PASSIVE"
+      gpt_fit: "MITTEL"
+      reason: |
+        Leicht zu bedienen, aber schwer zu konvertieren.
+        GPT als "Traum-Rechner": "Was könnte ich mir leisten?"
+        Conversion-Pfad: GPT → Awareness → Later Activation.
+
+# =============================================================================
+# 2. UTILITY-DIMENSIONEN (WHAT)
+# =============================================================================
+
+WHAT:
+  description: |
+    Was treibt die Nutzung des Mortgage GPT? Nicht "Hypothek abschliessen"
+    (das ist das Endziel), sondern die ZWISCHENSCHRITT-Utility.
+
+  utility_dimensions:
+    u_P_convenience:
+      weight: 0.35
+      description: "Schnell, einfach, jederzeit verfügbar"
+      gpt_delivery: |
+        24/7 verfügbar, keine Terminbuchung, keine Wartezeit.
+        In 3 Minuten: "Ihr indikatives Ergebnis"
+        → Stärkster Treiber für GPT-Nutzung.
+
+    u_F_financial_clarity:
+      weight: 0.25
+      description: "Konkrete Zahlen: Was kostet es? Was kann ich mir leisten?"
+      gpt_delivery: |
+        Indikative Zinssätze, Tragbarkeitsrechnung, Amortisationsplan.
+        ABER: "Indikativ" muss klar kommuniziert werden.
+
+    u_E_emotional_safety:
+      weight: 0.20
+      description: "Orientierung ohne Verpflichtung, keine Scham"
+      gpt_delivery: |
+        Anonyme Nutzung (kein Login nötig auf Website).
+        Keine "dummen Fragen" — GPT urteilt nicht.
+        τ_taboo = 0.72 in CH: Menschen reden ungern über Finanzen.
+        GPT umgeht das Taboo!
+
+    u_D_identity:
+      weight: 0.10
+      description: "Sich als informierter Entscheider fühlen"
+      gpt_delivery: |
+        "Sie wissen jetzt mehr als 80% der Erstlkäufer."
+        Self-Empowerment durch Wissen.
+
+    u_S_social:
+      weight: 0.10
+      description: "Mitreden können, Partner überzeugen"
+      gpt_delivery: |
+        "Teilen Sie Ihr Ergebnis" (PDF-Export für Partner-Gespräch).
+        Hypotheken-Entscheidung ist oft eine Paar-Entscheidung.
+
+# =============================================================================
+# 3. KANAL-INTERAKTION (HOW)
+# =============================================================================
+
+HOW:
+  description: |
+    Wie interagiert der Mortgage GPT mit den bestehenden Kanälen?
+    Referenz: MOD-UBS-GMA-001 Channel Complementarity Matrix.
+
+  gpt_channel_architecture:
+    standalone: false
+    role: "Qualified Entry Point → RM/Branch Handoff"
+
+    journey_integration:
+      step_1_entry:
+        channels: ["UBS Website", "UBS App", "Homegate", "Google Search"]
+        gpt_role: "FIRST TOUCHPOINT — indikative Orientierung"
+        duration: "3-5 Minuten"
+
+      step_2_deepening:
+        channels: ["GPT Follow-up", "Email mit Ergebnis"]
+        gpt_role: "QUALIFIER — personalisiertes Ergebnis, nächste Schritte"
+        duration: "5-10 Minuten"
+
+      step_3_handoff:
+        channels: ["RM Call", "Branch Appointment", "Video Banking"]
+        gpt_role: "WARM LEAD GENERATOR — qualifizierter Kontakt an Berater"
+        conversion_target: "15-25% der GPT-Nutzer buchen Termin"
+
+    channel_complementarity:
+      GPT_x_APP:
+        gamma: 0.25
+        note: "Positiv: App-Nutzer sind digitale GPT-Nutzer"
+      GPT_x_RM:
+        gamma: 0.35
+        note: "Stark positiv: GPT qualifiziert → RM schliesst ab"
+      GPT_x_BRANCH:
+        gamma: 0.15
+        note: "Positiv: GPT-Nutzer sind vorqualifiziert"
+      GPT_x_WEB:
+        gamma: -0.05
+        note: "Leicht negativ: GPT substituiert statische Web-Rechner"
+      GPT_x_ChatGPT_Marketplace:
+        gamma: -0.15
+        note: |
+          Negativ: ChatGPT-Umgebung schwächt UBS-Brand.
+          Nutzer assoziieren Ergebnis mit "ChatGPT", nicht "UBS".
+
+# =============================================================================
+# 4. KONTEXT-ANALYSE (WHEN)
+# =============================================================================
+
+WHEN:
+  psi_dimensions:
+    Psi_I_institutional:
+      value: "regulated"
+      impact: |
+        FINMA-Regulierung: Tragbarkeitsrechnung bei 5% kalkulatorisch.
+        Eigenmittel: mind. 20% (10% hart).
+        → GPT MUSS regulatorisch korrekt rechnen.
+        → Regulierungstrust-Lift: +5% auf δ_AI
+    Psi_S_social:
+      value: "mixed"
+      impact: |
+        Hypotheken-Entscheidung = Paar-Entscheidung (67% der Fälle).
+        GPT wird initial ALLEIN genutzt, Ergebnis dann GETEILT.
+        → PDF-Export / "Ergebnis teilen"-Feature kritisch.
+    Psi_K_cultural:
+      value: "swiss_specific"
+      impact: |
+        τ_taboo = 0.72: Schweizer reden nicht über Geld.
+        → GPT-Vorteil: Anonyme Erstinformation ohne Scham.
+        Schweizer Eigenheimquote 36.8%: Eigenheim = Statussymbol + Traum.
+        → Emotionale Kommunikation, nicht nur Zahlen.
+    Psi_T_temporal:
+      triggers:
+        - trigger: "Immobilienkauf"
+          multiplier: 1.6
+          source: "MOD-UBS-GMA-001"
+        - trigger: "Erbschaft"
+          multiplier: 2.5
+          source: "MOD-UBS-GMA-001"
+        - trigger: "Hypothek läuft aus"
+          multiplier: 1.5
+          source: "LLMMC estimate"
+        - trigger: "Zinswende"
+          multiplier: 1.8
+          source: "LLMMC estimate, aktuell: SNB 0%, SARON 0.8-1.2%"
+
+# =============================================================================
+# 5. AWARENESS-ANALYSE (AWARE)
+# =============================================================================
+
+AWARE:
+  current_state:
+    A_product:
+      value: 0.30
+      description: "Wissen, dass UBS einen Mortgage-Service hat"
+      note: "UBS = Hypotheken-Marktführer, aber GPT ist NEU"
+    A_benefit:
+      value: 0.15
+      description: "Wissen, was ein Mortgage GPT bringt"
+      note: "Produkt existiert noch nicht → Awareness = near zero"
+    A_action:
+      value: 0.10
+      description: "Wissen, wie man den GPT nutzt"
+      note: "Muss erst lanciert und beworben werden"
+    A_risk:
+      value: 0.60
+      description: "Risikowahrnehmung bei KI-Finanzberatung"
+      note: "CH-KI-08 Bias-Wahrnehmung = 38%, verstärkt durch High-Stakes"
+
+  target_state:
+    A_product: 0.70
+    A_benefit: 0.60
+    A_action: 0.75
+    A_risk: 0.35  # Kalibrieren, nicht eliminieren
+
+  awareness_gap: |
+    Der grösste Gap ist A_benefit (0.15 → 0.60):
+    Die Leute wissen nicht, WARUM sie einen GPT nutzen sollten.
+    Key Message: "In 3 Minuten wissen Sie, was Ihr Eigenheim kostet"
+    Nicht: "Nutzen Sie unsere KI" (löst Aversion aus).
+
+# =============================================================================
+# 6. READINESS-ANALYSE (READY)
+# =============================================================================
+
+READY:
+  model: "WAX (Willingness × Ability × Context)"
+
+  by_segment:
+    erstkaeufer:
+      W: 0.70  # Wollen unbedingt (Traum)
+      A: 0.30  # Können nicht (Wissen fehlt)
+      X: 0.85  # Kontext passt (Life Transition)
+      WAX: 0.18  # W × A × X
+      bottleneck: "Ability — Wissen fehlt"
+      gpt_role: "EDUCATOR — Tragbarkeit erklären, Orientierung geben"
+
+    anschlussfinanzierer:
+      W: 0.60  # Müssen (Ablauf), aber bequem
+      A: 0.65  # Kennen den Prozess
+      X: 0.70  # Kontext gut (Deadline-Druck)
+      WAX: 0.27
+      bottleneck: "Willingness — Status Quo Bias"
+      gpt_role: "COMPARATOR — aktuelle vs. neue Konditionen zeigen"
+
+    erben:
+      W: 0.40  # Ambivalent (emotional)
+      A: 0.35  # Komplex (Erbengemeinschaft)
+      X: 0.60  # Kontext schwierig (Trauer)
+      WAX: 0.08
+      bottleneck: "Willingness + Ability — emotional + komplex"
+      gpt_role: "GUIDE — sanft, empathisch, Schritt für Schritt"
+
+    informationssuchende:
+      W: 0.30  # Kein konkreter Plan
+      A: 0.50  # Könnten
+      X: 0.40  # Kein Trigger
+      WAX: 0.06
+      bottleneck: "Willingness — kein Trigger vorhanden"
+      gpt_role: "DREAMER — 'Was wäre wenn' Szenarien"
+
+# =============================================================================
+# 7. JOURNEY-STAGE MAPPING (STAGE)
+# =============================================================================
+
+STAGE:
+  description: |
+    Mapping der GPT-Nutzung auf die 5 Journey Stages (MOD-UBS-GMA-001).
+    GPT adressiert primär Stage 1-3 (UNAWARE → CONSIDERING).
+
+  stage_distribution_mortgage:
+    UNAWARE:
+      share: 0.15
+      gpt_intervention: |
+        "Wussten Sie, dass Sie bei Ihrem Einkommen ein Eigenheim
+        für CHF X finanzieren könnten?"
+        → Awareness-Intervention, nicht GPT-Hauptfunktion.
+    AWARE_PASSIVE:
+      share: 0.35
+      gpt_intervention: |
+        "UBS Eigenheim-Check: In 3 Minuten wissen Sie mehr."
+        → Benefit Communication, Salience erhöhen.
+    CONSIDERING:
+      share: 0.30
+      gpt_intervention: |
+        Indikative Berechnung, Szenarien, Vergleiche.
+        → HAUPT-GPT-FUNKTION: Interaktive Beratung.
+    INTENDING:
+      share: 0.15
+      gpt_intervention: |
+        "Bereit für den nächsten Schritt? Termin mit Berater:in buchen."
+        → Handoff zu RM/Branch.
+    ACTIVE:
+      share: 0.05
+      gpt_intervention: |
+        Anschlussfinanzierung: "Ihre Hypothek läuft in 6 Monaten aus.
+        Hier sind aktuelle Konditionen."
+        → Retention, nicht Akquisition.
+
+  gpt_primary_impact:
+    from_stage: "AWARE_PASSIVE"
+    to_stage: "CONSIDERING"
+    expected_conversion: "8-15% der GPT-Nutzer"
+    mechanism: "Benefit Communication + Friction Reduction"
+
+# =============================================================================
+# 8. KONVERSIONS-FUNNEL (QUANTIFIZIERT)
+# =============================================================================
+
+conversion_funnel:
+  description: "Erwarteter Funnel von Website-Besuch bis Hypothekenabschluss"
+
+  steps:
+    - step: "1. Landing Page Visit"
+      volume_monthly: 50000
+      source: "UBS Website Traffic, Homegate, Google"
+
+    - step: "2. GPT Engagement (startet Interaktion)"
+      volume_monthly: 12500
+      conversion: 0.25
+      note: "25% Engagement Rate (branchenüblich für interaktive Tools)"
+
+    - step: "3. Completed Check (Ergebnis erhalten)"
+      volume_monthly: 7500
+      conversion: 0.60
+      note: "60% Completion Rate (3-5 Min GPT-Interaktion)"
+
+    - step: "4. Lead Qualification (Email/Login)"
+      volume_monthly: 2250
+      conversion: 0.30
+      note: "30% geben Kontaktdaten (gegen PDF-Export/Detailergebnis)"
+
+    - step: "5. RM Appointment Booked"
+      volume_monthly: 675
+      conversion: 0.30
+      note: "30% der Leads buchen Termin"
+
+    - step: "6. Mortgage Closing"
+      volume_monthly: 200
+      conversion: 0.30
+      note: "30% Abschlussrate bei qualifizierten Leads"
+
+  annual_impact:
+    gpt_generated_mortgages: 2400
+    average_mortgage_volume: 750000  # CHF
+    total_new_volume: 1800000000  # CHF 1.8 Mrd
+    revenue_estimate: |
+      Bei ~1% Marge: CHF 18 Mio zusätzlicher Ertrag/Jahr.
+      Ohne GPT würden diese Kunden teilweise bei Comparis,
+      MoneyPark oder Konkurrenz landen.
+
+  comparison_to_current:
+    current_digital_mortgage_share: 0.35  # TEC-DIG-12
+    gpt_additional_share: 0.04  # +4 Prozentpunkte
+    note: "GPT ist kein Ersatz, sondern ZUSÄTZLICHER Kanal für Lead Gen"
+
+# =============================================================================
+# 9. SURVEY-EMPFEHLUNGEN (aus 10C-Perspektive)
+# =============================================================================
+
+survey_recommendations:
+
+  segment_identification:
+    question: |
+      "In welcher Situation befinden Sie sich aktuell?"
+      (a) Ich suche aktiv ein Eigenheim
+      (b) Meine Hypothek muss erneuert werden
+      (c) Ich habe eine Immobilie geerbt oder geschenkt bekommen
+      (d) Ich informiere mich allgemein
+    purpose: "Segment-Zuordnung → unterschiedliche Journey-Pfade"
+
+  stage_identification:
+    question: |
+      "Wie weit sind Sie in Ihrer Entscheidung?"
+      (a) Ich habe noch nicht darüber nachgedacht
+      (b) Ich habe davon gehört, aber nichts unternommen
+      (c) Ich vergleiche gerade Angebote
+      (d) Ich habe mich entschieden und suche den besten Anbieter
+      (e) Ich habe bereits eine Hypothek
+    purpose: "STAGE-Zuordnung → passende GPT-Intervention"
+
+  wax_measurement:
+    willingness: |
+      "Wie wichtig ist es Ihnen, in den nächsten 12 Monaten eine
+      Hypotheken-Entscheidung zu treffen?" (1-7 Skala)
+    ability: |
+      "Wie gut kennen Sie sich mit Hypothekenfinanzierung aus?"
+      (1=gar nicht, 7=sehr gut)
+    context: |
+      "Welches Ereignis hat Ihr Interesse ausgelöst?"
+      (Freitext oder Multiple Choice: Kauf, Erbe, Ablauf, Zinswende, etc.)
+
+# =============================================================================
+# CROSS-REFERENCES
+# =============================================================================
+
+references:
+  model: "MOD-UBS-GMA-001"
+  cases: ["CAS-888"]
+  theories: ["MS-CJ-001", "MS-CX-001", "MS-IB-001", "MS-NU-002"]
+  parameters:
+    - "PAR-CTX-001 (τ_taboo = 0.72)"
+    - "PAR-CM-007 (β_channel timing)"
+    - "PAR-INT-001 (E_default = 0.42)"
+  context_data:
+    - "CH-EIG-01 to CH-EIG-07 (Wohneigentum)"
+    - "MKT-POS-03 (Hypotheken-Marktanteil 22%)"
+    - "MKT-KUN-01 (3.5 Mio Privatkunden)"
+    - "MKT-KUN-11 (Mobile Banking Penetration 65%)"
+    - "MKT-KUN-12 (Multi-Product Households 52%)"
+    - "TEC-DIG-12 (Digital Sales Share 35%)"
+  trust_analysis: "ANA-UBS-GM-A2-TRUST"

@@ -1,0 +1,310 @@
+# =============================================================================
+# EIT-EMP-2: INTERVENTION EMERGENCE ALGORITHM
+# =============================================================================
+# YAML Specification for the EMERGE Algorithm
+# Companion to: appendices/IE_EMP2_intervention_emergence.tex
+# Version: 1.0 (Januar 2026)
+# =============================================================================
+
+metadata:
+  id: EIT-EMP-2
+  name: "Intervention Emergence Algorithm"
+  extends: EIT-EMP-1
+  version: "1.0"
+  date: "2026-01-23"
+  status: empirical_extension
+
+# =============================================================================
+# EFFECTIVENESS FUNCTION
+# =============================================================================
+effectiveness_function:
+  formula: "E(I⃗ | Ψ) = Σ w_i·I_i + Σ Σ γ_ij(Ψ)·I_i·I_j"
+  description: "Total intervention effectiveness as sum of direct and interaction effects"
+
+  components:
+    direct_effects:
+      formula: "Σ w_i · I_i"
+      description: "Sum of weighted dimension activations"
+
+    interaction_effects:
+      formula: "Σ_{i<j} γ_ij(Ψ) · I_i · I_j"
+      description: "Pairwise complementarity contributions"
+
+  matrix_form:
+    formula: "E(I⃗ | Ψ) = w⃗ᵀ I⃗ + ½ I⃗ᵀ Γ(Ψ) I⃗"
+    description: "Quadratic form for optimization"
+
+# =============================================================================
+# OPTIMIZATION PROBLEM
+# =============================================================================
+optimization:
+  objective: "max E(I⃗ | Ψ)"
+
+  constraints:
+    bounds:
+      formula: "I_i ∈ [0,1] ∀i"
+      description: "Dimension intensity bounds"
+
+    budget:
+      formula: "Σ c_i · I_i ≤ B"
+      description: "Total cost cannot exceed budget"
+      parameters:
+        c_i: "Cost of activating dimension i"
+        B: "Total budget available"
+
+    complexity:
+      formula: "‖I⃗‖₀ ≤ K"
+      description: "Maximum number of active dimensions"
+      default_K: 4
+      rationale: "Cognitive load limits, implementation feasibility"
+
+# =============================================================================
+# EMERGE ALGORITHM
+# =============================================================================
+emerge_algorithm:
+  name: "EMERGE (Emergent Intervention Selection)"
+
+  input:
+    - name: "context_vector"
+      symbol: "Ψ"
+      type: "float[8]"
+      range: "[0,1]^8"
+
+    - name: "budget"
+      symbol: "B"
+      type: "float"
+
+    - name: "complexity_limit"
+      symbol: "K"
+      type: "int"
+      default: 4
+
+    - name: "target_outcome"
+      type: "string"
+      description: "Which AWARE components to improve"
+
+    - name: "crowding_threshold"
+      symbol: "θ"
+      type: "float"
+      default: 0.15
+
+  phases:
+    phase_1_compute_gamma:
+      name: "Compute Complementarity Matrix"
+      steps:
+        - "Load γ₀ baseline values (48 parameters from EIT-EMP-1)"
+        - "Load β sensitivities (current LLMMC estimates)"
+        - "For each pair (i,j): γ_ij(Ψ) = γ₀_ij + Σ_k β_ijk · Ψ_k"
+        - "Construct symmetric 80×80 matrix Γ(Ψ)"
+      complexity: "O(80² × 8)"
+      time: "<1ms"
+
+    phase_2_identify_candidates:
+      name: "Identify Candidate Dimensions"
+      steps:
+        - "Filter dimensions relevant to target outcome"
+        - "Rank by w_i (baseline effectiveness)"
+        - "Select top 2K candidates for consideration"
+      complexity: "O(80 × log 80)"
+      time: "<1ms"
+
+    phase_3_greedy_selection:
+      name: "Greedy Synergy Selection"
+      steps:
+        - "Initialize I⃗ = 0⃗, Active = ∅"
+        - "WHILE |Active| < K AND budget_remaining > 0:"
+        - "  For each candidate i ∉ Active:"
+        - "    Compute marginal_gain: ΔE_i = w_i + Σ_{j∈Active} γ_ij(Ψ)·I_j"
+        - "    Compute marginal_cost: Δc_i = c_i"
+        - "    Compute efficiency: η_i = ΔE_i / Δc_i"
+        - "  Select i* = argmax_i η_i"
+        - "  IF γ_{i*,j}(Ψ) < -θ for any j ∈ Active: SKIP (crowding-out)"
+        - "  Add i* to Active, set I_{i*} = 1"
+      complexity: "O(K²)"
+      time: "<1ms"
+
+    phase_4_intensity_optimization:
+      name: "Intensity Optimization"
+      steps:
+        - "Restrict to Active dimensions only"
+        - "Solve continuous QP: max w⃗ᵀI⃗ + ½I⃗ᵀΓI⃗"
+        - "Subject to: bounds, budget"
+        - "Use standard QP solver (e.g., CVXPY, quadprog)"
+      complexity: "O(K³)"
+      time: "<10ms"
+
+  output:
+    - name: "optimal_profile"
+      symbol: "I⃗*"
+      type: "float[80]"
+      description: "Optimal intervention intensities"
+
+    - name: "active_dimensions"
+      type: "list[int]"
+      description: "Indices of non-zero dimensions"
+
+    - name: "expected_effectiveness"
+      symbol: "E*"
+      type: "float"
+      description: "Predicted total effectiveness"
+
+    - name: "avoided_combinations"
+      type: "list[tuple]"
+      description: "Pairs skipped due to crowding-out"
+
+  total_complexity: "O(80² + K³)"
+  total_time: "<15ms"
+
+# =============================================================================
+# CROWDING-OUT AVOIDANCE
+# =============================================================================
+crowding_out_rules:
+  hard_constraint:
+    description: "Financial + Social combination requires explicit justification"
+    condition: "If dim_i involves F AND dim_j involves S"
+    rule: "I_i · I_j > 0 → document justification"
+    source: "EIT-T9"
+
+  soft_constraint:
+    description: "Strong negative complementarity limits co-activation"
+    condition: "γ_ij(Ψ) < -θ"
+    rule: "min(I_i, I_j) ≤ ε"
+    default_theta: 0.15
+    default_epsilon: 0.1
+
+# =============================================================================
+# BASELINE WEIGHTS (w_i)
+# =============================================================================
+baseline_weights:
+  description: "Default effectiveness weights by dimension category"
+  source: "Literature + LLMMC calibration"
+
+  # Block A: Other 10C Dimensions
+  block_a_10c:
+    WHO: 0.5
+    WHAT: 0.6
+    HOW: 0.5
+    WHEN: 0.7
+    WHERE: 0.4
+    READY: 0.6
+    STAGE: 0.5
+    HIER: 0.4
+
+  # Block B: AWARE-Detail (examples)
+  block_b_aware_detail:
+    # Pattern: Higher weights for positive valence, Self referent
+    Self_INU_F_pos: 0.75
+    Self_INU_F_neg: 0.65
+    Self_KNU_F_pos: 0.80  # Future financial awareness - high impact
+    Self_KNU_E_pos: 0.70
+    Self_KNU_Ex_pos: 0.65
+    Comm_INU_S_pos: 0.60
+    # ... (72 total values)
+
+# =============================================================================
+# COST ESTIMATES (c_i)
+# =============================================================================
+cost_estimates:
+  description: "Relative implementation costs by mechanism type"
+  baseline: 1.0
+
+  categories:
+    information_provision: 0.5      # Low cost: pamphlets, emails
+    salience_enhancement: 0.7       # Medium-low: visual design, framing
+    feedback_systems: 1.2           # Medium: tracking, dashboards
+    experience_interventions: 1.8   # High: simulations, workshops
+    social_mechanisms: 1.0          # Medium: peer comparison, norms
+    financial_incentives: 2.0       # High: direct costs
+    choice_architecture: 0.8        # Medium-low: defaults, structure
+    commitment_devices: 1.1         # Medium: contracts, pledges
+
+# =============================================================================
+# DATA MODE ADAPTATION (per EIT-10)
+# =============================================================================
+data_mode_adaptation:
+  e_full:
+    condition: "High confidence in β estimates"
+    algorithm: "Full QP optimization with estimated Γ(Ψ)"
+
+  e_partial:
+    condition: "Medium confidence, some β uncertain"
+    algorithm: "Greedy selection with robust subset of γ₀ only"
+
+  e_none:
+    condition: "Low confidence, β highly uncertain"
+    algorithm: "Rank by w_i only, ignore interaction terms"
+
+# =============================================================================
+# LLMMC INTEGRATION
+# =============================================================================
+llmmc_integration:
+  estimated_parameters:
+    - "w_i for dimensions without experimental data"
+    - "c_i for novel intervention mechanisms"
+    - "θ calibration for crowding-out threshold"
+
+  query_template: |
+    Given an intervention targeting {target_aware_component} in context:
+    - Economic conditions: {psi_econ}
+    - Social norms strength: {psi_social}
+    - Time horizon: {psi_temporal}
+    - [other Ψ dimensions]
+
+    Questions:
+    1. Rate the standalone effectiveness of dimension {D_i} (0-1 scale)
+    2. Estimate implementation cost relative to baseline (0.5-2.0)
+    3. At what negative γ threshold would you avoid combining {D_i} with {D_j}?
+
+  validation: "Cross-check against known intervention outcomes"
+  update_rule: "Bayesian learning (same as β in EIT-EMP-1)"
+
+# =============================================================================
+# EMERGENCE PIPELINE SUMMARY
+# =============================================================================
+emergence_pipeline:
+  step_1:
+    input: "Real-world situation"
+    process: "Encode as context vector"
+    output: "Ψ ∈ [0,1]^8"
+
+  step_2:
+    input: "Ψ"
+    process: "γ(Ψ) = γ₀ + Σ β·Ψ"
+    output: "Γ(Ψ) complementarity matrix"
+    source: "EIT-EMP-1"
+
+  step_3:
+    input: "Γ(Ψ), constraints (B, K)"
+    process: "EMERGE algorithm"
+    output: "I⃗* optimal intervention profile"
+    source: "EIT-EMP-2"
+
+  step_4:
+    input: "I⃗*"
+    process: "Map dimensions to concrete mechanisms"
+    output: "Intervention design specification"
+
+  step_5:
+    input: "Observed outcome"
+    process: "Compare prediction vs. reality"
+    output: "Updated β estimates"
+    feedback_loop: true
+
+# =============================================================================
+# KEY PROPERTIES
+# =============================================================================
+key_properties:
+  no_type_selection:
+    description: "I⃗* is computed from optimization, not chosen from predefined list"
+
+  context_sensitive:
+    description: "Different Ψ produces different I⃗*"
+
+  self_improving:
+    description: "Each observation refines β, improving future predictions"
+
+  constraint_respecting:
+    description: "Crowding-out automatically avoided via algorithm constraints"
+
+  real_time_capable:
+    description: "Total computation <15ms enables interactive design"

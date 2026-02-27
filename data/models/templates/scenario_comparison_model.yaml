@@ -1,0 +1,134 @@
+# =============================================================================
+# SCENARIO COMPARISON MODEL (SCM-1.0) - CONFIGURATION TEMPLATE
+# =============================================================================
+# Model: Systematic Scenario Comparison
+# Version: 1.0.0
+# Status: GENERIC (no hardcoded defaults)
+#
+# Purpose: Compare multiple strategic scenarios systematically.
+#
+# Usage:
+#   python scripts/models/scenario_comparison.py <config.yaml>
+#
+# Integration:
+#   - Runs: RPM, PLM, CFM for each scenario
+#   - Output: Comparison tables, rankings, probability-weighted outcomes
+# =============================================================================
+
+scenario_comparison:
+  # Time horizon
+  base_year: 2024
+  projection_years: 11
+  currency: "EUR"
+
+  # -----------------------------------------------------------------------------
+  # Scenarios to Compare
+  # Each scenario modifies base config via adjustments (dot-notation paths)
+  # -----------------------------------------------------------------------------
+  scenarios:
+    - name: "Conservative"
+      probability: 0.25                # Probability weight (must sum to 1.0)
+      description: "Slow growth, margin pressure, risk-averse"
+      adjustments:
+        # Regional growth rates reduced
+        strategic_assumptions.regional_growth_rates.europe.cagr: 1.5
+        strategic_assumptions.regional_growth_rates.apac.cagr: 6.0
+        strategic_assumptions.regional_growth_rates.south_america.cagr: 4.5
+        strategic_assumptions.regional_growth_rates.north_america.cagr: 2.0
+        # Lower margins
+        pnl_model.ebitda_margin_percent: 10
+        # Higher WACC
+        value_creation_model.wacc.beta: 1.3
+
+    - name: "Base Case"
+      probability: 0.50
+      description: "Expected trajectory based on current assumptions"
+      adjustments: {}  # No changes - uses base config as-is
+
+    - name: "Aggressive"
+      probability: 0.25
+      description: "Strong growth, margin expansion, favorable conditions"
+      adjustments:
+        # Regional growth rates increased
+        strategic_assumptions.regional_growth_rates.europe.cagr: 3.5
+        strategic_assumptions.regional_growth_rates.apac.cagr: 10.0
+        strategic_assumptions.regional_growth_rates.south_america.cagr: 8.0
+        strategic_assumptions.regional_growth_rates.north_america.cagr: 4.0
+        # Higher margins
+        pnl_model.ebitda_margin_percent: 15
+        # Lower WACC
+        value_creation_model.wacc.beta: 0.9
+
+    # Add custom scenarios as needed:
+    # - name: "APAC Boom"
+    #   probability: 0.10
+    #   description: "APAC outperforms significantly"
+    #   adjustments:
+    #     strategic_assumptions.regional_growth_rates.apac.cagr: 12.0
+
+  # -----------------------------------------------------------------------------
+  # Metrics to Compare
+  # Extracted from model results for comparison
+  # -----------------------------------------------------------------------------
+  comparison_metrics:
+    - name: "revenue_2035"
+      path: "revenue.final_year_m"
+      description: "Final year revenue"
+      higher_is_better: true
+
+    - name: "revenue_cagr"
+      path: "revenue.cagr_percent"
+      description: "Revenue CAGR"
+      higher_is_better: true
+
+    - name: "ebitda_margin_2035"
+      path: "pnl.ebitda.final_margin_percent"
+      description: "Final year EBITDA margin"
+      higher_is_better: true
+
+    - name: "total_fcf"
+      path: "cash_flow.total_m"
+      description: "Cumulative free cash flow"
+      higher_is_better: true
+
+    - name: "avg_fcf_yield"
+      path: "cash_flow.avg_yield_percent"
+      description: "Average FCF yield"
+      higher_is_better: true
+
+  # -----------------------------------------------------------------------------
+  # Ranking Weights
+  # How to weight metrics when ranking scenarios
+  # -----------------------------------------------------------------------------
+  ranking_weights:
+    revenue_2035: 0.25
+    revenue_cagr: 0.15
+    ebitda_margin_2035: 0.25
+    total_fcf: 0.25
+    avg_fcf_yield: 0.10
+
+# =============================================================================
+# OUTPUT SPECIFICATION
+# =============================================================================
+# Running this model produces:
+#
+# 1. scenario_comparison_table.csv
+#    - Scenario, Probability, and all comparison metrics
+#    - Side-by-side comparison of outcomes
+#
+# 2. scenario_rankings.csv
+#    - Rank, Scenario, Weighted_Score
+#    - Normalized scores for each metric
+#
+# 3. scenario_comparison_summary.yaml
+#    - Best scenario
+#    - Probability-weighted expected values
+#    - Metric ranges (min, max, mean, std)
+#    - Success/failure counts
+#
+# Use Cases:
+#   - Board presentations: "Best case vs. worst case"
+#   - Strategic planning: "What-if analysis"
+#   - Risk assessment: "Probability-weighted outcomes"
+#   - Investment decisions: "Upside vs. downside"
+# =============================================================================

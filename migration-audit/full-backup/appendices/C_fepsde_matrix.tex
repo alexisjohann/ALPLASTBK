@@ -1,0 +1,4625 @@
+% =============================================================================
+% APPENDIX C: The Complete FEPSDE Welfare Matrix
+% =============================================================================
+% Module: BCM2_04_INU_6040 / KNU_6041 / IDN_6042 (BEATRIX Architecture)
+% Version: 2.2 (January 2026)
+%
+% Complete reference for:
+% - Meta-Axiom U-M0 (universelle Nutzenstruktur)
+% - 144-component utility structure
+% - INU/KNU/IDN axiom systems
+% - Context-welfare interaction (Γ-matrix)
+%
+% =============================================================================
+% CRITICAL CROSS-REFERENCE: Appendix C ↔ Appendix AAA
+% =============================================================================
+%
+% Appendix C defines the HORIZONTAL structure: utility DIMENSIONS (FEPSDE)
+% Appendix AAA defines the VERTICAL structure: aggregation LEVELS (L0...L∞)
+%
+% Together they form the complete utility space: U^L_d
+%   - Rows = Levels (from AAA)
+%   - Columns = Dimensions (from C)
+%
+% ALL utilities in this appendix implicitly carry a level index:
+%   U_d should be read as U^L_d (utility in dimension d at level L)
+%
+% See Section C.2a for the formal integration.
+%
+% =============================================================================
+% CROSS-REFERENCE STRUCTURE: Appendix C ↔ Chapter 10
+% =============================================================================
+%
+% ┌────────────────────────────────────────────────────────────────────────────┐
+% │ App C Section │ Content                         │ Chapter 10 Section       │
+% ├────────────────────────────────────────────────────────────────────────────┤
+% │ C.1           │ 144-Component Structure         │ 10.3                     │
+% │ C.2           │ Meta-Axiom U-M0                 │ 10.1                     │
+% │ C.2a          │ Integration with AAA (Levels)   │ NEW                      │
+% │ C.3           │ INU (59 Axiome)                 │ 10.1, 10.3               │
+% │ C.4           │ KNU (Axiome)                    │ 10.1, 10.3               │
+% │ C.5           │ IDN (Axiome)                    │ 10.1, 10.3               │
+% │ C.6           │ Loss Aversion by Dimension      │ 10.4                     │
+% │ C.7           │ Γ-Matrix (Context-Welfare)      │ 10.7                     │
+% │ C.8           │ Context-Dependent Parameters    │ 10.7                     │
+% │ C.9           │ Inter-Category Complementarity  │ 10.6                     │
+% │ C.10          │ Counting Verification           │ 10.3                     │
+% │ C.11          │ Worked Example                  │ 10.9                     │
+% │ C.12          │ Validation                      │ 10.7                     │
+% └────────────────────────────────────────────────────────────────────────────┘
+%
+% =============================================================================
+
+\chapter{The Complete FEPSDE Welfare Matrix}
+\label{app:fepsde-matrix}
+
+\begin{abstract}
+This appendix provides the complete reference documentation for the EBF 
+utility framework: the Meta-Axiom U-M0 defining the universal structure, 
+the 144-component decomposition, the axiom systems for INU/KNU/IDN, and 
+the context-welfare interaction via the $\Gamma$-matrix.
+\end{abstract}
+
+%==============================================================================
+% QUICK REFERENCE BOX (Required)
+%==============================================================================
+
+\begin{tcolorbox}[colback=yellow!10!white, colframe=yellow!75!black, 
+    title=\textbf{Quick Reference}]
+
+\textbf{CORE Question:} WHAT constitutes utility?
+
+\textbf{Answer:} Utility decomposes into $\mathbf{144}$ distinct components 
+across 4 orthogonal dimensions.
+
+\textbf{The 144-Component Formula:}
+\[
+\text{Total} = \underbrace{3}_{\text{Category}} \times \underbrace{2}_{\text{Valence}} \times \underbrace{6}_{\text{FEPSDE}} \times \underbrace{4}_{\text{Time}} = 144
+\]
+
+\textbf{Key Structures:}
+\begin{center}
+\small
+\begin{tabular}{@{}llc@{}}
+\toprule
+\textbf{Structure} & \textbf{Content} & \textbf{Axioms} \\
+\midrule
+Meta-Axiom U-M0 & Universal utility structure & 1 \\
+INU & Individual utility ($U^0_d$) & 59 \\
+KNU & Collective utility ($U^1_d$) & 49 \\
+IDN & Identity utility ($U^{ID}_d$) & 35 \\
+\midrule
+& \textbf{Total} & \textbf{144} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{FEPSDE Dimensions:}
+\begin{itemize}[nosep]
+    \item \textbf{F}inancial --- Income, wealth, economic security
+    \item \textbf{E}motional --- Affect, mood, psychological wellbeing
+    \item \textbf{P}hysical --- Health, fitness, bodily function
+    \item \textbf{S}ocial --- Relationships, belonging, status
+    \item \textbf{D}igital --- Online presence, data, connectivity
+    \item \textbf{Eco}logical --- Environment, sustainability, nature
+\end{itemize}
+
+\textbf{Jump to:}
+\begin{itemize}[nosep]
+    \item 144-Component Structure $\rightarrow$ \S\ref{sec:app-c-structure}
+    \item Meta-Axiom U-M0 $\rightarrow$ \S\ref{sec:app-c-meta-axiom}
+    \item INU Axioms (59) $\rightarrow$ \S\ref{sec:app-c-inu}
+    \item KNU Axioms (49) $\rightarrow$ \S\ref{sec:app-c-knu}
+    \item IDN Axioms (35) $\rightarrow$ \S\ref{sec:app-c-idn}
+    \item $\Gamma$-Matrix $\rightarrow$ \S\ref{sec:app-c-gamma}
+    \item Worked Example $\rightarrow$ \S\ref{sec:app-c-example}
+\end{itemize}
+
+\end{tcolorbox}
+
+%==============================================================================
+% FORMAL COMPLIANCE BLOCK
+%==============================================================================
+
+% --- Terminology Reference ---
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!50!black]
+\textbf{Terminology:} See Appendix G (Glossary) for standard definitions.
+Key terms in this appendix: FEPSDE dimensions ($d \in \{F,E,P,S,D,Eco\}$),
+utility category (INU/KNU/IDN), valence (Gain/Pain), time horizon ($t \in \{0,1,2,3\}$),
+loss aversion ($\lambda_d$), $\Gamma$-matrix (dimension interactions).
+\end{tcolorbox}
+
+% --- Chapter Linkage Box ---
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=\textbf{Chapter References}]
+
+\textbf{Primary Chapter:} Ch. 10 (Die Nutzenarchitektur)
+\begin{itemize}[nosep]
+    \item Ch. 10.1: Three utility categories (INU/KNU/IDN)
+    \item Ch. 10.2: The six FEPSDE dimensions
+    \item Ch. 10.3: The 144-component structure
+\end{itemize}
+
+\textbf{Secondary Chapters:}
+\begin{itemize}[nosep]
+    \item Ch. 6 (Reference Structure): Reference points by dimension
+    \item Ch. 10.4 (Loss Aversion): $\lambda_d$ by dimension
+    \item Ch. 10.6 (Inter-Category): INU$\times$KNU$\times$IDN complementarity
+    \item Ch. 10.7 (Context Modulation): $\Gamma(\Psi)$ context effects
+\end{itemize}
+
+\textbf{Cross-References to CORE:}
+\begin{itemize}[nosep]
+    \item Appendix AAA (CORE-WHO): Levels $L$ on which dimensions operate
+    \item Appendix B (CORE-HOW): $\gamma_{dd'}$ dimension complementarity
+    \item Appendix V (CORE-WHEN): $\Psi$ modulates dimension weights
+    \item Appendix BBB (CORE-WHERE): Dimension-specific parameters
+    \item \textbf{XVIII (LIT-FEHR-METHOD):} Exclusion Principle --- $\gamma = 0$ as null hypothesis
+\end{itemize}
+
+\end{tcolorbox}
+
+% --- Epistemic Status Tags ---
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=\textbf{Epistemic Status: Key Parameters}]
+
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}llcc@{}}
+\toprule
+\textbf{Parameter} & \textbf{Description} & \textbf{Value/Range} & \textbf{Tag} \\
+\midrule
+$d$ & Number of FEPSDE dimensions & 6 & [THR] \\
+144 & Total components & $3 \times 2 \times 6 \times 4$ & [THR] \\
+$\lambda_F$ & Financial loss aversion & 2.0--2.5 & [EMP] \\
+$\lambda_E$ & Emotional loss aversion & 1.5--2.0 & [EMP] \\
+$\lambda_P$ & Physical loss aversion & 2.5--3.0 & [EMP] \\
+$\lambda_S$ & Social loss aversion & 1.8--2.2 & [EMP] \\
+$\lambda_D$ & Digital loss aversion & 1.2--1.5 & [LLM] \\
+$\lambda_{Eco}$ & Ecological loss aversion & 1.0--1.3 & [LLM] \\
+\addlinespace
+\multicolumn{4}{@{}l}{\textit{Axiom counts:}} \\
+INU axioms & Individual utility & 59 & [THR] \\
+KNU axioms & Collective utility & 49 & [THR] \\
+IDN axioms & Identity utility & 35 & [THR] \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.5em}
+\textbf{Tag Legend:} [EMP] = Empirically validated; [THR] = Theoretically derived;
+[LLM] = LLM Monte Carlo estimated
+
+\end{tcolorbox}
+
+% --- Bibliography Reference ---
+\noindent\textbf{Full citations:} See \texttt{bibliography/bcm\_master.bib} \\
+\textbf{Key sources:} Kahneman \& Tversky (1979); Fehr \& Schmidt (1999); Akerlof \& Kranton (2000)
+
+\vspace{1em}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The 144-Component Structure}
+\label{sec:app-c-structure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{cross-reference}
+\textbf{Chapter Reference:} See Chapter~\ref{sec:welfare-fepsde}, 
+Section~\ref{subsec:10-3-structure} for conceptual introduction.
+\end{cross-reference}
+
+\subsection{Dimensional Decomposition}
+
+The complete utility space consists of 144 distinct components, arising from 
+four orthogonal dimensions:
+
+\begin{table}[htbp]
+\centering
+\caption{The Four Dimensions of Utility Space}
+\label{tab:app-c-dimensions}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Dimension} & \textbf{Symbol} & \textbf{Values} & \textbf{Count} \\
+\midrule
+Utility Category & $i$ & INU, KNU, IDN & 3 \\
+Valence & $v$ & Gain ($G$), Pain ($P$) & 2 \\
+FEPSDE Dimension & $d$ & F, E, P, S, D, Eco & 6 \\
+Time Horizon & $t$ & Instant, Short, Medium, Long & 4 \\
+\midrule
+\multicolumn{3}{l}{\textbf{Total Components}} & $\mathbf{3 \times 2 \times 6 \times 4 = 144}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Component Notation}
+
+Each of the 144 components is uniquely identified:
+
+\begin{equation}
+X^i_{d,t} \quad \text{where} \quad 
+\begin{cases}
+X \in \{G, P\} & \text{(Gain or Pain)} \\
+i \in \{\text{INU}, \text{KNU}, \text{IDN}\} & \text{(Utility Category)} \\
+d \in \{F, E, P, S, D, \text{Eco}\} & \text{(FEPSDE Dimension)} \\
+t \in \{0, 1, 2, 3\} & \text{(Time Horizon)}
+\end{cases}
+\end{equation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Core Theory: Meta-Axiom U-M0 (Universal Utility Structure)}
+\label{sec:app-c-meta-axiom}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{cross-reference}
+\textbf{Chapter Reference:} See Chapter~\ref{sec:welfare-fepsde}, 
+Section~\ref{subsec:10-1-categories} for conceptual foundations.
+\end{cross-reference}
+
+\subsection{The Meta-Axiom}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black, 
+    title=\textbf{META-AXIOM U-M0: Universal Utility Structure}]
+
+\textbf{Statement:} All three utility categories (INU, KNU, IDN) follow identical 
+mathematical structure. The difference lies not in the formula, but exclusively 
+in the calculation of parameters.
+
+\begin{equation}
+\boxed{
+U^{i} = \sum_{d \in \mathcal{D}} \sum_{t=0}^{3} \delta^{i}_{d}(t) \cdot 
+\left[ G^{i}_{d,t} - \lambda^{i}_{d} \cdot P^{i}_{d,t} \right]
+}
+\label{eq:meta-axiom}
+\end{equation}
+
+\textbf{where:}
+\begin{itemize}
+\item $i \in \{\text{INU}, \text{KNU}, \text{IDN}\}$: utility category
+\item $d \in \mathcal{D} = \{F, E, P, S, D, Eco\}$: FEPSDE dimension (6)
+\item $t \in \{0, 1, 2, 3\}$: time horizon (4)
+\item $G^{i}_{d,t}$: gain in category $i$, dimension $d$, time $t$
+\item $P^{i}_{d,t}$: pain in category $i$, dimension $d$, time $t$
+\item $\lambda^{i}_{d}$: loss aversion in category $i$, dimension $d$
+\item $\delta^{i}_{d}(t)$: discount factor in category $i$, dimension $d$, time $t$
+\end{itemize}
+
+\end{tcolorbox}
+
+\subsection{Structural Identity}
+
+\begin{equation}
+\text{Components per category} = 6 \times 4 \times 2 = 48
+\end{equation}
+\begin{equation}
+\text{Total components} = 3 \times 48 = 144
+\end{equation}
+
+\subsection{Axiom Hierarchy}
+
+\begin{table}[htbp]
+\centering
+\caption{Hierarchical Structure of Utility Axioms}
+\label{tab:axiom-hierarchy}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}clcl@{}}
+\toprule
+\textbf{Level} & \textbf{Designation} & \textbf{Count} & \textbf{Function} \\
+\midrule
+\textbf{0} & \textbf{Meta-Axiom (U-M0)} & \textbf{1} & \textbf{Master structure for all $i$} \\
+\midrule
+1 & INU-Axioms (INU-A0...A57) & 59 & Parameter calculation for $U^{INU}$ \\
+1 & KNU-Axioms (KNU-A1...A65) & 65 & Parameter calculation for $U^{KNU}$ \\
+1 & IDN-Axioms (IDN-A1...A94) & 95 & Parameter calculation for $U^{IDN}$ \\
+\midrule
+& \textbf{Total Axioms} & \textbf{220} & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The Three Utility Categories: Overview}
+
+\begin{table}[htbp]
+\centering
+\caption{The Three Utility Categories}
+\label{tab:app-c-three-categories}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{}clll@{}}
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Core Question} & \textbf{Reference Point Source} \\
+\midrule
+$U^{INU}$ & Individual Utility & ``What do I want for MYSELF?'' & Status quo, expectations, peers \\
+$U^{KNU}$ & Collective Utility & ``What do I want for US?'' & Group norm, fairness \\
+$U^{IDN}$ & Identity Utility & ``Who AM I?'' & Self-concept, identity standard \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Integration with Aggregation Levels (Appendix AAA)}
+\label{sec:app-c-aaa-integration}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, 
+    title=Critical Integration: Appendix C $\times$ Appendix AAA]
+\textbf{Appendix C and Appendix AAA are orthogonal but interdependent:}
+\begin{itemize}[nosep]
+\item \textbf{Appendix C} defines the \textit{horizontal} structure: utility \textbf{dimensions} (FEPSDE)
+\item \textbf{Appendix AAA} defines the \textit{vertical} structure: aggregation \textbf{levels} ($L = 0, 1, 2, ..., \infty$)
+\end{itemize}
+
+Together they form the complete utility space: $U^L_d$ --- utility at level $L$ in dimension $d$.
+\end{tcolorbox}
+
+\subsection{Why Level Structure Matters for FEPSDE}
+
+Every utility component defined in this appendix implicitly carries a \textbf{level index}. 
+When we write $U_F$ (Financial utility), we actually mean $U^L_F$ --- Financial utility 
+\textit{at some level $L$}.
+
+\subsubsection{Theoretical Justification for Level-Dimension Integration}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black, 
+    title=Why AAA $\times$ C Is Theoretically Necessary]
+
+The integration of Appendix AAA (Levels) with Appendix C (FEPSDE Dimensions) is not 
+merely a notational convenience---it is \textbf{theoretically required} for five reasons:
+
+\paragraph{Reason 1: Avoiding the Aggregation Fallacy.}
+
+Without level specification, statements like ``Financial utility increased'' are 
+ambiguous and potentially fallacious:
+\begin{itemize}[nosep]
+\item GDP (national $U^6_F$) can rise while median individual income ($U^0_F$) falls
+\item Family welfare ($U^1_E$) can improve while individual members suffer ($U^0_E$)
+\item Organizational profit ($U^3_F$) does not imply employee financial welfare ($U^0_F$)
+\end{itemize}
+
+The ecological fallacy (Robinson, 1950) and Simpson's paradox demonstrate that 
+aggregate patterns need not reflect individual patterns. Level indices make this explicit.
+
+\paragraph{Reason 2: Explaining Cross-Level Trade-offs.}
+
+Many real-world dilemmas involve trade-offs \textit{between levels within the same dimension}:
+\begin{itemize}[nosep]
+\item \textbf{Financial}: Individual tax burden ($U^0_F \downarrow$) vs. national investment ($U^6_F \uparrow$)
+\item \textbf{Ecological}: Individual consumption ($U^0_{Eco} \uparrow$) vs. global sustainability ($U^{\infty}_{Eco} \downarrow$)
+\item \textbf{Social}: Family loyalty ($U^1_S$) vs. organizational commitment ($U^3_S$)
+\end{itemize}
+
+Without $U^L_d$ notation, these trade-offs are invisible.
+
+\paragraph{Reason 3: Level-Specific Parameter Variation.}
+
+Behavioral parameters vary systematically by level:
+\begin{itemize}[nosep]
+\item \textbf{Loss aversion} ($\lambda$): Individuals show $\lambda \approx 2.25$ (Kahneman \& Tversky, 1979); 
+      organizations show lower loss aversion; nations show extreme loss aversion for territory
+\item \textbf{Discount rates} ($\delta$): Individuals discount hyperbolically; organizations use 
+      market rates; nations should (but often don't) use near-zero rates for long-term policy
+\item \textbf{Dimension weights} ($\omega_d$): Social dimension may dominate at tribal level ($L=2$) 
+      but financial dimension dominates at organizational level ($L=3$)
+\end{itemize}
+
+These are not anomalies---they are \textbf{systematic} level effects requiring explicit modeling.
+
+\paragraph{Reason 4: The Endogeneity of Levels.}
+
+Appendix AAA (Axiom AL-2) establishes that levels are \textit{endogenous}---they exist 
+because of shared identity (IDN) or collective utility (KNU). This means:
+\begin{itemize}[nosep]
+\item The \textit{same} FEPSDE dimensions apply at each level
+\item But the \textit{existence} of the level depends on IDN/KNU
+\item And the \textit{aggregation} from lower levels follows specific rules
+\end{itemize}
+
+FEPSDE (Appendix C) provides the dimensions; AAA provides the levels and aggregation rules.
+
+\paragraph{Reason 5: Super-Additive Cooperation Across Levels.}
+
+Recent research (Efferson, Bernhard, Fischbacher \& Fehr, 2024) demonstrates that 
+cooperation mechanisms are \textbf{super-additive} across levels: neither individual-level 
+repeated interactions nor group-level competition alone sustains cooperation, but their 
+\textit{combination} does.
+
+This directly implies that welfare analysis must consider multiple levels simultaneously---exactly 
+what the $U^L_d$ framework provides.
+
+\end{tcolorbox}
+
+\paragraph{The Problem with Level-Free Notation.}
+
+Consider ``Financial utility'' ($U_F$). Without specifying the level, this is ambiguous:
+
+\begin{itemize}[nosep]
+\item $U^0_F$: Individual income, wealth, consumption
+\item $U^1_F$: Family/household financial resources
+\item $U^2_F$: Tribal/community economic resources
+\item $U^3_F$: Organizational revenue, profit
+\item $U^6_F$: National GDP, sovereign wealth
+\item $U^{\infty}_F$: Global economic welfare
+\end{itemize}
+
+These are \textit{different quantities} with different measurement scales, different 
+determinants, and different policy implications.
+
+\paragraph{The Complete Notation.}
+
+The fully specified utility component is:
+\begin{equation}
+U^L_{i,d,v,t}
+\end{equation}
+where:
+\begin{itemize}[nosep]
+\item $L$: Level (from Appendix AAA)
+\item $i$: Category (INU, KNU, IDN)
+\item $d$: Dimension (F, E, P, S, D, Eco)
+\item $v$: Valence (Gain, Pain)
+\item $t$: Time horizon (Instant, Short, Medium, Long)
+\end{itemize}
+
+\subsection{The Level-Dimension Matrix}
+
+Combining levels (AAA) with dimensions (C) yields a matrix structure:
+
+\begin{equation}
+\mathbf{U} = \begin{pmatrix}
+U^0_F & U^0_E & U^0_P & U^0_S & U^0_D & U^0_{Eco} \\
+U^1_F & U^1_E & U^1_P & U^1_S & U^1_D & U^1_{Eco} \\
+U^2_F & U^2_E & U^2_P & U^2_S & U^2_D & U^2_{Eco} \\
+\vdots & \vdots & \vdots & \vdots & \vdots & \vdots \\
+U^{\infty}_F & U^{\infty}_E & U^{\infty}_P & U^{\infty}_S & U^{\infty}_D & U^{\infty}_{Eco}
+\end{pmatrix}
+\end{equation}
+
+\begin{table}[htbp]
+\centering
+\caption{FEPSDE Dimensions at Different Levels}
+\label{tab:app-c-level-dimension}
+\renewcommand{\arraystretch}{1.3}
+\small
+\begin{tabular}{@{}clll@{}}
+\toprule
+\textbf{Level} & \textbf{Example Entity} & \textbf{Financial ($U^L_F$)} & \textbf{Social ($U^L_S$)} \\
+\midrule
+$L = 0$ & Individual & Personal income & Personal relationships \\
+$L = 1$ & Family & Household income & Family bonds \\
+$L = 2$ & Tribe/Community & Community resources & Social capital \\
+$L = 3$ & Organization & Revenue, profit & Organizational culture \\
+$L = 4$ & Network & Network value & Network effects \\
+$L = 6$ & Nation & GDP & National cohesion \\
+$L = \infty$ & All sentient beings & Global wealth & Universal solidarity \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Aggregation Rules: From AAA to C}
+
+Appendix AAA specifies how utilities aggregate \textit{across levels}. This applies 
+to \textit{each dimension} defined in Appendix C:
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black, 
+    title=Dimension-Specific Aggregation (from AAA Axiom AL-3)]
+For each FEPSDE dimension $d \in \{F, E, P, S, D, Eco\}$:
+
+\begin{equation}
+U^L_d = \sum_{i \in M^L} \omega^L_{i,d} \cdot U^{L-1}_{i,d} + \sum_{i < j} \gamma^L_{ij,d} \cdot U^{L-1}_{i,d} \cdot U^{L-1}_{j,d}
+\end{equation}
+
+where:
+\begin{itemize}[nosep]
+\item $M^L$: Membership set of level $L$ (defined in AAA)
+\item $\omega^L_{i,d}$: Weight of member $i$ in dimension $d$ at level $L$
+\item $\gamma^L_{ij,d}$: Complementarity between members $i$ and $j$ in dimension $d$
+\end{itemize}
+\end{tcolorbox}
+
+\paragraph{Key Insight: Dimension-Specific Complementarities.}
+
+The complementarity parameter $\gamma^L_{ij,d}$ can vary by dimension:
+
+\begin{itemize}[nosep]
+\item \textbf{Financial}: Family members may have $\gamma^1_{ij,F} > 0$ (shared resources benefit all)
+\item \textbf{Social}: Tribal members have strong $\gamma^2_{ij,S} > 0$ (social capital is superadditive)
+\item \textbf{Ecological}: Nations may have $\gamma^6_{ij,Eco} < 0$ (environmental competition)
+\end{itemize}
+
+\subsection{Level-Specific Parameters}
+
+Many parameters defined in Appendix C should be understood as level-specific:
+
+\begin{table}[htbp]
+\centering
+\caption{Level-Specific Parameters}
+\label{tab:app-c-level-params}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Level-Free (C)} & \textbf{Level-Specific (AAA $\times$ C)} \\
+\midrule
+Loss aversion & $\lambda_d$ & $\lambda^L_d$ \\
+Discount factor & $\delta_d$ & $\delta^L_d$ \\
+Dimension weight & $\omega_d$ & $\omega^L_d$ \\
+Complementarity & $\gamma_{dd'}$ & $\gamma^L_{dd'}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Example: Level-Specific Loss Aversion.}
+
+Loss aversion in the Financial dimension may differ by level:
+
+\begin{itemize}[nosep]
+\item $\lambda^0_F \approx 2.25$: Individual loss aversion (Kahneman \& Tversky)
+\item $\lambda^3_F \approx 1.5$: Organizational loss aversion (less emotional)
+\item $\lambda^6_F \approx 3.0$: National loss aversion (territory, sovereignty)
+\end{itemize}
+
+\subsection{KNU and IDN as Level-Defining}
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black, 
+    title=Critical Connection: KNU/IDN Define Levels (AAA Axiom AL-2)]
+Appendix C defines KNU (Collective Utility) and IDN (Identity Utility) as 
+utility categories. But Appendix AAA reveals a deeper role:
+
+\begin{equation}
+\boxed{\text{Level } L \text{ exists} \iff \exists \, IDN^L \lor \exists \, KNU^L}
+\end{equation}
+
+\textbf{Implication}: KNU and IDN do not merely \textit{contribute to} utility at 
+pre-existing levels. They \textit{define which levels exist}.
+
+\begin{itemize}[nosep]
+\item A ``family'' (Level 1) exists because family members share identity ($IDN^1$) 
+      or collective goals ($KNU^1$)
+\item A ``tribe'' (Level 2) exists because tribe members share identity ($IDN^2$) 
+      or collective welfare ($KNU^2$)
+\item If $IDN^L = 0$ and $KNU^L = 0$, then Level $L$ does not exist for that group
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{Complete Structure: The $U^L_d$ Framework}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, 
+    title=The Complete EBF Utility Structure]
+
+Combining Appendix C (dimensions) with Appendix AAA (levels):
+
+\begin{equation}
+\boxed{
+U^{total} = \sum_{L=0}^{\infty} \alpha^L(\Psi) \cdot \left[ \sum_{d \in FEPSDE} \omega^L_d \cdot U^L_d + \sum_{d < d'} \gamma^L_{dd'} \cdot U^L_d \cdot U^L_{d'} \right]
+}
+\end{equation}
+
+where:
+\begin{itemize}[nosep]
+\item $\alpha^L(\Psi)$: Level salience given context $\Psi$ (from AAA, Axiom AL-6)
+\item $\omega^L_d$: Weight of dimension $d$ at level $L$
+\item $\gamma^L_{dd'}$: Complementarity between dimensions $d$ and $d'$ at level $L$
+\item $U^L_d$: Utility in dimension $d$ at level $L$ (computed recursively per AAA)
+\end{itemize}
+
+The base case (individual level):
+\begin{equation}
+U^0_d = \sum_t \delta^t \cdot [G_{d,t} - \lambda_d \cdot P_{d,t}]
+\end{equation}
+\end{tcolorbox}
+
+\subsection{Cross-Reference Summary}
+
+\begin{table}[htbp]
+\centering
+\caption{Appendix C $\leftrightarrow$ Appendix AAA Interface}
+\label{tab:app-c-aaa-interface}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}p{6cm}p{6cm}@{}}
+\toprule
+\textbf{What C Provides to AAA} & \textbf{What AAA Provides to C} \\
+\midrule
+FEPSDE dimension definitions & Level structure ($L = 0, 1, ..., \infty$) \\
+Dimension-specific parameters ($\lambda_d$, $\delta_d$) & Aggregation rules across levels \\
+Within-dimension complementarity ($\gamma_{dd'}$) & Membership sets ($M^L$) \\
+INU/KNU/IDN category structure & Level salience function $\alpha^L(\Psi)$ \\
+144-component decomposition & Level-specific weights ($\omega^L_i$) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key Principle}: When reading Appendix C, implicitly add a level index. 
+When reading Appendix AAA, implicitly add dimension indices. The complete 
+specification requires both: $U^L_d$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{INU: Individual Utility (59 Axioms)}
+\label{sec:app-c-inu}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{cross-reference}
+\textbf{Chapter Reference:} See Chapter~\ref{sec:welfare-fepsde}, 
+Section~\ref{subsec:10-1-categories} for INU definition.
+
+\textbf{Level Reference:} INU operates primarily at Level 0 (Individual). 
+See Appendix AAA, Section~\ref{sec:aaa-bcm-connection} for level integration.
+\end{cross-reference}
+
+\subsection{INU Definition}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, 
+    title=Individual Utility (INU)]
+
+\textbf{Core Question:} ``What do I want for MYSELF?''
+
+\textbf{Formula (from Meta-Axiom U-M0):}
+\begin{equation}
+U^{INU} = \sum_{d \in \mathcal{D}} \sum_{t=0}^{3} \delta^{INU}_{d}(t) \cdot 
+\left[ G^{INU}_{d,t} - \lambda^{INU}_{d} \cdot P^{INU}_{d,t} \right]
+\end{equation}
+
+\textbf{Reference Point Formation:}
+\begin{equation}
+R^{INU}_{d,t} = \alpha_{sq} \cdot x^{status\_quo}_{d,t} + 
+               \alpha_{exp} \cdot x^{expectation}_{d,t} + 
+               \alpha_{soc} \cdot x^{social\_comparison}_{d,t}
+\end{equation}
+
+\textbf{Key Properties:}
+\begin{itemize}
+\item Self-regarding: Only considers consequences for the individual
+\item Reference-dependent: Evaluated relative to personal reference points
+\item Loss-averse: $\lambda^{INU}_d > 1$ for all dimensions
+\end{itemize}
+
+\end{tcolorbox}
+
+%-----------------------------------------------------------------------
+\subsection{Complete INU Axiom Table (59 Axioms)}
+%-----------------------------------------------------------------------
+
+\begin{longtable}{@{}llp{4.5cm}p{4.5cm}@{}}
+\caption{Complete INU Axiom System (59 Axioms)} 
+\label{tab:inu-axioms-complete} \\
+\toprule
+\textbf{Axiom} & \textbf{Title} & \textbf{Core Formula} & \textbf{Reference} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{c}{\tablename\ \thetable{} -- continued} \\
+\toprule
+\textbf{Axiom} & \textbf{Title} & \textbf{Core Formula} & \textbf{Reference} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{Continued on next page...} \\
+\endfoot
+\bottomrule
+\endlastfoot
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 1: Basis (A0--A7)}}} \\
+\addlinespace
+INU-A0 & Master Function & $V_{total} = V_{base} + \sum \omega [G - \lambda P] + C$ & Fehr \& Schmidt (1999); Kahneman \& Tversky (1979) \\
+INU-A1 & FEPSDE Structure & $\sum_{d \in \{F,E,P,S,D,Eco\}} \omega_d U_d$ & Lancaster (1966); Thaler (1985) \\
+INU-A2 & Loss Aversion & $U = G - \lambda P, \quad \lambda > 1$ & Kahneman \& Tversky (1979); Tversky \& Kahneman (1991) \\
+INU-A3 & Baseline Value & $V_{base}(i)$ (value of ``doing'') & Deci \& Ryan (1985); Scitovsky (1976) \\
+INU-A4 & Intrinsic Value & $V_{intr}(Task)$ & Bénabou \& Tirole (2003); Frey (1997) \\
+INU-A5 & Extrinsic Value & $V_{extr}(Reward)$ & Gneezy \& Rustichini (2000); Lazear (2000) \\
+INU-A6 & Complementarity & $\kappa(V_{intr}, V_{extr}) \neq 0$ & Milgrom \& Roberts (1990/1995); Bowles \& Polania-Reyes (2012) \\
+INU-A7 & Reference Points & $U = f(x - R)$ & Kőszegi \& Rabin (2006); Kahneman (1992) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 2: Temporal (A8, A12, A13, A16)}}} \\
+\addlinespace
+INU-A8 & Time Valuation & $\sum \beta \delta^t U_t$ & Laibson (1997); O'Donoghue \& Rabin (1999) \\
+INU-A12 & Dynamic Adaptation & $\dot{N} = \alpha(\text{Feedback} - N)$ & Sutton \& Barto (1998); Rescorla-Wagner (1972) \\
+INU-A13 & Memory (Decay) & $M_t = \sum \rho^k U_{t-k}$ & Mullainathan (2002); Kahneman et al. (1993) \\
+INU-A16 & Life Phases & $U(t) = f(\text{LifeCyclePhase})$ & Modigliani (1954); Heckman (2006) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 3: Uncertainty (A9--A11)}}} \\
+\addlinespace
+INU-A9 & Risk \& Uncertainty & $U \cdot (1 - \phi_{risk} - \phi_{amb})$ & Ellsberg (1961); Von Neumann-Morgenstern (1944) \\
+INU-A10 & Motivated Beliefs & $B^M = B^R (1 - \text{PainAvoid})$ & Bénabou \& Tirole (2016); Epley \& Gilovich (2016) \\
+INU-A11 & Blind Spots & $U_{eff} = U (1 - \phi_{Blind})$ & Gabaix (2014); Bazerman \& Chugh (2006) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 4: Interface (A14)}}} \\
+\addlinespace
+INU-A14 & Willingness Interface & $W(t) = f(N_{ind}(t), \theta(t), C_{context})$ & McFadden (1974); Ajzen (1991) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 5: Cognition (A15, A32, A36, A42)}}} \\
+\addlinespace
+INU-A15 & Salience & $Salience = f(Awareness)$ & Bordalo, Gennaioli, Shleifer (2012/2013) \\
+INU-A32 & Bounded Attention & $\omega_{eff} = \omega \cdot \text{AttShare}$ & Simon (1955); Gabaix (2019) \\
+INU-A36 & Bias Corrections & $U' = U (1 + \theta_{bias})$ & Tversky \& Kahneman (1974); DellaVigna (2009) \\
+INU-A42 & Meta-Cognition & $U_{meta} \propto \text{Consistency}(\text{Self}, \text{Action})$ & Festinger (1957); Bénabou \& Tirole (2002) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 6: Context (A17, A18, A21)}}} \\
+\addlinespace
+INU-A17 & Gender Differentiation & $U_{d,gender} = U_d \cdot \gamma_{gender}$ & Croson \& Gneezy (2009); Niederle \& Vesterlund (2007) \\
+INU-A18 & Cultural Context & $U_{d,cult} = f(C_{culture}, I_{inst})$ & Henrich et al. (2010); Hofstede (1980/2001) \\
+INU-A21 & Intersectionality & $U_{eff} = f(G \times A \times SES \times E)$ & Crenshaw (1989); Davis (2008) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 7: Digital (A19, A24, A40, A43)}}} \\
+\addlinespace
+INU-A19 & Digital Utility Axis & $U_{dig} \in \{Priv, Conn, Rep\}$ & Goldfarb \& Tucker (2019); Acemoglu (2021) \\
+INU-A24 & Tech Disruption & $U_{t+1} = U_t + \text{Shock}$ & Christensen (1997); Schumpeter (1942) \\
+INU-A40 & Digital Amplification & $U_{dig} (1 + \alpha \cdot \text{Feedback})$ & Zuboff (2019); Sunstein (2001) \\
+INU-A43 & Digital Addiction & $U + \alpha \text{Reward} - \beta \text{Cost}$ & Allcott, Gentzkow et al. (2022); Bernheim \& Rangel (2004) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 8: Behavior (A20, A33, A41)}}} \\
+\addlinespace
+INU-A20 & Habit Dampening & $U_{eff} = U \cdot (1-H)$ & Becker \& Murphy (1988); Pollak (1970) \\
+INU-A33 & Self-Control & $\beta U_{long} + (1-\beta)U_{short}$ & Fudenberg \& Levine (2006); Thaler \& Shefrin (1981) \\
+INU-A41 & Path Dependence & $U_{t+1} = U_t + \text{PastChoices}$ & David (1985); Arthur (1994) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 9: Stress (A22)}}} \\
+\addlinespace
+INU-A22 & Stress \& Regulation & $P_{eff} = P \cdot (1-Cope)(1-Res)$ & Lazarus \& Folkman (1984); Resilience literature \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 10: Social/Moral (A23, A37, A38)}}} \\
+\addlinespace
+INU-A23 & Social Comparison & $U = f(x_{own} - x_{peer})$ & Veblen (1899); Fehr \& Schmidt (1999) \\
+INU-A37 & Moral Preferences & $U_{moral} = \epsilon_{alt} U_{other} + \epsilon_{rec} \text{Fair}$ & Fehr \& Gächter (2000/2002); Andreoni (1990) \\
+INU-A38 & Identity Investment & $U_{ID} \propto \text{FutureSelf}$ & Akerlof \& Kranton (2000/2010); Bénabou \& Tirole (2011) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 11: Side Effects (A25, A26)}}} \\
+\addlinespace
+INU-A25 & Collateral Damage & $P_{total} = P + \eta^- \cdot SE^-$ & Externalities literature \\
+INU-A26 & Collateral Beauty & $G_{total} = G + \eta^+ \cdot SE^+$ & Serendipity literature \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 12: Neuro/RT (A27--A29, A39)}}} \\
+\addlinespace
+INU-A27 & Reaction Time & $RT \propto 1/|\Delta U|$ & Krajbich et al. (2010); Fehr \& Rangel (2011) \\
+INU-A28 & Preference Reconstruction & $\Delta U \propto -E[RT]$ & Konovalov \& Krajbich (2019) \\
+INU-A29 & Relative RT & $RelRT = RT / (\text{Base} \cdot \text{Diff})$ & Chabris et al. (2009); Alós-Ferrer (2018) \\
+INU-A39 & Noisy Preferences & $U_{obs} = U_{true} + \epsilon$ & McFadden (1974); Hey \& Orme (1994) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 13: Emotions (A30)}}} \\
+\addlinespace
+INU-A30 & Emotional Valence & $\mathcal{E} = \pi_{pride} Pride - \pi_{shame} Shame - \pi_{guilt} Guilt$ & Akerlof \& Kranton; Bowles \& Gintis \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 14: Systemic (A31, A34)}}} \\
+\addlinespace
+INU-A31 & Systemic Feedback & $C_{t+1} = h(\sum_i a_i(t), C_t)$ & Reflexivity literature; Soros (1987) \\
+INU-A34 & Spillover Effects & $U_d^{total} = U_d + \sum_{j \neq d} \tau_{jd} U_j$ & Cross-domain transfer \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 15: Foundation (A35)}}} \\
+\addlinespace
+INU-A35 & Physiological Foundation & $\Phi_{phys} = \sigma(P_{phys} - \theta)$ & Maslow (1943); Basic needs \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 16: Complementarity (A44--A57)}}} \\
+\addlinespace
+A44--A57 & Inter-dimensional Compl. & $C_{d_1,d_2} = \sigma U_{d_1} U_{d_2}$ & Milgrom \& Roberts (1990); Topkis (1998) \\
+
+\end{longtable}
+
+%-----------------------------------------------------------------------
+\subsection{INU Parameter Calculation}
+%-----------------------------------------------------------------------
+
+The 59 INU axioms define how the four parameters ($G$, $P$, $\lambda$, $\delta$) 
+are calculated.
+
+\subsubsection{Parameter 1: Gain Calculation ($G^{INU}_{d,t}$)}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!50!black]
+\begin{equation}
+\boxed{
+G^{INU}_{d,t} = \left[ V_{base,d} + V_{intr,d} + V_{extr,d} + \kappa_d V_{intr} V_{extr} + (x_{d,t} - R^{INU}_{d,t}) \right]^{+} \cdot \Omega^G_d
+}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Gain Modulator:}
+\begin{equation}
+\Omega^G_d = \underbrace{(1 - \phi_{risk} - \phi_{amb})}_{\text{A9}} \cdot 
+             \underbrace{(1 - \phi_{motiv})}_{\text{A10}} \cdot 
+             \underbrace{(1 - \phi_{blind})}_{\text{A11}} \cdot 
+             \underbrace{S_d}_{\text{A15}} \cdot 
+             \underbrace{(1 - H_d)}_{\text{A20}} \cdot 
+             \underbrace{\alpha_d}_{\text{A32}}
+\end{equation}
+
+\textbf{Contributing Axioms:} A3, A4, A5, A6, A7, A9, A10, A11, A15, A20, A23, A26, A32, A34
+
+\subsubsection{Parameter 2: Pain Calculation ($P^{INU}_{d,t}$)}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!50!black]
+\begin{equation}
+\boxed{
+P^{INU}_{d,t} = \left[ R^{INU}_{d,t} - x_{d,t} \right]^{+} \cdot \Omega^P_d + \mathcal{E}^{-}_d
+}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Pain Modulator:}
+\begin{equation}
+\Omega^P_d = \underbrace{(1 - Cope_d) \cdot (1 - Res_d)}_{\text{A22: Stress buffer}}
+\end{equation}
+
+\textbf{Contributing Axioms:} A7, A9, A22, A25, A30, A34
+
+\subsubsection{Parameter 3: Loss Aversion ($\lambda^{INU}_{d}$)}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!50!black]
+\begin{equation}
+\boxed{
+\lambda^{INU}_{d} = \bar{\lambda}_d \cdot \Lambda_d(\Psi, Context)
+}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Context Modulator:}
+\begin{equation}
+\Lambda_d = \underbrace{\gamma_{gender,d}}_{\text{A17}} \cdot 
+            \underbrace{\gamma_{culture,d}}_{\text{A18}} \cdot 
+            \underbrace{f(G \times A \times S \times E)_d}_{\text{A21}} \cdot
+            \underbrace{\gamma_{lifecycle,d}}_{\text{A16}}
+\end{equation}
+
+\textbf{Contributing Axioms:} A2, A16, A17, A18, A21
+
+\subsubsection{Parameter 4: Discounting ($\delta^{INU}_{d}(t)$)}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!50!black]
+\begin{equation}
+\boxed{
+\delta^{INU}_{d}(t) = \beta \cdot \bar{\delta}_d^{\,t} \cdot \Delta_d(t, Context)
+}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Contributing Axioms:} A8, A12, A13, A16, A33, A41
+
+%-----------------------------------------------------------------------
+\subsection{INU-Gain Components (24 cells)}
+%-----------------------------------------------------------------------
+
+\begin{table}[htbp]
+\centering
+\caption{INU-Gain: Individual Utility Gains by Dimension and Time}
+\label{tab:app-c-inu-gain}
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lp{2.8cm}p{2.8cm}p{2.8cm}p{2.8cm}@{}}
+\toprule
+\textbf{Dim} & \textbf{Instant ($t=0$)} & \textbf{Short ($t=1$)} & \textbf{Medium ($t=2$)} & \textbf{Long ($t=3$)} \\
+\midrule
+F & Windfall, tip & Bonus, refund & Promotion, raise & Wealth accumulation \\
+E & Joy, delight & Satisfaction & Fulfillment & Meaning, purpose \\
+P & Energy burst & Recovery & Fitness gains & Long-term health \\
+S & Compliment & Recognition & Status advancement & Legacy, reputation \\
+D & Quick access & Efficiency gain & Digital competence & Digital capital \\
+Eco & Nature moment & Clean environment & Sustainable living & Planet stewardship \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%-----------------------------------------------------------------------
+\subsection{INU-Pain Components (24 cells)}
+%-----------------------------------------------------------------------
+
+\begin{table}[htbp]
+\centering
+\caption{INU-Pain: Individual Utility Losses by Dimension and Time}
+\label{tab:app-c-inu-pain}
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lp{2.8cm}p{2.8cm}p{2.8cm}p{2.8cm}@{}}
+\toprule
+\textbf{Dim} & \textbf{Instant ($t=0$)} & \textbf{Short ($t=1$)} & \textbf{Medium ($t=2$)} & \textbf{Long ($t=3$)} \\
+\midrule
+F & Loss, theft & Expense, bill & Debt burden & Poverty, destitution \\
+E & Frustration & Stress, worry & Anxiety, burnout & Depression, despair \\
+P & Pain, injury & Illness, fatigue & Chronic condition & Disability, mortality \\
+S & Embarrassment & Rejection & Social isolation & Loneliness, ostracism \\
+D & Glitch, outage & Digital overload & Tech dependency & Digital exclusion \\
+Eco & Pollution exposure & Environmental damage & Resource depletion & Climate catastrophe \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{KNU: Collective Utility}
+\label{sec:app-c-knu}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{cross-reference}
+\textbf{Chapter Reference:} See Chapter~\ref{sec:welfare-fepsde}, 
+Section~\ref{subsec:10-1-categories} for KNU definition.
+
+\textbf{Level Reference:} KNU operates at all levels $L \geq 1$. Critically, 
+KNU \textit{defines} which levels exist (see Appendix AAA, Axiom AL-2: 
+``Level $L$ exists $\iff \exists IDN^L \lor \exists KNU^L$'').
+\end{cross-reference}
+
+\subsection{KNU Definition}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black, 
+    title=Collective Utility (KNU)]
+
+\textbf{Core Question:} ``What do I want for US?''
+
+\textbf{Level-Specific Notation:} $U^{KNU,L}$ denotes collective utility at level $L$.
+The ``US'' in ``What do I want for US?'' is defined by the level:
+\begin{itemize}[nosep]
+\item $L = 1$: US = my family
+\item $L = 2$: US = my tribe/community
+\item $L = 3$: US = my organization
+\item $L = 6$: US = my nation
+\item $L = \infty$: US = all sentient beings
+\end{itemize}
+
+\textbf{Formula (from Meta-Axiom U-M0):}
+\begin{equation}
+U^{KNU} = \sum_{d \in \mathcal{D}} \sum_{t=0}^{3} \delta^{KNU}_{d}(t) \cdot 
+\left[ G^{KNU}_{d,t} - \lambda^{KNU}_{d} \cdot P^{KNU}_{d,t} \right]
+\end{equation}
+
+\textbf{Reference Point Formation:}
+\begin{equation}
+R^{KNU}_{d,t} = \alpha_{norm} \cdot x^{group\_norm}_{d,t} + 
+               \alpha_{fair} \cdot x^{fair\_distribution}_{d,t} + 
+               \alpha_{peer} \cdot x^{peer\_groups}_{d,t}
+\end{equation}
+
+\textbf{Key Properties:}
+\begin{itemize}
+\item Other-regarding: Considers consequences for the relevant group
+\item Fairness-weighted: Outcomes discounted by perceived unfairness
+\item Conditional: Strength depends on group salience and identification
+\end{itemize}
+
+\end{tcolorbox}
+
+%-----------------------------------------------------------------------
+\subsection{Complete KNU Axiom Table (65 Axioms)}
+%-----------------------------------------------------------------------
+
+\begin{longtable}{@{}llp{4.2cm}p{4.2cm}@{}}
+\caption{Complete KNU Axiom System (65 Axioms)} 
+\label{tab:knu-axioms-complete} \\
+\toprule
+\textbf{Axiom} & \textbf{Title} & \textbf{Core Formula} & \textbf{Reference} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{c}{\tablename\ \thetable{} -- continued} \\
+\toprule
+\textbf{Axiom} & \textbf{Title} & \textbf{Core Formula} & \textbf{Reference} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{Continued on next page...} \\
+\endfoot
+\bottomrule
+\endlastfoot
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 1: Basis (A1--A7)}}} \\
+\addlinespace
+KNU-A1 & FEPSDE Structure & $N_{kol} = \sum_{d} G_d^{kol}$ & Ostrom (1990); Olson (1965) \\
+KNU-A2 & Context Weights & $\sum \omega_d G_d^{kol}, \sum \omega = 1$ & Sandel (2012); Walzer (1983) \\
+KNU-A3 & Pain/Gain Separation & $W = \sum G - \sum P$ & Kahneman \& Tversky (1979) \\
+KNU-A4 & Asymmetry & $\partial W/\partial P > \partial W/\partial G$ & Loss aversion for public goods \\
+KNU-A5 & Complementarity & $\kappa_{PG} = 0$ (no mixing) & Thaler (1999) Mental Accounting \\
+KNU-A6 & Temporal Conditionality & $W_{tot} = \sum \beta_\tau U_\tau$ & Nordhaus (1994); Stern (2007) \\
+KNU-A7 & Uncertainty Modulation & $\beta_\tau = \beta^0(1 - U_{env})$ & Pindyck (2007); Weitzman (2009) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 2: Cooperation (A8--A9)}}} \\
+\addlinespace
+KNU-A8 & Belief-based Cooperation & $N_{kol} \propto (\rho_K + f(B^{eff}))$ & Fischbacher, Gächter, Fehr (2001) \\
+KNU-A9 & Actor Types & $\rho_K \in \{0, f(B), 1\}$ & Fehr \& Schmidt (1999); Kurzban \& Houser (2005) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 3: Dynamics (A10)}}} \\
+\addlinespace
+KNU-A10 & Life Changing Events & $\Delta U = LCE \cdot \theta$ & Taleb (2007); Scheffer et al. (2009) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 4: Goods Character (A11--A13)}}} \\
+\addlinespace
+KNU-A11 & Non-Excludability & $U_{ind} \ge 0$ if $N_{kol} > 0$ & Samuelson (1954) \\
+KNU-A12 & Non-Rivalry & $\partial U_i / \partial U_j = 0$ & Stiglitz (1999) \\
+KNU-A13 & Commons Rivalry & $\partial U_i / \partial U_j < 0$ & Hardin (1968); Ostrom (1990) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 5: FEPSDE Balances (A14--A19)}}} \\
+\addlinespace
+KNU-A14 & Social & $\gamma \cdot Coop - \delta \cdot Sanction$ & Coleman (1990); Putnam (2000) \\
+KNU-A15 & Financial & $\gamma \cdot Exist - \delta \cdot Tax$ & Pigou (1920); Mirrlees (1971) \\
+KNU-A16 & Psychological & $\gamma \cdot Trust - \delta \cdot Stress$ & Edmondson (1999) \\
+KNU-A17 & Physical & $\gamma \cdot Safety - \delta \cdot Reg$ & Hobbes (1651) \\
+KNU-A18 & Digital & $\gamma \cdot Access - \delta \cdot Surv$ & Zuboff (2019); Benkler (2006) \\
+KNU-A19 & Ecological & $\gamma \cdot Sust - \delta \cdot Restr$ & Daly (1990) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 6: Temporal/Systemic (A20--A25)}}} \\
+\addlinespace
+KNU-A20 & Cumulative Experience & $\int (G - P) e^{-\mu t}$ & Acemoglu et al. (2005) \\
+KNU-A21 & Intergenerational & $\sum \delta^g N(gen+g)$ & Rawls (1971) \\
+KNU-A22 & Identity Complementarity & $N \cdot (1 + \kappa \cdot IDN)$ & Akerlof \& Kranton (2000) \\
+KNU-A23 & Institutions & $f(N^0, Inst)$ & North (1990) \\
+KNU-A24 & Resilience & $N \cdot (1 - \varepsilon)$ & Holling (1973) \\
+KNU-A25 & Tipping Points & $\dot{N} = f(\dots) + \xi$ & Schelling (1978) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 7: Ethics/Governance (A26--A30)}}} \\
+\addlinespace
+KNU-A26 & Fairness & $\sum U_i - \phi \cdot Var(U_i)$ & Fehr \& Schmidt (1999); Rawls (1971) \\
+KNU-A27 & Ethics/Privacy & s.t. Fairness, Privacy & Sen (1999); Nissenbaum (2009) \\
+KNU-A28 & Transparency & $T(N)$ & Stiglitz (2002); Sunstein \\
+KNU-A29 & Bias Control & $Bias \le \epsilon$ & Banerjee \& Duflo (2011) \\
+KNU-A30 & Abuse Protection & $Protect(N)$ & Acemoglu \& Robinson (2012) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 8: Sanction/Enforcement (A31--A42)}}} \\
+\addlinespace
+KNU-A31 & Decentralized Punishment & $U - c$ (cost for punisher \& punished) & Fehr \& Gächter (2002) \\
+KNU-A32 & Centralized Punishment & $U - P_{inst} \cdot I_{acc}$ & Becker (1968); Polinsky \& Shavell (2000) \\
+KNU-A33 & Whistleblowing & $E[U] > E[C] \wedge Protect \ge \theta$ & Dyck, Morse, Zingales (2010) \\
+KNU-A34 & Preventive Conformity & $f(NormStrength, Legit)$ & Cialdini (1984); Bicchieri (2006) \\
+KNU-A35 & Institutional Quality & $Eff = f(Q, Acc, Fair)$ & Tyler (1990) \\
+KNU-A36 & Elite Role Model & $P(Conf) = f(Elite)$ & Acemoglu \& Robinson (2006) \\
+KNU-A37 & Positive Incentives & $U + r - c_r$ & Gneezy et al. (2011) \\
+KNU-A38 & Rehabilitation & $U_{post} = U_{norm}$ & Bénabou \& Tirole (2011) \\
+KNU-A39 & Inequality & $Impact(i) \neq Impact(j)$ & Piketty (2014); Glaeser et al. (2003) \\
+KNU-A40 & Wrongful Punishment & $Err > 0 \Rightarrow Trust \downarrow$ & Greif (1993); Fehr (Betrayal Aversion) \\
+KNU-A41 & Culture & $Form = f(Culture)$ & Henrich et al. (2006) \\
+KNU-A42 & Dynamic Adaptation & $Pun = f(DefectionRate)$ & Boyd \& Richerson (1992) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 9: Dark Triad (A43--A46)}}} \\
+\addlinespace
+KNU-A43 & Antisocial Punishment & $Pun_{anti} = Pun(1-Legit)(1-Coh)$ & Herrmann, Thöni, Gächter (2008) \\
+KNU-A44 & Dark Triad (Disposition) & $\Theta_{DT} = \alpha M + \beta N + \gamma P$ & Paulhus \& Williams (2002) \\
+KNU-A45 & Behavioral Indicator & $\Theta_{Beh} = \sum \beta_i v_i$ & Stern (2007); Simon (1996) \\
+KNU-A46 & Destruction Function & $P_{DTX} = P_{anti}(1+\Theta_{DT})(1+\Theta_{Beh})$ & FehrAdvice (2025) Synthesis \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 10: System Dynamics (A47--A50)}}} \\
+\addlinespace
+KNU-A47 & Cooperation Complementarity & $\partial U_i / \partial U_j > 0$ & Topkis (1998); Bulow et al. (1985) \\
+KNU-A48 & Feedback (Ind-Col) & $N_{t+1} = N_t + \eta \sum \Delta U_{ind}$ & Ostrom (2005) \\
+KNU-A49 & Norm Coherence & $Coh_{t+1} = Coh_t + \gamma(Legit - Pun_{anti})$ & Bicchieri (2006); Sunstein (1996) \\
+KNU-A50 & Systemic Equilibrium & $Stab = 1 - (w_1|\Delta N| + w_2|\Delta Coh| + w_3|\Delta\lambda|)$ & Nash (1950); Maynard Smith (1982) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 11: Inter-dimensional Complementarity (A51--A65)}}} \\
+\addlinespace
+KNU-A51 & F $\times$ E & $\sigma^{KNU}_{FE} \cdot U_F \cdot U_E$ & Easterlin (1974); Deaton (2008) \\
+KNU-A52 & F $\times$ P & $\sigma^{KNU}_{FP} \cdot U_F \cdot U_P$ & Marmot (2004); Wilkinson \& Pickett (2009) \\
+KNU-A53 & F $\times$ S & $\sigma^{KNU}_{FS} \cdot U_F \cdot U_S$ & Putnam (2000); Uslaner (2002) \\
+KNU-A54 & F $\times$ D & $\sigma^{KNU}_{FD} \cdot U_F \cdot U_D$ & Benkler (2006); OECD Digital Economy \\
+KNU-A55 & F $\times$ Eco & $\sigma^{KNU}_{F,Eco} \cdot U_F \cdot U_{Eco}$ & Ostrom (1990); Stern (2007) \\
+KNU-A56 & E $\times$ P & $\sigma^{KNU}_{EP} \cdot U_E \cdot U_P$ & Helliwell \& Putnam (2004) \\
+KNU-A57 & E $\times$ S & $\sigma^{KNU}_{ES} \cdot U_E \cdot U_S$ & Durkheim (1893); Collins (2004) \\
+KNU-A58 & E $\times$ D & $\sigma^{KNU}_{ED} \cdot U_E \cdot U_D$ & Rheingold (2000); Wellman (2001) \\
+KNU-A59 & E $\times$ Eco & $\sigma^{KNU}_{E,Eco} \cdot U_E \cdot U_{Eco}$ & Wilson (1984); Kals et al. (1999) \\
+KNU-A60 & P $\times$ S & $\sigma^{KNU}_{PS} \cdot U_P \cdot U_S$ & Kawachi et al. (1997); Berkman \& Glass (2000) \\
+KNU-A61 & P $\times$ D & $\sigma^{KNU}_{PD} \cdot U_P \cdot U_D$ & WHO Digital Health; Topol (2019) \\
+KNU-A62 & P $\times$ Eco & $\sigma^{KNU}_{P,Eco} \cdot U_P \cdot U_{Eco}$ & WHO Environmental Health; Haines et al. (2006) \\
+KNU-A63 & S $\times$ D & $\sigma^{KNU}_{SD} \cdot U_S \cdot U_D$ & Van Dijk (2020); Hargittai (2002) \\
+KNU-A64 & S $\times$ Eco & $\sigma^{KNU}_{S,Eco} \cdot U_S \cdot U_{Eco}$ & Stern et al. (1999); Dietz et al. (2005) \\
+KNU-A65 & D $\times$ Eco & $\sigma^{KNU}_{D,Eco} \cdot U_D \cdot U_{Eco}$ & GeSI (2015); Hilty \& Aebischer (2015) \\
+
+\end{longtable}
+
+%-----------------------------------------------------------------------
+\subsection{KNU Parameter Calculation}
+%-----------------------------------------------------------------------
+
+The 65 KNU axioms define how the four parameters ($G$, $P$, $\lambda$, $\delta$) 
+are calculated for collective utility.
+
+\subsubsection{Parameter 1: Collective Gain ($G^{KNU}_{d,t}$)}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!50!black]
+\begin{equation}
+\boxed{
+G^{KNU}_{d,t} = \left[ \sum_d \omega_d \cdot \gamma_d \cdot Benefit_d - R^{KNU}_{d,t} \right]^{+} \cdot \Omega^{G,KNU}_d \cdot (1 + \kappa_{IDN} \cdot IDN)
+}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Gain Modulator:}
+\begin{equation}
+\Omega^{G,KNU}_d = \underbrace{(1 - U_{env})}_{\text{A7: Uncertainty}} \cdot 
+                   \underbrace{(\rho_K + f(B^{eff}))}_{\text{A8: Belief-Coop}} \cdot 
+                   \underbrace{(1 - \varepsilon)}_{\text{A24: Resilience}}
+\end{equation}
+
+\textbf{Contributing Axioms:} 
+\begin{itemize}
+\item A1 (FEPSDE): $\sum_d G_d^{kol}$
+\item A2 (Weights): $\omega_d$
+\item A7 (Uncertainty): $(1 - U_{env})$
+\item A8 (Belief-Coop): $(\rho_K + f(B^{eff}))$
+\item A11-A12 (Public Goods): Non-excludability, non-rivalry
+\item A14-A19 (FEPSDE Balances): $\gamma_d \cdot Benefit_d$
+\item A22 (Identity Compl.): $(1 + \kappa_{IDN} \cdot IDN)$
+\item A24 (Resilience): $(1 - \varepsilon)$
+\item A47 (Coop Compl.): $\partial U_i / \partial U_j > 0$
+\end{itemize}
+
+\subsubsection{Parameter 2: Collective Pain ($P^{KNU}_{d,t}$)}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!50!black]
+\begin{equation}
+\boxed{
+P^{KNU}_{d,t} = \left[ \sum_d \omega_d \cdot \delta_d \cdot Cost_d + R^{KNU}_{d,t} \right]^{+} \cdot \Omega^{P,KNU}_d + P_{sanction} + P_{DTX}
+}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Pain Modulator:}
+\begin{equation}
+\Omega^{P,KNU}_d = \underbrace{(1 + Err \cdot \Delta Trust)}_{\text{A40: Wrongful Punishment}}
+\end{equation}
+
+\textbf{Sanction Terms:}
+\begin{align}
+P_{sanction} &= \underbrace{c}_{\text{A31: Decentralized}} + \underbrace{P_{inst} \cdot I_{acc}}_{\text{A32: Centralized}} \\
+P_{DTX} &= \underbrace{P_{anti}(1 + \Theta_{DT})(1 + \Theta_{Beh})}_{\text{A46: Dark Triad Destruction}}
+\end{align}
+
+\textbf{Contributing Axioms:}
+\begin{itemize}
+\item A3-A4 (Asymmetry): $\partial W/\partial P > \partial W/\partial G$
+\item A13 (Commons): $\partial U_i / \partial U_j < 0$
+\item A14-A19 (FEPSDE Balances): $\delta_d \cdot Cost_d$
+\item A25 (Tipping Points): Shock term $\xi$
+\item A31 (Decentralized Pun.): $c$
+\item A32 (Centralized Pun.): $P_{inst} \cdot I_{acc}$
+\item A40 (Wrongful Pun.): $Err \rightarrow Trust \downarrow$
+\item A43-A46 (Dark Triad): $P_{DTX}$
+\end{itemize}
+
+\subsubsection{Parameter 3: Collective Loss Aversion ($\lambda^{KNU}_{d}$)}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!50!black]
+\begin{equation}
+\boxed{
+\lambda^{KNU}_{d} = \bar{\lambda}^{KNU}_d \cdot \Lambda^{KNU}_d
+}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Context Modulator:}
+\begin{equation}
+\Lambda^{KNU}_d = \underbrace{f(Fairness)}_{\text{A26}} \cdot 
+                  \underbrace{f(Q, Acc, Fair)}_{\text{A35: Inst. Quality}} \cdot 
+                  \underbrace{f(Culture)}_{\text{A41}} \cdot 
+                  \underbrace{f(Inst)}_{\text{A23}}
+\end{equation}
+
+\textbf{Contributing Axioms:}
+\begin{itemize}
+\item A4 (Asymmetry): $\lambda > 1$ baseline
+\item A23 (Institutions): $f(Inst)$
+\item A26 (Fairness): $\sum U_i - \phi \cdot Var(U_i)$
+\item A35 (Inst. Quality): $f(Q, Acc, Fair)$
+\item A41 (Culture): $f(Culture)$
+\end{itemize}
+
+\subsubsection{Parameter 4: Collective Discounting ($\delta^{KNU}_{d}(t)$)}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!50!black]
+\begin{equation}
+\boxed{
+\delta^{KNU}_{d}(t) = \beta^{KNU} \cdot \bar{\delta}^{KNU,t}_d \cdot \Delta^{KNU}_d(t)
+}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Time Modulator:}
+\begin{equation}
+\Delta^{KNU}_d(t) = \underbrace{(1 - U_{env})}_{\text{A7: Uncertainty}} \cdot 
+                    \underbrace{e^{-\mu t}}_{\text{A20: Cumulative}} \cdot 
+                    \underbrace{\delta^g}_{\text{A21: Intergenerational}}
+\end{equation}
+
+\textbf{Contributing Axioms:}
+\begin{itemize}
+\item A6 (Temporal): $\sum \beta_\tau U_\tau$
+\item A7 (Uncertainty): $(1 - U_{env})$
+\item A20 (Cumulative): $\int (G-P) e^{-\mu t}$
+\item A21 (Intergenerational): $\sum \delta^g N(gen+g)$
+\item A24-A25 (Resilience/Tipping): $(1 - \varepsilon)$, $\xi$
+\end{itemize}
+
+\subsubsection{Stability Metric (A50)}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!50!black]
+\begin{equation}
+\boxed{
+Stab_{KNU} = 1 - (w_1 \cdot |\Delta N_{kol}| + w_2 \cdot |\Delta NormCoh| + w_3 \cdot |\Delta \lambda_{pos}|)
+}
+\end{equation}
+\textbf{Threshold:} $Stab_{KNU} \ge 0.95$ $\Rightarrow$ CE\_OK\_FULL (System stable)
+\end{tcolorbox}
+
+\subsubsection{Inter-dimensional Complementarities}
+
+\begin{equation}
+U^{KNU}_{total} = \sum_d U^{KNU}_d + \sum_{d_1 < d_2} \sigma^{KNU}_{d_1,d_2} \cdot U^{KNU}_{d_1} \cdot U^{KNU}_{d_2}
+\end{equation}
+
+\begin{table}[htbp]
+\centering
+\caption{$\sigma^{KNU}_{d_1,d_2}$: Collective Complementarity Coefficients}
+\label{tab:knu-sigma-matrix}
+\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+$\sigma^{KNU}$ & E & P & S & D & Eco \\
+\midrule
+F & A51 & A52 & A53 & A54 & A55 \\
+E & -- & A56 & A57 & A58 & A59 \\
+P & -- & -- & A60 & A61 & A62 \\
+S & -- & -- & -- & A63 & A64 \\
+D & -- & -- & -- & -- & A65 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%-----------------------------------------------------------------------
+\subsection{KNU-Gain Components (24 cells)}
+%-----------------------------------------------------------------------
+
+\begin{table}[htbp]
+\centering
+\caption{KNU-Gain: Collective Utility Gains by Dimension and Time}
+\label{tab:app-c-knu-gain}
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lp{2.8cm}p{2.8cm}p{2.8cm}p{2.8cm}@{}}
+\toprule
+\textbf{Dim} & \textbf{Instant ($t=0$)} & \textbf{Short ($t=1$)} & \textbf{Medium ($t=2$)} & \textbf{Long ($t=3$)} \\
+\midrule
+F & Group bonus & Team reward & Profit sharing & Generational wealth \\
+E & Collective joy & Team spirit & Community pride & Shared cultural meaning \\
+P & Emergency help & Group healthcare & Public health gains & Societal longevity \\
+S & Group recognition & Team cohesion & Community trust & Social capital legacy \\
+D & Shared access & Group connectivity & Digital commons & Collective infrastructure \\
+Eco & Clean moment & Local improvement & Regional sustainability & Climate stability \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%-----------------------------------------------------------------------
+\subsection{KNU-Pain Components (24 cells)}
+%-----------------------------------------------------------------------
+
+\begin{table}[htbp]
+\centering
+\caption{KNU-Pain: Collective Utility Losses by Dimension and Time}
+\label{tab:app-c-knu-pain}
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lp{2.8cm}p{2.8cm}p{2.8cm}p{2.8cm}@{}}
+\toprule
+\textbf{Dim} & \textbf{Instant ($t=0$)} & \textbf{Short ($t=1$)} & \textbf{Medium ($t=2$)} & \textbf{Long ($t=3$)} \\
+\midrule
+F & Collective loss & Group expense & Organizational debt & Systemic poverty \\
+E & Shared grief & Team stress & Community anxiety & Collective trauma \\
+P & Group injury & Team illness & Public health crisis & Generational harm \\
+S & Group shame & Team conflict & Community breakdown & Social collapse \\
+D & System outage & Network failure & Digital divide & Technological exclusion \\
+Eco & Pollution event & Environmental damage & Resource depletion & Climate catastrophe \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{IDN: Identity Utility}
+\label{sec:app-c-idn}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{cross-reference}
+\textbf{Chapter Reference:} See Chapter~\ref{sec:welfare-fepsde}, 
+Section~\ref{subsec:10-1-categories} for IDN definition.
+
+\textbf{Level Reference:} IDN operates at all levels $L \geq 0$. Critically, 
+IDN \textit{defines} which levels exist (see Appendix AAA, Axiom AL-2). 
+Furthermore, IDN creates a \textit{hierarchy} of identities (see AAA, Axiom AL-7: 
+Identity Hierarchy).
+\end{cross-reference}
+
+\subsection{IDN Definition}
+
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, 
+    title=Identity Utility (IDN)]
+
+\textbf{Core Question:} ``Who AM I?''
+
+\textbf{Level-Specific Notation:} $U^{IDN,L}$ denotes identity utility at level $L$.
+The ``I'' in ``Who AM I?'' can be defined at multiple levels:
+\begin{itemize}[nosep]
+\item $L = 0$: I = individual self
+\item $L = 1$: I = family member (``I am a Smith'')
+\item $L = 2$: I = tribe/community member (``I am a New Yorker'')
+\item $L = 3$: I = organizational member (``I am a Googler'')
+\item $L = 6$: I = national citizen (``I am American'')
+\item $L = \infty$: I = sentient being (``I am human'')
+\end{itemize}
+
+\textbf{Formula (from Meta-Axiom U-M0):}
+\begin{equation}
+U^{IDN} = \sum_{d \in \mathcal{D}} \sum_{t=0}^{3} \delta^{IDN}_{d}(t) \cdot 
+\left[ G^{IDN}_{d,t} - \lambda^{IDN}_{d} \cdot P^{IDN}_{d,t} \right]
+\end{equation}
+
+\textbf{Reference Point Formation (Identity-Prescribed State):}
+\begin{equation}
+R^{IDN}_{d,t} = x^{*}_{d,t} = f(\text{roles}, \text{values}, \text{group\_membership}, \text{narrative})
+\end{equation}
+
+\textbf{Key Properties:}
+\begin{itemize}
+\item Self-definitional: About who one IS, not what one HAS
+\item Can be instant: Identity threats activate immediately
+\item Non-fungible: Cannot be compensated by INU gains
+\item Asymmetric: Falling short often worse than exceeding
+\item \textbf{Level-defining}: Shared identity creates social levels (see AAA, Axiom AL-2)
+\end{itemize}
+
+\end{tcolorbox}
+
+%-----------------------------------------------------------------------
+\subsection{Complete IDN Axiom Table (95 Axioms)}
+%-----------------------------------------------------------------------
+
+\begin{longtable}{@{}llp{4.2cm}p{4.2cm}@{}}
+\caption{Complete IDN Axiom System (95 Axioms)} 
+\label{tab:idn-axioms-complete} \\
+\toprule
+\textbf{Axiom} & \textbf{Title} & \textbf{Core Formula} & \textbf{Reference} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{c}{\tablename\ \thetable{} -- continued} \\
+\toprule
+\textbf{Axiom} & \textbf{Title} & \textbf{Core Formula} & \textbf{Reference} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{Continued on next page...} \\
+\endfoot
+\bottomrule
+\endlastfoot
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 1: Basis (A1--A8)}}} \\
+\addlinespace
+IDN-A1 & Definition & $ID = f(\text{Belonging}, \text{Difference})$ & Tajfel \& Turner (1979); Akerlof \& Kranton (2000) \\
+IDN-A2 & Multiplicity & $U_{tot} = \sum \pi_j U^j$ & Sen (2006); Stryker (1980) \\
+IDN-A3 & Independence & $U_{IDN} \neq U_{INU} + U_{KNU}$ & Akerlof \& Kranton (2000) \\
+IDN-A4 & Net Utility & $(\alpha \text{Recog} + \dots) - (\theta \text{Exclus} + \dots)$ & Honneth (1992); Goffman (1963) \\
+IDN-A5 & Temporality & $\sum \delta \omega (G - C)$ & Frederick et al. (2002) \\
+IDN-A6 & Aggregation & $\sum \pi_j U^j$ (weighting focus) & Roccas \& Brewer (2002) \\
+IDN-A7 & Sociality & $U^j = f(\text{Self}, \text{Others})$ & Mead (1934); Festinger (1954) \\
+IDN-A8 & Context & $\pi_{j,context} = f(KON)$ & Turner et al. (1987) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 2: Awareness/Dynamics (A9--A12)}}} \\
+\addlinespace
+IDN-A9 & Motivated Awareness & $U_{eff} = \sum A_j \pi_j U^j$ & Bénabou \& Tirole (2016) \\
+IDN-A10 & Complementarity & $+ \sum \kappa_{jk} \text{Interaction}(j,k)$ & Crenshaw (1989); Milgrom \& Roberts (1990) \\
+IDN-A11 & Path Dependence & $U_t = f(U_{t-1}, \text{Events})$ & Sydow et al. (2009) \\
+IDN-A12 & Identity Journey & $\{\text{Build}, \text{Crisis}, \text{Trans}, \text{Stable}\}$ & Erikson (1959); Marcia (1966) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 3: Norms/Institutions (A13--A15, A41, A44, A59)}}} \\
+\addlinespace
+IDN-A13 & Norms & $+ \eta \text{Conform} - \zeta \text{Conflict}$ & Bicchieri (2006); Akerlof (1980) \\
+IDN-A14 & Institutionalization & $C = f(\text{Stab}_{inst})$ & North (1990) \\
+IDN-A15 & Uncertainty & $Var(U) = f(U_{ep}, U_{ip}, \dots)$ & Hogg (2007) \\
+IDN-A41 & Norm Integration & (see A13, reinforcement focus) & Parsons (1951) \\
+IDN-A44 & Adaptive Uncertainty & $\Delta U = -[\phi_1 \text{Uncert} - \phi_2 A]$ & Heiner (1983) \\
+IDN-A59 & Legitimacy & $U_{eff} = U + \zeta \text{Legit}$ & Tyler (2006) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 4: Temporal (A16--A20, A31--A35)}}} \\
+\addlinespace
+IDN-A16 & Temporal Integration & $\sum \delta \omega U_i$ (inst-long) & Loewenstein \& Prelec (1992) \\
+IDN-A17 & Temporal Profiles & $Profil^j = \{\omega_{inst}, \omega_{short}, \omega_{mid}, \omega_{long}\}$ & Frederick et al. (2002) \\
+IDN-A18 & Discounting & $\sum \delta (G - C)$ & Laibson (1997) \\
+IDN-A19 & Temporal Dynamics & $\omega_t^j = f(\text{LifePhase}, \text{Events})$ & Carstensen (2006) \\
+IDN-A20 & Temporal Feedback & $\Delta U_{long} = g(U_{short})$ & Becker \& Murphy (1988) \\
+IDN-A31 & Temporal Gains & $G^j = \{G_{inst}, \dots, G_{long}\}$ & Samuelson (1937) \\
+IDN-A32 & Temporal Pains & $C^j = \{C_{inst}, \dots, C_{long}\}$ & O'Donoghue \& Rabin (1999) \\
+IDN-A33 & Time Definition Type & $TimeProfile = f(Type)$ & Braudel (1958) \\
+IDN-A34 & Reversibility & $\Delta U \in \{+,-\}$ reversible & Lewin (1947) \\
+IDN-A35 & Time Feedback & $\Delta U_{long} = g(U_{short})$ & Becker \& Murphy (1988) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 5: Gains/Pains (A21--A23, A36--A37)}}} \\
+\addlinespace
+IDN-A21 & Identity Gains & $\alpha \text{Recog} + \beta \text{Belong} + \dots$ & Maslow (1943); Baumeister \& Leary (1995) \\
+IDN-A22 & Identity Pains & $\theta \text{Exclus} + \lambda \text{Stigma} + \dots$ & Williams (2007); Eisenberger (2003) \\
+IDN-A23 & Asymmetry (Magnitude) & $|C_i^j| \gg |G_i^j|$ for $\Delta x_{gain} = \Delta x_{loss}$ & Kahneman \& Tversky (1979) \\
+IDN-A36 & Independence (Costs) & $C_{IDN} \neq C_{INU}$ & Akerlof \& Kranton (2000) \\
+IDN-A37 & Independence (Gains) & $G_{IDN} \neq G_{INU}$ & Akerlof \& Kranton (2000) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 6: Complementarity/Conflicts (A24--A30, A40)}}} \\
+\addlinespace
+IDN-A24 & Complementary Gains & $G_{tot} = \sum G + \sum \kappa^+ (G^j G^k)$ & Milgrom \& Roberts (1995) \\
+IDN-A25 & Conflict Costs & $C_{tot} = \sum C + \sum \kappa^- \text{Conflict}(j,k)$ & Festinger (1957) \\
+IDN-A26 & Dominance & $U^{primed} = \max(\pi \cdot U^j)$ & Stryker (1980) \\
+IDN-A27 & Stability & $Stab = f(Inst, Persistence)$ & Marcia (1966) \\
+IDN-A28 & Strength & $Strength = f(Salience, Emotion, Relevance)$ & Tajfel (1974) \\
+IDN-A29 & Context Dependence & $\pi_{context} = f(KON)$ & Turner et al. (1987) \\
+IDN-A30 & Relationality & $U = f(\text{Belonging}, \text{Distinction})$ & Barth (1969) \\
+IDN-A40 & Contextual Conflicts & $C_{Conflict} = f(KON)$ & Goffman (1959) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 7: Segments/Interventions (A38--A39, A42--A43, A47)}}} \\
+\addlinespace
+IDN-A38 & Asymmetry (Persistence) & $\int_t^\infty C_{IDN}^j d\tau > \int_t^\infty G_{IDN}^j d\tau$ & Baumeister et al. (2001) \\
+IDN-A39 & Segment Differences & $U_{seg} = f(Age, Gender, Culture)$ & Hofstede (2001) \\
+IDN-A42 & Interventions & $\Delta U = f(\text{Symbols}, \text{Narratives})$ & Thaler \& Sunstein (2008) \\
+IDN-A43 & Identity Journeys & $\{Build, Crisis, Trans, Stable\}$ & Erikson (1959) \\
+IDN-A47 & Fragmentation & $C_{Frag} \propto \text{Count}(Contradictions)$ & Donahue et al. (1993) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 8: Macro/Resources (A49--A52, A54--A56)}}} \\
+\addlinespace
+IDN-A49 & Macro Level & $U = f(\text{Culture}, \text{Nation})$ & Anderson (1983) \\
+IDN-A50 & Resource Binding & $C = \tau(\text{Time} + \text{Money} + \text{Energy})$ & Spence (1973) \\
+IDN-A51 & Unconscious Identity & $U_{eff} = A \cdot U + (1-A)\epsilon U$ & Greenwald \& Banaji (1995) \\
+IDN-A52 & Shocks & $\Delta U = f(\text{Shock}, \text{Resilience})$ & Taleb (2012) \\
+IDN-A54 & Dynamic Weighting & $\pi_t = f(\pi_{t-1}, \text{Events})$ & Sydow (2009) \\
+IDN-A55 & Multiplicative Effects & $\Pi (1+\kappa)$ & Crenshaw (1989) \\
+IDN-A56 & Collective Identity & $U_{coll} = f(IDN, KNU)$ & Tajfel \& Turner (1979) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 9: Emotions/Complexity (A57, A71--A72, A74)}}} \\
+\addlinespace
+IDN-A57 & Emotional Intensity & $U_{emo} = \psi \text{Emotion} \cdot U_{IDN}$ & Elster (1996); Loewenstein (1996) \\
+IDN-A71 & Complexity Anchor & $\text{Salience} = \alpha \cdot K(t)$ & Luhmann (1979) \\
+IDN-A72 & Saturation Priority & $U_{IDN} > U_{INU} + U_{KNU}$ at $Sat > 1$ & Simon (1957) \\
+IDN-A74 & Polarization & $+ \beta K$ (small) vs $-\gamma K$ (large) & Sunstein (2002) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 10: Coherence/Activation (A70, A70b, A75--A76)}}} \\
+\addlinespace
+IDN-A70 & Coherence Principle & $U_{tot} = \sum U^j - \Omega \cdot \text{Fragmentation}$ & Antonovsky (1979); Festinger (1957) \\
+IDN-A70b & Self-Image Function & $\Delta I_t = f(|I_t - S_t|, A_j, E^j, K^j)$ & Cooley (1902); Festinger (1954) \\
+IDN-A75 & Latent vs. Salient & $U_{eff} = U_{pot} \cdot A(t)$ & Freud (1915); Kahneman (2011) \\
+IDN-A76 & Priming & $A(t) = f(\text{Prime}, \text{Context})$ & Bargh (2006) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 11: Bridges/Systemic (A45--A46, A48, A53, A58)}}} \\
+\addlinespace
+IDN-A45 & Bridge Function & $f(U_{INU}, U_{KNU})$ & Granovetter (1973) \\
+IDN-A46 & Digital Identity & $U_{dig} \neq U_{phys}$ & Belk (2013) \\
+IDN-A48 & Intergenerational & $\rho (\text{Continuity} - \text{Break})$ & Bourdieu (1986) \\
+IDN-A53 & Intersectionality & $\sum \chi_{jk} \text{Intersection}$ & Crenshaw (1989); Cole (2009) \\
+IDN-A58 & Identity Investment & $ROI = (U - C_{inv}) / C_{inv}$ & Bourdieu (1986) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 12: External/Resilience/Meta (A60--A69, A73, A77)}}} \\
+\addlinespace
+IDN-A60 & External Awareness & $U = \sum A_{other} \cdot \text{Effect}$ & Cooley (1902); Goffman \\
+IDN-A61 & Parallel Journeys & $J_{tot} = \{J_{Work}, J_{Private}, \dots\}$ & Luhmann (1984) \\
+IDN-A62 & Reversibility & $\Delta U \in \{+,-\}$ & Ebaugh (1988) \\
+IDN-A63 & Neutrality & $U^{neutral} = 0$ & Freud (Latency) \\
+IDN-A64 & Conflict Hierarchy & $C_{tot} = \max(C_{Conflict})$ & Maslow (1943) \\
+IDN-A65 & Mobility & $Mob = f(Stab, Inst)$ & Bourdieu (1984) \\
+IDN-A66 & Global vs. Local & $U = f(N_{glob}, N_{loc})$ & Robertson (1995) \\
+IDN-A67 & Resilience & $Res = \Delta U / \text{Shock}$ & Bonanno (2004) \\
+IDN-A68 & Identity ROI & $ROI = (Utility - Cost)/Inv$ & Becker (1964) \\
+IDN-A69 & Meta-Relationality & $f(\text{Self}, \text{Other})$ & Mead (1934) \\
+IDN-A73 & Segmented Response & $\Delta U^s = f(K, \kappa_s)$ & Kegan (1982) \\
+IDN-A77 & Dynamic Multiplicity & $U_{tot} = \sum U_{pot} \cdot A \cdot w$ & Roccas \& Brewer (2002) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 13: Synthesis/Collapse (A78--A79)}}} \\
+\addlinespace
+IDN-A78 & Identity Synthesis & $Action(t) = \text{ArgMax}(\sum_j w_j U_{IDN}^j)$ & Ricoeur (1990); Korsgaard (2009) \\
+IDN-A79 & Identity Collapse & $State = \begin{cases} Stable & \int(G-C)>\epsilon \\ Collapse & Coh < Min \end{cases}$ & Durkheim (1897); Erikson (1968) \\
+\addlinespace
+
+\multicolumn{4}{@{}l}{\textit{\textbf{Block 14: Inter-dimensional Complementarity (A80--A94)}}} \\
+\addlinespace
+IDN-A80 & F $\times$ E & $\sigma^{IDN}_{FE} \cdot U_F \cdot U_E$ & Lea \& Webley (2006); Belk (1988) \\
+IDN-A81 & F $\times$ P & $\sigma^{IDN}_{FP} \cdot U_F \cdot U_P$ & Marmot (2004) \\
+IDN-A82 & F $\times$ S & $\sigma^{IDN}_{FS} \cdot U_F \cdot U_S$ & Bourdieu (1984); Veblen (1899) \\
+IDN-A83 & F $\times$ D & $\sigma^{IDN}_{FD} \cdot U_F \cdot U_D$ & Belk (2013) \\
+IDN-A84 & F $\times$ Eco & $\sigma^{IDN}_{F,Eco} \cdot U_F \cdot U_{Eco}$ & Stern et al. (1999) \\
+IDN-A85 & E $\times$ P & $\sigma^{IDN}_{EP} \cdot U_E \cdot U_P$ & Damasio (1994) \\
+IDN-A86 & E $\times$ S & $\sigma^{IDN}_{ES} \cdot U_E \cdot U_S$ & Baumeister \& Leary (1995) \\
+IDN-A87 & E $\times$ D & $\sigma^{IDN}_{ED} \cdot U_E \cdot U_D$ & Turkle (2011) \\
+IDN-A88 & E $\times$ Eco & $\sigma^{IDN}_{E,Eco} \cdot U_E \cdot U_{Eco}$ & Clayton (2003) \\
+IDN-A89 & P $\times$ S & $\sigma^{IDN}_{PS} \cdot U_P \cdot U_S$ & Goffman (1963); Butler (1990) \\
+IDN-A90 & P $\times$ D & $\sigma^{IDN}_{PD} \cdot U_P \cdot U_D$ & Yee \& Bailenson (2007) \\
+IDN-A91 & P $\times$ Eco & $\sigma^{IDN}_{P,Eco} \cdot U_P \cdot U_{Eco}$ & Wilson (1984); Schultz (2002) \\
+IDN-A92 & S $\times$ D & $\sigma^{IDN}_{SD} \cdot U_S \cdot U_D$ & boyd (2014); Wellman (2001) \\
+IDN-A93 & S $\times$ Eco & $\sigma^{IDN}_{S,Eco} \cdot U_S \cdot U_{Eco}$ & Fielding et al. (2008) \\
+IDN-A94 & D $\times$ Eco & $\sigma^{IDN}_{D,Eco} \cdot U_D \cdot U_{Eco}$ & Longo et al. (2019) \\
+
+\end{longtable}
+
+%-----------------------------------------------------------------------
+\subsection{IDN Parameter Calculation}
+%-----------------------------------------------------------------------
+
+The 95 IDN axioms define how the four parameters ($G$, $P$, $\lambda$, $\delta$) 
+are calculated for identity utility.
+
+\subsubsection{Parameter 1: Identity Gain ($G^{IDN}_{d,t}$)}
+
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!50!black]
+\begin{equation}
+\boxed{
+G^{IDN}_{d,t} = \sum_j \pi_j(t) \cdot A_j(t) \cdot \left[ \alpha Recog_j + \beta Belong_j + \gamma Meaning_j - R^{IDN}_{d,t} \right]^{+} \cdot \Omega^{G,IDN}_d
+}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Gain Modulator:}
+\begin{equation}
+\Omega^{G,IDN}_d = \underbrace{A_j(t)}_{\text{A9: Awareness}} \cdot 
+                   \underbrace{(1 + \sum_k \kappa^+_{jk})}_{\text{A24: Compl. Gains}} \cdot 
+                   \underbrace{\psi \cdot Emotion}_{\text{A57: Intensity}}
+\end{equation}
+
+\textbf{Contributing Axioms:}
+\begin{itemize}
+\item A1 (Definition): $f(Belonging, Difference)$
+\item A2 (Multiplicity): $\sum \pi_j U^j$
+\item A4 (Net Utility): $\alpha Recog + \beta Belong + ...$
+\item A9 (Motivated Awareness): $A_j$
+\item A21 (Identity Gains): $\alpha Recog + \beta Belong + \gamma Meaning$
+\item A24 (Complementary Gains): $\sum \kappa^+ (G^j G^k)$
+\item A26 (Dominance): $\max(\pi \cdot U^j)$
+\item A28 (Strength): $f(Salience, Emotion, Relevance)$
+\item A57 (Emotional Intensity): $\psi \cdot Emotion$
+\item A75-A76 (Activation): $A(t) = f(Prime, Context)$
+\end{itemize}
+
+\subsubsection{Parameter 2: Identity Pain ($P^{IDN}_{d,t}$)}
+
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!50!black]
+\begin{equation}
+\boxed{
+P^{IDN}_{d,t} = \sum_j \pi_j(t) \cdot \left[ \theta Exclus_j + \lambda Stigma_j \right] \cdot \Omega^{P,IDN}_d + C_{conflict} + C_{frag}
+}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Pain Modulator:}
+\begin{equation}
+\Omega^{P,IDN}_d = \underbrace{\psi \cdot Emotion}_{\text{A57: Intensity}}
+\end{equation}
+
+\textbf{Conflict and Fragmentation Terms:}
+\begin{align}
+C_{conflict} &= \underbrace{\sum_{j \neq k} \kappa^-_{jk} \cdot |U^j - U^k|}_{\text{A25: Conflict Costs}} \\
+C_{frag} &= \underbrace{\Omega \cdot Count(Contradictions)}_{\text{A47, A70: Fragmentation}}
+\end{align}
+
+\textbf{Contributing Axioms:}
+\begin{itemize}
+\item A4 (Net Utility): $\theta Exclus + \lambda Stigma + ...$
+\item A22 (Identity Pains): $\theta Exclus + \lambda Stigma$
+\item A23 (Asymmetry Magnitude): $|C| \gg |G|$
+\item A25 (Conflict Costs): $\sum \kappa^- Conflict(j,k)$
+\item A38 (Asymmetry Persistence): $\int C d\tau > \int G d\tau$
+\item A40 (Contextual Conflicts): $f(KON)$
+\item A47 (Fragmentation): $C_{Frag} \propto Count(Contradictions)$
+\item A57 (Emotional Intensity): $\psi \cdot Emotion$
+\item A64 (Conflict Hierarchy): $\max(C_{Conflict})$
+\item A70 (Coherence): $\Omega \cdot Fragmentation$
+\end{itemize}
+
+\subsubsection{Parameter 3: Identity Loss Aversion ($\lambda^{IDN}_{d}$)}
+
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!50!black]
+\begin{equation}
+\boxed{
+\lambda^{IDN}_{d} = \bar{\lambda}^{IDN}_d \cdot \Lambda^{IDN}_d
+}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Context Modulator:}
+\begin{equation}
+\Lambda^{IDN}_d = \underbrace{f(Stability)}_{\text{A27}} \cdot 
+                  \underbrace{f(Salience, Emotion)}_{\text{A28}} \cdot 
+                  \underbrace{\int_t^\infty Persistence(\tau) d\tau}_{\text{A38: Persistence}}
+\end{equation}
+
+\textbf{Note:} Identity loss aversion is typically higher than INU/KNU:
+\begin{equation}
+\lambda^{IDN}_d > \lambda^{INU}_d \quad \text{and} \quad \lambda^{IDN}_d > \lambda^{KNU}_d
+\end{equation}
+due to persistence effects (A38): identity pains are ``stickier'' than other pains.
+
+\textbf{Contributing Axioms:}
+\begin{itemize}
+\item A23 (Asymmetry Magnitude): $|C| \gg |G|$
+\item A27 (Stability): $f(Inst, Persistence)$
+\item A28 (Strength): $f(Salience, Emotion, Relevance)$
+\item A38 (Asymmetry Persistence): $\int_t^\infty C(\tau) d\tau > \int_t^\infty G(\tau) d\tau$
+\item A57 (Emotional Intensity): $\psi \cdot Emotion$
+\end{itemize}
+
+\subsubsection{Parameter 4: Identity Discounting ($\delta^{IDN}_{d}(t)$)}
+
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!50!black]
+\begin{equation}
+\boxed{
+\delta^{IDN}_{d}(t) = \beta^{IDN} \cdot \bar{\delta}^{IDN,t}_d \cdot \Delta^{IDN}_d(t)
+}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Time Modulator:}
+\begin{equation}
+\Delta^{IDN}_d(t) = \underbrace{f(LifePhase)}_{\text{A19}} \cdot 
+                    \underbrace{f(IdentityType)}_{\text{A33}} \cdot 
+                    \underbrace{\omega_{profile}^j}_{\text{A17: Temporal Profile}}
+\end{equation}
+
+\textbf{Temporal Profile (A17):}
+\begin{equation}
+Profile^j = \{\omega_{inst}^j, \omega_{short}^j, \omega_{mid}^j, \omega_{long}^j\}
+\end{equation}
+Each identity has a specific ``temporal fingerprint'' -- e.g., institutional identities 
+discount slower than social identities (A33: Braudel's \textit{longue durée}).
+
+\textbf{Contributing Axioms:}
+\begin{itemize}
+\item A5 (Temporality): $\sum \delta \omega (G - C)$
+\item A16 (Temporal Integration): $\sum \delta \omega U_i$
+\item A17 (Temporal Profiles): $\{\omega_{inst}, \omega_{short}, \omega_{mid}, \omega_{long}\}$
+\item A18 (Discounting): $\sum \delta (G - C)$
+\item A19 (Temporal Dynamics): $f(LifePhase, Events)$
+\item A33 (Time Definition Type): $f(Type)$
+\item A35 (Time Feedback): $\Delta U_{long} = g(U_{short})$
+\end{itemize}
+
+\subsubsection{Synthesis Function (A78)}
+
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!50!black]
+\begin{equation}
+\boxed{
+Action(t) = \text{ArgMax}\left( \sum_j w_j(t) \cdot U^j_{IDN} \right)
+}
+\end{equation}
+\textbf{Interpretation:} Despite multiplicity, the individual synthesizes all active identity vectors into a single action direction at each moment.
+\end{tcolorbox}
+
+\subsubsection{Collapse Condition (A79)}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!50!black]
+\begin{equation}
+\boxed{
+State(t) = \begin{cases} 
+\text{Stable} & \text{if } \int (G - C) dt > \epsilon \text{ and } Coherence > Min \\
+\text{Collapse} & \text{if } Coherence < Min_{critical}
+\end{cases}
+}
+\end{equation}
+\textbf{Warning:} Identity collapse leads to anomie, radicalization, or pathology. This is the tipping point of the identity module.
+\end{tcolorbox}
+
+\subsubsection{Inter-dimensional Complementarities}
+
+\begin{equation}
+U^{IDN}_{total} = \sum_d U^{IDN}_d + \sum_{d_1 < d_2} \sigma^{IDN}_{d_1,d_2} \cdot U^{IDN}_{d_1} \cdot U^{IDN}_{d_2}
+\end{equation}
+
+\begin{table}[htbp]
+\centering
+\caption{$\sigma^{IDN}_{d_1,d_2}$: Identity Complementarity Coefficients}
+\label{tab:idn-sigma-matrix}
+\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+$\sigma^{IDN}$ & E & P & S & D & Eco \\
+\midrule
+F & A80 & A81 & A82 & A83 & A84 \\
+E & -- & A85 & A86 & A87 & A88 \\
+P & -- & -- & A89 & A90 & A91 \\
+S & -- & -- & -- & A92 & A93 \\
+D & -- & -- & -- & -- & A94 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Identity Coherence Effect}
+
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!50!black]
+\textbf{Coherence Index:}
+\begin{equation}
+K^{IDN} = \frac{\sum_{d_1 < d_2} \mathbb{1}[\sigma_{d_1,d_2} > 0]}{15}
+\end{equation}
+
+Positive complementarities ($\sigma > 0$) strengthen identity coherence.
+Negative complementarities ($\sigma < 0$) create identity conflicts.
+
+\textbf{Example:} ``Career identity'' vs. ``Parent identity'' may have $\sigma_{FS} < 0$.
+\end{tcolorbox}
+
+%-----------------------------------------------------------------------
+\subsection{IDN-Gain Components (24 cells)}
+%-----------------------------------------------------------------------
+
+\begin{table}[htbp]
+\centering
+\caption{IDN-Gain: Identity Utility Gains by Dimension and Time}
+\label{tab:app-c-idn-gain}
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lp{2.8cm}p{2.8cm}p{2.8cm}p{2.8cm}@{}}
+\toprule
+\textbf{Dim} & \textbf{Instant ($t=0$)} & \textbf{Short ($t=1$)} & \textbf{Medium ($t=2$)} & \textbf{Long ($t=3$)} \\
+\midrule
+F & ``I earned this'' & ``I'm succeeding'' & ``I'm financially competent'' & ``I built wealth'' \\
+E & ``I feel like myself'' & ``I'm authentic'' & ``I found my meaning'' & ``I lived with purpose'' \\
+P & ``I'm strong'' & ``I'm healthy'' & ``I take care of myself'' & ``I aged with dignity'' \\
+S & ``I belong here'' & ``I'm respected'' & ``I matter to others'' & ``I'll be remembered'' \\
+D & ``I'm connected'' & ``I'm tech-savvy'' & ``I'm digitally fluent'' & ``I shaped digital world'' \\
+Eco & ``I care about nature'' & ``I act sustainably'' & ``I'm environmentally responsible'' & ``I protected the planet'' \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%-----------------------------------------------------------------------
+\subsection{IDN-Pain Components (24 cells)}
+%-----------------------------------------------------------------------
+
+\begin{table}[htbp]
+\centering
+\caption{IDN-Pain: Identity Utility Losses by Dimension and Time}
+\label{tab:app-c-idn-pain}
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lp{2.8cm}p{2.8cm}p{2.8cm}p{2.8cm}@{}}
+\toprule
+\textbf{Dim} & \textbf{Instant ($t=0$)} & \textbf{Short ($t=1$)} & \textbf{Medium ($t=2$)} & \textbf{Long ($t=3$)} \\
+\midrule
+F & ``I'm a failure'' & ``I can't provide'' & ``I'll never be successful'' & ``I wasted my potential'' \\
+E & ``I'm not myself'' & ``I've lost my way'' & ``Who am I anymore?'' & ``My life was meaningless'' \\
+P & ``I'm weak'' & ``I'm unhealthy'' & ``I've let myself go'' & ``I aged badly'' \\
+S & ``I don't belong'' & ``No one respects me'' & ``I don't matter'' & ``I'll be forgotten'' \\
+D & ``I'm left behind'' & ``I can't keep up'' & ``Technology passed me by'' & ``I'm obsolete'' \\
+Eco & ``I'm destroying nature'' & ``I'm part of the problem'' & ``I failed the planet'' & ``I left a damaged world'' \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Loss Aversion by Dimension}
+\label{sec:app-c-loss-aversion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{cross-reference}
+\textbf{Chapter Reference:} See Chapter~\ref{sec:welfare-fepsde}, 
+Section~\ref{subsec:10-4-calculation} for loss aversion treatment.
+\end{cross-reference}
+
+\begin{table}[htbp]
+\centering
+\caption{Loss Aversion Coefficients by FEPSDE Dimension}
+\label{tab:app-c-lambda}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}clcl@{}}
+\toprule
+\textbf{Dim} & \textbf{Dimension} & \textbf{$\lambda_d$} & \textbf{Interpretation} \\
+\midrule
+F & Financial & $2.0$ & Kahneman-Tversky baseline \\
+E & Emotional & $1.5$--$2.5$ & Varies with affect intensity \\
+P & Physical & $2.0$--$3.0$ & Health losses weighted heavily \\
+S & Social & $2.0$--$4.0$ & Status losses especially painful \\
+D & Digital & $1.5$--$2.0$ & Moderate, newer dimension \\
+Eco & Ecological & $1.2$--$2.0$ & Often underweighted (temporal distance) \\
+\bottomrule
+\end{tabular}
+\begin{flushleft}
+\small\textit{Note:} Values from LLM-MC estimation (see Appendix~AN). 
+Ranges indicate heterogeneity across populations.
+\end{flushleft}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The $\Gamma$-Matrix: Context-Welfare Interaction}
+\label{sec:app-c-gamma}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{cross-reference}
+\textbf{Chapter Reference:} See Chapter~10, Section~10.7 for conceptual treatment.
+See Chapter~9 for the 8$\Psi$-Dimensions.
+\end{cross-reference}
+
+%-----------------------------------------------------------------------
+\subsection{The Context-Welfare Connection}
+%-----------------------------------------------------------------------
+
+\paragraph{The Core Claim.}
+Welfare is not produced in a vacuum. The same action, the same outcome, 
+the same person can experience vastly different utility depending on context:
+
+\begin{itemize}
+\item A \$1,000 bonus feels different in a recession vs. a boom
+\item Social rejection hurts more in a low-trust society
+\item Health improvements matter more where healthcare is scarce
+\end{itemize}
+
+\paragraph{The $\Psi$-Dimensions (from Chapter 9).}
+Context is captured by eight dimensions:
+
+\begin{table}[htbp]
+\centering
+\caption{The Eight $\Psi$-Dimensions}
+\label{tab:app-c-psi-dimensions}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Symbol} & \textbf{Dimension} & \textbf{Content} \\
+\midrule
+$\Psi_I$ & Institutional & Rule of law, property rights, governance quality \\
+$\Psi_S$ & Social & Trust, social cohesion, cooperation norms \\
+$\Psi_C$ & Cognitive & Education, skills, human capital \\
+$\Psi_K$ & Information & Knowledge access, transparency, media quality \\
+$\Psi_E$ & Economic & Development level, income, market maturity \\
+$\Psi_T$ & Temporal & Stability, predictability, time horizons \\
+$\Psi_M$ & Market & Market scope, competition, integration \\
+$\Psi_F$ & Flexibility & Adaptability, mobility, openness to change \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%-----------------------------------------------------------------------
+\subsection{Definition: The $\Gamma$-Matrix Structure}
+%-----------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!50!black, title=Definition: $\Gamma$-Matrix]
+\begin{equation}
+\boxed{
+U_d(\Psi) = \bar{U}_d + \sum_{j=1}^{8} \gamma_{dj} \cdot \Psi_j
+}
+\label{eq:app-c-gamma-definition}
+\end{equation}
+where:
+\begin{itemize}
+\item $d \in \{F, E, P, S, D, Eco\}$: welfare dimension (6 rows)
+\item $j \in \{I, S, C, K, E, T, M, F\}$: context dimension (8 columns)
+\item $\gamma_{dj}$: effect of context dimension $j$ on welfare dimension $d$
+\item $\bar{U}_d$: baseline welfare in dimension $d$
+\end{itemize}
+\end{tcolorbox}
+
+\paragraph{Matrix Dimensions.}
+The $\Gamma$-matrix is $6 \times 8$:
+\begin{itemize}
+\item 6 rows: FEPSDE welfare dimensions
+\item 8 columns: $\Psi$ context dimensions
+\item 48 coefficients: $\gamma_{dj}$ for each combination
+\end{itemize}
+
+%-----------------------------------------------------------------------
+\subsection{The Complete $\Gamma$-Matrix}
+%-----------------------------------------------------------------------
+
+\begin{table}[htbp]
+\centering
+\caption{The $\Gamma$-Matrix: Context-Welfare Interaction Coefficients}
+\label{tab:app-c-gamma-full}
+\small
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+& $\Psi_I$ & $\Psi_S$ & $\Psi_C$ & $\Psi_K$ & $\Psi_E$ & $\Psi_T$ & $\Psi_M$ & $\Psi_F$ \\
+& \scriptsize{Inst.} & \scriptsize{Social} & \scriptsize{Cogn.} & \scriptsize{Info.} & \scriptsize{Econ.} & \scriptsize{Temp.} & \scriptsize{Market} & \scriptsize{Flex.} \\
+\midrule
+$U^F$ & 0.31 & 0.12 & 0.18 & 0.25 & \textbf{0.42} & 0.14 & 0.28 & 0.33 \\
+\scriptsize{Financial} & \scriptsize{(.05)} & \scriptsize{(.04)} & \scriptsize{(.05)} & \scriptsize{(.04)} & \scriptsize{(.06)} & \scriptsize{(.04)} & \scriptsize{(.05)} & \scriptsize{(.05)} \\
+\addlinespace
+$U^E$ & 0.15 & \textbf{0.47} & 0.11 & 0.09 & 0.08 & 0.29 & 0.02 & 0.06 \\
+\scriptsize{Emotional} & \scriptsize{(.04)} & \scriptsize{(.06)} & \scriptsize{(.04)} & \scriptsize{(.03)} & \scriptsize{(.03)} & \scriptsize{(.05)} & \scriptsize{(.02)} & \scriptsize{(.03)} \\
+\addlinespace
+$U^P$ & 0.28 & 0.14 & \textbf{0.31} & 0.16 & 0.24 & 0.26 & 0.03 & 0.09 \\
+\scriptsize{Physical} & \scriptsize{(.05)} & \scriptsize{(.04)} & \scriptsize{(.05)} & \scriptsize{(.04)} & \scriptsize{(.05)} & \scriptsize{(.05)} & \scriptsize{(.02)} & \scriptsize{(.03)} \\
+\addlinespace
+$U^S$ & 0.11 & \textbf{0.51} & 0.04 & 0.08 & 0.01 & 0.12 & \textbf{--0.18} & 0.02 \\
+\scriptsize{Social} & \scriptsize{(.04)} & \scriptsize{(.06)} & \scriptsize{(.03)} & \scriptsize{(.03)} & \scriptsize{(.02)} & \scriptsize{(.04)} & \scriptsize{(.04)} & \scriptsize{(.02)} \\
+\addlinespace
+$U^D$ & 0.13 & 0.03 & 0.27 & \textbf{0.39} & 0.22 & 0.08 & 0.24 & 0.11 \\
+\scriptsize{Digital} & \scriptsize{(.04)} & \scriptsize{(.02)} & \scriptsize{(.05)} & \scriptsize{(.05)} & \scriptsize{(.04)} & \scriptsize{(.03)} & \scriptsize{(.05)} & \scriptsize{(.04)} \\
+\addlinespace
+$U^{Eco}$ & 0.21 & 0.09 & 0.12 & 0.14 & \textbf{--0.19} & 0.23 & \textbf{--0.21} & 0.04 \\
+\scriptsize{Ecological} & \scriptsize{(.04)} & \scriptsize{(.03)} & \scriptsize{(.04)} & \scriptsize{(.04)} & \scriptsize{(.04)} & \scriptsize{(.05)} & \scriptsize{(.04)} & \scriptsize{(.02)} \\
+\bottomrule
+\end{tabular}
+\begin{flushleft}
+\small\textit{Note:} LLM-MC estimates with standard errors in parentheses. 
+Bold indicates largest magnitude per row. Negative values indicate structural trade-offs.
+\end{flushleft}
+\end{table}
+
+%-----------------------------------------------------------------------
+\subsection{Row Reading: What Drives Each Welfare Dimension?}
+%-----------------------------------------------------------------------
+
+\paragraph{Financial Welfare ($U^F$).}
+\begin{itemize}
+\item Strongest driver: $\gamma_{F,E} = 0.42$ (Economic development)
+\item Also important: $\gamma_{F,F} = 0.33$ (Flexibility), $\gamma_{F,I} = 0.31$ (Institutions)
+\item Interpretation: Financial welfare requires development, flexibility, and institutions
+\end{itemize}
+
+\paragraph{Emotional Welfare ($U^E$).}
+\begin{itemize}
+\item Strongest driver: $\gamma_{E,S} = 0.47$ (Social trust)
+\item Also important: $\gamma_{E,T} = 0.29$ (Temporal stability)
+\item Interpretation: Happiness depends on trust and stability, not just money
+\end{itemize}
+
+\paragraph{Physical Welfare ($U^P$).}
+\begin{itemize}
+\item Strongest driver: $\gamma_{P,C} = 0.31$ (Cognitive capacity/education)
+\item Also important: $\gamma_{P,I} = 0.28$ (Institutions), $\gamma_{P,T} = 0.26$ (Stability)
+\item Interpretation: Health requires education and stable healthcare systems
+\end{itemize}
+
+\paragraph{Social Welfare ($U^S$).}
+\begin{itemize}
+\item Strongest driver: $\gamma_{S,S} = 0.51$ (Social trust---self-reinforcing!)
+\item \textbf{Negative:} $\gamma_{S,M} = -0.18$ (Market integration harms social welfare)
+\item Interpretation: Trust builds trust; markets can erode social fabric
+\end{itemize}
+
+\paragraph{Digital Welfare ($U^D$).}
+\begin{itemize}
+\item Strongest driver: $\gamma_{D,K} = 0.39$ (Information access)
+\item Also important: $\gamma_{D,C} = 0.27$ (Cognitive capacity)
+\item Interpretation: Digital welfare requires information infrastructure and skills
+\end{itemize}
+
+\paragraph{Ecological Welfare ($U^{Eco}$).}
+\begin{itemize}
+\item \textbf{Negative:} $\gamma_{Eco,M} = -0.21$ (Market integration harms ecology)
+\item \textbf{Negative:} $\gamma_{Eco,E} = -0.19$ (Economic development harms ecology)
+\item Positive: $\gamma_{Eco,T} = 0.23$ (Stability enables environmental investment)
+\item Interpretation: Growth-environment trade-off is real
+\end{itemize}
+
+%-----------------------------------------------------------------------
+\subsection{Column Reading: What Does Each Context Dimension Affect?}
+%-----------------------------------------------------------------------
+
+\paragraph{Institutional Quality ($\Psi_I$).}
+\begin{itemize}
+\item Strongly affects: $U^F$ (0.31), $U^P$ (0.28), $U^{Eco}$ (0.21)
+\item Interpretation: Institutions matter for material and health outcomes
+\end{itemize}
+
+\paragraph{Social Trust ($\Psi_S$).}
+\begin{itemize}
+\item Strongly affects: $U^S$ (0.51), $U^E$ (0.47)
+\item Weakly affects: $U^D$ (0.03), $U^{Eco}$ (0.09)
+\item Interpretation: Trust matters most for social and emotional welfare
+\end{itemize}
+
+\paragraph{Cognitive Capacity ($\Psi_C$).}
+\begin{itemize}
+\item Strongly affects: $U^P$ (0.31), $U^D$ (0.27)
+\item Interpretation: Education drives health and digital welfare
+\end{itemize}
+
+\paragraph{Information Access ($\Psi_K$).}
+\begin{itemize}
+\item Strongly affects: $U^D$ (0.39), $U^F$ (0.25)
+\item Interpretation: Information infrastructure matters for digital and financial outcomes
+\end{itemize}
+
+\paragraph{Economic Development ($\Psi_E$).}
+\begin{itemize}
+\item Strongly affects: $U^F$ (0.42), $U^P$ (0.24), $U^D$ (0.22)
+\item \textbf{Negative:} $U^{Eco}$ (--0.19)
+\item Interpretation: Development helps material welfare but harms environment
+\end{itemize}
+
+\paragraph{Temporal Stability ($\Psi_T$).}
+\begin{itemize}
+\item Broad positive effects: $U^E$ (0.29), $U^P$ (0.26), $U^{Eco}$ (0.23)
+\item Interpretation: Stability enables long-term investment across dimensions
+\end{itemize}
+
+\paragraph{Market Integration ($\Psi_M$).}
+\begin{itemize}
+\item Positive effects: $U^F$ (0.28), $U^D$ (0.24)
+\item \textbf{Negative effects:} $U^S$ (--0.18), $U^{Eco}$ (--0.21)
+\item Interpretation: Markets boost financial/digital but harm social/ecological
+\end{itemize}
+
+\paragraph{Flexibility ($\Psi_F$).}
+\begin{itemize}
+\item Strongest effect: $U^F$ (0.33)
+\item Weak effects elsewhere
+\item Interpretation: Flexibility primarily matters for financial adaptation
+\end{itemize}
+
+%-----------------------------------------------------------------------
+\subsection{Structural Trade-offs Revealed}
+%-----------------------------------------------------------------------
+
+\paragraph{The Three Negative Coefficients.}
+The $\Gamma$-matrix reveals three structural trade-offs:
+
+\begin{table}[htbp]
+\centering
+\caption{Structural Trade-offs in the $\Gamma$-Matrix}
+\label{tab:app-c-tradeoffs}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Coefficient} & \textbf{Value} & \textbf{Trade-off} & \textbf{Literature} \\
+\midrule
+$\gamma_{S,M}$ & --0.18 & Markets $\uparrow$ $\Rightarrow$ Social welfare $\downarrow$ & Autor et al. (2013) \\
+$\gamma_{Eco,M}$ & --0.21 & Markets $\uparrow$ $\Rightarrow$ Ecological welfare $\downarrow$ & Globalization studies \\
+$\gamma_{Eco,E}$ & --0.19 & Development $\uparrow$ $\Rightarrow$ Ecological welfare $\downarrow$ & EKC literature \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{These Are Not Estimation Errors.}
+The negative coefficients reflect \emph{genuine tensions} documented in the literature:
+
+\begin{itemize}
+\item \textbf{$\gamma_{S,M} = -0.18$:} Autor et al. (2013) documented how trade 
+shocks from China devastated American communities---job losses, family breakdown, 
+opioid epidemics. Market integration increased aggregate GDP but destroyed 
+local social fabric.
+
+\item \textbf{$\gamma_{Eco,M} = -0.21$:} Globalization enables ``pollution havens''---
+production moves to jurisdictions with weak environmental regulation. 
+Global supply chains increase carbon footprints.
+
+\item \textbf{$\gamma_{Eco,E} = -0.19$:} The Environmental Kuznets Curve literature 
+documents how development initially increases environmental degradation. 
+The inverted-U only emerges at high income levels, and even then, only for 
+some pollutants.
+\end{itemize}
+
+\paragraph{Policy Implication.}
+These trade-offs mean that policies maximizing one welfare dimension may 
+harm others. Optimal policy requires explicit trade-off analysis, not 
+single-dimension optimization.
+
+%-----------------------------------------------------------------------
+\subsection{Context Effects on Behavioral Parameters}
+%-----------------------------------------------------------------------
+
+\paragraph{Beyond Welfare Levels.}
+The $\Gamma$-matrix captures context effects on welfare \emph{levels}.
+But context also affects \emph{behavioral parameters}---the deep coefficients 
+governing how outcomes translate to utility.
+
+\paragraph{Three Context-Dependent Parameters.}
+
+\begin{table}[htbp]
+\centering
+\caption{Context-Dependent Behavioral Parameters}
+\label{tab:app-c-context-parameters}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Context Effect} & \textbf{Coefficient} & \textbf{Interpretation} \\
+\midrule
+Discount $\delta$ & $\delta = \bar{\delta} + \gamma_{\delta,T} \cdot \Psi_T$ & $\gamma_{\delta,T} = 0.08$ & Stability $\uparrow$ $\Rightarrow$ Patience $\uparrow$ \\
+Loss aversion $\lambda$ & $\lambda = \bar{\lambda} - \gamma_{\lambda,I} \cdot \Psi_I$ & $\gamma_{\lambda,I} = 0.15$ & Institutions $\uparrow$ $\Rightarrow$ Loss aversion $\downarrow$ \\
+Collective weight $\omega$ & $\omega = \bar{\omega} + \gamma_{\omega,S} \cdot \Psi_S$ & $\gamma_{\omega,S} = 0.12$ & Trust $\uparrow$ $\Rightarrow$ Collective concern $\uparrow$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Interpretation.}
+
+\textbf{Discount Factor ($\delta$):}
+People in stable environments ($\Psi_T$ high) are more patient:
+\begin{itemize}
+\item Stable institutions make future payoffs more certain
+\item Long time horizons encourage investment over consumption
+\item Empirically: Patience correlates with institutional quality across countries
+\end{itemize}
+
+\textbf{Loss Aversion ($\lambda$):}
+People in well-functioning institutions ($\Psi_I$ high) are less loss-averse:
+\begin{itemize}
+\item Good institutions provide insurance against losses
+\item Property rights make recovery from losses more feasible
+\item Empirically: Risk tolerance correlates with institutional quality
+\end{itemize}
+
+\textbf{Collective Weight ($\omega_{KNU}$):}
+People in high-trust societies ($\Psi_S$ high) weight collective welfare more:
+\begin{itemize}
+\item Trust makes collective action credible
+\item Social capital enables group-level thinking
+\item Empirically: Prosociality correlates with social trust
+\end{itemize}
+
+%-----------------------------------------------------------------------
+\subsection{Country Comparison Example: Denmark vs. Brazil}
+%-----------------------------------------------------------------------
+
+\paragraph{Different $\Psi$-Profiles.}
+Consider two countries with different context profiles:
+
+\begin{table}[htbp]
+\centering
+\caption{$\Psi$-Profiles: Denmark vs. Brazil}
+\label{tab:app-c-denmark-brazil-psi}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{$\Psi$-Dimension} & \textbf{Denmark} & \textbf{Brazil} \\
+\midrule
+$\Psi_I$ (Institutional) & 0.85 & 0.45 \\
+$\Psi_S$ (Social trust) & 0.90 & 0.35 \\
+$\Psi_C$ (Cognitive) & 0.80 & 0.50 \\
+$\Psi_K$ (Information) & 0.85 & 0.55 \\
+$\Psi_E$ (Economic) & 0.75 & 0.55 \\
+$\Psi_T$ (Temporal) & 0.85 & 0.40 \\
+$\Psi_M$ (Market) & 0.80 & 0.60 \\
+$\Psi_F$ (Flexibility) & 0.75 & 0.50 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Predicted Welfare Differences.}
+Using the $\Gamma$-matrix:
+
+\begin{table}[htbp]
+\centering
+\caption{Predicted Welfare: Denmark vs. Brazil}
+\label{tab:app-c-denmark-brazil-welfare}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Welfare Dimension} & \textbf{Denmark} & \textbf{Brazil} & \textbf{$\Delta$} \\
+\midrule
+$U^F$ (Financial) & 0.72 & 0.48 & +0.24 \\
+$U^E$ (Emotional) & \textbf{0.78} & 0.42 & \textbf{+0.36} \\
+$U^P$ (Physical) & 0.69 & 0.45 & +0.24 \\
+$U^S$ (Social) & \textbf{0.75} & 0.38 & \textbf{+0.37} \\
+$U^D$ (Digital) & 0.71 & 0.52 & +0.19 \\
+$U^{Eco}$ (Ecological) & 0.58 & 0.42 & +0.16 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Key Insight.}
+The largest differences are in Emotional ($+0.36$) and Social ($+0.37$) welfare---driven 
+primarily by Denmark's higher $\Psi_S$ (trust). Brazil's lower institutional quality 
+and trust create welfare deficits that cannot be fully compensated by other dimensions.
+
+%-----------------------------------------------------------------------
+\subsection{The $\Gamma$-Matrix in EBF}
+%-----------------------------------------------------------------------
+
+\paragraph{Integration with Utility Categories.}
+The $\Gamma$-matrix applies to all three utility categories:
+
+\begin{equation}
+U^i_d(\Psi) = \bar{U}^i_d + \sum_{j} \gamma_{dj} \cdot \Psi_j \quad \text{for } i \in \{INU, KNU, IDN\}
+\end{equation}
+
+The same context affects INU, KNU, and IDN welfare in each dimension.
+
+\paragraph{Category-Specific Sensitivity.}
+However, categories may have different \emph{sensitivity} to context:
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!50!black]
+\begin{equation}
+\boxed{
+U^i_d(\Psi) = \bar{U}^i_d + \kappa^i \cdot \sum_{j} \gamma_{dj} \cdot \Psi_j
+}
+\label{eq:app-c-kappa-scaling}
+\end{equation}
+\end{tcolorbox}
+
+where $\kappa^i$ is a category-specific scaling factor:
+
+\begin{table}[htbp]
+\centering
+\caption{Category-Specific Context Sensitivity}
+\label{tab:app-c-kappa-factors}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lcl@{}}
+\toprule
+\textbf{Category} & $\kappa^i$ & \textbf{Interpretation} \\
+\midrule
+INU & $\approx 1.0$ & INU responds normally to context \\
+KNU & $\approx 1.2$ & KNU is more context-sensitive (group welfare depends more on environment) \\
+IDN & $\approx 0.8$ & IDN is less context-sensitive (identity is more internal) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Full Integration.}
+The complete context-modulated utility for each component is:
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!50!black]
+\begin{equation}
+\boxed{
+U^i_{d,t}(\Psi) = (\delta^i_d(\Psi))^t \cdot \left[ G^i_{d,t}(\Psi) - \lambda^i_d(\Psi) \cdot P^i_{d,t}(\Psi) \right]
+}
+\label{eq:app-c-full-context-integration}
+\end{equation}
+where all parameters ($\delta$, $\lambda$, $G$, $P$) are functions of context $\Psi$.
+\end{tcolorbox}
+
+%-----------------------------------------------------------------------
+\subsection{Validation: $\Gamma$-Matrix vs. Empirical Literature}
+%-----------------------------------------------------------------------
+
+\paragraph{The Estimation Challenge.}
+Directly estimating 48 $\gamma_{dj}$ coefficients would require:
+\begin{itemize}
+\item Cross-country panel data with consistent FEPSDE measures
+\item Variation in all eight $\Psi$ dimensions
+\item Instruments for causal identification
+\end{itemize}
+
+This is beyond most research budgets.
+
+\paragraph{The LLM-MC Solution.}
+Following the methodology in Appendix~N, we used LLM Monte Carlo to extract 
+the $\Gamma$ coefficients from the implicit knowledge in scientific literature.
+
+\paragraph{Validation Against Empirical Benchmarks.}
+
+\begin{table}[htbp]
+\centering
+\caption{$\Gamma$-Matrix Validation}
+\label{tab:app-c-gamma-validation}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}llccc@{}}
+\toprule
+\textbf{Coefficient} & \textbf{Empirical Source} & \textbf{Empirical} & \textbf{LLM-MC} & \textbf{$|\Delta|$} \\
+\midrule
+$\gamma_{F,I}$ & Acemoglu et al. (2001) & 0.28 & 0.31 & 0.03 \\
+$\gamma_{E,S}$ & Helliwell \& Putnam (2004) & 0.44 & 0.47 & 0.03 \\
+$\gamma_{P,C}$ & Cutler \& Lleras-Muney (2010) & 0.35 & 0.31 & 0.04 \\
+$\gamma_{S,M}$ & Autor et al. (2013) & --0.21 & --0.18 & 0.03 \\
+$\gamma_{Eco,E}$ & EKC meta-analyses & --0.15 & --0.19 & 0.04 \\
+\midrule
+\multicolumn{4}{r}{\textbf{Mean Absolute Error:}} & \textbf{0.034} \\
+\multicolumn{4}{r}{\textbf{Sign Agreement:}} & \textbf{5/5 (100\%)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The LLM-MC estimates are close to empirical benchmarks (MAE = 0.034) and 
+correctly predict all signs---including the negative trade-off coefficients.
+
+%-----------------------------------------------------------------------
+\subsection{Summary: The $\Gamma$-Matrix}
+%-----------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black, title=Section C.7 Summary]
+\textbf{The $\Gamma$-Matrix:}
+$$U_d(\Psi) = \bar{U}_d + \sum_{j=1}^{8} \gamma_{dj} \cdot \Psi_j$$
+
+\textbf{Structure:}
+\begin{itemize}
+\item 6 $\times$ 8 matrix (48 coefficients)
+\item Rows: FEPSDE welfare dimensions
+\item Columns: $\Psi$ context dimensions
+\end{itemize}
+
+\textbf{Key Findings:}
+\begin{itemize}
+\item Strongest positive: $\gamma_{S,S} = 0.51$ (trust $\rightarrow$ social welfare)
+\item Strongest positive: $\gamma_{E,S} = 0.47$ (trust $\rightarrow$ emotional welfare)
+\item Negative trade-offs: $\gamma_{S,M} = -0.18$, $\gamma_{Eco,M} = -0.21$, $\gamma_{Eco,E} = -0.19$
+\end{itemize}
+
+\textbf{Structural Trade-offs:}
+\begin{itemize}
+\item Market integration harms social and ecological welfare
+\item Economic development harms ecological welfare
+\item These are genuine tensions, not estimation errors
+\end{itemize}
+
+\textbf{Context-Dependent Parameters:}
+\begin{itemize}
+\item $\delta(\Psi_T)$: Stability increases patience ($\gamma_{\delta,T} = 0.08$)
+\item $\lambda(\Psi_I)$: Institutions reduce loss aversion ($\gamma_{\lambda,I} = 0.15$)
+\item $\omega_{KNU}(\Psi_S)$: Trust increases collective concern ($\gamma_{\omega,S} = 0.12$)
+\end{itemize}
+
+\textbf{Category-Specific Sensitivity:}
+\begin{itemize}
+\item $\kappa^{INU} \approx 1.0$, $\kappa^{KNU} \approx 1.2$, $\kappa^{IDN} \approx 0.8$
+\end{itemize}
+
+\textbf{Validation:}
+\begin{itemize}
+\item MAE = 0.034 against empirical benchmarks
+\item 100\% sign agreement including negative coefficients
+\end{itemize}
+\end{tcolorbox}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Context-Dependent Parameters}
+\label{sec:app-c-context-params}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[htbp]
+\centering
+\caption{Context-Dependent Behavioral Parameters}
+\label{tab:app-c-context-params}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Context Effect} & \textbf{Coefficient} & \textbf{Interpretation} \\
+\midrule
+Discount $\delta$ & $\delta = \bar{\delta} + \gamma_{\delta,T} \cdot \Psi_T$ & $\gamma_{\delta,T} = 0.08$ & Stability $\uparrow$ $\Rightarrow$ Patience $\uparrow$ \\
+Loss aversion $\lambda$ & $\lambda = \bar{\lambda} - \gamma_{\lambda,I} \cdot \Psi_I$ & $\gamma_{\lambda,I} = 0.15$ & Institutions $\uparrow$ $\Rightarrow$ Loss aversion $\downarrow$ \\
+Collective weight $\omega$ & $\omega = \bar{\omega} + \gamma_{\omega,S} \cdot \Psi_S$ & $\gamma_{\omega,S} = 0.12$ & Trust $\uparrow$ $\Rightarrow$ Collective concern $\uparrow$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Inter-Category Complementarities}
+\label{sec:app-c-inter-category}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{cross-reference}
+\textbf{Chapter Reference:} See Chapter~10, Section~10.6.
+\end{cross-reference}
+
+%-----------------------------------------------------------------------
+\subsection{The Fundamental Insight: Utility Categories Interact}
+%-----------------------------------------------------------------------
+
+\paragraph{Beyond Additive Aggregation.}
+A naive model would simply add the three utilities:
+\begin{equation}
+Q_{naive} = \omega_{INU} \cdot U^{INU} + \omega_{KNU} \cdot U^{KNU} + \omega_{IDN} \cdot U^{IDN}
+\end{equation}
+
+But this misses crucial interactions:
+\begin{itemize}
+\item Does individual success enhance or threaten collective welfare?
+\item Does personal gain confirm or violate identity?
+\item Does group success strengthen or weaken individual standing?
+\end{itemize}
+
+\paragraph{The Complementarity Extension.}
+The full model includes interaction terms:
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!50!black]
+\begin{equation}
+\boxed{
+Q = \sum_{i} \omega_i \cdot U^i + \sum_{i < j} \gamma_{ij} \cdot U^i \cdot U^j
+}
+\label{eq:app-c-complementarity-model}
+\end{equation}
+where $\gamma_{ij}$ captures the complementarity between categories $i$ and $j$.
+\end{tcolorbox}
+
+%-----------------------------------------------------------------------
+\subsection{The Three Complementarity Coefficients}
+%-----------------------------------------------------------------------
+
+\paragraph{The Complementarity Matrix.}
+With three categories, there are three pairwise interactions:
+
+\begin{table}[htbp]
+\centering
+\caption{The Inter-Category Complementarity Matrix}
+\label{tab:app-c-complementarity-matrix}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}l|ccc@{}}
+\toprule
+& INU & KNU & IDN \\
+\midrule
+INU & --- & $\gamma_{INU,KNU}$ & $\gamma_{INU,IDN}$ \\
+KNU & $\gamma_{KNU,INU}$ & --- & $\gamma_{KNU,IDN}$ \\
+IDN & $\gamma_{IDN,INU}$ & $\gamma_{IDN,KNU}$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Note:} The matrix is symmetric ($\gamma_{ij} = \gamma_{ji}$), so there are 
+three unique coefficients.
+
+\paragraph{Interpretation of $\gamma_{ij}$.}
+
+\begin{table}[htbp]
+\centering
+\caption{Interpreting Complementarity Coefficients}
+\label{tab:app-c-gamma-interpretation}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Sign} & \textbf{Name} & \textbf{Meaning} \\
+\midrule
+$\gamma_{ij} > 0$ & Complement & High $U^i$ \emph{enhances} value of high $U^j$ \\
+$\gamma_{ij} < 0$ & Substitute & High $U^i$ \emph{reduces} value of high $U^j$ \\
+$\gamma_{ij} = 0$ & Independent & $U^i$ and $U^j$ do not interact \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%-----------------------------------------------------------------------
+\subsection{$\gamma_{INU,KNU}$: Individual--Collective Complementarity}
+%-----------------------------------------------------------------------
+
+\paragraph{The Question.}
+Does individual gain enhance or diminish collective welfare---and vice versa?
+
+\paragraph{Positive Complementarity ($\gamma_{INU,KNU} > 0$).}
+Individual and collective interests align:
+
+\begin{table}[htbp]
+\centering
+\caption{Positive INU-KNU Complementarity Examples}
+\label{tab:app-c-inu-knu-positive}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Situation} & \textbf{Mechanism} & \textbf{Effect} \\
+\midrule
+Team bonus & My success = team success & Both rise together \\
+Cooperative venture & Individual effort benefits group & Mutual reinforcement \\
+Family prosperity & My income supports family & Aligned interests \\
+Public goods (high trust) & My contribution valued & Individual and collective gain \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+When $\gamma_{INU,KNU} > 0$:
+\begin{equation}
+\frac{\partial^2 Q}{\partial U^{INU} \partial U^{KNU}} > 0
+\end{equation}
+Gains in one category make gains in the other \emph{more valuable}.
+
+\paragraph{Negative Complementarity ($\gamma_{INU,KNU} < 0$).}
+Individual and collective interests conflict:
+
+\begin{table}[htbp]
+\centering
+\caption{Negative INU-KNU Complementarity Examples}
+\label{tab:app-c-inu-knu-negative}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Situation} & \textbf{Mechanism} & \textbf{Effect} \\
+\midrule
+Zero-sum competition & My gain = your loss & INU$\uparrow$ implies KNU$\downarrow$ \\
+Free-riding & I benefit, group pays & Individual gain, collective harm \\
+Corruption & Personal enrichment & Individual gain undermines collective \\
+Exploitation & Extract from group & Negative-sum interaction \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+When $\gamma_{INU,KNU} < 0$:
+\begin{equation}
+\frac{\partial^2 Q}{\partial U^{INU} \partial U^{KNU}} < 0
+\end{equation}
+High individual utility \emph{reduces} the marginal value of collective utility.
+
+\paragraph{Empirical Estimates by Context.}
+
+\begin{table}[htbp]
+\centering
+\caption{$\gamma_{INU,KNU}$ by Context}
+\label{tab:app-c-gamma-inu-knu-context}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}llc@{}}
+\toprule
+\textbf{Context} & \textbf{Characteristic} & $\gamma_{INU,KNU}$ \\
+\midrule
+High-trust cooperative & Aligned incentives & $+0.3$ to $+0.5$ \\
+Family/close group & Strong bonds & $+0.2$ to $+0.4$ \\
+Competitive market & Zero-sum elements & $-0.1$ to $+0.1$ \\
+Corrupt institution & Extraction dominates & $-0.2$ to $-0.4$ \\
+Prisoner's dilemma & Structural conflict & $-0.3$ to $-0.5$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%-----------------------------------------------------------------------
+\subsection{$\gamma_{INU,IDN}$: Individual--Identity Complementarity}
+%-----------------------------------------------------------------------
+
+\paragraph{The Question.}
+Does personal success confirm or violate one's identity?
+
+\paragraph{Positive Complementarity ($\gamma_{INU,IDN} > 0$).}
+Personal success aligns with identity:
+
+\begin{table}[htbp]
+\centering
+\caption{Positive INU-IDN Complementarity Examples}
+\label{tab:app-c-inu-idn-positive}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Situation} & \textbf{Identity} & \textbf{Effect} \\
+\midrule
+Entrepreneur succeeds & ``I'm a winner'' & Success confirms identity \\
+Artist sells work & ``I'm a real artist'' & Market validates identity \\
+Athlete wins & ``I'm a champion'' & Victory confirms self-image \\
+Scholar publishes & ``I'm an intellectual'' & Achievement fits narrative \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+When $\gamma_{INU,IDN} > 0$, success feels \emph{more} satisfying because it 
+confirms who you are.
+
+\paragraph{Negative Complementarity ($\gamma_{INU,IDN} < 0$).}
+Personal success conflicts with identity:
+
+\begin{table}[htbp]
+\centering
+\caption{Negative INU-IDN Complementarity Examples}
+\label{tab:app-c-inu-idn-negative}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Situation} & \textbf{Identity Conflict} & \textbf{Effect} \\
+\midrule
+``Selling out'' & Artist takes corporate job & INU$\uparrow$ but IDN$\downarrow\downarrow$ \\
+Betraying class & Working-class person ``goes posh'' & Financial gain, identity loss \\
+Coal miner $\to$ coder & Manual labor identity & Higher pay, identity violation \\
+Inherited wealth & ``Self-made'' identity & Wealth doesn't fit narrative \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+When $\gamma_{INU,IDN} < 0$, success feels \emph{hollow} or even \emph{shameful}
+because it violates who you are.
+
+\paragraph{The ``Selling Out'' Phenomenon.}
+Negative $\gamma_{INU,IDN}$ explains why people reject lucrative opportunities:
+\begin{equation}
+\Delta Q = \omega_{INU} \cdot \Delta U^{INU} + \gamma_{INU,IDN} \cdot U^{INU} \cdot \Delta U^{IDN}
+\end{equation}
+
+If $\Delta U^{INU} > 0$ (financial gain) but $\Delta U^{IDN} < 0$ (identity violation),
+and $|\gamma_{INU,IDN} \cdot \Delta U^{IDN}|$ is large, then $\Delta Q < 0$ despite 
+the financial gain.
+
+\paragraph{Empirical Estimates by Situation.}
+
+\begin{table}[htbp]
+\centering
+\caption{$\gamma_{INU,IDN}$ by Situation}
+\label{tab:app-c-gamma-inu-idn-context}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}llc@{}}
+\toprule
+\textbf{Situation} & \textbf{Characteristic} & $\gamma_{INU,IDN}$ \\
+\midrule
+Success confirms identity & ``This is who I am'' & $+0.3$ to $+0.5$ \\
+Neutral (identity not salient) & No identity implications & $0$ to $+0.1$ \\
+Success questions identity & ``Is this really me?'' & $-0.1$ to $-0.3$ \\
+Success violates identity & ``Selling out'' & $-0.3$ to $-0.6$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%-----------------------------------------------------------------------
+\subsection{$\gamma_{KNU,IDN}$: Collective--Identity Complementarity}
+%-----------------------------------------------------------------------
+
+\paragraph{The Question.}
+Does group success strengthen or threaten personal identity?
+
+\paragraph{Positive Complementarity ($\gamma_{KNU,IDN} > 0$).}
+Group and identity reinforce each other:
+
+\begin{table}[htbp]
+\centering
+\caption{Positive KNU-IDN Complementarity Examples}
+\label{tab:app-c-knu-idn-positive}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Situation} & \textbf{Mechanism} & \textbf{Effect} \\
+\midrule
+``We are miners'' & Group identity & Collective success = identity affirmation \\
+National pride & Patriotic identity & Nation's success enhances self-worth \\
+Team identification & ``I am a [team] fan'' & Team victory feels personal \\
+Religious community & Faith identity & Community flourishing = personal meaning \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+When $\gamma_{KNU,IDN} > 0$, collective success \emph{validates} personal identity.
+This is the foundation of group-based identity and nationalism.
+
+\paragraph{Negative Complementarity ($\gamma_{KNU,IDN} < 0$).}
+Group demands conflict with personal identity:
+
+\begin{table}[htbp]
+\centering
+\caption{Negative KNU-IDN Complementarity Examples}
+\label{tab:app-c-knu-idn-negative}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Situation} & \textbf{Identity Conflict} & \textbf{Effect} \\
+\midrule
+Conformity pressure & ``I must fit in'' vs. authenticity & Group success, identity loss \\
+Groupthink & Personal values overridden & Collective gain, self-betrayal \\
+Cult dynamics & Identity subsumed by group & KNU$\uparrow$ but IDN$\downarrow$ \\
+Whistleblower dilemma & Group loyalty vs. integrity & Identity demands betraying group \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+When $\gamma_{KNU,IDN} < 0$, serving the group feels like \emph{losing oneself}.
+
+\paragraph{Empirical Estimates by Context.}
+
+\begin{table}[htbp]
+\centering
+\caption{$\gamma_{KNU,IDN}$ by Context}
+\label{tab:app-c-gamma-knu-idn-context}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}llc@{}}
+\toprule
+\textbf{Context} & \textbf{Characteristic} & $\gamma_{KNU,IDN}$ \\
+\midrule
+Strong group identity & ``We are one'' & $+0.4$ to $+0.6$ \\
+Moderate identification & Member but individual & $+0.1$ to $+0.3$ \\
+Individualistic culture & Self $>$ group & $0$ to $-0.1$ \\
+Oppressive group & Group demands conformity & $-0.2$ to $-0.4$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%-----------------------------------------------------------------------
+\subsection{The Complementarity Triad: Coherence and Conflict}
+%-----------------------------------------------------------------------
+
+\paragraph{Utility Coherence.}
+The three complementarities together determine whether the utility system 
+is coherent or conflicted:
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!50!black, title=Definition: Utility Coherence Index]
+\begin{equation}
+\boxed{
+K^{utility} = \frac{1}{3} \left( \text{sign}(\gamma_{INU,KNU}) + \text{sign}(\gamma_{INU,IDN}) + \text{sign}(\gamma_{KNU,IDN}) \right)
+}
+\label{eq:app-c-utility-coherence}
+\end{equation}
+\end{tcolorbox}
+
+\begin{table}[htbp]
+\centering
+\caption{Utility Coherence States}
+\label{tab:app-c-utility-coherence-states}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}cccll@{}}
+\toprule
+$\gamma_{INU,KNU}$ & $\gamma_{INU,IDN}$ & $\gamma_{KNU,IDN}$ & $K^{utility}$ & \textbf{State} \\
+\midrule
++ & + & + & +1 & \textbf{Full coherence} \\
++ & + & $-$ & +1/3 & Partial coherence \\
++ & $-$ & + & +1/3 & Partial coherence \\
+$-$ & + & + & +1/3 & Partial coherence \\
++ & $-$ & $-$ & $-$1/3 & Partial conflict \\
+$-$ & + & $-$ & $-$1/3 & Partial conflict \\
+$-$ & $-$ & + & $-$1/3 & Partial conflict \\
+$-$ & $-$ & $-$ & $-$1 & \textbf{Full conflict} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Full Coherence (All Positive).}
+When all three $\gamma > 0$:
+\begin{itemize}
+\item Individual success benefits the group
+\item Personal achievement confirms identity
+\item Group success validates individual identity
+\end{itemize}
+
+This is the \emph{ideal state}---all utility categories reinforce each other.
+Example: A successful entrepreneur who builds a thriving community business 
+that expresses their values.
+
+\paragraph{Full Conflict (All Negative).}
+When all three $\gamma < 0$:
+\begin{itemize}
+\item Individual gain harms the group
+\item Personal success violates identity
+\item Group demands betray individual values
+\end{itemize}
+
+This is a \emph{pathological state}---no choice can satisfy all categories.
+Example: A corrupt official who enriches themselves at public expense while 
+violating their self-image as honest and serving a system they despise.
+
+%-----------------------------------------------------------------------
+\subsection{Complementarities and Behavioral Change}
+%-----------------------------------------------------------------------
+
+\paragraph{Why Complementarities Matter for EBF.}
+The complementarity structure determines whether behavioral change is 
+reinforced or resisted:
+
+\begin{table}[htbp]
+\centering
+\caption{Complementarities and Change Dynamics}
+\label{tab:app-c-complementarities-change}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Complementarity Pattern} & \textbf{Change Dynamic} & \textbf{Implication} \\
+\midrule
+All positive & Self-reinforcing & Change in one $\to$ supports others \\
+Mixed & Partial resistance & Some dimensions resist \\
+All negative & Self-undermining & Change in one $\to$ harms others \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{The Coal Miner Revisited.}
+Consider the coal miner's transition to coder through the complementarity lens:
+
+\begin{table}[htbp]
+\centering
+\caption{Coal Miner Transition: Complementarity Analysis}
+\label{tab:app-c-miner-complementarity}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Complementarity} & \textbf{Status Quo (Mining)} & \textbf{After Transition (Coding)} \\
+\midrule
+$\gamma_{INU,KNU}$ & + (supports community) & $-$ (leaves community) \\
+$\gamma_{INU,IDN}$ & + (mining fits identity) & $-$ (coding violates identity) \\
+$\gamma_{KNU,IDN}$ & + (``we are miners'') & $-$ (betraying ``us'') \\
+\midrule
+$K^{utility}$ & +1 (coherent) & $-$1 (conflicted) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The transition moves from full coherence to full conflict---even if $U^{INU}$ 
+increases, the complementarity collapse makes total welfare decrease.
+
+\paragraph{Intervention Implication.}
+Successful behavioral change requires maintaining or rebuilding complementarities:
+\begin{itemize}
+\item \textbf{Identity bridge:} Frame new behavior as consistent with identity
+\item \textbf{Collective transition:} Move the group together, preserving KNU
+\item \textbf{Narrative integration:} Help construct a story where change fits
+\end{itemize}
+
+%-----------------------------------------------------------------------
+\subsection{Context Effects on Complementarities}
+%-----------------------------------------------------------------------
+
+\paragraph{Complementarities Are Context-Dependent.}
+The $\gamma_{ij}$ coefficients respond to the $\Psi$-dimensions (Chapter 9):
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!50!black]
+\begin{equation}
+\boxed{
+\gamma_{ij}(\Psi) = \bar{\gamma}_{ij} + \sum_k \Gamma^{\gamma}_{ij,k} \cdot \Psi_k
+}
+\label{eq:app-c-gamma-context}
+\end{equation}
+\end{tcolorbox}
+
+\paragraph{Key Context Effects.}
+
+\begin{table}[htbp]
+\centering
+\caption{Context Effects on Complementarities}
+\label{tab:app-c-context-complementarities}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{$\Psi$-Dimension} & \textbf{Effect on $\gamma_{INU,KNU}$} & \textbf{Effect on $\gamma_{INU,IDN}$} & \textbf{Effect on $\gamma_{KNU,IDN}$} \\
+\midrule
+$\Psi_S$ (Trust) & $\uparrow$ (alignment increases) & $\sim$ (neutral) & $\uparrow$ (group identity strengthens) \\
+$\Psi_I$ (Institutions) & $\uparrow$ (less zero-sum) & $\sim$ (neutral) & $\sim$ (neutral) \\
+$\Psi_M$ (Markets) & $\downarrow$ (more competition) & $\downarrow$ (selling out easier) & $\downarrow$ (individualism rises) \\
+$\Psi_T$ (Stability) & $\uparrow$ (long-term alignment) & $\uparrow$ (identity more stable) & $\uparrow$ (group bonds strengthen) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Example: Globalization Effect.}
+Market integration ($\Psi_M \uparrow$) tends to:
+\begin{itemize}
+\item Decrease $\gamma_{INU,KNU}$: More competition, less collective benefit sharing
+\item Decrease $\gamma_{INU,IDN}$: More opportunities to ``sell out''
+\item Decrease $\gamma_{KNU,IDN}$: Weaker group identities, more individualism
+\end{itemize}
+
+This explains why globalization can increase material welfare ($U^{INU}_F$) 
+while decreasing overall wellbeing---the complementarity structure deteriorates.
+
+%-----------------------------------------------------------------------
+\subsection{Summary: Inter-Category Complementarities}
+%-----------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black, title=Section C.9 Summary]
+\textbf{The Extended Welfare Function:}
+$$Q = \sum_{i} \omega_i \cdot U^i + \sum_{i < j} \gamma_{ij} \cdot U^i \cdot U^j$$
+
+\textbf{The Three Complementarities:}
+\begin{itemize}
+\item $\gamma_{INU,KNU}$: Individual--Collective alignment ($\pm 0.15$ to $\pm 0.50$)
+\item $\gamma_{INU,IDN}$: Individual--Identity alignment ($\pm 0.10$ to $\pm 0.60$)
+\item $\gamma_{KNU,IDN}$: Collective--Identity alignment ($\pm 0.10$ to $\pm 0.60$)
+\end{itemize}
+
+\textbf{Interpretation:}
+\begin{itemize}
+\item $\gamma > 0$: Categories reinforce each other (complement)
+\item $\gamma < 0$: Categories undermine each other (substitute)
+\item $\gamma = 0$: Categories are independent
+\end{itemize}
+
+\textbf{Utility Coherence Index:}
+$$K^{utility} = \frac{1}{3} \left( \text{sign}(\gamma_{INU,KNU}) + \text{sign}(\gamma_{INU,IDN}) + \text{sign}(\gamma_{KNU,IDN}) \right)$$
+\begin{itemize}
+\item $K = +1$: Full coherence (ideal state)
+\item $K = -1$: Full conflict (pathological state)
+\item $|K| < 1$: Partial coherence/conflict
+\end{itemize}
+
+\textbf{Context Modulation:}
+$$\gamma_{ij}(\Psi) = \bar{\gamma}_{ij} + \sum_k \Gamma^{\gamma}_{ij,k} \cdot \Psi_k$$
+
+\textbf{Behavioral Change Implication:}
+\begin{itemize}
+\item Successful change requires maintaining complementarity structure
+\item Identity bridges, collective transitions, narrative integration
+\end{itemize}
+\end{tcolorbox}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Counting Verification}
+\label{sec:app-c-counting}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[htbp]
+\centering
+\caption{Counting Verification: Four Paths to 144}
+\label{tab:app-c-counting}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Counting Path} & \textbf{Calculation} & \textbf{Result} \\
+\midrule
+By Category & $(48_{\text{INU}} + 48_{\text{KNU}} + 48_{\text{IDN}})$ & 144 \\
+By Dimension & $(24_{\text{per dim}} \times 6_{\text{dims}})$ & 144 \\
+By Time & $(36_{\text{per horizon}} \times 4_{\text{horizons}})$ & 144 \\
+By Valence & $(72_{\text{Gain}} + 72_{\text{Pain}})$ & 144 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Worked Example: Labor Transition Decision}
+\label{sec:app-c-example}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{cross-reference}
+\textbf{Chapter Reference:} See Chapter~\ref{sec:welfare-fepsde}, 
+Section~\ref{subsec:10-9-applications}.
+\end{cross-reference}
+
+\subsection{Case: Coal Miner $\to$ Coder Retraining}
+
+A coal miner is offered a \$50,000 retraining package to become a software developer.
+Standard economics predicts acceptance (NPV positive). Observed: 70\%+ rejection.
+
+\subsection{144-Component Analysis}
+
+\begin{table}[htbp]
+\centering
+\caption{Coal Miner Decision: Key Utility Components}
+\label{tab:app-c-example}
+\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}llccc@{}}
+\toprule
+\textbf{Category} & \textbf{Component} & \textbf{Gain} & \textbf{Pain} & \textbf{Net} \\
+\midrule
+\multirow{3}{*}{INU} 
+& $U^{\text{INU}}_{F,2}$ (Medium-term financial) & +\$20k/yr & & +0.8 \\
+& $U^{\text{INU}}_{P,2}$ (Medium-term physical) & Safer work & & +0.4 \\
+& $U^{\text{INU}}_{E,1}$ (Short-term emotional) & & Anxiety & --0.3 \\
+\midrule
+\multirow{2}{*}{KNU}
+& $U^{\text{KNU}}_{S,2}$ (Community social) & & Leaving community & --0.5 \\
+& $U^{\text{KNU}}_{F,3}$ (Long-term collective) & Family benefits & Community loss & $\pm$0.0 \\
+\midrule
+\multirow{3}{*}{IDN}
+& $U^{\text{IDN}}_{S,0}$ (Instant identity) & & ``Not a miner'' & \textbf{--1.2} \\
+& $U^{\text{IDN}}_{S,2}$ (Medium identity) & & ``Betraying roots'' & \textbf{--0.8} \\
+& $U^{\text{IDN}}_{E,3}$ (Long-term meaning) & & ``Who am I?'' & --0.5 \\
+\midrule
+\multicolumn{4}{l}{\textbf{Aggregate by Category:}} & \\
+& $U^{\text{INU}}$ & & & $\approx +0.9$ \\
+& $U^{\text{KNU}}$ & & & $\approx -0.5$ \\
+& $U^{\text{IDN}}$ & & & $\approx \mathbf{-2.5}$ \\
+\midrule
+\multicolumn{4}{l}{\textbf{Total Effective Utility:}} & $\mathbf{-2.1}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Key Insight}
+
+The decision is dominated by \textbf{Identity Utility} ($U^{\text{IDN}} \approx -2.5$), 
+which overwhelms the positive Individual Utility ($U^{\text{INU}} \approx +0.9$).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Validation}
+\label{sec:app-c-validation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[htbp]
+\centering
+\caption{$\Gamma$-Matrix Validation Against Empirical Benchmarks}
+\label{tab:app-c-validation}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}llccc@{}}
+\toprule
+\textbf{Coefficient} & \textbf{Empirical Source} & \textbf{Empirical} & \textbf{LLM-MC} & \textbf{$|\Delta|$} \\
+\midrule
+$\gamma_{F,I}$ & Acemoglu et al. (2001) & 0.28 & 0.31 & 0.03 \\
+$\gamma_{E,S}$ & Helliwell \& Putnam (2004) & 0.44 & 0.47 & 0.03 \\
+$\gamma_{P,C}$ & Cutler \& Lleras-Muney (2010) & 0.35 & 0.31 & 0.04 \\
+$\gamma_{S,M}$ & Autor et al. (2013) & --0.21 & --0.18 & 0.03 \\
+$\gamma_{Eco,E}$ & EKC meta-analyses & --0.15 & --0.19 & 0.04 \\
+\midrule
+\multicolumn{4}{r}{\textbf{Mean Absolute Error:}} & \textbf{0.034} \\
+\multicolumn{4}{r}{\textbf{Sign Agreement:}} & \textbf{5/5 (100\%)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%==============================================================================
+% CRITICAL FOUNDATIONS / OBJECTIONS (Required for CORE)
+%==============================================================================
+
+\section{Critical Foundations and Objections}
+\label{sec:C-foundations}
+
+\subsection{Objection 1: Why Exactly Six Dimensions?}
+
+\textbf{Objection:} The FEPSDE framework seems arbitrary. Why not five dimensions, 
+or seven? What makes this particular decomposition privileged?
+
+\textbf{Response:}
+\begin{enumerate}[nosep]
+    \item \textbf{Empirical grounding:} The six dimensions emerge from factor 
+    analysis of wellbeing surveys (Stiglitz-Sen-Fitoussi 2009; Diener et al. 1999).
+    \item \textbf{Completeness:} Any welfare-relevant outcome can be mapped to 
+    at least one dimension.
+    \item \textbf{Orthogonality:} Dimensions are approximately independent in 
+    variation---high F does not imply high P.
+    \item \textbf{Policy relevance:} Each dimension corresponds to distinct 
+    policy levers (financial: taxes; health: healthcare; etc.).
+    \item \textbf{Extensibility:} The framework is modular---dimensions can be 
+    added if empirically warranted.
+\end{enumerate}
+
+\subsection{Objection 2: 144 Components is Overwhelming}
+
+\textbf{Objection:} No practical application can handle 144 separate utility 
+components. The decomposition is too fine-grained.
+
+\textbf{Response:}
+\begin{enumerate}[nosep]
+    \item \textbf{Principle of selection:} For any specific application, only 
+    a subset of components is relevant.
+    \item \textbf{Aggregation:} The framework supports aggregation---sum over 
+    time, or over valence, as needed.
+    \item \textbf{Sparsity:} Most cross-effects are negligible; the effective 
+    dimensionality is much lower.
+    \item \textbf{Completeness value:} The full specification ensures nothing 
+    is overlooked \textit{a priori}.
+\end{enumerate}
+
+\subsection{Objection 3: Ecological Dimension is Novel}
+
+\textbf{Objection:} Traditional welfare economics includes F, E, P, S. Adding 
+"Eco" seems like a political statement rather than scientific necessity.
+
+\textbf{Response:}
+\begin{enumerate}[nosep]
+    \item \textbf{Empirical evidence:} Environmental quality affects reported 
+    wellbeing independently of other dimensions (Levinson 2012).
+    \item \textbf{Intergenerational:} Ecological utility captures 
+    sustainability---welfare of future selves and generations.
+    \item \textbf{Complementarity:} Eco interacts non-trivially with other 
+    dimensions (health-environment, wealth-sustainability).
+    \item \textbf{Policy relevance:} Climate and environment are major policy 
+    domains that require explicit representation.
+\end{enumerate}
+
+\subsection{Objection 4: Digital Dimension is Too New}
+
+\textbf{Objection:} "Digital" as a welfare dimension is a recent phenomenon. 
+How can it be fundamental?
+
+\textbf{Response:}
+\begin{enumerate}[nosep]
+    \item \textbf{Ubiquity:} For much of the world's population, digital access 
+    is as fundamental as other dimensions.
+    \item \textbf{Distinct effects:} Digital wellbeing (connectivity, privacy, 
+    data autonomy) varies independently of traditional dimensions.
+    \item \textbf{Future-proofing:} As AI and digital technologies expand, 
+    this dimension becomes more, not less, relevant.
+    \item \textbf{Empirical:} Digital exclusion has measurable welfare effects 
+    distinct from financial poverty.
+\end{enumerate}
+
+
+%==============================================================================
+% OPEN ISSUES / RESEARCH AGENDA (Required)
+%==============================================================================
+
+\section{Open Issues and Research Agenda}
+\label{sec:C-open-issues}
+
+\subsection{Measurement Priorities}
+
+\begin{enumerate}
+    \item \textbf{Ecological utility measurement:} Developing reliable, 
+    cross-culturally valid measures of Eco-dimension utility.
+    
+    \item \textbf{Digital wellbeing scales:} Standardized instruments for 
+    D-dimension that distinguish access, quality, and autonomy.
+    
+    \item \textbf{Time horizon calibration:} Empirical determination of the 
+    four time horizons (instant/short/medium/long) by dimension and context.
+    
+    \item \textbf{Loss aversion heterogeneity:} Does $\lambda$ vary 
+    systematically across FEPSDE dimensions and populations?
+\end{enumerate}
+
+\subsection{Theoretical Extensions}
+
+\begin{enumerate}
+    \item \textbf{Dimension emergence:} Under what conditions might new 
+    dimensions become empirically necessary? What would trigger adding a 
+    seventh dimension?
+    
+    \item \textbf{Hierarchy vs. orthogonality:} Is there a natural ordering 
+    among dimensions (à la Maslow), or are they truly orthogonal?
+    
+    \item \textbf{Identity utility foundations:} Deeper microfoundations for 
+    IDN---when does identity-based utility dominate INU?
+    
+    \item \textbf{Cross-level interaction:} How do INU, KNU, and IDN interact 
+    when they conflict?
+\end{enumerate}
+
+\subsection{Empirical Validation}
+
+\begin{enumerate}
+    \item \textbf{Factor structure:} Confirmatory factor analysis of FEPSDE 
+    across diverse populations and cultures.
+    
+    \item \textbf{Predictive validity:} Does the 144-component decomposition 
+    predict behavior better than simpler models?
+    
+    \item \textbf{Axiom testing:} Experimental tests of specific INU/KNU/IDN 
+    axioms, especially controversial ones.
+    
+    \item \textbf{Temporal dynamics:} How stable are dimension weights over 
+    the life course?
+\end{enumerate}
+
+
+\section{Summary}
+\label{sec:app-c-summary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black, title=Appendix C Summary]
+
+\textbf{Meta-Axiom U-M0 (universal):}
+$$\boxed{U^{i} = \sum_{d} \sum_{t} \delta^{i}_{d}(t) \cdot [G^{i}_{d,t} - \lambda^{i}_{d} \cdot P^{i}_{d,t}]}$$
+
+\textbf{Structure:} $3 \times 2 \times 6 \times 4 = 144$ components
+
+\textbf{Axiom Systems (220 Total):}
+\begin{itemize}
+\item INU: 59 axioms defining $G^{INU}$, $P^{INU}$, $\lambda^{INU}$, $\delta^{INU}$
+\item KNU: 65 axioms defining $G^{KNU}$, $P^{KNU}$, $\lambda^{KNU}$, $\delta^{KNU}$
+\item IDN: 95 axioms defining $G^{IDN}$, $P^{IDN}$, $\lambda^{IDN}$, $\delta^{IDN}$
+\end{itemize}
+
+\textbf{Parameter Structure (all categories):}
+\begin{itemize}
+\item $G^i$: Gain with modulators $\Omega^{G,i}$
+\item $P^i$: Pain with modulators $\Omega^{P,i}$
+\item $\lambda^i$: Loss aversion with context modulators $\Lambda^i$
+\item $\delta^i$: Discounting with time modulators $\Delta^i$
+\end{itemize}
+
+\textbf{Inter-dimensional Complementarities:}
+\begin{itemize}
+\item INU: 15 coefficients (A43-A57)
+\item KNU: 15 coefficients (A51-A65)
+\item IDN: 15 coefficients (A80-A94)
+\end{itemize}
+
+\textbf{$\Gamma$-Matrix:} 48 coefficients ($6 \times 8$) for context-welfare interaction
+
+\textbf{Key Findings:}
+\begin{itemize}
+\item Strongest positive: $\gamma_{S,S} = 0.51$ (trust $\rightarrow$ social welfare)
+\item Structural trade-offs: $\gamma_{S,M} = -0.18$, $\gamma_{Eco,M} = -0.21$
+\item Identity loss aversion: $\lambda^{IDN} > \lambda^{INU}$, $\lambda^{IDN} > \lambda^{KNU}$ (persistence effect)
+\end{itemize}
+
+\textbf{Validation:} MAE = 0.034 against empirical benchmarks; 100\% sign agreement.
+
+\end{tcolorbox}
+
+% =============================================================================
+% APPENDIX C GLOSSARY
+% =============================================================================
+% Complete reference of symbols, variables, and terms used in Appendix C
+% =============================================================================
+
+\section{Glossary of Symbols and Terms}
+\label{sec:app-c-glossary}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Core Utility Symbols}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{longtable}{@{}lp{4cm}p{7cm}@{}}
+\caption{Core Utility Symbols} \\
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Definition} \\
+\midrule
+\endfirsthead
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+$U^i$ & Utility (Category $i$) & Total utility in category $i \in \{INU, KNU, IDN\}$ \\
+$U^{INU}$ & Individual Utility & Self-regarding utility: ``What do I want for MYSELF?'' \\
+$U^{KNU}$ & Collective Utility & Other-regarding utility: ``What do I want for US?'' \\
+$U^{IDN}$ & Identity Utility & Self-definitional utility: ``Who AM I?'' \\
+$U^{total}$ & Aggregate Utility & Weighted sum of all three categories with complementarities \\
+\addlinespace
+$G^i_{d,t}$ & Gain & Positive utility in category $i$, dimension $d$, time $t$ \\
+$P^i_{d,t}$ & Pain & Negative utility in category $i$, dimension $d$, time $t$ \\
+$\lambda^i_d$ & Loss Aversion & Coefficient for asymmetric weighting of pains vs. gains \\
+$\delta^i_d(t)$ & Discount Factor & Time preference factor for future outcomes \\
+\addlinespace
+$R^i_{d,t}$ & Reference Point & Benchmark against which outcomes are evaluated \\
+$x_{d,t}$ & Outcome & Actual outcome in dimension $d$ at time $t$ \\
+$[x]^+$ & Positive Part & $\max(0, x)$ -- only positive values count \\
+
+\end{longtable}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{FEPSDE Dimensions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{longtable}{@{}lp{3cm}p{8cm}@{}}
+\caption{FEPSDE Welfare Dimensions} \\
+\toprule
+\textbf{Symbol} & \textbf{Dimension} & \textbf{Examples} \\
+\midrule
+\endfirsthead
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+$F$ & Financial & Income, wealth, economic security, purchasing power \\
+$E$ & Emotional & Joy, satisfaction, fulfillment, meaning, psychological wellbeing \\
+$P$ & Physical & Health, energy, fitness, bodily integrity, longevity \\
+$S$ & Social & Status, belonging, recognition, relationships, reputation \\
+$D$ & Digital & Connectivity, privacy, digital competence, online presence \\
+$Eco$ & Ecological & Environmental quality, sustainability, nature connection \\
+\addlinespace
+$\mathcal{D}$ & Dimension Set & $\mathcal{D} = \{F, E, P, S, D, Eco\}$ (6 dimensions) \\
+$d$ & Dimension Index & $d \in \mathcal{D}$ \\
+
+\end{longtable}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Time Horizons}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{longtable}{@{}lp{3cm}p{8cm}@{}}
+\caption{Time Horizons} \\
+\toprule
+\textbf{Symbol} & \textbf{Horizon} & \textbf{Definition} \\
+\midrule
+\endfirsthead
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+$t = 0$ & Instant & Immediate, visceral, now (seconds to minutes) \\
+$t = 1$ & Short-term & Days to weeks \\
+$t = 2$ & Medium-term & Months to years \\
+$t = 3$ & Long-term & Years to decades, legacy effects \\
+\addlinespace
+$\beta$ & Present Bias & Quasi-hyperbolic discounting parameter ($\beta < 1$) \\
+$\bar{\delta}$ & Base Discount & Standard exponential discount rate \\
+
+\end{longtable}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{INU-Specific Symbols}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{longtable}{@{}lp{4cm}p{7cm}@{}}
+\caption{INU (Individual Utility) Symbols} \\
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Definition / Axiom} \\
+\midrule
+\endfirsthead
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+$V_{base}$ & Baseline Value & Intrinsic value of ``doing'' (A3) \\
+$V_{intr}$ & Intrinsic Value & Task-inherent motivation (A4) \\
+$V_{extr}$ & Extrinsic Value & External reward value (A5) \\
+$\kappa$ & Intr-Extr Complementarity & Interaction between intrinsic and extrinsic (A6) \\
+\addlinespace
+$\Omega^G_d$ & Gain Modulator & Combined cognitive/perceptual filters on gains \\
+$\Omega^P_d$ & Pain Modulator & Combined stress/coping filters on pains \\
+$\Lambda_d$ & Lambda Modulator & Context effects on loss aversion \\
+$\Delta_d(t)$ & Delta Modulator & Context effects on discounting \\
+\addlinespace
+$\phi_{risk}$ & Risk Aversion & Reduction due to risk (A9) \\
+$\phi_{amb}$ & Ambiguity Aversion & Reduction due to ambiguity (A9) \\
+$\phi_{motiv}$ & Motivated Beliefs & Belief distortion for pain avoidance (A10) \\
+$\phi_{blind}$ & Blind Spots & Unperceived utility components (A11) \\
+$S_d$ & Salience & Attention-weighted prominence (A15) \\
+$H_d$ & Habit & Habituation dampening factor (A20) \\
+$\alpha_d$ & Attention Share & Bounded attention allocation (A32) \\
+\addlinespace
+$Cope_d$ & Coping & Stress coping capacity (A22) \\
+$Res_d$ & Resilience & Stress resilience capacity (A22) \\
+$\mathcal{E}^-$ & Negative Emotions & Shame, guilt, embarrassment (A30) \\
+\addlinespace
+$\gamma_{gender}$ & Gender Effect & Gender-based parameter modulation (A17) \\
+$\gamma_{culture}$ & Culture Effect & Culture-based parameter modulation (A18) \\
+$\gamma_{lifecycle}$ & Lifecycle Effect & Age/phase-based parameter modulation (A16) \\
+
+\end{longtable}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{KNU-Specific Symbols}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{longtable}{@{}lp{4cm}p{7cm}@{}}
+\caption{KNU (Collective Utility) Symbols} \\
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Definition / Axiom} \\
+\midrule
+\endfirsthead
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+$N_{kol}$ & Collective Utility & Aggregate group welfare (A1) \\
+$\omega_d$ & Dimension Weight & Relative importance of dimension $d$ (A2) \\
+$\gamma_d$ & Benefit Coefficient & Gain scaling per dimension (A14-A19) \\
+$\delta_d$ & Cost Coefficient & Pain scaling per dimension (A14-A19) \\
+\addlinespace
+$\rho_K$ & Cooperation Type & Actor type: $\{0, f(B), 1\}$ = \{free-rider, conditional, unconditional\} (A9) \\
+$B^{eff}$ & Effective Beliefs & Beliefs about others' cooperation (A8) \\
+$U_{env}$ & Environmental Uncertainty & Uncertainty discount factor (A7) \\
+\addlinespace
+$P_{sanction}$ & Sanction Pain & Total punishment costs (A31-A32) \\
+$P_{dec}$ & Decentralized Punishment & Peer punishment cost $c$ (A31) \\
+$P_{cen}$ & Centralized Punishment & Institutional punishment $P_{inst} \cdot I_{acc}$ (A32) \\
+$P_{DTX}$ & Dark Triad Destruction & Antisocial punishment amplified by Dark Triad (A46) \\
+\addlinespace
+$\Theta_{DT}$ & Dark Triad Score & $\alpha M + \beta N + \gamma P$ (Machiavellianism, Narcissism, Psychopathy) (A44) \\
+$\Theta_{Beh}$ & Behavioral Indicator & Observable manipulation behaviors (A45) \\
+$P_{anti}$ & Antisocial Punishment & Punishment of cooperators by defectors (A43) \\
+\addlinespace
+$Legit$ & Legitimacy & Perceived legitimacy of norms/institutions (A59) \\
+$Coh$ & Norm Coherence & Consistency of normative expectations (A49) \\
+$Stab_{KNU}$ & System Stability & Equilibrium metric (A50) \\
+\addlinespace
+$\varepsilon$ & Resilience Loss & System vulnerability parameter (A24) \\
+$\xi$ & Tipping Point Shock & Discontinuous change trigger (A25) \\
+$\delta^g$ & Intergenerational Discount & Discount across generations (A21) \\
+
+\end{longtable}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{IDN-Specific Symbols}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{longtable}{@{}lp{4cm}p{7cm}@{}}
+\caption{IDN (Identity Utility) Symbols} \\
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Definition / Axiom} \\
+\midrule
+\endfirsthead
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+$j$ & Identity Index & Index for multiple identities (A2) \\
+$\pi_j$ & Identity Weight & Salience/importance of identity $j$ (A2, A6) \\
+$A_j$ & Awareness & Conscious activation of identity $j$ (A9) \\
+$U^j$ & Identity-Specific Utility & Utility from identity $j$ \\
+\addlinespace
+$Recog_j$ & Recognition & Social acknowledgment of identity $j$ (A21) \\
+$Belong_j$ & Belonging & Group membership feeling (A21) \\
+$Meaning_j$ & Meaning & Purpose/significance from identity $j$ (A21) \\
+$Exclus_j$ & Exclusion & Social rejection pain (A22) \\
+$Stigma_j$ & Stigma & Identity-based discrimination (A22) \\
+\addlinespace
+$\kappa^+_{jk}$ & Positive Complementarity & Synergy between identities $j$ and $k$ (A24) \\
+$\kappa^-_{jk}$ & Negative Complementarity & Conflict between identities $j$ and $k$ (A25) \\
+$C_{conflict}$ & Conflict Cost & Total inter-identity conflict pain \\
+$C_{frag}$ & Fragmentation Cost & Cost of too many contradictory identities (A47, A70) \\
+\addlinespace
+$\Omega$ & Fragmentation Penalty & Coherence loss weight (A70) \\
+$K^{IDN}$ & Identity Coherence Index & Proportion of positive complementarities \\
+$\psi$ & Emotional Intensity & Emotion amplification factor (A57) \\
+\addlinespace
+$Profile^j$ & Temporal Profile & $\{\omega_{inst}, \omega_{short}, \omega_{mid}, \omega_{long}\}$ per identity (A17) \\
+$Persistence$ & Pain Persistence & Duration of identity pain effects (A38) \\
+\addlinespace
+$I_t$ & Self-Image & Current self-perception (A70b) \\
+$S_t$ & Social Feedback & External perception/mirror (A70b) \\
+$Action(t)$ & Synthesized Action & ArgMax of weighted identity utilities (A78) \\
+$State(t)$ & System State & Stable vs. Collapse condition (A79) \\
+
+\end{longtable}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Context ($\Psi$) Dimensions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{longtable}{@{}lp{4cm}p{7cm}@{}}
+\caption{8$\Psi$-Context Dimensions} \\
+\toprule
+\textbf{Symbol} & \textbf{Dimension} & \textbf{Definition} \\
+\midrule
+\endfirsthead
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+$\Psi_I$ & Institutional Quality & Rule of law, property rights, contract enforcement \\
+$\Psi_S$ & Social Capital & Trust, networks, norms of reciprocity \\
+$\Psi_C$ & Cognitive Load & Information complexity, decision difficulty \\
+$\Psi_K$ & Information Ecology & Media quality, misinformation prevalence \\
+$\Psi_E$ & Economic Development & GDP, infrastructure, market sophistication \\
+$\Psi_T$ & Temporal Stability & Predictability, planning horizon reliability \\
+$\Psi_M$ & Market Integration & Globalization, competition intensity \\
+$\Psi_F$ & Flexibility/Agency & Degrees of freedom, choice availability \\
+
+\end{longtable}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{$\Gamma$-Matrix Symbols}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{longtable}{@{}lp{4cm}p{7cm}@{}}
+\caption{Context-Welfare Interaction Symbols} \\
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Definition} \\
+\midrule
+\endfirsthead
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+$\Gamma$ & Gamma Matrix & $6 \times 8$ matrix of context-welfare coefficients \\
+$\gamma_{dj}$ & Interaction Coefficient & Effect of context dimension $j$ on welfare dimension $d$ \\
+$\bar{U}_d$ & Baseline Welfare & Welfare in dimension $d$ at neutral context \\
+\addlinespace
+\multicolumn{3}{@{}l}{\textit{Key Coefficients:}} \\
+$\gamma_{S,S}$ & Trust $\to$ Social & Strongest positive effect (0.51) \\
+$\gamma_{F,E}$ & Development $\to$ Financial & Economic development effect (0.42) \\
+$\gamma_{S,M}$ & Markets $\to$ Social & Negative trade-off ($-0.18$) \\
+$\gamma_{Eco,M}$ & Markets $\to$ Ecological & Negative trade-off ($-0.21$) \\
+
+\end{longtable}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Complementarity Symbols}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{longtable}{@{}lp{4cm}p{7cm}@{}}
+\caption{Complementarity Symbols} \\
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Definition} \\
+\midrule
+\endfirsthead
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+$\sigma_{d_1,d_2}$ & FEPSDE Complementarity & Inter-dimensional interaction coefficient \\
+$\sigma^{INU}_{d_1,d_2}$ & INU Complementarity & Individual utility dimension interaction (A43-A57) \\
+$\sigma^{KNU}_{d_1,d_2}$ & KNU Complementarity & Collective utility dimension interaction (A51-A65) \\
+$\sigma^{IDN}_{d_1,d_2}$ & IDN Complementarity & Identity utility dimension interaction (A80-A94) \\
+\addlinespace
+$\gamma_{ij}$ & Inter-Category Compl. & Interaction between utility categories $i$ and $j$ \\
+$\gamma_{INU,KNU}$ & INU-KNU Interaction & Individual-Collective alignment/conflict \\
+$\gamma_{INU,IDN}$ & INU-IDN Interaction & Individual-Identity alignment/conflict \\
+$\gamma_{KNU,IDN}$ & KNU-IDN Interaction & Collective-Identity alignment/conflict \\
+
+\end{longtable}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Mathematical Operators and Notation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{longtable}{@{}lp{4cm}p{7cm}@{}}
+\caption{Mathematical Notation} \\
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Definition} \\
+\midrule
+\endfirsthead
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+$\sum_d$ & Sum over dimensions & $\sum_{d \in \mathcal{D}} = \sum_{d \in \{F,E,P,S,D,Eco\}}$ \\
+$\sum_t$ & Sum over time & $\sum_{t=0}^{3}$ (four horizons) \\
+$\sum_j$ & Sum over identities & Sum over all active identities \\
+$[x]^+$ & Positive part & $\max(0, x)$ \\
+$|x|$ & Absolute value & Magnitude regardless of sign \\
+\addlinespace
+$f(\cdot)$ & Function & General functional relationship \\
+$g(\cdot)$ & Function & Alternative functional relationship \\
+$\partial / \partial x$ & Partial derivative & Rate of change with respect to $x$ \\
+$\int_t^\infty$ & Integral & Cumulative effect from $t$ to infinity \\
+\addlinespace
+$\mathbb{1}[\cdot]$ & Indicator function & 1 if condition true, 0 otherwise \\
+$\text{ArgMax}(\cdot)$ & Argument of maximum & Value that maximizes the expression \\
+$\propto$ & Proportional to & Scales with (not exact equality) \\
+$\gg$ & Much greater than & Significantly larger \\
+
+\end{longtable}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Acronyms and Abbreviations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{longtable}{@{}lp{4cm}p{7cm}@{}}
+\caption{Acronyms and Abbreviations} \\
+\toprule
+\textbf{Acronym} & \textbf{Full Form} & \textbf{Definition} \\
+\midrule
+\endfirsthead
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+BCM & Behavioral Change Model & The overarching framework (Version 2.0) \\
+BEATRIX & -- & BCM software architecture \\
+FEPSDE & Financial, Emotional, Physical, Social, Digital, Ecological & Six welfare dimensions \\
+\addlinespace
+INU & Individual Utility & Self-regarding utility module (6040) \\
+KNU & Collective Utility & Other-regarding utility module (6041) \\
+IDN & Identity Utility & Self-definitional utility module (6042) \\
+AWX & Awareness Module & Attention and salience module \\
+KON & Context Module & 8$\Psi$-dimensions context module \\
+\addlinespace
+LLM-MC & LLM Monte Carlo & Estimation methodology using language models \\
+MAE & Mean Absolute Error & Validation metric \\
+RT & Reaction Time & Neuroeconomic validation measure \\
+\addlinespace
+DTX & Dark Triad Index & Machiavellianism + Narcissism + Psychopathy \\
+ESS & Evolutionarily Stable Strategy & Game-theoretic equilibrium concept \\
+ROI & Return on Investment & Benefit-cost ratio \\
+
+\end{longtable}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Key Thresholds and Benchmarks}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{longtable}{@{}lp{3cm}p{8cm}@{}}
+\caption{Key Thresholds and Benchmarks} \\
+\toprule
+\textbf{Parameter} & \textbf{Value} & \textbf{Interpretation} \\
+\midrule
+\endfirsthead
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+$\lambda$ (baseline) & $\approx 2.0$ & Kahneman-Tversky loss aversion coefficient \\
+$\lambda^{IDN}$ & $> 2.0$ & Higher due to persistence effects \\
+$\beta$ (present bias) & $\approx 0.7$ & Quasi-hyperbolic discounting parameter \\
+\addlinespace
+$Stab_{KNU} \geq 0.95$ & CE\_OK\_FULL & System considered stable \\
+$Coherence < Min$ & Collapse & Identity system breakdown threshold \\
+\addlinespace
+$\gamma_{S,S} = 0.51$ & Strongest + & Trust $\to$ Social welfare (validated) \\
+$\gamma_{S,M} = -0.18$ & Trade-off & Markets $\to$ Social welfare \\
+$\gamma_{Eco,M} = -0.21$ & Trade-off & Markets $\to$ Ecological welfare \\
+\addlinespace
+MAE & 0.034 & Validation error against empirical benchmarks \\
+Sign Agreement & 100\% & All coefficient signs match literature \\
+
+\end{longtable}
+% =============================================================================
+% APPENDIX C BIBLIOGRAPHY
+% =============================================================================
+% Complete reference list for all citations in Appendix C
+% Organized alphabetically by author
+% =============================================================================
+
+
+%------------------------------------------------------------------------------
+% BBB PARAMETER CALIBRATION REFERENCE
+%------------------------------------------------------------------------------
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, 
+    title=\textbf{Parameter Calibration: See Appendix BBB}]
+    
+The parameters introduced in this appendix require empirical calibration. 
+\textbf{Appendix BBB} (\textit{The Epistemics of Numbers}) provides:
+
+\begin{itemize}[nosep]
+    \item The three-tier hybrid estimation strategy (empirical, LLM-MC, axiomatic)
+    \item Epistemic status tags $E(\theta)$ for all parameters
+    \item The complete $\Gamma$-matrix, $\Lambda$-matrix, and $\delta$-tensor
+    \item Worked examples demonstrating the calibration workflow
+\end{itemize}
+
+\textbf{Important:} Parameter values marked as \texttt{ILL} (illustrative) in 
+Appendix BBB are placeholders requiring local calibration before application.
+
+\end{tcolorbox}
+
+
+
+
+%------------------------------------------------------------------------------
+% CENTRAL REFERENCES (Required per Template)
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, 
+    title=\textbf{Central References}]
+
+\textbf{Glossary:} For complete symbol definitions across the EBF framework, 
+see \textbf{Appendix G} (\textit{Glossary and Notation}).
+
+\textbf{Bibliography:} For full reference details, see the 
+\textbf{Master Bibliography} (\texttt{bcm2\_master\_references.bib}) 
+in the repository.
+
+All symbols used in this appendix are consistent with Appendix G definitions.
+
+\end{tcolorbox}
+
+\section{References for Appendix C}
+\label{sec:app-c-references}
+
+\begin{thebibliography}{99}
+
+% === A ===
+\bibitem{acemoglu2005}
+Acemoglu, D., Johnson, S., \& Robinson, J. A. (2005).
+Institutions as a fundamental cause of long-run growth.
+\textit{Handbook of Economic Growth}, 1, 385--472.
+
+\bibitem{acemoglu2006}
+Acemoglu, D., \& Robinson, J. A. (2006).
+De facto political power and institutional persistence.
+\textit{American Economic Review}, 96(2), 325--330.
+
+\bibitem{acemoglu2012}
+Acemoglu, D., \& Robinson, J. A. (2012).
+\textit{Why Nations Fail: The Origins of Power, Prosperity, and Poverty}.
+Crown Business.
+
+\bibitem{akerlof1980}
+Akerlof, G. A. (1980).
+A theory of social custom, of which unemployment may be one consequence.
+\textit{Quarterly Journal of Economics}, 94(4), 749--775.
+
+\bibitem{akerlof2000}
+Akerlof, G. A., \& Kranton, R. E. (2000).
+Economics and identity.
+\textit{Quarterly Journal of Economics}, 115(3), 715--753.
+
+\bibitem{akerlof2010}
+Akerlof, G. A., \& Kranton, R. E. (2010).
+\textit{Identity Economics: How Our Identities Shape Our Work, Wages, and Well-Being}.
+Princeton University Press.
+
+\bibitem{anderson1983}
+Anderson, B. (1983).
+\textit{Imagined Communities: Reflections on the Origin and Spread of Nationalism}.
+Verso.
+
+\bibitem{antonovsky1979}
+Antonovsky, A. (1979).
+\textit{Health, Stress, and Coping}.
+Jossey-Bass.
+
+% === B ===
+\bibitem{banerjee2011}
+Banerjee, A. V., \& Duflo, E. (2011).
+\textit{Poor Economics: A Radical Rethinking of the Way to Fight Global Poverty}.
+PublicAffairs.
+
+\bibitem{bargh2006}
+Bargh, J. A. (2006).
+What have we been priming all these years? On the development, mechanisms, and ecology of nonconscious social behavior.
+\textit{European Journal of Social Psychology}, 36(2), 147--168.
+
+\bibitem{barth1969}
+Barth, F. (1969).
+\textit{Ethnic Groups and Boundaries: The Social Organization of Culture Difference}.
+Little, Brown.
+
+\bibitem{baumeister1995}
+Baumeister, R. F., \& Leary, M. R. (1995).
+The need to belong: Desire for interpersonal attachments as a fundamental human motivation.
+\textit{Psychological Bulletin}, 117(3), 497--529.
+
+\bibitem{baumeister2001}
+Baumeister, R. F., Bratslavsky, E., Finkenauer, C., \& Vohs, K. D. (2001).
+Bad is stronger than good.
+\textit{Review of General Psychology}, 5(4), 323--370.
+
+\bibitem{becker1964}
+Becker, G. S. (1964).
+\textit{Human Capital: A Theoretical and Empirical Analysis}.
+University of Chicago Press.
+
+\bibitem{becker1968}
+Becker, G. S. (1968).
+Crime and punishment: An economic approach.
+\textit{Journal of Political Economy}, 76(2), 169--217.
+
+\bibitem{PAP-BeckerMurphy1988}
+Becker, G. S., \& Murphy, K. M. (1988).
+A theory of rational addiction.
+\textit{Journal of Political Economy}, 96(4), 675--700.
+
+\bibitem{belk1988}
+Belk, R. W. (1988).
+Possessions and the extended self.
+\textit{Journal of Consumer Research}, 15(2), 139--168.
+
+\bibitem{belk2013}
+Belk, R. W. (2013).
+Extended self in a digital world.
+\textit{Journal of Consumer Research}, 40(3), 477--500.
+
+\bibitem{benabou2011}
+Bénabou, R., \& Tirole, J. (2011).
+Laws and norms.
+\textit{NBER Working Paper} No. 17579.
+
+\bibitem{benabou2016}
+Bénabou, R., \& Tirole, J. (2016).
+Mindful economics: The production, consumption, and value of beliefs.
+\textit{Journal of Economic Perspectives}, 30(3), 141--164.
+
+\bibitem{benkler2006}
+Benkler, Y. (2006).
+\textit{The Wealth of Networks: How Social Production Transforms Markets and Freedom}.
+Yale University Press.
+
+\bibitem{berkman2000}
+Berkman, L. F., \& Glass, T. (2000).
+Social integration, social networks, social support, and health.
+\textit{Social Epidemiology}, 1, 137--173.
+
+\bibitem{bicchieri2006}
+Bicchieri, C. (2006).
+\textit{The Grammar of Society: The Nature and Dynamics of Social Norms}.
+Cambridge University Press.
+
+\bibitem{bonanno2004}
+Bonanno, G. A. (2004).
+Loss, trauma, and human resilience: Have we underestimated the human capacity to thrive after extremely aversive events?
+\textit{American Psychologist}, 59(1), 20--28.
+
+\bibitem{bourdieu1984}
+Bourdieu, P. (1984).
+\textit{Distinction: A Social Critique of the Judgement of Taste}.
+Harvard University Press.
+
+\bibitem{bourdieu1986}
+Bourdieu, P. (1986).
+The forms of capital.
+In J. Richardson (Ed.), \textit{Handbook of Theory and Research for the Sociology of Education} (pp. 241--258).
+Greenwood.
+
+\bibitem{boyd1992}
+Boyd, R., \& Richerson, P. J. (1992).
+Punishment allows the evolution of cooperation (or anything else) in sizable groups.
+\textit{Ethology and Sociobiology}, 13(3), 171--195.
+
+\bibitem{boyd2014}
+boyd, d. (2014).
+\textit{It's Complicated: The Social Lives of Networked Teens}.
+Yale University Press.
+
+\bibitem{braudel1958}
+Braudel, F. (1958).
+Histoire et sciences sociales: La longue durée.
+\textit{Annales. Histoire, Sciences Sociales}, 13(4), 725--753.
+
+\bibitem{bulow1985}
+Bulow, J. I., Geanakoplos, J. D., \& Klemperer, P. D. (1985).
+Multimarket oligopoly: Strategic substitutes and complements.
+\textit{Journal of Political Economy}, 93(3), 488--511.
+
+\bibitem{butler1990}
+Butler, J. (1990).
+\textit{Gender Trouble: Feminism and the Subversion of Identity}.
+Routledge.
+
+% === C ===
+\bibitem{carstensen2006}
+Carstensen, L. L. (2006).
+The influence of a sense of time on human development.
+\textit{Science}, 312(5782), 1913--1915.
+
+\bibitem{cialdini1984}
+Cialdini, R. B. (1984).
+\textit{Influence: The Psychology of Persuasion}.
+Harper Business.
+
+\bibitem{clayton2003}
+Clayton, S. (2003).
+Environmental identity: A conceptual and an operational definition.
+\textit{Identity and the Natural Environment}, 45--65.
+
+\bibitem{cole2009}
+Cole, E. R. (2009).
+Intersectionality and research in psychology.
+\textit{American Psychologist}, 64(3), 170--180.
+
+\bibitem{coleman1990}
+Coleman, J. S. (1990).
+\textit{Foundations of Social Theory}.
+Harvard University Press.
+
+\bibitem{collins2004}
+Collins, R. (2004).
+\textit{Interaction Ritual Chains}.
+Princeton University Press.
+
+\bibitem{cooley1902}
+Cooley, C. H. (1902).
+\textit{Human Nature and the Social Order}.
+Scribner's.
+
+\bibitem{crenshaw1989}
+Crenshaw, K. (1989).
+Demarginalizing the intersection of race and sex.
+\textit{University of Chicago Legal Forum}, 1989(1), 139--167.
+
+% === D ===
+\bibitem{daly1990}
+Daly, H. E. (1990).
+Toward some operational principles of sustainable development.
+\textit{Ecological Economics}, 2(1), 1--6.
+
+\bibitem{damasio1994}
+Damasio, A. R. (1994).
+\textit{Descartes' Error: Emotion, Reason, and the Human Brain}.
+Putnam.
+
+\bibitem{deaton2008}
+Deaton, A. (2008).
+Income, health, and well-being around the world: Evidence from the Gallup World Poll.
+\textit{Journal of Economic Perspectives}, 22(2), 53--72.
+
+\bibitem{dietz2005}
+Dietz, T., Fitzgerald, A., \& Shwom, R. (2005).
+Environmental values.
+\textit{Annual Review of Environment and Resources}, 30, 335--372.
+
+\bibitem{donahue1993}
+Donahue, E. M., Robins, R. W., Roberts, B. W., \& John, O. P. (1993).
+The divided self: Concurrent and longitudinal effects of psychological adjustment and social roles on self-concept differentiation.
+\textit{Journal of Personality and Social Psychology}, 64(5), 834--846.
+
+\bibitem{durkheim1893}
+Durkheim, E. (1893).
+\textit{The Division of Labor in Society}.
+Free Press (1997 reprint).
+
+\bibitem{durkheim1897}
+Durkheim, E. (1897).
+\textit{Suicide: A Study in Sociology}.
+Free Press (1951 reprint).
+
+\bibitem{dyck2010}
+Dyck, A., Morse, A., \& Zingales, L. (2010).
+Who blows the whistle on corporate fraud?
+\textit{Journal of Finance}, 65(6), 2213--2253.
+
+% === E ===
+\bibitem{easterlin1974}
+Easterlin, R. A. (1974).
+Does economic growth improve the human lot? Some empirical evidence.
+\textit{Nations and Households in Economic Growth}, 89, 89--125.
+
+\bibitem{ebaugh1988}
+Ebaugh, H. R. F. (1988).
+\textit{Becoming an Ex: The Process of Role Exit}.
+University of Chicago Press.
+
+\bibitem{edmondson1999}
+Edmondson, A. (1999).
+Psychological safety and learning behavior in work teams.
+\textit{Administrative Science Quarterly}, 44(2), 350--383.
+
+\bibitem{eisenberger2003}
+Eisenberger, N. I., Lieberman, M. D., \& Williams, K. D. (2003).
+Does rejection hurt? An fMRI study of social exclusion.
+\textit{Science}, 302(5643), 290--292.
+
+\bibitem{elster1986}
+Elster, J. (Ed.). (1986).
+\textit{The Multiple Self}.
+Cambridge University Press.
+
+\bibitem{elster1996}
+Elster, J. (1996).
+Rationality and the emotions.
+\textit{Economic Journal}, 106(438), 1386--1397.
+
+\bibitem{erikson1959}
+Erikson, E. H. (1959).
+\textit{Identity and the Life Cycle}.
+International Universities Press.
+
+\bibitem{erikson1968}
+Erikson, E. H. (1968).
+\textit{Identity: Youth and Crisis}.
+Norton.
+
+% === F ===
+\bibitem{fehr1999}
+Fehr, E., \& Schmidt, K. M. (1999).
+A theory of fairness, competition, and cooperation.
+\textit{Quarterly Journal of Economics}, 114(3), 817--868.
+
+\bibitem{fehr2002}
+Fehr, E., \& Gächter, S. (2002).
+Altruistic punishment in humans.
+\textit{Nature}, 415(6868), 137--140.
+
+\bibitem{festinger1954}
+Festinger, L. (1954).
+A theory of social comparison processes.
+\textit{Human Relations}, 7(2), 117--140.
+
+\bibitem{festinger1957}
+Festinger, L. (1957).
+\textit{A Theory of Cognitive Dissonance}.
+Stanford University Press.
+
+\bibitem{fielding2008}
+Fielding, K. S., McDonald, R., \& Louis, W. R. (2008).
+Theory of planned behaviour, identity and intentions to engage in environmental activism.
+\textit{Journal of Environmental Psychology}, 28(4), 318--326.
+
+\bibitem{fischbacher2001}
+Fischbacher, U., Gächter, S., \& Fehr, E. (2001).
+Are people conditionally cooperative? Evidence from a public goods experiment.
+\textit{Economics Letters}, 71(3), 397--404.
+
+\bibitem{frederick2002}
+Frederick, S., Loewenstein, G., \& O'Donoghue, T. (2002).
+Time discounting and time preference: A critical review.
+\textit{Journal of Economic Literature}, 40(2), 351--401.
+
+\bibitem{freud1915}
+Freud, S. (1915).
+The unconscious.
+\textit{Standard Edition}, 14, 159--215.
+
+% === G ===
+\bibitem{gesi2015}
+GeSI (2015).
+\textit{\#SMARTer2030: ICT Solutions for 21st Century Challenges}.
+Global e-Sustainability Initiative.
+
+\bibitem{glaeser2003}
+Glaeser, E., Scheinkman, J., \& Shleifer, A. (2003).
+The injustice of inequality.
+\textit{Journal of Monetary Economics}, 50(1), 199--222.
+
+\bibitem{gneezy2011}
+Gneezy, U., Meier, S., \& Rey-Biel, P. (2011).
+When and why incentives (don't) work to modify behavior.
+\textit{Journal of Economic Perspectives}, 25(4), 191--210.
+
+\bibitem{goffman1959}
+Goffman, E. (1959).
+\textit{The Presentation of Self in Everyday Life}.
+Doubleday.
+
+\bibitem{goffman1963}
+Goffman, E. (1963).
+\textit{Stigma: Notes on the Management of Spoiled Identity}.
+Prentice-Hall.
+
+\bibitem{granovetter1973}
+Granovetter, M. S. (1973).
+The strength of weak ties.
+\textit{American Journal of Sociology}, 78(6), 1360--1380.
+
+\bibitem{greenwald1995}
+Greenwald, A. G., \& Banaji, M. R. (1995).
+Implicit social cognition: Attitudes, self-esteem, and stereotypes.
+\textit{Psychological Review}, 102(1), 4--27.
+
+\bibitem{greif1993}
+Greif, A. (1993).
+Contract enforceability and economic institutions in early trade: The Maghribi traders' coalition.
+\textit{American Economic Review}, 83(3), 525--548.
+
+% === H ===
+\bibitem{haines2006}
+Haines, A., Kovats, R. S., Campbell-Lendrum, D., \& Corvalán, C. (2006).
+Climate change and human health: Impacts, vulnerability and public health.
+\textit{Public Health}, 120(7), 585--596.
+
+\bibitem{hardin1968}
+Hardin, G. (1968).
+The tragedy of the commons.
+\textit{Science}, 162(3859), 1243--1248.
+
+\bibitem{hargittai2002}
+Hargittai, E. (2002).
+Second-level digital divide: Differences in people's online skills.
+\textit{First Monday}, 7(4).
+
+\bibitem{heiner1983}
+Heiner, R. A. (1983).
+The origin of predictable behavior.
+\textit{American Economic Review}, 73(4), 560--595.
+
+\bibitem{helliwell2004}
+Helliwell, J. F., \& Putnam, R. D. (2004).
+The social context of well-being.
+\textit{Philosophical Transactions of the Royal Society B}, 359(1449), 1435--1446.
+
+\bibitem{henrich2006}
+Henrich, J., McElreath, R., Barr, A., Ensminger, J., Barrett, C., Bolyanatz, A., ... \& Ziker, J. (2006).
+Costly punishment across human societies.
+\textit{Science}, 312(5781), 1767--1770.
+
+\bibitem{herrmann2008}
+Herrmann, B., Thöni, C., \& Gächter, S. (2008).
+Antisocial punishment across societies.
+\textit{Science}, 319(5868), 1362--1367.
+
+\bibitem{hilty2015}
+Hilty, L. M., \& Aebischer, B. (Eds.). (2015).
+\textit{ICT Innovations for Sustainability}.
+Springer.
+
+\bibitem{hobbes1651}
+Hobbes, T. (1651).
+\textit{Leviathan}.
+Andrew Crooke.
+
+\bibitem{hofstede2001}
+Hofstede, G. (2001).
+\textit{Culture's Consequences: Comparing Values, Behaviors, Institutions and Organizations Across Nations} (2nd ed.).
+Sage.
+
+\bibitem{hogg2007}
+Hogg, M. A. (2007).
+Uncertainty–identity theory.
+\textit{Advances in Experimental Social Psychology}, 39, 69--126.
+
+\bibitem{holling1973}
+Holling, C. S. (1973).
+Resilience and stability of ecological systems.
+\textit{Annual Review of Ecology and Systematics}, 4(1), 1--23.
+
+\bibitem{honneth1992}
+Honneth, A. (1992).
+\textit{Kampf um Anerkennung} [The Struggle for Recognition].
+Suhrkamp.
+
+% === K ===
+\bibitem{PAP-kahneman1979prospect}
+Kahneman, D., \& Tversky, A. (1979).
+Prospect theory: An analysis of decision under risk.
+\textit{Econometrica}, 47(2), 263--291.
+
+\bibitem{kahneman2011}
+Kahneman, D. (2011).
+\textit{Thinking, Fast and Slow}.
+Farrar, Straus and Giroux.
+
+\bibitem{kals1999}
+Kals, E., Schumacher, D., \& Montada, L. (1999).
+Emotional affinity toward nature as a motivational basis to protect nature.
+\textit{Environment and Behavior}, 31(2), 178--202.
+
+\bibitem{kawachi1997}
+Kawachi, I., Kennedy, B. P., Lochner, K., \& Prothrow-Stith, D. (1997).
+Social capital, income inequality, and mortality.
+\textit{American Journal of Public Health}, 87(9), 1491--1498.
+
+\bibitem{kegan1982}
+Kegan, R. (1982).
+\textit{The Evolving Self: Problem and Process in Human Development}.
+Harvard University Press.
+
+\bibitem{korsgaard2009}
+Korsgaard, C. M. (2009).
+\textit{Self-Constitution: Agency, Identity, and Integrity}.
+Oxford University Press.
+
+\bibitem{kurzban2005}
+Kurzban, R., \& Houser, D. (2005).
+Experiments investigating cooperative types in humans: A complement to evolutionary theory and simulations.
+\textit{Proceedings of the National Academy of Sciences}, 102(5), 1803--1807.
+
+% === L ===
+\bibitem{laibson1997}
+Laibson, D. (1997).
+Golden eggs and hyperbolic discounting.
+\textit{Quarterly Journal of Economics}, 112(2), 443--478.
+
+\bibitem{lea2006}
+Lea, S. E., \& Webley, P. (2006).
+Money as tool, money as drug: The biological psychology of a strong incentive.
+\textit{Behavioral and Brain Sciences}, 29(2), 161--209.
+
+\bibitem{lewin1947}
+Lewin, K. (1947).
+Frontiers in group dynamics: Concept, method and reality in social science.
+\textit{Human Relations}, 1(1), 5--41.
+
+\bibitem{loewenstein1992}
+Loewenstein, G., \& Prelec, D. (1992).
+Anomalies in intertemporal choice: Evidence and an interpretation.
+\textit{Quarterly Journal of Economics}, 107(2), 573--597.
+
+\bibitem{loewenstein1996}
+Loewenstein, G. (1996).
+Out of control: Visceral influences on behavior.
+\textit{Organizational Behavior and Human Decision Processes}, 65(3), 272--292.
+
+\bibitem{longo2019}
+Longo, S. B., Clark, B., Shriver, T. E., \& Clausen, R. (2019).
+Sustainability and environmental sociology: Putting the economy in its place and moving toward an integrative socio-ecology.
+\textit{Sustainability}, 11(18), 4983.
+
+\bibitem{luhmann1979}
+Luhmann, N. (1979).
+\textit{Trust and Power}.
+Wiley.
+
+\bibitem{luhmann1984}
+Luhmann, N. (1984).
+\textit{Soziale Systeme} [Social Systems].
+Suhrkamp.
+
+% === M ===
+\bibitem{marcia1966}
+Marcia, J. E. (1966).
+Development and validation of ego-identity status.
+\textit{Journal of Personality and Social Psychology}, 3(5), 551--558.
+
+\bibitem{marmot2004}
+Marmot, M. (2004).
+\textit{Status Syndrome: How Your Social Standing Directly Affects Your Health}.
+Bloomsbury.
+
+\bibitem{maslow1943}
+Maslow, A. H. (1943).
+A theory of human motivation.
+\textit{Psychological Review}, 50(4), 370--396.
+
+\bibitem{maynardsmith1982}
+Maynard Smith, J. (1982).
+\textit{Evolution and the Theory of Games}.
+Cambridge University Press.
+
+\bibitem{mead1934}
+Mead, G. H. (1934).
+\textit{Mind, Self, and Society}.
+University of Chicago Press.
+
+\bibitem{milgrom1990}
+Milgrom, P., \& Roberts, J. (1990).
+The economics of modern manufacturing: Technology, strategy, and organization.
+\textit{American Economic Review}, 80(3), 511--528.
+
+\bibitem{milgrom1995}
+Milgrom, P., \& Roberts, J. (1995).
+Complementarities and fit: Strategy, structure, and organizational change in manufacturing.
+\textit{Journal of Accounting and Economics}, 19(2-3), 179--208.
+
+\bibitem{mirrlees1971}
+Mirrlees, J. A. (1971).
+An exploration in the theory of optimum income taxation.
+\textit{Review of Economic Studies}, 38(2), 175--208.
+
+% === N ===
+\bibitem{nash1950}
+Nash, J. F. (1950).
+Equilibrium points in n-person games.
+\textit{Proceedings of the National Academy of Sciences}, 36(1), 48--49.
+
+\bibitem{nissenbaum2009}
+Nissenbaum, H. (2009).
+\textit{Privacy in Context: Technology, Policy, and the Integrity of Social Life}.
+Stanford University Press.
+
+\bibitem{nordhaus1994}
+Nordhaus, W. D. (1994).
+\textit{Managing the Global Commons: The Economics of Climate Change}.
+MIT Press.
+
+\bibitem{PAP-north1990institutions}
+North, D. C. (1990).
+\textit{Institutions, Institutional Change and Economic Performance}.
+Cambridge University Press.
+
+% === O ===
+\bibitem{PAP-odonoghue1999doing}
+O'Donoghue, T., \& Rabin, M. (1999).
+Doing it now or later.
+\textit{American Economic Review}, 89(1), 103--124.
+
+\bibitem{olson1965}
+Olson, M. (1965).
+\textit{The Logic of Collective Action: Public Goods and the Theory of Groups}.
+Harvard University Press.
+
+\bibitem{ostrom1990}
+Ostrom, E. (1990).
+\textit{Governing the Commons: The Evolution of Institutions for Collective Action}.
+Cambridge University Press.
+
+\bibitem{ostrom2005}
+Ostrom, E. (2005).
+\textit{Understanding Institutional Diversity}.
+Princeton University Press.
+
+% === P ===
+\bibitem{parsons1951}
+Parsons, T. (1951).
+\textit{The Social System}.
+Free Press.
+
+\bibitem{paulhus2002}
+Paulhus, D. L., \& Williams, K. M. (2002).
+The dark triad of personality: Narcissism, Machiavellianism, and psychopathy.
+\textit{Journal of Research in Personality}, 36(6), 556--563.
+
+\bibitem{pigou1920}
+Pigou, A. C. (1920).
+\textit{The Economics of Welfare}.
+Macmillan.
+
+\bibitem{piketty2014}
+Piketty, T. (2014).
+\textit{Capital in the Twenty-First Century}.
+Harvard University Press.
+
+\bibitem{pindyck2007}
+Pindyck, R. S. (2007).
+Uncertainty in environmental economics.
+\textit{Review of Environmental Economics and Policy}, 1(1), 45--65.
+
+\bibitem{polinsky2000}
+Polinsky, A. M., \& Shavell, S. (2000).
+The economic theory of public enforcement of law.
+\textit{Journal of Economic Literature}, 38(1), 45--76.
+
+\bibitem{putnam2000}
+Putnam, R. D. (2000).
+\textit{Bowling Alone: The Collapse and Revival of American Community}.
+Simon \& Schuster.
+
+% === R ===
+\bibitem{rawls1971}
+Rawls, J. (1971).
+\textit{A Theory of Justice}.
+Harvard University Press.
+
+\bibitem{rheingold2000}
+Rheingold, H. (2000).
+\textit{The Virtual Community: Homesteading on the Electronic Frontier} (2nd ed.).
+MIT Press.
+
+\bibitem{ricoeur1990}
+Ricoeur, P. (1990).
+\textit{Oneself as Another}.
+University of Chicago Press.
+
+\bibitem{robertson1995}
+Robertson, R. (1995).
+Glocalization: Time-space and homogeneity-heterogeneity.
+\textit{Global Modernities}, 2(1), 25--44.
+
+\bibitem{roccas2002}
+Roccas, S., \& Brewer, M. B. (2002).
+Social identity complexity.
+\textit{Personality and Social Psychology Review}, 6(2), 88--106.
+
+% === S ===
+\bibitem{samuelson1937}
+Samuelson, P. A. (1937).
+A note on measurement of utility.
+\textit{Review of Economic Studies}, 4(2), 155--161.
+
+\bibitem{samuelson1954}
+Samuelson, P. A. (1954).
+The pure theory of public expenditure.
+\textit{Review of Economics and Statistics}, 36(4), 387--389.
+
+\bibitem{sandel2012}
+Sandel, M. J. (2012).
+\textit{What Money Can't Buy: The Moral Limits of Markets}.
+Farrar, Straus and Giroux.
+
+\bibitem{scheffer2009}
+Scheffer, M., Bascompte, J., Brock, W. A., Brovkin, V., Carpenter, S. R., Dakos, V., ... \& Sugihara, G. (2009).
+Early-warning signals for critical transitions.
+\textit{Nature}, 461(7260), 53--59.
+
+\bibitem{schelling1978}
+Schelling, T. C. (1978).
+\textit{Micromotives and Macrobehavior}.
+Norton.
+
+\bibitem{schultz2002}
+Schultz, P. W. (2002).
+Inclusion with nature: The psychology of human-nature relations.
+In P. Schmuck \& W. P. Schultz (Eds.), \textit{Psychology of Sustainable Development} (pp. 61--78).
+Springer.
+
+\bibitem{sen1999}
+Sen, A. (1999).
+\textit{Development as Freedom}.
+Knopf.
+
+\bibitem{sen2006}
+Sen, A. (2006).
+\textit{Identity and Violence: The Illusion of Destiny}.
+Norton.
+
+\bibitem{simon1957}
+Simon, H. A. (1957).
+\textit{Models of Man: Social and Rational}.
+Wiley.
+
+\bibitem{simon1996}
+Simon, G. K. (1996).
+\textit{In Sheep's Clothing: Understanding and Dealing with Manipulative People}.
+A. J. Christopher.
+
+\bibitem{spence1973}
+Spence, M. (1973).
+Job market signaling.
+\textit{Quarterly Journal of Economics}, 87(3), 355--374.
+
+\bibitem{stern1999}
+Stern, P. C., Dietz, T., Abel, T., Guagnano, G. A., \& Kalof, L. (1999).
+A value-belief-norm theory of support for social movements: The case of environmentalism.
+\textit{Human Ecology Review}, 6(2), 81--97.
+
+\bibitem{stern2007}
+Stern, N. (2007).
+\textit{The Economics of Climate Change: The Stern Review}.
+Cambridge University Press.
+
+\bibitem{stiglitz1999}
+Stiglitz, J. E. (1999).
+Knowledge as a global public good.
+\textit{Global Public Goods}, 1(9), 308--325.
+
+\bibitem{stiglitz2002}
+Stiglitz, J. E. (2002).
+Transparency in government.
+In \textit{The Right to Tell: The Role of Mass Media in Economic Development} (pp. 27--44).
+World Bank.
+
+\bibitem{stryker1980}
+Stryker, S. (1980).
+\textit{Symbolic Interactionism: A Social Structural Version}.
+Benjamin/Cummings.
+
+\bibitem{sunstein1996}
+Sunstein, C. R. (1996).
+Social norms and social roles.
+\textit{Columbia Law Review}, 96(4), 903--968.
+
+\bibitem{sunstein2002}
+Sunstein, C. R. (2002).
+The law of group polarization.
+\textit{Journal of Political Philosophy}, 10(2), 175--195.
+
+\bibitem{sydow2009}
+Sydow, J., Schreyögg, G., \& Koch, J. (2009).
+Organizational path dependence: Opening the black box.
+\textit{Academy of Management Review}, 34(4), 689--709.
+
+% === T ===
+\bibitem{tajfel1974}
+Tajfel, H. (1974).
+Social identity and intergroup behaviour.
+\textit{Social Science Information}, 13(2), 65--93.
+
+\bibitem{tajfel1979}
+Tajfel, H., \& Turner, J. C. (1979).
+An integrative theory of intergroup conflict.
+In W. G. Austin \& S. Worchel (Eds.), \textit{The Social Psychology of Intergroup Relations} (pp. 33--47).
+Brooks/Cole.
+
+\bibitem{taleb2007}
+Taleb, N. N. (2007).
+\textit{The Black Swan: The Impact of the Highly Improbable}.
+Random House.
+
+\bibitem{taleb2012}
+Taleb, N. N. (2012).
+\textit{Antifragile: Things That Gain from Disorder}.
+Random House.
+
+\bibitem{thaler1999}
+Thaler, R. H. (1999).
+Mental accounting matters.
+\textit{Journal of Behavioral Decision Making}, 12(3), 183--206.
+
+\bibitem{PAP-thaler2008}
+Thaler, R. H., \& Sunstein, C. R. (2008).
+\textit{Nudge: Improving Decisions About Health, Wealth, and Happiness}.
+Yale University Press.
+
+\bibitem{topkis1998}
+Topkis, D. M. (1998).
+\textit{Supermodularity and Complementarity}.
+Princeton University Press.
+
+\bibitem{topol2019}
+Topol, E. J. (2019).
+\textit{Deep Medicine: How Artificial Intelligence Can Make Healthcare Human Again}.
+Basic Books.
+
+\bibitem{turkle2011}
+Turkle, S. (2011).
+\textit{Alone Together: Why We Expect More from Technology and Less from Each Other}.
+Basic Books.
+
+\bibitem{turner1987}
+Turner, J. C., Hogg, M. A., Oakes, P. J., Reicher, S. D., \& Wetherell, M. S. (1987).
+\textit{Rediscovering the Social Group: A Self-Categorization Theory}.
+Blackwell.
+
+\bibitem{tyler1990}
+Tyler, T. R. (1990).
+\textit{Why People Obey the Law}.
+Yale University Press.
+
+\bibitem{tyler2006}
+Tyler, T. R. (2006).
+Psychological perspectives on legitimacy and legitimation.
+\textit{Annual Review of Psychology}, 57, 375--400.
+
+% === U ===
+\bibitem{uslaner2002}
+Uslaner, E. M. (2002).
+\textit{The Moral Foundations of Trust}.
+Cambridge University Press.
+
+% === V ===
+\bibitem{vandijk2020}
+Van Dijk, J. (2020).
+\textit{The Digital Divide}.
+Polity Press.
+
+\bibitem{veblen1899}
+Veblen, T. (1899).
+\textit{The Theory of the Leisure Class}.
+Macmillan.
+
+% === W ===
+\bibitem{walther1996}
+Walther, J. B. (1996).
+Computer-mediated communication: Impersonal, interpersonal, and hyperpersonal interaction.
+\textit{Communication Research}, 23(1), 3--43.
+
+\bibitem{walzer1983}
+Walzer, M. (1983).
+\textit{Spheres of Justice: A Defense of Pluralism and Equality}.
+Basic Books.
+
+\bibitem{weitzman2009}
+Weitzman, M. L. (2009).
+On modeling and interpreting the economics of catastrophic climate change.
+\textit{Review of Economics and Statistics}, 91(1), 1--19.
+
+\bibitem{wellman2001}
+Wellman, B. (2001).
+Physical place and cyberplace: The rise of personalized networking.
+\textit{International Journal of Urban and Regional Research}, 25(2), 227--252.
+
+\bibitem{wilkinson2009}
+Wilkinson, R. G., \& Pickett, K. (2009).
+\textit{The Spirit Level: Why Greater Equality Makes Societies Stronger}.
+Bloomsbury Press.
+
+\bibitem{williams2007}
+Williams, K. D. (2007).
+Ostracism.
+\textit{Annual Review of Psychology}, 58, 425--452.
+
+\bibitem{wilson1984}
+Wilson, E. O. (1984).
+\textit{Biophilia}.
+Harvard University Press.
+
+% === Y ===
+\bibitem{yee2007}
+Yee, N., \& Bailenson, J. (2007).
+The Proteus effect: The effect of transformed self-representation on behavior.
+\textit{Human Communication Research}, 33(3), 271--290.
+
+% === Z ===
+\bibitem{zuboff2019}
+Zuboff, S. (2019).
+\textit{The Age of Surveillance Capitalism: The Fight for a Human Future at the New Frontier of Power}.
+PublicAffairs.
+
+\end{thebibliography}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% END OF APPENDIX C
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%==============================================================================
+% CROSS-REFERENCES TO OTHER CORE APPENDICES (for C)
+%==============================================================================
+
+\subsection{Integration with CORE Framework}
+\label{sec:C-core-integration}
+
+This appendix answers the CORE question ``WHAT is utility?'' and integrates 
+with the other three CORE appendices:
+
+\subsubsection{Connection to Appendix AAA (WHO - Aggregation)}
+
+The six FEPSDE dimensions apply at all aggregation levels $L$, but with 
+level-specific interpretations:
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{l|ll}
+\toprule
+\textbf{Dimension} & \textbf{Individual ($L=1$)} & \textbf{National ($L=5$)} \\
+\midrule
+Financial (F) & Personal income/wealth & GDP, fiscal balance \\
+Emotional (E) & Subjective wellbeing & National happiness index \\
+Physical (P) & Personal health & Public health outcomes \\
+Social (S) & Personal relationships & Social cohesion, trust \\
+Digital (D) & Tech access/literacy & Digital infrastructure \\
+Ecological (E) & Personal footprint & Environmental quality \\
+\bottomrule
+\end{tabular}
+\caption{FEPSDE interpretation by aggregation level}
+\end{table}
+
+See Appendix AAA for the complete aggregation framework.
+
+\subsubsection{Connection to Appendix B (HOW - Complementarity)}
+
+The FEPSDE dimensions define the rows and columns of the complementarity 
+matrix $\Gamma$:
+
+\begin{equation}
+\Gamma = [\gamma_{dd'}]_{d, d' \in \{F, E, P, S, D, E\}}
+\end{equation}
+
+The sign and magnitude of $\gamma_{dd'}$ determines whether dimensions 
+reinforce (complements) or offset (substitutes) each other.
+
+See Appendix B for the complete complementarity theory including:
+\begin{itemize}
+    \item Teil II: Utility $\times$ Utility interactions ($\Gamma$-matrix)
+    \item Teil III: Context modulation $\gamma_{dd'}(\Psi)$
+\end{itemize}
+
+\subsubsection{Connection to Appendix V (WHEN - Context)}
+
+Context $\Psi$ affects both the weights and the values of FEPSDE dimensions:
+
+\begin{equation}
+U = \sum_{d \in \text{FEPSDE}} w_d(\Psi) \cdot u_d(a; \Psi)
+\end{equation}
+
+Key insight: The same action $a$ produces different utility profiles 
+$(u_F, u_E, u_P, u_S, u_D, u_E)$ depending on context $\Psi$.
+
+See Appendix V for the 8$\Psi$-Dimensions and their empirical validation.
+
+\vspace{0.5em}
+\hrule
+\vspace{0.5em}
+\noindent\textit{Cross-references: Appendix AAA (Aggregation), 
+Appendix B (Complementarity), Appendix V (8$\Psi$-Dimensions), 
+Appendix BBB (Parameter Calibration)}
+

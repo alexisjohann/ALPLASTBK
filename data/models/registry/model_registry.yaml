@@ -1,0 +1,855 @@
+---
+# Global Model Registry
+# Catalog of all reusable strategic models and their metadata
+# Registry Version: 1.0.0
+
+registry:
+  version: "1.2.0"
+  last_updated: "2026-01-24"
+  maintained_by: "Strategic Analysis Team"
+  total_models: 37  # 4 quick mode + 31 ISO-1.0 full suite + 2 succession models
+  template_directory: "../templates/"
+  implementation_directory: "../../scripts/models/"
+
+  # 10C CORE Framework Integration
+  # Single Source of Truth: /docs/frameworks/core-framework-definition.yaml
+  ebf_framework: "10C CORE"
+  ebf_framework_version: "1.0"
+  ebf_integration_mapping: "/docs/frameworks/strategic-models-9c-mapping.md"
+
+  # ============================================================================
+  # MODEL REGISTRY ENTRIES
+  # ============================================================================
+
+  models:
+
+    rpm_1_0:
+      model_id: "RPM-1.0"
+      name: "Revenue Projection Model"
+      type: "Financial Forecasting"
+      status: "ACTIVE"
+      created_date: "2026-01-15"
+      last_validated: "2026-01-15"
+      validation_status: "PRODUCTION"  # 3+ customers, E(θ) calibrated
+
+      description: "Multi-regional bottom-up revenue projection (11-year planning horizon)"
+
+      # 10C CORE Framework Integration
+      nine_c_mapping:
+        primary_core: "WHERE"  # Parameter calibration (Θ)
+        secondary_cores: [WHEN, HOW, WHAT]  # Context (Ψ), complementarity (γ), dimensions (d)
+        core_dependency: "Depends on all upstream COREs (WHO→WHAT→HOW→WHEN→WHERE)"
+        formula_link: "U^pot = Σ_d ω^L_d · U^L_d + Σ γ^L_dd' · U^L_d·U^L_d' (Financial component)"
+
+      # Parameter uncertainty quantification
+      parameter_uncertainty:
+        regional_cagr:
+          value_range: "2.5% - 8.5%"
+          epistemic_status_e_theta: "±1.5pp"  # Shrinks over time with observed data
+          source: "Market reports + internal historical data"
+          update_cadence: "Quarterly"
+
+        segment_mix:
+          value_range: "20% - 40%"
+          epistemic_status_e_theta: "±2.0pp"
+          source: "Sales forecast"
+          update_cadence: "Quarterly"
+
+      # Context sensitivity (Ψ-dimensions)
+      context_dependencies:
+        economic_psi_1: "High (CAGR depends on economic growth)"
+        technological_psi_7: "Medium (digital disruption affects growth rate)"
+        institutional_psi_5: "Low (regulatory stable)"
+
+      template_file: "revenue_projection_model.yaml"
+      implementation_file: "revenue_projection.py"
+
+      parameters:
+        inputs_required: 5
+        inputs:
+          - "base_year_revenue_eur_m"
+          - "regional_breakdown_2024_percent"
+          - "regional_cagr_percent"
+          - "segment_mix_2024_percent"
+          - "segment_cagr_percent"
+
+      outputs:
+        type: "DataFrame"
+        rows: "11 years (2024-2035)"
+        columns: ["Year", "Europe", "APAC", "SA", "NA", "AMET", "Total", "YoY%"]
+
+      capabilities:
+        - "Regional bottom-up forecasting"
+        - "Segment-based projections"
+        - "CAGR calculations"
+        - "Variance analysis"
+
+      use_cases:
+        - "Board revenue presentations"
+        - "Strategic planning (scenario modeling)"
+        - "Sensitivity analysis"
+        - "Budget forecasting"
+
+      example_customers:
+        - name: "ALPLA"
+          application: "€4.9B → €9.9B revenue projection (6.9% CAGR)"
+          configuration_file: "../../customers/alpla/alpla_assumptions.yaml"
+
+      validation:
+        type: "Historical backtesting"
+        confidence_level: "HIGH (calibrated to ALPLA 4.2% historical CAGR)"
+        monte_carlo_simulations: 10000
+
+      computational_requirements:
+        runtime_seconds: "<1 second"
+        memory_mb: 50
+
+      dependencies:
+        required_inputs: "none (self-contained)"
+        integrates_with:
+          - "MCSM-1.0 (Monte Carlo validation)"
+          - "OSM-1.0 (Headcount scaling)"
+          - "CAM-1.0 (Capex allocation)"
+
+      api_reference:
+        function_name: "project_revenue()"
+        signature: "project_revenue(parameters: dict) -> pd.DataFrame"
+        example_call: |
+          config = {
+            'base_revenue': 4900,
+            'regional_cagr': {'europe': 2.5, 'apac': 8.5, ...}
+          }
+          df = project_revenue(config)
+
+
+    mcsm_1_0:
+      model_id: "MCSM-1.0"
+      name: "Monte Carlo Simulation Model"
+      type: "Risk & Uncertainty Quantification"
+      status: "ACTIVE"
+      created_date: "2026-01-15"
+      last_validated: "2026-01-15"
+      validation_status: "PRODUCTION"
+
+      description: "Stochastic validation of revenue projections (10,000 scenarios)"
+
+      # 10C CORE Framework Integration
+      nine_c_mapping:
+        primary_core: "WHERE"  # Uncertainty quantification E(θ)
+        secondary_cores: [READY, WHEN]  # Decision thresholds (θ), context variations
+        core_dependency: "Builds on WHERE parameters; feeds into READY decision threshold"
+        formula_link: "P(outcome ≥ target) = ∫ pdf(θ) dθ; confidence intervals from E(θ) uncertainty"
+
+      # Parameter uncertainty
+      parameter_uncertainty:
+        simulation_count:
+          value: 10000
+          rationale: "Sufficient for 1% tail risk estimation"
+
+        distribution_assumptions:
+          cagr_distribution: "Normal(mean, E(θ))"
+          correlation_matrix: "Based on 5-year historical correlation"
+          epistemic_status: "Medium confidence (±10%)"
+
+      template_file: "monte_carlo_simulation_model.yaml"
+      implementation_file: "monte_carlo_simulation.py"
+
+      parameters:
+        inputs_required: 4
+        inputs:
+          - "number_of_simulations (default: 10000)"
+          - "regional_cagr_distributions"
+          - "correlation_matrix"
+          - "scenario_adjustments"
+
+      outputs:
+        type: "Dict of statistics + DataFrame"
+        content:
+          - "Percentile distribution (1%, 5%, 25%, 50%, 75%, 95%, 99%)"
+          - "Summary statistics (mean, std dev, CV)"
+          - "Probability metrics (P(exceeds target), P(downside), etc.)"
+          - "Sensitivity analysis (elasticity by region)"
+
+      capabilities:
+        - "10,000 scenario simulation"
+        - "Probability distribution calculation"
+        - "Confidence interval estimation"
+        - "Regional sensitivity analysis"
+        - "Scenario comparison (Conservative/Base/Optimistic)"
+
+      use_cases:
+        - "Board confidence metrics (97.9% probability of exceeding conservative)"
+        - "Risk quantification (downside/upside bounds)"
+        - "Decision support (scenario probabilities)"
+        - "Capital allocation optimization"
+
+      example_customers:
+        - name: "ALPLA"
+          application: "€9.9B base case with 95% CI [€8.7B, €11.1B]"
+          configuration_file: "../../customers/alpla/alpla_scenarios.yaml"
+
+      validation:
+        type: "Bootstrap resampling + backtesting"
+        confidence_level: "HIGH"
+        bootstrap_samples: 10
+
+      computational_requirements:
+        runtime_seconds: "15-30 seconds for 10K simulations"
+        memory_mb: 500-1000
+
+      dependencies:
+        requires: "RPM-1.0 (revenue projections)"
+        integrates_with: "Board reporting, risk management systems"
+
+      api_reference:
+        function_name: "run_monte_carlo()"
+        signature: "run_monte_carlo(config: dict, revenue_df: pd.DataFrame) -> dict"
+
+
+    osm_1_0:
+      model_id: "OSM-1.0"
+      name: "Organizational Scaling Model"
+      type: "Workforce Planning"
+      status: "ACTIVE"
+      created_date: "2026-01-15"
+      last_validated: "2026-01-15"
+      validation_status: "PRODUCTION"
+
+      description: "Headcount evolution and payroll forecasting (11-year planning)"
+
+      # 10C CORE Framework Integration
+      nine_c_mapping:
+        primary_core: "WHO"  # Firm-level aggregation via hierarchy levels (L)
+        secondary_cores: [WHAT, WHERE, HIERARCHY]  # Utility dimensions, parameters, N_L2 complexity
+        core_dependency: "Operationalizes WHO levels; uses N_L2 formula for decision complexity"
+        formula_link: "N_L2 = α·γ_avg × n × (1-m) / log(n); determines span-of-control and required coordination"
+
+      # Parameter uncertainty
+      parameter_uncertainty:
+        headcount_elasticity:
+          value: "0.65"  # Relative to revenue growth (γ_rev-org = 0.68)
+          epistemic_status: "±0.05"
+          source: "Historical data (ALPLA 4-year track record)"
+          update_cadence: "Annual"
+
+        average_cost_per_person:
+          value_range: "€90K - €100K"
+          epistemic_status: "±5%"
+          source: "Labor market benchmarks by function"
+          update_cadence: "Annual"
+
+      # Hierarchy integration
+      hierarchy_integration:
+        n_l2_formula_application: "Determines L2 decision complexity; affects coordination overhead"
+        example: "2500 people, γ_avg=0.65, m=0.3 → N_L2≈180 coordinated decisions required"
+
+      template_file: "organizational_scaling_model.yaml"
+      implementation_file: "organizational_scaling.py"
+
+      parameters:
+        inputs_required: 5
+        inputs:
+          - "base_year_headcount"
+          - "base_year_headcount_by_function"
+          - "avg_cost_by_function"
+          - "regional_distribution"
+          - "phase_based_hiring"
+
+      outputs:
+        type: "Dict of DataFrames"
+        content:
+          - "Annual headcount projection (by function, by region)"
+          - "Annual payroll cost projection"
+          - "Regional distribution (%, headcount)"
+          - "Phase-based hiring plan"
+
+      capabilities:
+        - "Function-based headcount forecasting"
+        - "Regional workforce planning"
+        - "Cost escalation modeling (function-specific)"
+        - "Payroll forecasting"
+        - "Hiring plan generation"
+
+      use_cases:
+        - "HR planning (recruiting targets, training programs)"
+        - "Payroll forecasting (P&L modeling)"
+        - "Organizational design (structure evolution)"
+        - "Capability assessment"
+
+      example_customers:
+        - name: "ALPLA"
+          application: "24.3K → 38.5K employees (+58% growth)"
+          configuration_file: "../../customers/alpla/alpla_assumptions.yaml"
+
+      computational_requirements:
+        runtime_seconds: "<1 second"
+        memory_mb: 100
+
+      dependencies:
+        integrates_with:
+          - "RPM-1.0 (revenue to validate headcount ratio)"
+          - "Board reporting"
+
+      api_reference:
+        function_name: "project_headcount()"
+        signature: "project_headcount(config: dict) -> dict"
+
+
+    cam_1_0:
+      model_id: "CAM-1.0"
+      name: "Capex Allocation Model"
+      type: "Investment Planning & ROI"
+      status: "ACTIVE"
+      created_date: "2026-01-15"
+      last_validated: "2026-01-15"
+      validation_status: "PRODUCTION"
+
+      description: "Capital expenditure planning and ROI analysis across initiatives"
+
+      # 10C CORE Framework Integration
+      nine_c_mapping:
+        primary_core: "HIERARCHY"  # L0-L3 decision stratification and capital allocation
+        secondary_cores: [HOW, READY, STAGE]  # Complementarity (γ) between initiatives, readiness (WAX ≥ θ), phasing (S)
+        core_dependency: "Uses N_L2 to determine governance gates; uses γ for investment complementarity"
+        formula_link: "Feasible(I | Ψ) ⟺ γ(Ψ → target_FEPSDE(I)) ≥ θ; Value = Σ E(initiative) + Σ γ_ij·√(E_i·E_j)"
+
+      # Parameter uncertainty
+      parameter_uncertainty:
+        capex_intensity:
+          value: "3.5%"  # As % of revenue
+          epistemic_status: "±0.4pp"
+          source: "Industry benchmarks"
+          update_cadence: "Annual"
+
+        payback_period:
+          value_range: "5 - 7 years"
+          epistemic_status: "±1 year"
+          source: "Historical project data (IT: 5.2y, Manufacturing: 6.8y)"
+          update_cadence: "Post-project review"
+
+      # Complementarity analysis
+      complementarity_matrix:
+        digital_capex_to_talent_training: "γ = 0.55 (digital requires training investment)"
+        capex_to_risk_management: "γ = 0.42 (large capex needs risk controls)"
+        automation_to_headcount_savings: "γ = -0.65 (substitutes: capex reduces labor)"
+
+      # Governance by hierarchy level
+      governance_stratification:
+        l1_strategic: "Board approval; annual capex budget"
+        l2_tactical: "CFO + Business Unit approval; project-level allocation (~180 decisions per N_L2 formula)"
+        l3_operative: "Project manager execution; procurement & delivery"
+
+      template_file: "capex_allocation_model.yaml"
+      implementation_file: "capex_allocation.py"
+
+      parameters:
+        inputs_required: 4
+        inputs:
+          - "total_capex_budget (11 years)"
+          - "capex_by_initiative"
+          - "phase_based_budgeting"
+          - "roi_parameters"
+
+      outputs:
+        type: "Dict of DataFrames"
+        content:
+          - "Annual capex roadmap (by initiative)"
+          - "Quarterly capex pace"
+          - "ROI analysis (by initiative)"
+          - "Payback period calculations"
+
+      capabilities:
+        - "Phase-based capex allocation"
+        - "ROI calculations"
+        - "Payback period estimation"
+        - "Capex pace optimization"
+        - "Initiative prioritization"
+
+      use_cases:
+        - "Budget allocation across initiatives"
+        - "ROI justification (€550M → €980M benefits)"
+        - "Cash flow forecasting"
+        - "Capital discipline enforcement"
+
+      example_customers:
+        - name: "ALPLA"
+          application: "€550M capex over 11 years (€50M/year average)"
+          configuration_file: "../../customers/alpla/alpla_assumptions.yaml"
+
+      computational_requirements:
+        runtime_seconds: "<1 second"
+        memory_mb: 50
+
+      dependencies:
+        integrates_with:
+          - "RPM-1.0 (revenue for ROI benchmarking)"
+          - "Board reporting"
+
+      api_reference:
+        function_name: "project_capex()"
+        signature: "project_capex(config: dict) -> dict"
+
+
+    # ==========================================================================
+    # SUCCESSION PREDICTION MODELS
+    # ==========================================================================
+
+    psf_2_0:
+      model_id: "PSF-2.0"
+      name: "Papal Succession Framework"
+      type: "Succession Prediction"
+      domain: "governance/religious"
+      status: "ACTIVE"
+      created_date: "2026-01-15"
+      last_validated: "2026-01-15"
+      validation_status: "RESEARCH"  # Validated on historical data, not production
+
+      description: |
+        Predicts number of ballots needed in papal conclaves using network
+        centrality metrics and complementarity parameters. Based on 12 historical
+        conclaves (1878-2025).
+
+      # 10C CORE Framework Integration
+      nine_c_mapping:
+        primary_core: "HOW"  # Complementarity (γ) between cardinal factions
+        secondary_cores: [WHO, WHEN, HIERARCHY]
+        core_dependency: "Network structure (WHO) + Context (WHEN) + Governance (HIERARCHY)"
+        formula_link: "Ballots = 10/(Λ+Π) + Stalemate_Correction"
+
+      # Key parameters
+      parameters:
+        inputs_required: 5
+        inputs:
+          - "Lambda (Λ): Network centrality metric"
+          - "Pi (Π): Coalition formation probability"
+          - "Iota (Ι): Integration capacity"
+          - "Alpha (Α): Age distribution factor"
+          - "Gamma matrix (γ_ij): Interaction parameters"
+
+      outputs:
+        type: "Prediction"
+        content:
+          - "Predicted number of ballots"
+          - "Stalemate probability"
+          - "Confidence interval"
+
+      # Performance
+      validation:
+        dataset: "12 conclaves (1878-2025)"
+        rmse_ballots: 3.185
+        critical_case: "1922 conclave (predicted 8.9, actual 14)"
+        stalemate_detection: "3/3 correctly identified (1922, 1958, 2013)"
+
+      # Scientific sources
+      literature_sources:
+        - "crokidakis2025conclave"
+        - "soda2025network"
+        - "antonioni2025totopapa"
+        - "baumgartner2003locked"
+        - "prevost2026psf"
+
+      appendix_references:
+        - "PAP_DOMAIN-PAPAL-APPOINTMENTS.tex"
+        - "PAP2_PAPAL-HISTORICAL-ANALYSIS.tex"
+        - "PAP3_PAPAL-SUCCESSION-FRAMEWORK.tex"
+        - "PAP_DOMAIN-PAPAL-EXTENDED-1878-1939.tex"
+
+      documentation_file: "PHASE_2_TASK_2_1_COMPLETION_SUMMARY.txt"
+
+      tags:
+        - "succession"
+        - "papal"
+        - "conclave"
+        - "voting"
+        - "prediction"
+        - "network-analysis"
+        - "complementarity"
+
+      search_keywords:
+        - "pope"
+        - "papst"
+        - "vatican"
+        - "cardinal"
+        - "kardinal"
+        - "conclave"
+        - "konklave"
+        - "holy see"
+
+
+    chi_1_0:
+      model_id: "CHI-1.0"
+      name: "China CCP Leadership Selection Model"
+      type: "Succession Prediction"
+      domain: "governance/political"
+      status: "DRAFT"
+      created_date: "2026-01-15"
+      last_validated: null
+      validation_status: "DEVELOPMENT"  # Framework exists, validation pending
+
+      description: |
+        Factionalist-Consensus model of CCP leadership selection. Predicts
+        Politburo Standing Committee composition and General Secretary succession
+        for 2027 and 2032 Party Congresses.
+
+      # 10C CORE Framework Integration
+      nine_c_mapping:
+        primary_core: "HIERARCHY"  # L0-L3 decision stratification in CCP
+        secondary_cores: [WHO, HOW, WHEN]
+        core_dependency: "Faction structure (WHO) + Consensus building (HOW) + Context (WHEN)"
+        formula_link: "Selection = f(Faction_Balance, Age_Norm, Patron_Network, Ψ_political)"
+
+      # Key parameters
+      parameters:
+        inputs_required: 6
+        inputs:
+          - "Faction affiliation (Shanghai, Tuanpai, Princelings, etc.)"
+          - "Age at Party Congress (68-rule, now flexible)"
+          - "Patron-client network strength"
+          - "Provincial experience score"
+          - "Central committee tenure"
+          - "Context factors (Ψ): economic, geopolitical, domestic"
+
+      outputs:
+        type: "Prediction"
+        content:
+          - "Politburo Standing Committee composition probabilities"
+          - "General Secretary succession probability"
+          - "Faction balance forecast"
+
+      # Current status
+      validation:
+        dataset: "Party Congresses 1982-2022 (8 transitions)"
+        status: "Framework defined, validation in progress"
+        next_test: "20th Party Congress (2027)"
+
+      appendix_references:
+        - "CHI_DOMAIN-CHINA-SUCCESSION.tex"
+
+      tags:
+        - "succession"
+        - "china"
+        - "ccp"
+        - "politburo"
+        - "political"
+        - "prediction"
+        - "faction"
+
+      search_keywords:
+        - "china"
+        - "chinese"
+        - "ccp"
+        - "communist party"
+        - "politburo"
+        - "xi jinping"
+        - "general secretary"
+        - "party congress"
+        - "standing committee"
+
+
+  # ============================================================================
+  # ORCHESTRATOR SUITE: ISO-1.0 (31 Models, 5 Layers)
+  # ============================================================================
+  # IMPORTANT: ISO-1.0 is the FULL strategy architecture (31 models).
+  # Quick Mode (4 models) is a subset: RPM, OSM, CAM, MCSM.
+  # Full Mode runs all 31 models with cross-layer dependencies.
+  #
+  # Each layer builds on the previous one and feeds into the next.
+  # See: /docs/frameworks/strategic-models-9c-mapping.md for 10C integration
+
+  orchestrator:
+    name: "ISO-1.0"
+    version: "1.3"
+    full_model_count: 31
+    five_layers:
+
+      layer_1_functional_strategy:
+        layer_name: "Functional Strategy (7 models)"
+        purpose: "Strategic identity and functional optimization"
+        primary_9c_cores: [WHAT, WHO]
+        model_count: 7
+        models_in_layer:
+          - code: VMV
+            name: "Vision-Mission-Values Model"
+            primary_core: WHAT
+            fepsde_focus: [S, D, X]  # Social, Development, Existential
+          - code: CLV
+            name: "Customer Lifetime Value"
+            primary_core: HOW
+            complementarity_focus: "Customer acquisition vs retention"
+          - code: CAC
+            name: "Customer Acquisition Cost"
+            primary_core: HOW
+          - code: HCM
+            name: "Human Capital Model"
+            primary_core: WHAT
+            utility_dimensions: [D, P]  # Development, Physical
+          - code: SCO
+            name: "Supply Chain Optimization"
+            primary_core: HOW
+          - code: RDM
+            name: "R&D & Innovation Model"
+            primary_core: [READY, STAGE]
+            innovation_pipeline: "Stage-based funnel"
+          - code: ESG
+            name: "ESG & Sustainability Model"
+            primary_core: WHEN
+            context_dependence: [PSI_8_environmental, PSI_5_institutional]
+
+      layer_2_core_financial:
+        layer_name: "Core Financial (10 models)"
+        purpose: "Comprehensive P&L, balance sheet, and cash flow"
+        primary_9c_cores: [WHERE, WHO, HIERARCHY]
+        model_count: 10
+        models_in_layer:
+          - code: RPM
+            name: "Revenue Projection Model"
+            validation_status: PRODUCTION
+            hierarchy_level: [L2, L3]
+          - code: OSM
+            name: "Organization Scaling Model"
+            validation_status: PRODUCTION
+            hierarchy_level: [L0, L1, L2, L3]
+          - code: CAM
+            name: "Capex Allocation Model"
+            validation_status: PRODUCTION
+            hierarchy_level: [L1, L2]
+          - code: CSM
+            name: "Cost Structure Model"
+            primary_core: WHERE
+          - code: PLM
+            name: "Pricing & Profitability"
+            primary_core: [HOW, WHAT]
+          - code: WCM
+            name: "Working Capital Model"
+            primary_core: WHERE
+          - code: CFM
+            name: "Cash Flow Model"
+            primary_core: WHERE
+          - code: DFM
+            name: "Debt & Financing"
+            primary_core: READY
+          - code: BSM
+            name: "Balance Sheet Model"
+            primary_core: WHERE
+          - code: BEM
+            name: "Business Economics"
+            primary_core: [WHAT, HOW]
+
+      layer_3_theoretical_foundation:
+        layer_name: "Theoretical Foundation (5 models)"
+        purpose: "Behavioral economics and valuation theory"
+        primary_9c_cores: [HOW, WHERE, WHAT]
+        model_count: 5
+        models_in_layer:
+          - code: FEM
+            name: "Financial Economics"
+            primary_core: WHERE
+            links_to_utility: "Financial dimension (F) of FEPSDE"
+          - code: BFM
+            name: "Behavioral Finance"
+            primary_core: [AWARE, READY]
+            decision_biases: "Awareness and willingness filters"
+          - code: CMM
+            name: "Complementarity Matrix"
+            primary_core: HOW
+            empirical_estimation: "Estimates γ-parameters from data"
+          - code: VAM
+            name: "Valuation & Value Creation"
+            primary_core: WHAT
+            formula: "V = Σ E(d) + Σ γ_dd'·√(E(d)·E(d'))"
+          - code: VCM
+            name: "Value Creation Model"
+            primary_core: [READY, STAGE]
+            path_to_value: "Decision → WAX ≥ θ → Action → Value"
+
+      layer_4_strategic_analysis:
+        layer_name: "Strategic Analysis (5 models)"
+        purpose: "Market positioning, M&A, portfolio, performance"
+        primary_9c_cores: [WHEN, HIERARCHY, HOW]
+        model_count: 5
+        models_in_layer:
+          - code: MSM
+            name: "Market & Positioning"
+            primary_core: WHEN
+            context_analysis: "8 Ψ dimensions"
+          - code: MAM
+            name: "M&A & Growth"
+            primary_core: HIERARCHY
+          - code: PFM
+            name: "Portfolio & Mix"
+            primary_core: HOW
+            synergy_analysis: "γ between business units"
+          - code: STM
+            name: "Scenario & Sensitivity"
+            primary_core: WHERE
+          - code: PRM
+            name: "Performance & Risk"
+            primary_core: [READY, STAGE]
+
+      layer_5_simulation_validation:
+        layer_name: "Simulation & Validation (4 models)"
+        purpose: "Uncertainty quantification and cross-model validation"
+        primary_9c_cores: [WHERE, READY, HOW]
+        model_count: 4
+        models_in_layer:
+          - code: MCSM
+            name: "Monte Carlo Simulation"
+            validation_status: PRODUCTION
+            uncertainty_propagation: "E(θ) → confidence intervals"
+          - code: SAM
+            name: "Sensitivity Analysis"
+            primary_core: WHERE
+            elasticity_testing: "dπ/dθ₁, dπ/dθ₂, ..."
+          - code: SCM
+            name: "Scenario Building"
+            primary_core: WHEN
+          - code: ICM
+            name: "Integration Check"
+            primary_core: HOW
+            cross_model_validation: "γ consistency across layers 1-4"
+
+  # ============================================================================
+  # MODEL DEPENDENCIES & WORKFLOWS
+  # ============================================================================
+
+  workflows:
+
+    workflow_1_complete_strategic_model:
+      name: "Complete Strategic Model Workflow"
+      description: "Full strategic planning using all 4 models"
+      sequence:
+        step_1: "Load customer assumptions (alpla_assumptions.yaml)"
+        step_2: "Run RPM-1.0 → Revenue projections"
+        step_3: "Run OSM-1.0 → Headcount/payroll projections"
+        step_4: "Run CAM-1.0 → Capex allocation & ROI"
+        step_5: "Run MCSM-1.0 → Monte Carlo validation"
+        step_6: "Generate outputs for board presentation"
+
+      estimated_runtime: "1-2 minutes (end-to-end)"
+
+    workflow_2_sensitivity_analysis:
+      name: "Sensitivity Analysis Workflow"
+      description: "Explore impact of parameter changes"
+      procedure: |
+        1. Set base case parameters
+        2. Modify one parameter (e.g., APAC CAGR: 8.5% → 7.5%)
+        3. Re-run RPM-1.0
+        4. Compare output (€9.5B vs €9.9B → -€0.4B impact)
+        5. Repeat for each key parameter
+        6. Generate sensitivity table
+
+    workflow_3_new_customer_implementation:
+      name: "New Customer Implementation"
+      description: "Replicate model set for new customer"
+      procedure: |
+        1. Copy all templates from templates/
+        2. Create customer directory: data/customers/new_company/
+        3. Create new_company_assumptions.yaml (modify parameters)
+        4. Create new_company_configurations.yaml (model inputs)
+        5. Run all 4 models with new parameters
+        6. Validate outputs (sanity checks)
+        7. Create presentation materials
+        8. Commit to data/customers/new_company/
+
+      estimated_time: "4-6 hours for complete implementation"
+
+
+  # ============================================================================
+  # MODEL COMPATIBILITY & VERSIONING
+  # ============================================================================
+
+  compatibility:
+
+    current_version: "1.0.0"
+    python_version_required: "3.8+"
+    dependencies_package_versions:
+      pandas: "1.3.0+"
+      numpy: "1.21.0+"
+      scipy: "1.7.0+"
+      pyyaml: "5.4+"
+      matplotlib: "3.4.0+"
+
+    backward_compatibility: "Full (no breaking changes expected in v1.x)"
+    deprecation_warning: "None currently"
+
+    migration_guide: |
+      If upgrading from v0.x to v1.0:
+      - All model APIs changed to parametric form
+      - Use model_adapter.py for parameter mapping
+      - See data/models/examples/ for migration examples
+
+
+  # ============================================================================
+  # GOVERNANCE & QUALITY ASSURANCE
+  # ============================================================================
+
+  governance:
+
+    approval_authority: "Strategic Planning Committee + Board"
+    change_control_process: |
+      1. All model changes require unit tests
+      2. Submit pull request with test coverage >80%
+      3. Code review by 2 team members
+      4. Board approval if assumptions change >1pp
+
+    validation_cycle: "Quarterly (Q1, Q2, Q3, Q4)"
+    next_validation_date: "2026-04-15"
+
+    known_limitations:
+      - "Revenue model assumes linear CAGR (non-linear growth not modeled)"
+      - "Monte Carlo uses log-normal distribution (may underestimate tail risks)"
+      - "11-year forecast increases uncertainty over time (±15% by year 11)"
+      - "Geopolitical disruptions not explicitly modeled"
+
+    known_issues: "None"
+
+  # ============================================================================
+  # PERFORMANCE METRICS
+  # ============================================================================
+
+  performance_metrics:
+
+    model_accuracy_vs_actuals:
+      rpm_1_0: "MAPE ±2.3% (calibrated to ALPLA historical data)"
+      mcsm_1_0: "95% CI contains actual result 94% of time (bootstrap validation)"
+
+    customer_adoption:
+      total_customers_using_models: 1
+      customers:
+        - "ALPLA (primary)"
+
+    usage_statistics:
+      board_presentations_generated: 5
+      scenario_comparisons_run: 50
+      sensitivity_analyses_completed: 30
+
+
+  # ============================================================================
+  # SUPPORT & DOCUMENTATION
+  # ============================================================================
+
+  documentation:
+
+    model_specifications: "See individual template files in templates/"
+    python_implementation: "See implementation files in scripts/models/"
+    usage_examples: "See data/models/examples/"
+    customer_examples: "See data/customers/alpla/"
+
+    quick_reference:
+      rpm_1_0: "Revenue projections (11-year forecast)"
+      mcsm_1_0: "Risk quantification (10K scenario analysis)"
+      osm_1_0: "Headcount & payroll forecasting"
+      cam_1_0: "Capex planning & ROI analysis"
+
+    support_contacts:
+      primary: "Strategic Analysis Team"
+      email: "strategic-team@company.com"
+      slack_channel: "#strategic-models"
+
+
+metadata:
+  registry_version: "1.0.0"
+  created_date: "2026-01-15"
+  last_updated: "2026-01-15"
+  maintained_by: "Strategic Analysis Team"
+  next_review: "2026-04-15"
