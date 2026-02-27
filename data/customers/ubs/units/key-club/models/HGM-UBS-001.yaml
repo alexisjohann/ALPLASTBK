@@ -1,0 +1,352 @@
+# =============================================================================
+# HAUPTBANK-GRAVITATIONSMODELL (HGM v0.1)
+# =============================================================================
+# Model-ID: HGM-UBS-001
+# Version: 0.1 (Prototyp — Kalibrierung mit echten Daten ausstehend)
+# Session: EBF-S-2026-02-16-FIN-001
+# Customer: UBS Key Club
+# Created: 2026-02-16
+# =============================================================================
+
+metadata:
+  model_id: "HGM-UBS-001"
+  name: "Hauptbank-Gravitationsmodell"
+  version: "0.1"
+  status: "prototype"
+  session_id: "EBF-S-2026-02-16-FIN-001"
+  customer: "UBS Key Club"
+  domain: "FIN"
+  created: "2026-02-16"
+  report_file: "outputs/sessions/EBF-S-2026-02-16-FIN-001/F5_hgm_model_v0.1.md"
+
+# =============================================================================
+# MODEL FORMULA
+# =============================================================================
+
+formula:
+  notation: "P(Hauptbank) = σ( Σᵢ gᵢ·wᵢ + Σᵢⱼ γᵢⱼ·gᵢ·gⱼ - SQ )"
+  components:
+    P_hauptbank: "Wahrscheinlichkeit, dass Kundin Hauptbank-Status erreicht"
+    g_i: "Gravitationskraft (Lock-in) von Produkt i ∈ [0, 1]"
+    w_i: "Alltags-Gewicht (Touchpoint-Frequenz) von Produkt i ∈ [0, 1]"
+    gamma_ij: "Komplementarität zwischen Produkt i und j ∈ [-1, +1]"
+    SQ: "Status Quo Bias (Trägheit, zu überwinden)"
+    sigma: "Sigmoid-Funktion: σ(x) = 1 / (1 + e^(-x))"
+
+# =============================================================================
+# PRODUCT GRAVITY MAP
+# =============================================================================
+
+products:
+  - id: "LOHN"
+    name: "Lohnkonto/Zahlungsverkehr"
+    g_lockin: 0.90
+    w_alltag: 0.95
+    gravity: 0.855  # g × w
+    tier: "T1"
+    source: "Samuelson & Zeckhauser 1988"
+    g_justification: "Daueraufträge, LSV, Arbeitgeber-Meldung, psychologischer Anker"
+    w_justification: "Tägliche Nutzung (E-Banking, Überweisungen, Zahlungen)"
+
+  - id: "HYPO"
+    name: "Hypothek"
+    g_lockin: 0.95
+    w_alltag: 0.30
+    gravity: 0.285
+    tier: "T1"
+    source: "Samuelson & Zeckhauser 1988"
+    g_justification: "5-10 Jahre Vertragsbindung, höchste Wechselkosten"
+    w_justification: "Monatliche Zahlung, sonst unsichtbar"
+
+  - id: "KARTE"
+    name: "Kreditkarte"
+    g_lockin: 0.35
+    w_alltag: 0.80
+    gravity: 0.280
+    tier: "T2"
+    source: "LLMMC (Anker: empirische Switching-Daten)"
+    g_justification: "Leicht kündbar, niedrige Bindung"
+    w_justification: "Tägliche Nutzung (Zahlungen, Online-Shopping)"
+
+  - id: "3A"
+    name: "3. Säule (3a/3b)"
+    g_lockin: 0.60
+    w_alltag: 0.15
+    gravity: 0.090
+    tier: "T2"
+    source: "LLMMC (Anker: CH Steuersystem)"
+    g_justification: "Jährliche Entscheidung, aber Steuer-Lock-in"
+    w_justification: "Jährliche Einzahlung, Steuererklärung"
+
+  - id: "VORSORGE"
+    name: "Vorsorge (2. Säule)"
+    g_lockin: 0.70
+    w_alltag: 0.10
+    gravity: 0.070
+    tier: "T2"
+    source: "LLMMC"
+    g_justification: "Arbeitgeber-gebunden, selten gewechselt"
+    w_justification: "Kaum aktive Interaktion"
+
+  - id: "ADVISORY"
+    name: "Advisory/Vermögen"
+    g_lockin: 0.50
+    w_alltag: 0.20
+    gravity: 0.100
+    tier: "T2"
+    source: "Bereits bei UBS (Key Club)"
+    g_justification: "Performance-abhängig, wechselbar"
+    w_justification: "Quartalsweise Gespräche, Performance-Check"
+
+# =============================================================================
+# COMPLEMENTARITY MATRIX (γ values)
+# =============================================================================
+
+complementarity_matrix:
+  # Symmetrische Matrix — nur obere Dreiecksmatrix gespeichert
+  pairs:
+    - pair: ["LOHN", "HYPO"]
+      gamma: 0.5
+      justification: "Convenience: Amortisation/Zinszahlung automatisch. «Alles aus einer Hand»"
+      tier: "T2"
+      source: "LLMMC"
+
+    - pair: ["LOHN", "3A"]
+      gamma: 0.3
+      justification: "Einzahlung direkt vom Lohnkonto, automatisierbar"
+      tier: "T2"
+      source: "LLMMC"
+
+    - pair: ["LOHN", "KARTE"]
+      gamma: 0.4
+      justification: "Identitäts-Shift: Tägliche Nutzung beider → «Das ist MEINE Bank für alles Tägliche»"
+      tier: "T2"
+      source: "Akerlof & Kranton 2000"
+
+    - pair: ["LOHN", "VORSORGE"]
+      gamma: 0.2
+      justification: "Schwache Verbindung, da 2. Säule arbeitgebergebunden"
+      tier: "T2"
+      source: "LLMMC"
+
+    - pair: ["LOHN", "ADVISORY"]
+      gamma: 0.1
+      justification: "Geringe Alltagsverbindung"
+      tier: "T2"
+      source: "LLMMC"
+
+    - pair: ["HYPO", "3A"]
+      gamma: 0.6
+      justification: "Steuer-Synergie: 3a-Amortisation der Hypothek. Doppelter Nutzen"
+      tier: "T1"
+      source: "CH Steuerrecht"
+
+    - pair: ["HYPO", "KARTE"]
+      gamma: 0.1
+      justification: "Geringe Verbindung"
+      tier: "T2"
+      source: "LLMMC"
+
+    - pair: ["HYPO", "VORSORGE"]
+      gamma: 0.3
+      justification: "Vorbezug/Verpfändung 2. Säule für Wohneigentum"
+      tier: "T1"
+      source: "CH Vorsorgerecht"
+
+    - pair: ["HYPO", "ADVISORY"]
+      gamma: 0.2
+      justification: "Beratungssynergie bei Gesamtvermögen"
+      tier: "T2"
+      source: "LLMMC"
+
+    - pair: ["3A", "KARTE"]
+      gamma: 0.0
+      justification: "Keine relevante Verbindung"
+      tier: "T2"
+      source: "LLMMC"
+
+    - pair: ["3A", "VORSORGE"]
+      gamma: 0.4
+      justification: "Vorsorge-Cluster: Gesamtvorsorge-Beratung als Paket"
+      tier: "T2"
+      source: "LLMMC"
+
+    - pair: ["3A", "ADVISORY"]
+      gamma: 0.3
+      justification: "Steueroptimierung im Gesamtkontext"
+      tier: "T2"
+      source: "LLMMC"
+
+    - pair: ["KARTE", "VORSORGE"]
+      gamma: 0.0
+      justification: "Keine relevante Verbindung"
+      tier: "T2"
+      source: "LLMMC"
+
+    - pair: ["KARTE", "ADVISORY"]
+      gamma: 0.1
+      justification: "Schwache Verbindung"
+      tier: "T2"
+      source: "LLMMC"
+
+    - pair: ["VORSORGE", "ADVISORY"]
+      gamma: 0.3
+      justification: "Gesamtvermögens-Perspektive"
+      tier: "T2"
+      source: "LLMMC"
+
+# =============================================================================
+# BEHAVIORAL BARRIERS (Status Quo)
+# =============================================================================
+
+barriers:
+  - name: "Status Quo Bias"
+    strength: 0.8
+    sq_contribution: 1.80
+    mechanism: "λ ≈ 2.25 → Wechselkosten 2.25× überschätzt"
+    source: "Samuelson & Zeckhauser (1988), Kahneman & Tversky (1979)"
+
+  - name: "Mental Accounting"
+    strength: 0.6
+    sq_contribution: 0.60
+    mechanism: "«UBS = Anlagen, KB = Alltag» — mentale Trennung"
+    source: "Thaler (1985, 1999)"
+
+  - name: "Verlust-Angst"
+    strength: 0.4
+    sq_contribution: 0.40
+    mechanism: "Endowment Effect auf bestehende Bankbeziehung"
+    source: "Kahneman, Knetsch & Thaler (1991)"
+
+  - name: "Identität"
+    strength: 0.4
+    sq_contribution: 0.40
+    mechanism: "«Ich bin KB-Kundin» → Identitäts-Wechselkosten"
+    source: "Akerlof & Kranton (2000)"
+
+  total_sq: 3.20
+
+# =============================================================================
+# SEQUENCE STRATEGIES
+# =============================================================================
+
+sequences:
+  - id: "SEQ-A"
+    name: "Alltags-Pfad (ohne Life Event)"
+    sequence: "Karte (T=0) → Lohn (T=1) → 3a (T=2) → Hypo (T=3)"
+    timing: "3-6 Monate zwischen Schritten"
+    estimated_conversion: [0.15, 0.25]  # P(Hauptbank)
+    steps:
+      - step: 1
+        product: "Kreditkarte"
+        mechanism: "Identity Priming (Akerlof & Kranton)"
+        intervention: "Exklusive Key Club Card, Status-Signal"
+        delta_sq: -0.40
+
+      - step: 2
+        product: "Lohnkonto"
+        mechanism: "Hassle Reduction (Thaler & Sunstein)"
+        intervention: "«Wir erledigen ALLES für Sie» Wechselservice"
+        delta_sq: -1.20
+
+      - step: 3
+        product: "3. Säule"
+        mechanism: "Loss Framing (Kahneman & Tversky)"
+        intervention: "«Sie verschenken CHF X Steuerersparnis»"
+        delta_sq: -0.30
+
+      - step: 4
+        product: "Hypothek"
+        mechanism: "Natural Moment (Erneuerung)"
+        intervention: "Gesamtbeziehungs-Kondition + Steuer-Synergie"
+        delta_sq: -0.80
+
+  - id: "SEQ-B"
+    name: "Life-Event-Pfad (mit Life Event)"
+    sequence: "Life Event → Hypo → Lohn → 3a → Karte"
+    estimated_conversion: [0.45, 0.65]  # P(Hauptbank)
+    trigger_events:
+      - "Immobilienkauf / Hypothekar-Erneuerung"
+      - "Heirat / Scheidung"
+      - "Geburt eines Kindes"
+      - "Jobwechsel / Beförderung / Grosser Bonus"
+      - "Erbschaft / Schenkung"
+      - "Pensionierung (Kapitalbezug 2. Säule)"
+    key_insight: "Bei Life Events sinkt SQ von λ ≈ 2.25 auf λ ≈ 1.3 (Status Quo bereits gebrochen)"
+
+# =============================================================================
+# CROWDING-OUT WARNING
+# =============================================================================
+
+crowding_out:
+  gamma: -0.68
+  parameter_ref: "PAR-COMP-002"
+  source: "Frey & Jegen (2001), Deci, Koestner & Ryan (1999)"
+
+  verboten:
+    - "CHF-Bonus für Lohnkonto-Wechsel"
+    - "Prozent-Rabatt auf Hypothek bei Gesamtbeziehung"
+    - "Gratis-Kreditkarte als Wechselanreiz"
+
+  stattdessen:
+    - "Exklusivität (Events, Services nur für Hauptbankkund:innen)"
+    - "Convenience (Wechselservice, Hassle-Reduktion)"
+    - "Steueroptimierung (Loss Frame auf bestehende Verluste)"
+    - "Social Proof («73% unserer Key-Club-Mitglieder haben Hauptbank bei uns»)"
+
+# =============================================================================
+# CALIBRATION REQUIREMENTS
+# =============================================================================
+
+calibration:
+  status: "pending"
+  target_version: "1.0"
+  data_needed:
+    - data_point: "Produkt-Penetration"
+      description: "% Key-Club-Kund:innen mit Lohn/Hypo/3a/Karte bei UBS"
+      purpose: "IST-Gravitation berechnen"
+
+    - data_point: "Hauptbank-Quote"
+      description: "Aktuelle Quote + Ziel-Quote"
+      purpose: "SQ-Parameter kalibrieren"
+
+    - data_point: "Life-Event-Daten"
+      description: "Hypo-Erneuerungen, Pensionierungen (12-24 Monate)"
+      purpose: "Sequenz-B-Opportunitäten quantifizieren"
+
+# =============================================================================
+# FALSIFIABILITY
+# =============================================================================
+
+falsifiability:
+  predictions:
+    - hypothesis: "P(Hauptbank | Sequenz A) ≈ 0.20"
+      test: "Conversion Rate ohne Life Event"
+    - hypothesis: "P(Hauptbank | Sequenz B) ≈ 0.55"
+      test: "Conversion Rate mit Life Event"
+    - hypothesis: "P(Hauptbank | Bonus) ≈ 0.12"
+      test: "Conversion Rate mit finanziellen Anreizen (Crowding-Out)"
+
+# =============================================================================
+# THEORIES
+# =============================================================================
+
+theories:
+  - id: "MS-RD-001"
+    name: "Prospect Theory"
+    contribution: "Loss Aversion λ ≈ 2.25, Status Quo Bias"
+
+  - id: "MS-RD-003"
+    name: "Mental Accounting"
+    contribution: "Mentale Trennung Alltag/Anlagen"
+
+  - id: "MS-IB-001"
+    name: "Identity Economics"
+    contribution: "Identitäts-Wechselkosten, Identity Priming"
+
+  - source: "Samuelson & Zeckhauser (1988)"
+    contribution: "Status Quo Bias formalisiert"
+
+  - source: "Frey & Jegen (2001)"
+    contribution: "Motivation Crowding Theory, γ = -0.68"
+    parameter_ref: "PAR-COMP-002"

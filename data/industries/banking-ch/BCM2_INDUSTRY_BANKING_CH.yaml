@@ -1,0 +1,489 @@
+# =============================================================================
+# BCM2 INDUSTRY CONTEXT: SCHWEIZER BANKENSEKTOR
+# =============================================================================
+# Version: 1.0.0
+# Created: 2026-01-28
+# Module: BCM2_INDUSTRY_BANKING_CH
+# Purpose: Branchenweite Behavioral Context für Interventionen
+# =============================================================================
+
+metadata:
+  module_id: "BCM2_INDUSTRY_BANKING_CH"
+  industry: "Schweizer Bankensektor"
+  version: "1.0.0"
+  last_updated: "2026-01-28"
+  basis:
+    banks: 12
+    total_factors: 4200
+    coverage: "Vollständig (alle Segmente)"
+
+# =============================================================================
+# INDUSTRY-LEVEL TARGET GROUPS
+# =============================================================================
+
+industry_target_groups:
+  - id: "IND-TG-01"
+    name: "Schweizer Retail-Kunden"
+    size: 6000000  # ~6 Mio Bankkunden
+    characteristics:
+      - "Durchschnittsalter 48 Jahre"
+      - "2.3 Bankbeziehungen pro Person"
+      - "65% nutzen E-Banking"
+      - "Multi-Channel Präferenz"
+    behavioral_profile:
+      lambda: 2.15
+      tau: 0.80
+      beta: 0.87
+      digital_preference: 0.65
+      price_sensitivity: 0.70
+      switching_propensity: 0.08
+    banks_used:
+      primary: ["UBS", "ZKB", "Raiffeisen", "PostFinance"]
+      secondary: ["Kantonalbanken", "Migros Bank"]
+
+  - id: "IND-TG-02"
+    name: "KMU"
+    size: 600000  # ~600'000 KMU in CH
+    characteristics:
+      - "90% Mikrounternehmen (<10 MA)"
+      - "Beziehung zu Berater wichtig"
+      - "Regionaler Fokus"
+    behavioral_profile:
+      lambda: 2.30
+      tau: 0.82
+      relationship_preference: 0.85
+      digital_preference: 0.55
+    banks_used:
+      primary: ["Raiffeisen", "Kantonalbanken", "UBS"]
+
+  - id: "IND-TG-03"
+    name: "Affluent (CHF 100k-1M)"
+    size: 800000
+    characteristics:
+      - "Anlageaffin"
+      - "Vorsorge-fokussiert"
+      - "Beratung gewünscht"
+    behavioral_profile:
+      lambda: 1.90
+      tau: 0.85
+      advice_seeking: 0.75
+      digital_preference: 0.68
+    banks_used:
+      primary: ["ZKB", "UBS", "Kantonalbanken"]
+      secondary: ["Vontobel", "Julius Bär"]
+
+  - id: "IND-TG-04"
+    name: "HNW/UHNW (>CHF 1M)"
+    size: 150000
+    characteristics:
+      - "Vermögenserhalt-Fokus"
+      - "Internationale Diversifikation"
+      - "Diskretion wichtig"
+    behavioral_profile:
+      lambda: 1.70
+      tau: 0.88
+      advice_seeking: 0.90
+      discretion_preference: 0.92
+    banks_used:
+      primary: ["Julius Bär", "UBS Wealth", "Vontobel"]
+      secondary: ["Lombard Odier", "Pictet"]
+
+  - id: "IND-TG-05"
+    name: "Digital Natives (18-35)"
+    size: 1500000
+    characteristics:
+      - "Mobile-First"
+      - "Preissensitiv"
+      - "Geringe Loyalität"
+      - "Offen für Neobanken"
+    behavioral_profile:
+      lambda: 1.60
+      tau: 0.65
+      digital_preference: 0.92
+      switching_propensity: 0.25
+    banks_used:
+      primary: ["Neon", "Yuh", "PostFinance"]
+      secondary: ["UBS Key4", "ZKB"]
+
+  - id: "IND-TG-06"
+    name: "Senioren (65+)"
+    size: 1800000
+    characteristics:
+      - "Filial-Präferenz"
+      - "Sicherheitsorientiert"
+      - "Hohe Loyalität"
+      - "Vermögen vorhanden"
+    behavioral_profile:
+      lambda: 2.40
+      tau: 0.90
+      digital_preference: 0.35
+      switching_propensity: 0.02
+    banks_used:
+      primary: ["Kantonalbanken", "Raiffeisen", "PostFinance"]
+
+# =============================================================================
+# INDUSTRY-LEVEL INTERVENTION DOMAINS
+# =============================================================================
+
+intervention_domains:
+  # -------------------------------------------------------------------------
+  # DOMAIN 1: DIGITALISIERUNG
+  # -------------------------------------------------------------------------
+  - id: "IND-DOM-01"
+    name: "Digital Banking Adoption"
+    description: "Branchenweite Steigerung der Digital-Nutzung"
+    current_state:
+      e_banking: 0.70
+      mobile_banking: 0.50
+      digital_only: 0.15
+    target_state:
+      e_banking: 0.85
+      mobile_banking: 0.70
+      digital_only: 0.25
+    target_groups: ["IND-TG-01", "IND-TG-06"]
+
+    behavioral_barriers:
+      - barrier: "Status Quo Bias"
+        prevalence: 0.60
+        lever: "Default-Umstellung auf digital"
+
+      - barrier: "Complexity Aversion"
+        prevalence: 0.45
+        lever: "Simplification, Guided Onboarding"
+
+      - barrier: "Security Concerns"
+        prevalence: 0.55
+        lever: "Trust Cues, Biometric Login"
+
+    interventions:
+      - name: "In-Branch Digital Demo"
+        type: "Education"
+        target: ["IND-TG-06"]
+        effect_size: 0.25
+        implementation: "Berater zeigt App-Funktionen"
+
+      - name: "Social Proof Messaging"
+        type: "Nudge"
+        target: ["IND-TG-01"]
+        effect_size: 0.15
+        message: "85% Ihrer Nachbarn nutzen E-Banking"
+
+      - name: "First Transaction Reward"
+        type: "Incentive"
+        target: ["IND-TG-05", "IND-TG-06"]
+        effect_size: 0.20
+        implementation: "CHF 10 bei erster Mobile-Zahlung"
+
+  # -------------------------------------------------------------------------
+  # DOMAIN 2: VORSORGE
+  # -------------------------------------------------------------------------
+  - id: "IND-DOM-02"
+    name: "Vorsorge-Aktivierung (3a)"
+    description: "Erhöhung der 3a-Penetration"
+    current_state:
+      penetration_18_35: 0.45
+      avg_contribution: 4500
+      full_contribution_rate: 0.35
+    target_state:
+      penetration_18_35: 0.65
+      avg_contribution: 5500
+      full_contribution_rate: 0.50
+    target_groups: ["IND-TG-05", "IND-TG-01"]
+
+    behavioral_barriers:
+      - barrier: "Present Bias"
+        prevalence: 0.75
+        lever: "Automatische Erhöhung, Pre-Commitment"
+
+      - barrier: "Complexity"
+        prevalence: 0.50
+        lever: "Simplification, Default-Auswahl"
+
+      - barrier: "Inattention"
+        prevalence: 0.60
+        lever: "Salient Reminders, Tax Season Timing"
+
+    interventions:
+      - name: "Loss Framing Steuerersparnis"
+        type: "Framing"
+        target: ["IND-TG-01", "IND-TG-05"]
+        effect_size: 0.22
+        message: "Sie verlieren CHF 2'000 Steuerersparnis pro Jahr"
+
+      - name: "Auto-Escalation"
+        type: "Default"
+        target: ["IND-TG-05"]
+        effect_size: 0.18
+        implementation: "Jährliche 5% Erhöhung (Opt-out)"
+
+      - name: "Peer Comparison"
+        type: "Social Norm"
+        target: ["IND-TG-05"]
+        effect_size: 0.12
+        message: "Gleichaltrige sparen durchschnittlich CHF 5'200"
+
+  # -------------------------------------------------------------------------
+  # DOMAIN 3: NACHHALTIGKEIT
+  # -------------------------------------------------------------------------
+  - id: "IND-DOM-03"
+    name: "Sustainable Finance Adoption"
+    description: "Erhöhung des ESG-Anteils bei Anlagen"
+    current_state:
+      esg_share_retail: 0.20
+      esg_awareness: 0.55
+      willingness_to_pay: 0.15
+    target_state:
+      esg_share_retail: 0.45
+      esg_awareness: 0.80
+      willingness_to_pay: 0.25
+    target_groups: ["IND-TG-03", "IND-TG-05"]
+
+    behavioral_barriers:
+      - barrier: "Performance Skepticism"
+        prevalence: 0.45
+        lever: "Evidence Communication"
+
+      - barrier: "Greenwashing Distrust"
+        prevalence: 0.40
+        lever: "Transparenz, Third-Party Ratings"
+
+      - barrier: "Status Quo"
+        prevalence: 0.55
+        lever: "ESG as Default"
+
+    interventions:
+      - name: "ESG Default"
+        type: "Default"
+        target: ["IND-TG-03", "IND-TG-05"]
+        effect_size: 0.35
+        implementation: "Nachhaltige Variante als Standard"
+
+      - name: "Impact Reporting"
+        type: "Feedback"
+        target: ["IND-TG-03"]
+        effect_size: 0.15
+        implementation: "CO2-Ersparnis visualisieren"
+
+      - name: "Green Framing"
+        type: "Framing"
+        target: ["IND-TG-05"]
+        effect_size: 0.12
+        message: "Investieren Sie in Ihre Zukunft"
+
+  # -------------------------------------------------------------------------
+  # DOMAIN 4: VERTRAUENSAUFBAU
+  # -------------------------------------------------------------------------
+  - id: "IND-DOM-04"
+    name: "Trust Recovery Post-CS"
+    description: "Wiederherstellung des Branchenvertrauens"
+    current_state:
+      trust_index: 0.72
+      switching_consideration: 0.15
+      negative_wom: 0.25
+    target_state:
+      trust_index: 0.82
+      switching_consideration: 0.08
+      negative_wom: 0.10
+    target_groups: ["IND-TG-01", "IND-TG-03"]
+
+    behavioral_barriers:
+      - barrier: "Availability Heuristic"
+        prevalence: 0.65
+        lever: "Positive Narratives, Success Stories"
+
+      - barrier: "Attribution Error"
+        prevalence: 0.50
+        lever: "Differenzierung, Individuelle Stärken"
+
+      - barrier: "Recency Bias"
+        prevalence: 0.60
+        lever: "Langfrist-Perspektive, Track Record"
+
+    interventions:
+      - name: "Transparency Initiative"
+        type: "Communication"
+        target: ["IND-TG-01"]
+        effect_size: 0.12
+        implementation: "Proaktive Risiko-Kommunikation"
+
+      - name: "Local Hero Stories"
+        type: "Social Proof"
+        target: ["IND-TG-01", "IND-TG-06"]
+        effect_size: 0.08
+        implementation: "Regionale Erfolgsgeschichten"
+
+      - name: "Stability Signals"
+        type: "Trust Cue"
+        target: ["IND-TG-03", "IND-TG-04"]
+        effect_size: 0.10
+        implementation: "Kapitalquoten, Ratings kommunizieren"
+
+  # -------------------------------------------------------------------------
+  # DOMAIN 5: HYPOTHEKAR-OPTIMIERUNG
+  # -------------------------------------------------------------------------
+  - id: "IND-DOM-05"
+    name: "Mortgage Decision Quality"
+    description: "Verbesserung der Hypothekar-Entscheidungen"
+    current_state:
+      optimal_product_choice: 0.45
+      refinancing_rate: 0.25
+      advisory_usage: 0.60
+    target_state:
+      optimal_product_choice: 0.70
+      refinancing_rate: 0.40
+      advisory_usage: 0.75
+    target_groups: ["IND-TG-01", "IND-TG-02"]
+
+    behavioral_barriers:
+      - barrier: "Anchoring on Current Rate"
+        prevalence: 0.70
+        lever: "Scenario Visualization"
+
+      - barrier: "Procrastination"
+        prevalence: 0.55
+        lever: "Deadline Salience, Pre-Commitment"
+
+      - barrier: "Complexity Aversion"
+        prevalence: 0.60
+        lever: "Decision Aids, Simplification"
+
+    interventions:
+      - name: "Refinancing Reminder"
+        type: "Reminder"
+        target: ["IND-TG-01"]
+        effect_size: 0.18
+        timing: "6 Monate vor Ablauf"
+
+      - name: "Rate Scenario Tool"
+        type: "Decision Aid"
+        target: ["IND-TG-01", "IND-TG-02"]
+        effect_size: 0.22
+        implementation: "Interaktiver Zinsrechner"
+
+      - name: "Expert Recommendation"
+        type: "Advice"
+        target: ["IND-TG-01"]
+        effect_size: 0.15
+        implementation: "Personalisierte Empfehlung"
+
+# =============================================================================
+# INDUSTRY BEHAVIORAL PARAMETERS
+# =============================================================================
+
+behavioral_parameters:
+  aggregate:
+    lambda:
+      mean: 2.05
+      std: 0.30
+      by_age:
+        18_35: 1.70
+        35_55: 2.10
+        55_plus: 2.35
+
+    tau:
+      mean: 0.80
+      std: 0.10
+      by_segment:
+        kantonalbanken: 0.88
+        genossenschaftsbanken: 0.85
+        retailbanken: 0.78
+        grossbanken: 0.75
+        neobanken: 0.68
+
+    beta:
+      mean: 0.87
+      std: 0.08
+      note: "Present Bias - tiefer = stärker"
+
+  modifiers:
+    staatsgarantie:
+      lambda_reduction: 0.20
+      tau_increase: 0.15
+      applies_to: ["Kantonalbanken"]
+
+    membership:
+      iota_increase: 0.25
+      tau_increase: 0.10
+      applies_to: ["Raiffeisen", "Migros Bank"]
+
+    digital_native:
+      lambda_reduction: 0.40
+      tau_reduction: 0.15
+      digital_preference_increase: 0.30
+      applies_to: ["Neon", "Yuh"]
+
+    wealth:
+      lambda_reduction: 0.30
+      advice_seeking_increase: 0.25
+      applies_to: ["Julius Bär", "Vontobel", "UBS Wealth"]
+
+    regional:
+      tau_increase: 0.10
+      iota_regional: 0.20
+      applies_to: ["GKB", "LUKB", "BEKB", "Valiant"]
+
+# =============================================================================
+# CROSS-SEGMENT DYNAMICS
+# =============================================================================
+
+cross_segment_dynamics:
+  competitive_flows:
+    - from: "Grossbanken"
+      to: "Kantonalbanken"
+      rate: 0.03
+      driver: "CS-Vertrauensverlust"
+
+    - from: "Traditionelle"
+      to: "Neobanken"
+      rate: 0.02
+      driver: "Digital Natives"
+
+    - from: "Kantonalbanken"
+      to: "Retailbanken"
+      rate: 0.01
+      driver: "Preissensitivität"
+
+  collaboration_patterns:
+    - type: "BaaS"
+      provider: "Hypothekarbank Lenzburg"
+      users: ["Neon", "Yuh"]
+
+    - type: "Payment"
+      initiative: "TWINT"
+      participants: "Alle grossen Banken"
+
+    - type: "Vorsorge"
+      partnership: "Frankly (ZKB)"
+      model: "White-Label 3a"
+
+  industry_initiatives:
+    - name: "Swiss Fintech Association"
+      focus: "Innovation & Regulation"
+
+    - name: "SIX Digital Exchange"
+      focus: "Digital Assets"
+
+    - name: "OpenWealth Association"
+      focus: "Open Banking Standards"
+
+# =============================================================================
+# USAGE GUIDELINES
+# =============================================================================
+
+usage:
+  intended_use:
+    - "Branchenweite Interventions-Planung"
+    - "Wettbewerbsanalyse"
+    - "Segment-Benchmarking"
+    - "Trend-Analyse"
+    - "Policy-Design"
+
+  integration:
+    - "Kombinierbar mit Bank-spezifischen Kontextvektoren"
+    - "EBF 10C Framework kompatibel"
+    - "BCM2 Module Coupling"
+
+  limitations:
+    - "Aggregierte Daten - Bank-spezifisch prüfen"
+    - "Behavioral Parameters sind Schätzungen"
+    - "Jährliche Aktualisierung empfohlen"

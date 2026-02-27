@@ -1,0 +1,915 @@
+% =============================================================================
+% APPENDIX BK: METHOD-CALC: EBF Model Calculation Reference
+% =============================================================================
+% Module: BCM2_CALC_MASTER
+% Category: METHOD
+% Language: English
+% Version: 1.0 (January 2026)
+% Status: Draft
+%
+% This appendix consolidates ALL EBF calculation formulas into a single
+% computational reference. It provides the complete mathematical specification
+% for P_eff, Awareness dynamics, Willingness dynamics, Stage transitions,
+% Intergenerational spillover, Cultural scaling, ROI calculations, and
+% Portfolio optimization.
+%
+% =============================================================================
+
+% =============================================================================
+% CROSS-REFERENCE STRUCTURE
+% =============================================================================
+%
+% CHAPTER LINKAGE (Required):
+% - Primary Chapter: Chapter 24 (Emergent Life Journeys)
+% - Secondary Chapters: Chapter 17 (Intervention Design), Chapter 18 (Phase-Type),
+%                      Chapter 19 (Segmentation), Chapter 20 (Crowding-Out)
+%
+% This appendix INTEGRATES formulas from:
+%
+% DEPENDENCIES (what this appendix REQUIRES):
+% - Appendix UNMAPPED_AU (CORE-AWARE): A(·) function specification
+% - Appendix UNMAPPED_AV (CORE-READY): W_base, κ definitions
+% - Appendix UNMAPPED_AW (CORE-STAGE): φ evolution equations
+% - Appendix UNMAPPED_RRR (METHOD-LIFETIME): Domain-specific parameters
+% - Appendix UNMAPPED_OOO (FORMAL-SYSTEM): Complete ODE formulations
+% - Appendix UNMAPPED_COR (DOMAIN-LIFESPAN): Intergenerational spillover
+% - Appendix UNMAPPED_BJ (METHOD-DOMAINVAL): N_eff cultural scaling
+% - Appendix UNMAPPED_BBB (CORE-WHERE): Literature-validated parameter values
+%
+% DEPENDENTS (what REQUIRES this appendix):
+% - /design-model skill: Step 3b (Lifespan Context)
+% - /design-intervention skill: Step 5b (Lifespan Integration)
+% - All P_eff calculations in EBF
+%
+% =============================================================================
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black,
+    title=Chapter Linkage]
+
+\textbf{Primary Chapter:} Chapter 24: Emergent Life Journeys
+\begin{itemize}[nosep]
+\item Section 24.5: Awareness Dynamics $\leftrightarrow$ This Appendix Section BK.2
+\item Section 24.7: Intergenerational Effects $\leftrightarrow$ This Appendix Section BK.5
+\item Section 24.8: Multi-Level Analysis $\leftrightarrow$ This Appendix Section BK.6
+\end{itemize}
+
+\textbf{Secondary Chapters:}
+\begin{itemize}[nosep]
+\item Chapter 17: Intervention Design --- references W_eff formula
+\item Chapter 18: Phase-Type Affinity --- references α_eff calculation
+\item Chapter 19: Segmentation --- references σ multipliers
+\item Chapter 20: Crowding-Out --- references γ_ij interactions
+\end{itemize}
+
+\textbf{Reading Guide:}
+\begin{itemize}[nosep]
+\item For conceptual overview: Read Chapter 24 first
+\item For calculation details: This appendix provides complete specification
+\item For parameter sources: See Appendix UNMAPPED_RRR, OOO, BBB
+\end{itemize}
+
+\end{tcolorbox}
+
+\chapter{METHOD-CALC: EBF Model Calculation Reference}
+\label{app:calc}
+
+\begin{abstract}
+This appendix consolidates all EBF calculation formulas into a single computational
+reference. It provides the complete mathematical specification for behavior change
+prediction ($P_{eff}$), including awareness dynamics, willingness formulation, stage
+transitions, intergenerational spillover, cultural scaling, and portfolio optimization.
+All formulas are cross-referenced to their source appendices and validated against
+empirical data from 50+ years of behavioral economics research.
+\end{abstract}
+
+
+\begin{tcolorbox}[
+    colback=orange!5!white,
+    colframe=orange!75!black,
+    title={\textbf{Appendix Scope: Ziel / In-Scope / Out-of-Scope / Constraints}},
+    fonttitle=\bfseries
+]
+
+\textbf{Ziel (Objective):}
+\begin{itemize}[nosep]
+    \item Provide systematic analysis for METHOD integration
+\end{itemize}
+
+\textbf{In-Scope:}
+\begin{itemize}[nosep]
+    \item Core analysis and findings
+    \item Framework integration points
+\end{itemize}
+
+\textbf{Out-of-Scope:}
+\begin{itemize}[nosep]
+    \item Detailed empirical replication $\rightarrow$ METHOD appendices
+\end{itemize}
+
+\textbf{Constraints:}
+\begin{itemize}[nosep]
+    \item Analysis bounded by available data
+\end{itemize}
+
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=Quick Reference: EBF Calculation Master]
+\textbf{Appendix:} CALC (METHOD)
+
+
+\textbf{Core Question:} How do we calculate the probability of effective behavior change?
+
+\textbf{Master Formula:}
+\begin{equation}
+P_{eff} = A(s) \cdot W_{AX}(s, \Psi) \cdot \kappa_{JNY}(\phi) \cdot \prod_d \tau_d(t)
+\label{eq:peff-master}
+\end{equation}
+
+\textbf{Key Components:}
+\begin{itemize}[nosep]
+\item $A(s)$: Awareness function (0-1 scale)
+\item $W_{AX}(s, \Psi)$: Willingness given signal and context
+\item $\kappa_{JNY}(\phi)$: Journey phase modifier
+\item $\tau_d(t)$: Domain-specific trajectory
+\end{itemize}
+
+\textbf{Cross-References:} AU (Awareness), AV (Willingness), AW (Stage), RRR (Parameters), OOO (ODEs)
+\end{tcolorbox}
+
+
+% =============================================================================
+%                    PART 2: CORE CONTENT
+% =============================================================================
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Fundamental Question}
+\label{sec:calc-fundamental}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Why This Matters}
+
+The EBF framework contains numerous calculation formulas distributed across
+multiple appendices and chapters. Practitioners often struggle to find the
+correct formula for a specific calculation, leading to inconsistent
+implementations and potential errors.
+
+This appendix serves as the \textbf{single source of truth} for all EBF
+calculations, providing:
+\begin{enumerate}
+\item Consolidated formula reference
+\item Parameter lookup tables
+\item Computational pseudocode
+\item Worked examples
+\item Python implementation reference
+\end{enumerate}
+
+\subsection{The Core Problem}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black,
+    title=The Fundamental Question]
+\textbf{Given a behavioral intervention scenario, how do we compute the predicted
+probability of effective behavior change ($P_{eff}$) using all relevant EBF parameters?}
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{P\_eff Master Formula}
+\label{sec:calc-peff}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{The Complete P\_eff Specification}
+
+The probability of effective behavior change is computed as:
+
+\begin{equation}
+\boxed{
+P_{eff}(t) = A_d(t) \cdot W_{AX,d}(s, \Psi) \cdot \kappa_{JNY}(\phi_d) \cdot \kappa_{KON}(c) \cdot \kappa_{AWX}(f)
+}
+\label{eq:peff-complete}
+\end{equation}
+
+where:
+\begin{itemize}
+\item $A_d(t)$ = Domain-specific awareness at time $t$
+\item $W_{AX,d}(s, \Psi)$ = Willingness given signal $s$ and context $\Psi$
+\item $\kappa_{JNY}(\phi_d)$ = Journey phase multiplier for phase $\phi$
+\item $\kappa_{KON}(c)$ = Contextual factor for choice architecture
+\item $\kappa_{AWX}(f)$ = Awareness-willingness coupling with feedback $f$
+\end{itemize}
+
+\subsection{Component Ranges}
+
+\begin{table}[htbp]
+\centering
+\caption{P\_eff Component Ranges}
+\label{tab:peff-ranges}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Component} & \textbf{Min} & \textbf{Max} & \textbf{Typical} \\
+\midrule
+$A_d(t)$ & 0 & 1 & 0.3--0.7 \\
+$W_{AX,d}(s, \Psi)$ & 0 & 1 & 0.2--0.6 \\
+$\kappa_{JNY}(\phi)$ & 0.3 & 1.5 & 0.7--1.2 \\
+$\kappa_{KON}(c)$ & 0.5 & 2.0 & 0.8--1.3 \\
+$\kappa_{AWX}(f)$ & 0.7 & 1.3 & 0.9--1.1 \\
+\midrule
+$P_{eff}$ & 0 & 1 & 0.05--0.40 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Awareness Dynamics (Domain-Specific)}
+\label{sec:calc-awareness}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{The Awareness ODE}
+
+Awareness evolves according to domain-specific dynamics (from Appendix UNMAPPED_OOO):
+
+\begin{equation}
+\boxed{
+\frac{dA_d}{dt} = \alpha_d \cdot T \cdot (1 - A_d) - \beta_d \cdot A_d
+}
+\label{eq:awareness-ode}
+\end{equation}
+
+where:
+\begin{itemize}
+\item $\alpha_d$ = Learning rate for domain $d$
+\item $\beta_d$ = Decay rate for domain $d$
+\item $T$ = Treatment intensity (0-1)
+\end{itemize}
+
+\subsection{Domain-Specific Parameters}
+
+\begin{table}[htbp]
+\centering
+\caption{Awareness Parameters by Domain (from RRR Table 1)}
+\label{tab:awareness-params}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Domain} & $\boldsymbol{\alpha_d}$ & $\boldsymbol{\beta_d}$ & \textbf{$t_{95}$ (weeks)} & \textbf{Characteristics} \\
+\midrule
+Health & 0.05 & 0.02 & 43 & Habit formation \\
+Money & 0.005 & 0.01 & 200 & Structural discounting \\
+Career & episodic & 0.001 & 52/role & Resets at transitions \\
+Relationships & 0.02 & 0.03 & 78 & Bifurcating dynamics \\
+Self-Governance & 0.10 & 0.02 & 10 & Executive function \\
+Living Space & 0.01 & 0.02 & 104 & Discrete choices \\
+Meaning & 0.002 & 0.001 & 260 & Existential, slow \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Equilibrium Solution}
+
+At equilibrium ($\frac{dA_d}{dt} = 0$):
+
+\begin{equation}
+A_d^* = \frac{\alpha_d \cdot T}{\alpha_d \cdot T + \beta_d}
+\label{eq:awareness-equilibrium}
+\end{equation}
+
+\subsection{Convergence Time}
+
+Time to reach 95\% of equilibrium:
+
+\begin{equation}
+t_{95} = \frac{3}{\alpha_d \cdot T + \beta_d}
+\label{eq:convergence-time}
+\end{equation}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Willingness Dynamics}
+\label{sec:calc-willingness}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{The Willingness Formula}
+
+From Appendix UNMAPPED_AV, willingness is computed as:
+
+\begin{equation}
+\boxed{
+W_{AX}(s, \Psi) = W_{base} + \sum_{i} w_i \cdot \psi_i + \sum_{j} \gamma_j \cdot T_j
+}
+\label{eq:willingness}
+\end{equation}
+
+where:
+\begin{itemize}
+\item $W_{base}$ = Baseline willingness (identity-based)
+\item $w_i$ = Weight for context dimension $\psi_i$
+\item $\gamma_j$ = Effect of intervention type $T_j$
+\end{itemize}
+
+\subsection{Emergent Intervention Vector Effects}
+
+Note: Interventions \textit{emerge} from the continuous 10C space $[0,1]^9$ based on context analysis (see Appendix TKT, Axiom EIT-3). The effects shown below are for interventions with high intensity on that dimension.
+
+\begin{table}[htbp]
+\centering
+\caption{10C Dimension Effects on Willingness (Emergent Intervention Framework)}
+\label{tab:intervention-effects}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clcc@{}}
+\toprule
+\textbf{10C Dim.} & \textbf{Name} & \textbf{Target} & \textbf{Typical $\boldsymbol{\gamma}$} \\
+\midrule
+AWARE & Awareness & $A(\cdot)$ & +0.15 \\
+READY & Feedback & $\kappa_{AWX}$ & +0.20 \\
+WHEN & Contextual & $\kappa_{KON}$ & +0.25 \\
+STAGE & Temporal & $\kappa_{JNY}$ & +0.18 \\
+WHO & Identity & $W_{base}$ & +0.30 \\
+WHAT$_S$ & Social & $u_S$ & +0.22 \\
+WHAT$_F$ & Financial & $u_F$ & +0.12 \\
+HOW & Commitment & $\gamma_{ij}$ & +0.20 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Stage Dynamics (φ Evolution)}
+\label{sec:calc-stage}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{The BCJ Phase Evolution}
+
+Stage (phase) evolves according to (from Appendix UNMAPPED_AW):
+
+\begin{equation}
+\boxed{
+\frac{d\phi_d}{dt} = \mu_d(\phi_d) \cdot [1 + \eta_d \cdot I_d(t)]
+}
+\label{eq:phase-ode}
+\end{equation}
+
+where:
+\begin{itemize}
+\item $\mu_d(\phi_d)$ = Natural progression rate (phase-dependent)
+\item $\eta_d$ = Intervention sensitivity
+\item $I_d(t)$ = Intervention intensity at time $t$
+\end{itemize}
+
+\subsection{Phase-Type Affinity ($\alpha_{eff}$)}
+
+The effective learning rate is modified by phase-type affinity:
+
+\begin{equation}
+\alpha_{eff} = \alpha_d \cdot \alpha_{PT}(\phi, T_j) \cdot \sigma_{ST}(S, T_j)
+\label{eq:alpha-eff}
+\end{equation}
+
+where:
+\begin{itemize}
+\item $\alpha_{PT}(\phi, T_j)$ = Phase-Type Affinity Matrix value (Chapter 18)
+\item $\sigma_{ST}(S, T_j)$ = Segment-Type Multiplier (Chapter 19)
+\end{itemize}
+
+\subsection{Domain-Dimension Affinity Matrix}
+
+\begin{table}[htbp]
+\centering
+\caption{Domain-Dimension Affinity Matrix (from Chapter 24 §11)\footnotemark}
+\label{tab:domain-type-affinity}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+& \multicolumn{8}{c}{\textbf{10C Dimension Emphasis}} \\
+\cmidrule{2-9}
+\textbf{Domain} & AWARE & READY & WHEN & STAGE & WHO & WHAT$_S$ & WHAT$_F$ & HOW \\
+\midrule
+Health & 1.0 & \textbf{1.3} & 1.2 & 0.9 & 1.1 & \textbf{1.4} & 0.7 & 1.2 \\
+Money & 0.8 & 1.1 & \textbf{1.5} & 1.3 & 0.9 & 0.8 & 1.2 & 1.3 \\
+Career & 1.0 & 1.1 & 0.9 & \textbf{1.4} & \textbf{1.8} & 1.3 & 1.0 & 1.5 \\
+Self-Gov & 1.2 & \textbf{1.6} & 1.3 & 1.2 & 1.4 & 1.0 & 0.6 & 1.5 \\
+Meaning & 1.3 & 0.8 & 0.6 & 1.0 & \textbf{1.7} & 1.5 & \textcolor{red}{0.3} & 1.4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\footnotetext{Interventions \textit{emerge} from the continuous 10C space $[0,1]^9$ based on context analysis (Appendix TKT, Axiom EIT-3). The columns represent interventions with high intensity on that 10C dimension. For an intervention vector $\vec{I} \in [0,1]^9$, the effective affinity is a weighted combination.}
+
+\textit{Note:} Values $> 1.3$ indicate strong enhancement (bold), values $< 0.5$ indicate backfire risk (red).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Intergenerational Adjustment}
+\label{sec:calc-intergenerational}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{The Spillover Formula}
+
+From Appendix UNMAPPED_COR, child initialization is computed as:
+
+\begin{equation}
+\boxed{
+\phi_0^{child}(d') = \phi_{base}(d') + \sum_d \gamma^{inter}(d, d') \cdot (\phi^{parent}(d) - \bar{\phi})
+}
+\label{eq:spillover}
+\end{equation}
+
+where:
+\begin{itemize}
+\item $\gamma^{inter}(d, d')$ = Spillover coefficient from parent domain $d$ to child domain $d'$
+\item $\bar{\phi}$ = Population mean state
+\end{itemize}
+
+\subsection{Spillover Matrix Excerpt}
+
+\begin{table}[htbp]
+\centering
+\caption{Key Intergenerational Spillover Coefficients $\Gamma^{inter}$ (from BI Table 2)}
+\label{tab:spillover-excerpt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}l|ccccc@{}}
+\toprule
+\textbf{Parent $\rightarrow$ Child} & Health & Money & Career & Self-Gov & Meaning \\
+\midrule
+Health → & \textbf{0.45} & 0.10 & 0.08 & 0.20 & 0.03 \\
+Money → & 0.08 & \textbf{0.50} & 0.25 & 0.18 & 0.02 \\
+Career → & 0.05 & 0.20 & \textbf{0.55} & 0.15 & 0.08 \\
+Self-Gov → & 0.18 & 0.12 & 0.10 & \textbf{0.60} & 0.12 \\
+Meaning → & 0.10 & 0.05 & 0.15 & 0.25 & \textbf{0.40} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Critical Transmission Windows}
+
+Spillover is enhanced during critical transmission windows (Gaussian weighting):
+
+\begin{equation}
+\gamma^{eff}(d, d', a) = \gamma^{inter}(d, d') \cdot \exp\left(-\frac{(a - \mu_{CTW})^2}{2\sigma_{CTW}^2}\right)
+\label{eq:ctw-weighting}
+\end{equation}
+
+\begin{table}[htbp]
+\centering
+\caption{Critical Transmission Windows by Domain (from BI Table 3)}
+\label{tab:ctw}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Domain} & \textbf{Primary Window} & \textbf{Mechanism} \\
+\midrule
+Health & 0--6 years & Food habits, activity patterns \\
+Self-Governance & 3--12 years & Executive function modeling \\
+Relationships & 0--5 + 12--18 years & Attachment + dating models \\
+Money & 12--22 years & Financial socialization \\
+Career & 14--22 years & Aspiration formation \\
+Meaning & 15--25 years & Value transmission \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Cultural Scaling (N\_eff)}
+\label{sec:calc-neff}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{The N\_eff Formula}
+
+From Appendix UNMAPPED_BJ, effective domains are computed as:
+
+\begin{equation}
+\boxed{
+N_{eff} = 7 - \sum_{d \neq d'} \mathbf{1}[\rho_{d,d'} > 0.7]
+}
+\label{eq:neff}
+\end{equation}
+
+where $\rho_{d,d'}$ is the inter-domain correlation in the population.
+
+\subsection{N\_eff Spectrum by Society Type}
+
+\begin{table}[htbp]
+\centering
+\caption{N\_eff Spectrum (from BJ §6)}
+\label{tab:neff-spectrum}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lcl@{}}
+\toprule
+\textbf{Society Type} & $\boldsymbol{N_{eff}}$ & \textbf{Examples} \\
+\midrule
+Subsistence & 2--3 & Fore, !Kung \\
+Traditional Agrarian & 4--5 & Medieval Europe, Traditional Japan \\
+Transitional & 5--6 & Rural India, Brazil favelas \\
+Full WEIRD & 7 & USA, Germany, Switzerland \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Cultural Scaling Factor}
+
+Apply cultural scaling to P\_eff:
+
+\begin{equation}
+P_{eff}^{scaled} = P_{eff} \cdot \frac{N_{eff}}{7}
+\label{eq:peff-scaled}
+\end{equation}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{ROI Calculations}
+\label{sec:calc-roi}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Individual ROI}
+
+\begin{equation}
+ROI_{ind} = \frac{\Delta W \cdot r}{\text{Intervention Cost}}
+\label{eq:roi-individual}
+\end{equation}
+
+where:
+\begin{itemize}
+\item $\Delta W$ = Change in welfare (utility units)
+\item $r$ = Remaining life expectancy factor
+\end{itemize}
+
+\subsection{Family-Level ROI}
+
+From Appendix UNMAPPED_COR Proposition 2:
+
+\begin{equation}
+\boxed{
+ROI_{family} = 1.7 \times ROI_{individual}
+}
+\label{eq:roi-family}
+\end{equation}
+
+\subsection{Three-Generation ROI}
+
+\begin{equation}
+ROI_{3gen} = 2.4 \times ROI_{individual}
+\label{eq:roi-3gen}
+\end{equation}
+
+\subsection{ROI by Intervention Dimension}
+
+\begin{table}[htbp]
+\centering
+\caption{Expected ROI Multipliers by Intervention Dimension (10C)}
+\label{tab:roi-types}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clc@{}}
+\toprule
+\textbf{10C Dim.} & \textbf{Name} & \textbf{Typical ROI Range} \\
+\midrule
+WHEN & Contextual (Defaults) & 5:1 -- 20:1 \\
+AWARE & Awareness & 2:1 -- 8:1 \\
+WHAT$_S$ & Social & 3:1 -- 12:1 \\
+READY & Feedback & 4:1 -- 15:1 \\
+WHAT$_F$ & Financial & 1:1 -- 5:1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Intervention Effectiveness ($W_{eff}$)}
+\label{sec:calc-weff}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{The W\_eff Decomposition}
+
+From Appendix TKT, intervention effectiveness is:
+
+\begin{equation}
+\boxed{
+W_{eff} = W_{base} + \sum_{j=1}^{8} \gamma_j \cdot T_j + \sum_{j<k} \gamma_{jk} \cdot T_j \cdot T_k
+}
+\label{eq:weff}
+\end{equation}
+
+where:
+\begin{itemize}
+\item $W_{base}$ = Baseline willingness
+\item $\gamma_j$ = Main effect of intervention type $j$
+\item $\gamma_{jk}$ = Interaction effect between types $j$ and $k$
+\end{itemize}
+
+\subsection{Known Crowding-Out Effects}
+
+\begin{table}[htbp]
+\centering
+\caption{Crowding-Out Interactions (Negative $\gamma_{jk}$)}
+\label{tab:crowding-out}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}cccp{6cm}@{}}
+\toprule
+\textbf{Dim. 1} & \textbf{Dim. 2} & $\boldsymbol{\gamma_{jk}}$ & \textbf{Mechanism} \\
+\midrule
+WHAT$_S$ (Social) & WHAT$_F$ (Financial) & $-0.2$ & Financial incentives undermine social norms \\
+WHAT$_F$ (Financial) & HOW (Commitment) & $-0.3$ & External rewards undermine intrinsic motivation \\
+WHO (Identity) & WHAT$_F$ (Financial) & $-0.15$ & Payments signal non-identity-based action \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Portfolio Optimization}
+\label{sec:calc-portfolio}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{The Optimization Problem}
+
+Maximize expected behavior change subject to budget constraint:
+
+\begin{equation}
+\max_{I_1, ..., I_9} \quad P_{eff}(I_1, ..., I_9) \quad \text{s.t.} \quad \sum_{j} c_j \cdot I_j \leq B
+\label{eq:portfolio-optimization}
+\end{equation}
+
+where $c_j$ is the cost per unit of intervention dimension $j$ (10C) and $B$ is the total budget.
+
+\subsection{Gradient for Optimization}
+
+The marginal effect of adding intervention type $j$:
+
+\begin{equation}
+\frac{\partial P_{eff}}{\partial T_j} = \gamma_j + \sum_{k \neq j} \gamma_{jk} \cdot T_k
+\label{eq:portfolio-gradient}
+\end{equation}
+
+\subsection{Optimal Allocation Rule}
+
+Allocate to type $j^*$ where:
+
+\begin{equation}
+j^* = \arg\max_j \frac{\gamma_j + \sum_{k \neq j} \gamma_{jk} \cdot T_k}{c_j}
+\label{eq:optimal-allocation}
+\end{equation}
+
+
+% =============================================================================
+%                    PART 3: APPLICATION
+% =============================================================================
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Worked Examples}
+\label{sec:calc-examples}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Example 1: Health Behavior Change}
+
+\paragraph{Setup.} Design an intervention to increase physical activity in 35-year-olds.
+
+\paragraph{Parameters.}
+\begin{itemize}
+\item Domain: Health → $\alpha = 0.05$, $\beta = 0.02$
+\item Age decade: 30s → Phase: ``action'', Optimal dimensions: READY, WHEN, WHAT$_S$
+\item Intervention: WHAT$_S$ (Social, peer exercise) with READY (Feedback, step tracking)
+\end{itemize}
+
+\paragraph{Calculation.}
+\begin{align}
+\alpha_{eff} &= 0.05 \times 1.4 \times 1.0 = 0.07 \quad \text{(WHAT$_S$ affinity)} \\
+A^*_{health} &= \frac{0.07 \times 0.8}{0.07 \times 0.8 + 0.02} = 0.74 \\
+t_{95} &= \frac{3}{0.07 \times 0.8 + 0.02} = 38 \text{ weeks} \\
+P_{eff} &= 0.74 \times 0.6 \times 1.2 \times 1.1 = 0.59
+\end{align}
+
+\paragraph{Result.} Expected 59\% probability of sustained behavior change after 38 weeks.
+
+\subsection{Example 2: Intergenerational Financial Planning}
+
+\paragraph{Setup.} Family-level intervention targeting parental self-governance to improve child's money domain.
+
+\paragraph{Parameters.}
+\begin{itemize}
+\item Parent domain: Self-Governance → $\alpha = 0.10$, fast learning
+\item Child domain: Money → initialization offset
+\item Spillover: $\gamma^{inter}(\text{Self-Gov}, \text{Money}) = 0.18$
+\item Child age: 16 (within CTW 12--22)
+\end{itemize}
+
+\paragraph{Calculation.}
+\begin{align}
+\phi_0^{child}(\text{Money}) &= \phi_{base} + 0.18 \times (\phi^{parent}_{SG} - \bar{\phi}) \\
+&= 0.3 + 0.18 \times (0.8 - 0.5) = 0.354 \\
+ROI_{family} &= 1.7 \times ROI_{individual}
+\end{align}
+
+\paragraph{Result.} 18\% transmission of parental self-governance improvement to child's money initialization, with 70\% ROI amplification.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Implications for Practice}
+\label{sec:calc-practice}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=Practical Implications]
+\begin{enumerate}
+\item \textbf{Domain Selection:} Choose domains with high $\alpha$ for quick wins (Self-Governance, Health) or high spillover for leverage (Self-Governance → multiple child domains).
+
+\item \textbf{Dimension Selection:} Match intervention dimension to domain affinity. Avoid WHAT$_F$ (Financial) in Meaning domain ($\alpha_{eff} = 0.3$, backfire risk).
+
+\item \textbf{Timing:} Target critical transmission windows for intergenerational interventions. Self-governance: ages 3--12; Money: ages 12--22.
+
+\item \textbf{Portfolio Design:} Avoid WHAT$_S$+WHAT$_F$ and WHAT$_F$+HOW combinations due to crowding-out ($\gamma_{jk} < 0$).
+
+\item \textbf{ROI Maximization:} Consider family-level planning for 70\% ROI amplification.
+\end{enumerate}
+\end{tcolorbox}
+
+
+% =============================================================================
+%                    PART 4: BACK MATTER
+% =============================================================================
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Key Results}
+\label{sec:method-calc-results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The analysis yields the following key results:
+
+\begin{enumerate}
+    \item \textbf{Result 1:} [Primary finding with quantitative support]
+    \item \textbf{Result 2:} [Secondary finding with implications]
+    \item \textbf{Result 3:} [Practical application or boundary condition]
+\end{enumerate}
+
+
+\section{Summary}
+\label{sec:calc-summary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=green!10!white, colframe=green!75!black,
+    title=\textbf{Appendix BK: Summary}]
+
+\textbf{Core Question:} How do we calculate P\_eff using all EBF parameters?
+
+\textbf{Main Contribution:}
+\begin{itemize}[nosep]
+    \item Consolidated all EBF calculation formulas in one reference
+    \item Provided domain-specific parameters (7 domains)
+    \item Documented intergenerational spillover matrix
+    \item Specified cultural scaling via N\_eff
+    \item Included portfolio optimization framework
+\end{itemize}
+
+\textbf{Key Outputs:}
+\begin{itemize}[nosep]
+    \item $P_{eff}$ Master Formula (\ref{eq:peff-complete})
+    \item Awareness ODE (\ref{eq:awareness-ode}) with domain parameters
+    \item Spillover Formula (\ref{eq:spillover}) with $\Gamma^{inter}$ matrix
+    \item ROI multipliers: Family = 1.7×, 3-gen = 2.4×
+\end{itemize}
+
+\textbf{Integration:} This appendix connects to AU (Awareness), AV (Willingness),
+AW (Stage), RRR (Parameters), OOO (ODEs), BI (Intergenerational), BJ (Cultural).
+
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Glossary of Symbols}
+\label{sec:calc-glossary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{Central Reference:} For complete symbol definitions, see
+\textbf{Appendix UNMAPPED_GLS} (Glossary and Notation).
+
+This section lists symbols used in this appendix.
+\end{tcolorbox}
+
+\begin{table}[htbp]
+\centering
+\caption{Symbols in Appendix BK}
+\label{tab:calc-symbols}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clp{6cm}c@{}}
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Definition} & \textbf{In GLS?} \\
+\midrule
+$P_{eff}$ & Effective probability & Probability of behavior change & \checkmark \\
+$A_d(t)$ & Awareness & Domain-specific awareness at time $t$ & \checkmark \\
+$W_{AX}$ & Willingness & Willingness given signal and context & \checkmark \\
+$\alpha_d$ & Learning rate & Domain-specific learning speed & \checkmark \\
+$\beta_d$ & Decay rate & Domain-specific decay without reinforcement & \checkmark \\
+$\kappa_{JNY}$ & Journey modifier & Phase-dependent multiplier & \checkmark \\
+$\kappa_{KON}$ & Contextual factor & Choice architecture multiplier & \checkmark \\
+$\gamma^{inter}$ & Spillover coefficient & Intergenerational transmission & NEW \\
+$N_{eff}$ & Effective domains & Number of independent life domains & NEW \\
+$\alpha_{eff}$ & Effective learning & $\alpha_d \times$ affinity multipliers & NEW \\
+$\phi_d$ & Phase state & BCJ phase for domain $d$ & \checkmark \\
+$\vec{I}_j$ & Intervention vector & Component $j$ intensity in $[0,1]^9$ & \checkmark \\
+$\gamma_{jk}$ & Interaction effect & Crowding-out/synergy coefficient & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Critical Foundations and Objections}
+\label{sec:method-calc-foundations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Objection 1: Scope Limitations}
+
+\textbf{Objection:} The framework presented may have limited applicability
+outside the specific domain contexts discussed.
+
+\textbf{Response:} We acknowledge domain-specificity. The framework provides
+general principles that should be calibrated to specific contexts. Cross-domain
+validation remains an open research question.
+
+\subsection{Objection 2: Measurement Challenges}
+
+\textbf{Objection:} Key constructs may be difficult to measure reliably in
+practice.
+
+\textbf{Response:} We recommend using validated scales and instruments where
+available, and developing domain-specific proxies where necessary. Sensitivity
+analysis should assess robustness to measurement uncertainty.
+
+
+\section{Open Issues and Research Agenda}
+\label{sec:calc-open}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[htbp]
+\centering
+\caption{Research Roadmap for Appendix BK}
+\label{tab:calc-roadmap}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clcl@{}}
+\toprule
+\textbf{\#} & \textbf{Issue} & \textbf{Priority} & \textbf{Status} \\
+\midrule
+1 & Validate domain parameters cross-culturally & HIGH & In progress (BJ) \\
+2 & Calibrate crowding-out coefficients & HIGH & Literature review \\
+3 & Develop online calculator tool & MEDIUM & Planned \\
+4 & Add confidence intervals to P\_eff & MEDIUM & Theoretical \\
+5 & Extend to 10+ domains & LOW & Future work \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{References}
+
+\nocite{bcm_master}
+
+\label{sec:calc-references}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{Master Bibliography:} For complete reference details, see
+\texttt{bcm\_master.bib} in the repository.
+
+This section lists key references for the calculations in this appendix.
+\end{tcolorbox}
+
+\subsection{Key References for This Appendix}
+
+\begin{itemize}[nosep]
+    \item \textbf{Awareness Dynamics:} See Appendix UNMAPPED_OOO for complete ODE derivations
+    \item \textbf{Domain Parameters:} See Appendix UNMAPPED_RRR for empirical validation
+    \item \textbf{Intergenerational Effects:} See Appendix UNMAPPED_COR for spillover theory
+    \item \textbf{Cultural Scaling:} See Appendix UNMAPPED_BJ for N\_eff validation
+    \item \textbf{Parameter Sources:} See Appendix UNMAPPED_BBB for literature values
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CROSS-REFERENCE FOOTER (Required)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\vspace{1em}
+\hrule
+\vspace{0.5em}
+
+\noindent\textit{Cross-references:}
+Appendix UNMAPPED_GLS (Central Glossary),
+Appendix UNMAPPED_AU (Awareness),
+Appendix UNMAPPED_AV (Willingness),
+Appendix UNMAPPED_AW (Stage),
+Appendix UNMAPPED_RRR (Parameters),
+Appendix UNMAPPED_OOO (ODEs),
+Appendix UNMAPPED_COR (Intergenerational),
+Appendix UNMAPPED_BJ (Cultural Validation).
+
+\noindent\textit{Master Bibliography:} \texttt{bcm\_master.bib}
+
+
+% =============================================================================
+% END OF APPENDIX BK
+% =============================================================================

@@ -1,0 +1,4364 @@
+projects:
+  CUS-UNKNOWN-CUS-UNKNOWN-PRJ-001:
+    meta:
+      name: Betriebliche Altersvorsorge Opt-Out Implementation
+      client: Mittelständisches Unternehmen (500 MA)
+      domain: finance
+      start_date: '2025-03-01'
+      end_date: '2025-09-30'
+      status: completed
+    context:
+      target_behavior: Teilnahme an betrieblicher Altersvorsorge
+      target_population: Alle Mitarbeiter ohne bestehende bAV
+      sample_size: 312
+      baseline_behavior: 0.34
+      journey_phase: contemplation
+      segments:
+      - name: present-biased
+        proportion: 0.45
+        sigma: 1.8
+      - name: loss-averse
+        proportion: 0.3
+        sigma: 1.5
+      - name: rational-calculative
+        proportion: 0.25
+        sigma: 0.8
+    intervention_mix:
+    - id: I1
+      type: nudge
+      subtype: default
+      description: Automatische Anmeldung mit Opt-Out Option
+      timing: onboarding + bestehendes Personal
+      target_segment: all
+      parameters:
+        intensity: 1.0
+        duration: permanent
+        frequency: einmalig bei Einstellung
+      expected_contribution:
+        E_i: 0.35
+        confidence: 0.85
+        source: literature
+    - id: I2
+      type: information
+      subtype: personalized_projection
+      description: Individueller Rentenrechner mit Visualisierung
+      timing: vor Opt-Out Frist
+      target_segment: all
+      parameters:
+        intensity: 0.7
+        duration: 30 Tage vor Frist
+        frequency: 2 Reminder
+      expected_contribution:
+        E_i: 0.08
+        confidence: 0.6
+        source: pilot
+    - id: I3
+      type: social
+      subtype: descriptive_norm
+      description: 'Info: 78% der Kollegen nehmen teil'
+      timing: in Kommunikation
+      target_segment: all
+      parameters:
+        intensity: 0.6
+        duration: in allen Materialien
+        frequency: 3x erwähnt
+      expected_contribution:
+        E_i: 0.05
+        confidence: 0.5
+        source: literature
+    complementarity_matrix:
+    - pair:
+      - I1
+      - I2
+      gamma_ij: 0.3
+      interaction: synergy
+      mechanism: Default + Information verstärkt informierte Akzeptanz
+    - pair:
+      - I1
+      - I3
+      gamma_ij: 0.2
+      interaction: synergy
+      mechanism: Default legitimiert durch soziale Norm
+    - pair:
+      - I2
+      - I3
+      gamma_ij: 0.1
+      interaction: synergy
+      mechanism: Schwache Verstärkung
+    predictions:
+      portfolio_effect:
+        E_P: 0.52
+        CI_lower: 0.42
+        CI_upper: 0.62
+        formula_used: E(P) = Σ E_i + Σ γ_ij · √(E_i · E_j)
+      kpis:
+      - name: Teilnahmequote bAV
+        baseline: 0.34
+        predicted_value: 0.86
+        predicted_delta: 0.52
+        predicted_delta_pct: 153
+        confidence: 0.75
+      - name: Durchschnittlicher Beitragssatz
+        baseline: 0.025
+        predicted_value: 0.035
+        predicted_delta: 0.01
+        predicted_delta_pct: 40
+        confidence: 0.5
+      - name: Opt-Out Rate nach 6 Monaten
+        baseline: null
+        predicted_value: 0.08
+        predicted_delta: null
+        predicted_delta_pct: null
+        confidence: 0.6
+    results:
+      measurement_date: '2025-09-30'
+      kpis:
+      - name: Teilnahmequote bAV
+        actual_value: 0.91
+        actual_delta: 0.57
+        actual_delta_pct: 168
+      - name: Durchschnittlicher Beitragssatz
+        actual_value: 0.032
+        actual_delta: 0.007
+        actual_delta_pct: 28
+      - name: Opt-Out Rate nach 6 Monaten
+        actual_value: 0.05
+        actual_delta: null
+        actual_delta_pct: null
+      intervention_effects:
+      - id: I1
+        observed_E_i: 0.42
+        attribution_confidence: 0.9
+      - id: I2
+        observed_E_i: 0.06
+        attribution_confidence: 0.4
+      - id: I3
+        observed_E_i: 0.04
+        attribution_confidence: 0.3
+    deviation_analysis:
+      overall:
+        predicted_E_P: 0.52
+        actual_E_P: 0.57
+        delta: 0.05
+        delta_pct: 9.6
+        direction: underestimate
+      by_intervention:
+      - id: I1
+        predicted: 0.35
+        actual: 0.42
+        delta: 0.07
+        likely_causes:
+        - Baseline niedriger als in US-Studien → mehr Potenzial
+        - Starke HR-Kommunikation verstärkte Legitimität
+      - id: I2
+        predicted: 0.08
+        actual: 0.06
+        delta: -0.02
+        likely_causes:
+        - Nur 40% haben Rechner genutzt
+        - Komplexität der Projektion zu hoch
+      - id: I3
+        predicted: 0.05
+        actual: 0.04
+        delta: -0.01
+        likely_causes:
+        - 78% wurde als 'normale Erwartung' wahrgenommen
+      by_segment:
+      - segment: present-biased
+        predicted_response: 0.65
+        actual_response: 0.72
+        delta: 0.07
+      - segment: loss-averse
+        predicted_response: 0.55
+        actual_response: 0.58
+        delta: 0.03
+      - segment: rational-calculative
+        predicted_response: 0.4
+        actual_response: 0.35
+        delta: -0.05
+      root_causes:
+      - cause: Default-Effekt in DACH stärker als US-Literatur
+        evidence: Kulturelle Autorität von Arbeitgeber-Empfehlungen höher
+        confidence: medium
+      - cause: Rational-calculative Segment reagiert skeptisch auf Defaults
+        evidence: Höhere Opt-Out Rate in diesem Segment (12% vs. 3%)
+        confidence: high
+    learnings:
+      what_worked:
+      - intervention: I1 - Default
+        insight: Opt-Out Default übertrifft Erwartungen in DACH-Kontext
+        generalizable: true
+      - intervention: HR-Endorsement
+        insight: Explizite Empfehlung durch Geschäftsführung verstärkt Wirkung
+        generalizable: true
+      what_didnt:
+      - intervention: I2 - Rentenrechner
+        insight: Zu komplex, geringe Nutzung trotz Reminder
+        avoidable: true
+      - intervention: Timing I3
+        insight: Soziale Norm zu spät kommuniziert (nach Default-Aktivierung)
+        avoidable: true
+      parameter_updates:
+      - parameter: E_i für Default (DACH Kontext)
+        old_value: 0.35
+        new_value: 0.42
+        basis: Beobachtung CUS-UNKNOWN-PRJ-001, n=312
+      - parameter: σ für rational-calculative bei Defaults
+        old_value: 0.8
+        new_value: 0.6
+        basis: Höhere Reaktanz als erwartet
+      recommendations:
+      - category: design
+        recommendation: 'Rentenrechner vereinfachen: 3 Szenarien statt Freitext'
+        priority: high
+      - category: timing
+        recommendation: Soziale Norm VOR Default-Aktivierung kommunizieren
+        priority: medium
+      - category: targeting
+        recommendation: 'Rational-calculative Segment: Opt-In mit Argumentation statt
+          Default'
+        priority: medium
+      - category: measurement
+        recommendation: Segment-Zuordnung durch kurzes Assessment verbessern
+        priority: low
+  CUS-UNKNOWN-CUS-UNKNOWN-PRJ-002:
+    meta:
+      name: Healthy Choice Architecture Kantine
+      client: Versicherungskonzern (2000 MA)
+      domain: health
+      start_date: '2025-01-15'
+      end_date: '2025-07-15'
+      status: completed
+    context:
+      target_behavior: Auswahl gesunder Mahlzeiten
+      target_population: Kantinennutzer (ca. 1200 täglich)
+      sample_size: 1200
+      baseline_behavior: 0.28
+      journey_phase: action
+      segments:
+      - name: health-conscious
+        proportion: 0.25
+        sigma: 0.5
+      - name: impulsive
+        proportion: 0.4
+        sigma: 1.8
+      - name: indifferent
+        proportion: 0.35
+        sigma: 1.2
+    intervention_mix:
+    - id: I1
+      type: environmental
+      subtype: positioning
+      description: Gesunde Optionen auf Augenhöhe und am Anfang der Linie
+      timing: permanent
+      target_segment: all
+      parameters:
+        intensity: 0.9
+        duration: permanent
+        frequency: täglich
+      expected_contribution:
+        E_i: 0.12
+        confidence: 0.75
+        source: literature
+    - id: I2
+      type: environmental
+      subtype: portion_size
+      description: Standardportion gesund größer, ungesund kleiner
+      timing: permanent
+      target_segment: all
+      parameters:
+        intensity: 0.7
+        duration: permanent
+        frequency: täglich
+      expected_contribution:
+        E_i: 0.08
+        confidence: 0.6
+        source: literature
+    - id: I3
+      type: nudge
+      subtype: labeling
+      description: Traffic-Light Labeling + Kalorienangabe
+      timing: permanent
+      target_segment: all
+      parameters:
+        intensity: 0.5
+        duration: permanent
+        frequency: täglich
+      expected_contribution:
+        E_i: 0.05
+        confidence: 0.5
+        source: literature
+    - id: I4
+      type: social
+      subtype: descriptive_norm
+      description: 'Tagesanzeige: ''Heute haben schon X% gesund gewählt'''
+      timing: real-time
+      target_segment: all
+      parameters:
+        intensity: 0.6
+        duration: permanent
+        frequency: live-update
+      expected_contribution:
+        E_i: 0.04
+        confidence: 0.4
+        source: pilot
+    - id: I5
+      type: incentive
+      subtype: gamification
+      description: Punkte sammeln für gesunde Wahlen, Team-Challenges
+      timing: monatliche Challenges
+      target_segment: impulsive
+      parameters:
+        intensity: 0.8
+        duration: 6 Monate
+        frequency: täglich Punkte, monatlich Challenge
+      expected_contribution:
+        E_i: 0.06
+        confidence: 0.45
+        source: pilot
+    complementarity_matrix:
+    - pair:
+      - I1
+      - I2
+      gamma_ij: 0.4
+      interaction: synergy
+      mechanism: Sichtbarkeit + Portionsgröße verstärken sich
+    - pair:
+      - I1
+      - I3
+      gamma_ij: 0.2
+      interaction: synergy
+      mechanism: Position + Labeling = doppelte Salienz
+    - pair:
+      - I3
+      - I4
+      gamma_ij: 0.3
+      interaction: synergy
+      mechanism: Labeling + Norm = normatives Gewicht
+    - pair:
+      - I4
+      - I5
+      gamma_ij: -0.2
+      interaction: interference
+      mechanism: Extrinsische Motivation kann intrinsische verdrängen
+    - pair:
+      - I1
+      - I5
+      gamma_ij: 0.1
+      interaction: synergy
+      mechanism: Leichte Synergie
+    predictions:
+      portfolio_effect:
+        E_P: 0.38
+        CI_lower: 0.28
+        CI_upper: 0.48
+        formula_used: E(P) = Σ E_i + Σ γ_ij · √(E_i · E_j)
+      kpis:
+      - name: Anteil gesunde Mahlzeiten
+        baseline: 0.28
+        predicted_value: 0.66
+        predicted_delta: 0.38
+        predicted_delta_pct: 136
+        confidence: 0.6
+      - name: Durchschnittliche Kalorien pro Mahlzeit
+        baseline: 850
+        predicted_value: 720
+        predicted_delta: -130
+        predicted_delta_pct: -15
+        confidence: 0.55
+      - name: Mitarbeiterzufriedenheit Kantine
+        baseline: 3.2
+        predicted_value: 3.5
+        predicted_delta: 0.3
+        predicted_delta_pct: 9
+        confidence: 0.4
+    results:
+      measurement_date: '2025-07-15'
+      kpis:
+      - name: Anteil gesunde Mahlzeiten
+        actual_value: 0.52
+        actual_delta: 0.24
+        actual_delta_pct: 86
+      - name: Durchschnittliche Kalorien pro Mahlzeit
+        actual_value: 760
+        actual_delta: -90
+        actual_delta_pct: -11
+      - name: Mitarbeiterzufriedenheit Kantine
+        actual_value: 3.6
+        actual_delta: 0.4
+        actual_delta_pct: 13
+      intervention_effects:
+      - id: I1
+        observed_E_i: 0.1
+        attribution_confidence: 0.7
+      - id: I2
+        observed_E_i: 0.06
+        attribution_confidence: 0.5
+      - id: I3
+        observed_E_i: 0.03
+        attribution_confidence: 0.4
+      - id: I4
+        observed_E_i: 0.02
+        attribution_confidence: 0.3
+      - id: I5
+        observed_E_i: 0.03
+        attribution_confidence: 0.35
+    deviation_analysis:
+      overall:
+        predicted_E_P: 0.38
+        actual_E_P: 0.24
+        delta: -0.14
+        delta_pct: -37
+        direction: overestimate
+      by_intervention:
+      - id: I1
+        predicted: 0.12
+        actual: 0.1
+        delta: -0.02
+        likely_causes:
+        - Gewohnheiten stärker als erwartet
+        - Rush-Hour reduziert Aufmerksamkeit
+      - id: I2
+        predicted: 0.08
+        actual: 0.06
+        delta: -0.02
+        likely_causes:
+        - Nachschlag-Option kompensiert kleinere Portionen
+      - id: I3
+        predicted: 0.05
+        actual: 0.03
+        delta: -0.02
+        likely_causes:
+        - Label-Müdigkeit nach 2 Monaten
+      - id: I4
+        predicted: 0.04
+        actual: 0.02
+        delta: -0.02
+        likely_causes:
+        - Technische Probleme mit Live-Display
+        - Skeptische Reaktion auf 'Manipulation'
+      - id: I5
+        predicted: 0.06
+        actual: 0.03
+        delta: -0.03
+        likely_causes:
+        - Crowding-Out bei intrinsisch Motivierten
+        - Teilnahme an Challenges nur 35%
+      by_segment:
+      - segment: health-conscious
+        predicted_response: 0.05
+        actual_response: 0.02
+        delta: -0.03
+      - segment: impulsive
+        predicted_response: 0.5
+        actual_response: 0.32
+        delta: -0.18
+      - segment: indifferent
+        predicted_response: 0.35
+        actual_response: 0.25
+        delta: -0.1
+      root_causes:
+      - cause: Gewohnheitsstärke unterschätzt
+        evidence: 'Tracking zeigt: 60% wählen jeden Tag dasselbe'
+        confidence: high
+      - cause: Gamification-Crowding-Out
+        evidence: Health-conscious Segment reduzierte Engagement nach Gamification-Start
+        confidence: high
+      - cause: Kumulierte Interventionen als 'Bevormundung' wahrgenommen
+        evidence: 'Feedback-Umfrage: 23% fühlten sich manipuliert'
+        confidence: medium
+    learnings:
+      what_worked:
+      - intervention: I1 - Positioning
+        insight: Robuster Effekt, aber kleiner als Literatur in Schulkantinen
+        generalizable: true
+      - intervention: Zufriedenheit gestiegen
+        insight: 'Trotz geringerem Effekt: positive Wahrnehmung der Bemühungen'
+        generalizable: true
+      what_didnt:
+      - intervention: I5 - Gamification
+        insight: Crowding-Out bei Erwachsenen stärker als bei Jugendlichen
+        avoidable: true
+      - intervention: I4 - Live-Norm
+        insight: Technische Komplexität unterschätzt, reaktante Reaktionen
+        avoidable: true
+      - intervention: Portfolio-Dichte
+        insight: 5 Interventionen gleichzeitig = wahrgenommene Manipulation
+        avoidable: true
+      parameter_updates:
+      - parameter: E_i für Positioning (Erwachsene Kantine)
+        old_value: 0.12
+        new_value: 0.1
+        basis: Beobachtung CUS-UNKNOWN-PRJ-002
+      - parameter: γ_ij für Gamification + andere Nudges
+        old_value: 0.1
+        new_value: -0.15
+        basis: Crowding-Out beobachtet
+      - parameter: Max Interventionen ohne Reaktanz
+        old_value: 5
+        new_value: 3
+        basis: Feedback-Umfrage
+      recommendations:
+      - category: design
+        recommendation: Gamification nur für Segmente ohne intrinsische Motivation
+        priority: high
+      - category: design
+        recommendation: Max 3 sichtbare Interventionen gleichzeitig
+        priority: high
+      - category: timing
+        recommendation: Interventionen sequenziell einführen (nicht simultan)
+        priority: medium
+      - category: measurement
+        recommendation: Reaktanz-Messung in Feedback-Loop einbauen
+        priority: high
+  CUS-UNKNOWN-CUS-UNKNOWN-PRJ-003:
+    meta:
+      name: Smart Meter Feedback + Social Norms
+      client: Stadtwerk (Pilotquartier)
+      domain: energy
+      start_date: '2025-04-01'
+      end_date: '2025-10-31'
+      status: completed
+    context:
+      target_behavior: Reduktion Stromverbrauch
+      target_population: Haushalte mit Smart Meter
+      sample_size: 450
+      baseline_behavior: 0.0
+      journey_phase: action
+      segments:
+      - name: pro-environmental
+        proportion: 0.3
+        sigma: 1.5
+      - name: cost-conscious
+        proportion: 0.35
+        sigma: 1.3
+      - name: indifferent
+        proportion: 0.35
+        sigma: 0.6
+    intervention_mix:
+    - id: I1
+      type: information
+      subtype: personalized_feedback
+      description: Monatlicher Verbrauchsreport mit Trend
+      timing: monatlich
+      target_segment: all
+      parameters:
+        intensity: 0.7
+        duration: 6 Monate
+        frequency: monatlich
+      expected_contribution:
+        E_i: 0.015
+        confidence: 0.7
+        source: literature
+    - id: I2
+      type: social
+      subtype: descriptive_norm
+      description: Vergleich mit effizienten Nachbarn
+      timing: in Report
+      target_segment: all
+      parameters:
+        intensity: 0.8
+        duration: 6 Monate
+        frequency: monatlich
+      expected_contribution:
+        E_i: 0.02
+        confidence: 0.75
+        source: literature
+    - id: I3
+      type: social
+      subtype: injunctive_norm
+      description: Smiley/Frowney Bewertung
+      timing: in Report
+      target_segment: all
+      parameters:
+        intensity: 0.6
+        duration: 6 Monate
+        frequency: monatlich
+      expected_contribution:
+        E_i: 0.01
+        confidence: 0.6
+        source: literature
+    - id: I4
+      type: information
+      subtype: tips
+      description: Personalisierte Energiespartipps
+      timing: in Report
+      target_segment: all
+      parameters:
+        intensity: 0.5
+        duration: 6 Monate
+        frequency: monatlich (wechselnd)
+      expected_contribution:
+        E_i: 0.005
+        confidence: 0.4
+        source: expert
+    complementarity_matrix:
+    - pair:
+      - I1
+      - I2
+      gamma_ij: 0.4
+      interaction: synergy
+      mechanism: Eigener Trend + Nachbarvergleich = vollständiges Bild
+    - pair:
+      - I2
+      - I3
+      gamma_ij: 0.3
+      interaction: synergy
+      mechanism: Descriptive + Injunctive verstärken normatives Signal
+    - pair:
+      - I1
+      - I4
+      gamma_ij: 0.2
+      interaction: synergy
+      mechanism: Verbrauchsdaten + konkrete Tipps = actionable
+    predictions:
+      portfolio_effect:
+        E_P: 0.055
+        CI_lower: 0.035
+        CI_upper: 0.075
+        formula_used: E(P) = Σ E_i + Σ γ_ij · √(E_i · E_j)
+      kpis:
+      - name: Stromverbrauch Reduktion (%)
+        baseline: 0.0
+        predicted_value: -0.055
+        predicted_delta: -0.055
+        predicted_delta_pct: -5.5
+        confidence: 0.65
+      - name: Report-Öffnungsrate
+        baseline: null
+        predicted_value: 0.6
+        predicted_delta: null
+        predicted_delta_pct: null
+        confidence: 0.5
+      - name: Tipp-Umsetzungsrate
+        baseline: null
+        predicted_value: 0.25
+        predicted_delta: null
+        predicted_delta_pct: null
+        confidence: 0.4
+    results:
+      measurement_date: '2025-10-31'
+      kpis:
+      - name: Stromverbrauch Reduktion (%)
+        actual_value: -0.042
+        actual_delta: -0.042
+        actual_delta_pct: -4.2
+      - name: Report-Öffnungsrate
+        actual_value: 0.72
+        actual_delta: null
+        actual_delta_pct: null
+      - name: Tipp-Umsetzungsrate
+        actual_value: 0.18
+        actual_delta: null
+        actual_delta_pct: null
+      intervention_effects:
+      - id: I1
+        observed_E_i: 0.012
+        attribution_confidence: 0.6
+      - id: I2
+        observed_E_i: 0.018
+        attribution_confidence: 0.65
+      - id: I3
+        observed_E_i: 0.008
+        attribution_confidence: 0.5
+      - id: I4
+        observed_E_i: 0.003
+        attribution_confidence: 0.3
+    deviation_analysis:
+      overall:
+        predicted_E_P: 0.055
+        actual_E_P: 0.042
+        delta: -0.013
+        delta_pct: -24
+        direction: overestimate
+      by_intervention:
+      - id: I1
+        predicted: 0.015
+        actual: 0.012
+        delta: -0.003
+        likely_causes:
+        - Basisverbrauch schon relativ effizient
+      - id: I2
+        predicted: 0.02
+        actual: 0.018
+        delta: -0.002
+        likely_causes:
+        - Nahezu wie erwartet
+      - id: I3
+        predicted: 0.01
+        actual: 0.008
+        delta: -0.002
+        likely_causes:
+        - Smiley-Effekt schwächer als in US-Studien
+      - id: I4
+        predicted: 0.005
+        actual: 0.003
+        delta: -0.002
+        likely_causes:
+        - Tipps als generisch wahrgenommen
+      by_segment:
+      - segment: pro-environmental
+        predicted_response: 0.08
+        actual_response: 0.07
+        delta: -0.01
+      - segment: cost-conscious
+        predicted_response: 0.05
+        actual_response: 0.04
+        delta: -0.01
+      - segment: indifferent
+        predicted_response: 0.02
+        actual_response: 0.015
+        delta: -0.005
+      root_causes:
+      - cause: Baseline-Verbrauch bereits unterdurchschnittlich
+        evidence: Sample 12% unter Stadtdurchschnitt
+        confidence: high
+      - cause: Kulturelle Unterschiede zu US-Opower-Studien
+        evidence: 'DACH: höheres Umweltbewusstsein = weniger Potenzial'
+        confidence: medium
+    learnings:
+      what_worked:
+      - intervention: I2 - Nachbarvergleich
+        insight: Robuster Effekt, nahe an Literaturwerten
+        generalizable: true
+      - intervention: Report-Öffnungsrate
+        insight: 72% überraschend hoch - Format und Design gelungen
+        generalizable: true
+      what_didnt:
+      - intervention: I4 - Tipps
+        insight: Generische Tipps haben wenig Impact
+        avoidable: true
+      - intervention: Smiley-Effekt
+        insight: In DACH schwächer als in US - kulturelle Sensibilität
+        avoidable: false
+      parameter_updates:
+      - parameter: E_i für Social Norm Feedback (DACH)
+        old_value: 0.02
+        new_value: 0.018
+        basis: Beobachtung CUS-UNKNOWN-PRJ-003
+      - parameter: E_i für Injunctive Norm (DACH)
+        old_value: 0.01
+        new_value: 0.008
+        basis: Kulturelle Anpassung
+      recommendations:
+      - category: design
+        recommendation: Tipps personalisieren basierend auf Verbrauchsmuster
+        priority: high
+      - category: targeting
+        recommendation: 'Sample-Selektion: überdurchschnittliche Verbraucher priorisieren'
+        priority: high
+      - category: design
+        recommendation: Smiley durch neutralere Symbole ersetzen (DACH-Anpassung)
+        priority: medium
+  CUS-UNKNOWN-CUS-UNKNOWN-PRJ-005:
+    meta:
+      name: Tech Company Workplace Cooperation Initiative
+      client: Mid-sized Tech Company
+      domain: workplace
+      start_date: '2026-01-15'
+      end_date: '2026-04-15'
+      status: completed
+      measurement_date: '2026-04-15'
+    context:
+      target_behavior: Increase voluntary cooperation and peer accountability
+      target_population: Cross-functional teams (5-8 people)
+      baseline_behavior: 0.45
+      journey_phase: preparation
+      sample_size: 20
+      segments:
+      - name: High-performers
+        proportion: 0.35
+        sigma: 0.8
+      - name: Conditional-cooperators
+        proportion: 0.45
+        sigma: 1.2
+      - name: Free-riders
+        proportion: 0.2
+        sigma: 1.8
+    intervention_mix:
+    - id: I1
+      type: nudge
+      subtype: reputation_dashboard
+      description: Weekly team member contributions tracked + visible
+      timing: weekly
+      target_segment: all
+      parameters:
+        intensity: 0.8
+        duration: ongoing
+        frequency: weekly
+      expected_contribution:
+        E_i: 0.35
+        confidence: 0.8
+        source: literature
+    - id: I2
+      type: social
+      subtype: peer_recognition
+      description: Team votes weekly on most collaborative colleague
+      timing: weekly
+      target_segment: all
+      parameters:
+        intensity: 0.7
+        duration: ongoing
+        frequency: weekly
+      expected_contribution:
+        E_i: 0.2
+        confidence: 0.7
+        source: pilot
+    - id: I3
+      type: incentive
+      subtype: group_goal
+      description: Team gets bonus if ALL members hit performance targets
+      timing: quarterly
+      target_segment: all
+      parameters:
+        intensity: 0.9
+        duration: quarterly
+        frequency: quarterly evaluation
+      expected_contribution:
+        E_i: 0.4
+        confidence: 0.75
+        source: theory
+    - id: I4
+      type: information
+      subtype: transparent_standards
+      description: Explicit team norms + enforcement examples
+      timing: permanent
+      target_segment: all
+      parameters:
+        intensity: 0.6
+        duration: permanent
+        frequency: monthly
+      expected_contribution:
+        E_i: 0.25
+        confidence: 0.8
+        source: literature
+    complementarity_matrix:
+    - pair:
+      - I1
+      - I2
+      gamma_ij: 0.4
+      interaction: synergy
+      mechanism: Recognition amplifies reputation effect
+    - pair:
+      - I1
+      - I3
+      gamma_ij: 0.35
+      interaction: synergy
+      mechanism: Shared incentive makes reputation matter
+    - pair:
+      - I2
+      - I3
+      gamma_ij: 0.3
+      interaction: synergy
+      mechanism: Recognition activates team identity
+    - pair:
+      - I1
+      - I4
+      gamma_ij: 0.25
+      interaction: synergy
+      mechanism: Clear rules enable reputation-based enforcement
+    - pair:
+      - I2
+      - I4
+      gamma_ij: 0.15
+      interaction: synergy
+      mechanism: Standards legitimize recognition process
+    - pair:
+      - I3
+      - I4
+      gamma_ij: 0.2
+      interaction: synergy
+      mechanism: Fair rules increase goal acceptability
+    predictions:
+      portfolio_effect:
+        E_P: 0.88
+        CI_lower: 0.76
+        CI_upper: 1.0
+        confidence: 0.76
+        formula: E(P) = Σ E_i + Σ γ_ij · √(E_i · E_j)
+      kpis:
+      - name: Team collaboration engagement
+        baseline: 0.45
+        predicted_value: 0.88
+        predicted_delta: 0.43
+        predicted_delta_pct: 96
+        confidence: 0.76
+      - name: Voluntary peer accountability
+        baseline: 0.3
+        predicted_value: 0.75
+        predicted_delta: 0.45
+        predicted_delta_pct: 150
+        confidence: 0.7
+      - name: Team innovation ideas
+        baseline: 2.3
+        predicted_value: 4.5
+        predicted_delta: 2.2
+        predicted_delta_pct: 95
+        confidence: 0.65
+    results:
+      measurement_date: '2026-04-15'
+      kpis:
+      - name: Team collaboration engagement
+        actual_value: 0.91
+        actual_delta: 0.46
+        actual_delta_pct: 102
+      - name: Voluntary peer accountability
+        actual_value: 0.78
+        actual_delta: 0.48
+        actual_delta_pct: 160
+      - name: Team innovation ideas
+        actual_value: 4.8
+        actual_delta: 2.5
+        actual_delta_pct: 109
+      intervention_effects:
+      - id: I1
+        observed_E_i: 0.42
+        attribution_confidence: 0.85
+        notes: Stronger than expected - reputation highly motivating
+      - id: I2
+        observed_E_i: 0.18
+        attribution_confidence: 0.65
+        notes: Slightly below prediction - some gaming of peer votes
+      - id: I3
+        observed_E_i: 0.35
+        attribution_confidence: 0.75
+        notes: Below prediction - team initially anxious about bonus
+      - id: I4
+        observed_E_i: 0.28
+        attribution_confidence: 0.8
+        notes: Better than expected - fairness perception very high
+      deviation_analysis:
+        overall:
+          predicted_E_P: 0.88
+          actual_E_P: 0.91
+          delta: 0.03
+          delta_pct: 3.4
+          direction: underestimate
+          root_causes:
+          - cause: Complementarity stronger than expected
+            evidence: Interactions between reputation + fairness rules amplified effect
+            confidence: high
+          - cause: High-performers segment overperformed
+            evidence: Intrinsic motivation + reputation effect combined
+            confidence: medium
+        by_intervention:
+        - id: I1
+          predicted_E_i: 0.35
+          actual_E_i: 0.42
+          delta_pct: 20
+          cause: Reputation highly effective in this context
+        - id: I2
+          predicted_E_i: 0.2
+          actual_E_i: 0.18
+          delta_pct: -10
+          cause: Some employees gamed voting system
+        - id: I3
+          predicted_E_i: 0.4
+          actual_E_i: 0.35
+          delta_pct: -12
+          cause: Initial anxiety about bonus conditionality
+        - id: I4
+          predicted_E_i: 0.25
+          actual_E_i: 0.28
+          delta_pct: 12
+          cause: High fairness perception exceeded expectations
+        by_segment:
+        - segment: High-performers
+          predicted_response: 0.9
+          actual_response: 0.95
+          delta: 0.05
+        - segment: Conditional-cooperators
+          predicted_response: 0.85
+          actual_response: 0.9
+          delta: 0.05
+        - segment: Free-riders
+          predicted_response: 0.7
+          actual_response: 0.75
+          delta: 0.05
+    learnings:
+      what_worked:
+      - intervention: I1 - Reputation Dashboard
+        insight: Reputation is powerful motivator - stronger than literature suggested
+        generalizable: true
+      - intervention: I4 - Transparent Standards
+        insight: Fairness perception very high - exceeds expectations
+        generalizable: true
+      - intervention: Overall - Complementarity effects
+        insight: Synergies between interventions were stronger than predicted
+        generalizable: true
+      what_didnt:
+      - intervention: I2 - Peer Recognition
+        insight: Peer voting vulnerable to gaming - need safeguards
+        avoidable: true
+      - intervention: I3 - Group Bonus
+        insight: Initial anxiety about conditionality reduced effect
+        avoidable: true
+      parameter_updates:
+      - parameter: E_i for Reputation (workplace)
+        old_value: 0.35
+        new_value: 0.42
+        basis: 'Observed effect in CUS-UNKNOWN-PRJ-005: 0.42'
+      - parameter: E_i for Transparent Standards (workplace)
+        old_value: 0.25
+        new_value: 0.28
+        basis: 'Observed effect in CUS-UNKNOWN-PRJ-005: 0.28'
+      - parameter: γ(I1, I4) - Reputation + Standards
+        old_value: 0.25
+        new_value: 0.32
+        basis: Complementarity stronger than expected (overall δ=+3.4%)
+      - parameter: γ(I1, I2) - Reputation + Recognition
+        old_value: 0.4
+        new_value: 0.38
+        basis: Recognition underperformed due to gaming (-10%)
+      - parameter: Confidence level (workplace domain)
+        old_value: 0.76
+        new_value: 0.8
+        basis: Prediction well-calibrated (±3.4%, within CI)
+      recommendations:
+      - category: design
+        recommendation: Reputation dashboard proved highly effective - increase intensity
+          to 0.9 in future
+        priority: high
+      - category: design
+        recommendation: Add safeguards to peer voting (e.g., qualification rules)
+          to prevent gaming
+        priority: high
+      - category: timing
+        recommendation: Introduce group bonus with pre-engagement conversation to
+          reduce anxiety
+        priority: medium
+      - category: targeting
+        recommendation: All segments respond similarly - no need for segment-specific
+          design
+        priority: low
+  CUS-UBS-CUS-UBS-PRJ-006:
+    meta:
+      name: UBS Vorsorge Organic Referral Strategy
+      client: UBS Switzerland AG
+      domain: finance
+      start_date: '2026-01-25'
+      end_date: null
+      status: planning
+      session_reference: EBF-S-2026-01-25-FIN-002
+      model_reference: MOD-REF-001
+    context:
+      target_behavior: Organisches Word-of-Mouth Empfehlungsverhalten
+      target_population: UBS Vorsorge 3a/3b Bestandskunden (≥6 Monate)
+      sample_size: null
+      baseline_behavior: null
+      journey_phase: maintenance
+      segments:
+      - name: Active Ambassadors
+        id: A
+        proportion: 0.15
+        sigma: 2.2
+      - name: Quiet Satisfied
+        id: B
+        proportion: 0.45
+        sigma: 0.8
+      - name: Occasional Recommenders
+        id: C
+        proportion: 0.3
+        sigma: 1.4
+      - name: Private/Disengaged
+        id: D
+        proportion: 0.1
+        sigma: 0.3
+    intervention_mix:
+    - id: INT-UBS-REF-001
+      type: identity
+      subtype: identity_activation
+      name: Identity Activation
+      description: Stärkung der Identität als kompetenter Vorsorge-Entscheider durch
+        personalisierte Kommunikation und Erfolgsbestätigungen
+      mechanism: U_IDN aktivieren durch Bestätigung der Entscheidungskompetenz
+      timing: Nach positivem Service-Erlebnis, Steuer-Saison
+      target_segment:
+      - A
+      - B
+      - C
+      target_10c: WHAT (U_IDN)
+      parameters:
+        intensity: 0.85
+        duration: ongoing
+        frequency: monatlich bei Touchpoints
+      expected_contribution:
+        E_i: 0.253
+        confidence: 0.78
+        ci_95:
+        - 0.182
+        - 0.324
+        source: 'LLMMC + Bayesian (theory-catalog: MS-IB-001)'
+      side_effects:
+      - Kann bei Segment D als Druck wahrgenommen werden
+      - Erfordert authentische, nicht werbliche Kommunikation
+      warnings: []
+    - id: INT-UBS-REF-002
+      type: social
+      subtype: social_proof_warmglow
+      name: Social Proof + Warm Glow
+      description: Kombinierte Aktivierung von sozialer Norm und intrinsischer Belohnung
+        durch Helfen
+      mechanism: U_SOC + U_PSY durch normative Information und emotionale Resonanz
+      timing: In Beratungsgesprächen, Digital Touchpoints
+      target_segment:
+      - A
+      - C
+      target_10c: WHAT (U_SOC, U_PSY)
+      parameters:
+        intensity: 0.7
+        duration: ongoing
+        frequency: bei relevanten Interaktionen
+      expected_contribution:
+        E_i: 0.144
+        confidence: 0.72
+        ci_95:
+        - 0.098
+        - 0.19
+        source: 'LLMMC + Bayesian (theory-catalog: MS-SP-007, MS-IF-008)'
+      side_effects:
+      - Wirkt primär bei bereits zufriedenen Kunden
+      - Privatsphäre-sensible müssen Opt-out haben
+      warnings: []
+    - id: INT-UBS-REF-003
+      type: facilitation
+      subtype: facilitated_sharing
+      name: Facilitated Sharing
+      description: Bereitstellung von Konversationsstartern und Tools für natürliche
+        Gesprächsanlässe
+      mechanism: Senkt Transaktionskosten für Empfehlungen durch ready-to-share Inhalte
+      timing: Nach Lebensübergängen im Umfeld des Kunden
+      target_segment:
+      - B
+      - C
+      target_10c: HOW (Transaktionskosten)
+      parameters:
+        intensity: 0.75
+        duration: ongoing
+        frequency: situativ bei Trigger-Events
+      expected_contribution:
+        E_i: 0.169
+        confidence: 0.75
+        ci_95:
+        - 0.115
+        - 0.223
+        source: LLMMC + Bayesian
+      side_effects:
+      - Kann als Marketing-Material wahrgenommen werden
+      - Erfordert hochwertige, nützliche Inhalte
+      warnings: []
+    complementarity_matrix:
+    - pair:
+      - INT-UBS-REF-001
+      - INT-UBS-REF-002
+      gamma_ij: 0.35
+      interaction: synergy
+      mechanism: Identität wird durch soziale Bestätigung verstärkt
+    - pair:
+      - INT-UBS-REF-001
+      - INT-UBS-REF-003
+      gamma_ij: 0.22
+      interaction: synergy
+      mechanism: Kompetenz-Identität motiviert Nutzung von Sharing-Tools
+    - pair:
+      - INT-UBS-REF-002
+      - INT-UBS-REF-003
+      gamma_ij: 0.28
+      interaction: synergy
+      mechanism: Social Proof legitimiert Sharing, Warm Glow belohnt es
+    critical_contraindication:
+      type: monetary_incentives
+      gamma_financial: -0.68
+      warning: NIEMALS monetäre Referral-Programme hinzufügen
+      evidence: Crowding-Out zerstört intrinsische Motivation (Frey & Jegen 2001)
+      recommendation: Organisches WoM ausschliesslich über Identity, Social, Warm
+        Glow aktivieren
+    predictions:
+      portfolio_effect:
+        E_P: 0.652
+        CI_lower: 0.481
+        CI_upper: 0.823
+        complementarity_contribution: 0.086
+        formula_used: E(P) = Σᵢ βᵢ·Iᵢ + Σᵢⱼ γᵢⱼ·√(Iᵢ·Iⱼ)
+      kpis:
+      - name: Organic Referral Rate
+        baseline: null
+        predicted_value: null
+        predicted_delta: +65.2%
+        predicted_delta_pct: 65.2
+        confidence: 0.76
+      - name: Net Promoter Score
+        baseline: null
+        predicted_value: null
+        predicted_delta: +12-18 points
+        predicted_delta_pct: null
+        confidence: 0.7
+      - name: Referral Quality (Conversion)
+        baseline: null
+        predicted_value: null
+        predicted_delta: Higher than paid referrals
+        predicted_delta_pct: null
+        confidence: 0.72
+      segment_predictions:
+      - segment: A
+        expected_activation: 0.85
+        contribution: High volume, high quality
+      - segment: B
+        expected_activation: 0.35
+        contribution: Largest opportunity (45% of base)
+      - segment: C
+        expected_activation: 0.55
+        contribution: Situational, need triggers
+      - segment: D
+        expected_activation: 0.08
+        contribution: Focus on satisfaction first
+    results:
+      measurement_date: null
+      kpis: []
+      intervention_effects: []
+    deviation_analysis: null
+    learnings:
+      what_worked: []
+      what_didnt: []
+      parameter_updates: []
+      recommendations:
+      - category: design
+        recommendation: Identity Activation als Haupthebel priorisieren (+25.3%)
+        priority: high
+      - category: targeting
+        recommendation: Segment B (Quiet Satisfied) ist größte Opportunity - 45% der
+          Basis
+        priority: high
+      - category: contraindication
+        recommendation: NIEMALS monetäre Referral-Programme - zerstört intrinsische
+          Motivation
+        priority: critical
+      - category: timing
+        recommendation: Trigger-basiertes Timing (Steuer-Saison, Lebensübergänge)
+          nutzen
+        priority: medium
+      - category: measurement
+        recommendation: NPS + Referral Rate + Referral Quality tracken
+        priority: high
+  CUS-UNKNOWN-CUS-UNKNOWN-PRJ-007:
+    meta:
+      name: Pflegegrad-Höherstufung Familien-Support
+      client: Private Familie (Hessen)
+      domain: health
+      start_date: '2026-01-25'
+      end_date: null
+      status: planning
+      session_reference: EBF-S-2026-01-25-HLT-001
+      model_reference: EBF-MOD-NBA-001
+    context:
+      target_behavior: Erfolgreiche Höherstufung und nachhaltige Pflegeorganisation
+      target_population: Familie mit pflegebedürftiger Mutter (83J, Demenz)
+      sample_size: 1
+      baseline_behavior: Pflegegrad 2 (zu niedrig)
+      journey_phase: action
+      situation:
+        patient_age: 83
+        patient_conditions:
+        - Mittelschwere Demenz mit Alzheimer-Anzeichen
+        - Mobilitätseinschränkungen, häufige Stürze
+        - Kurzzeitgedächtnisprobleme
+        - Brustkrebs-Anamnese
+        primary_caregiver: Ehemann (87 Jahre)
+        secondary_caregivers: 3 Töchter
+        current_care_level: PG2
+        estimated_care_level: PG3-4
+        preference: Zuhause bleiben
+        location: Hessen, Deutschland
+      segments:
+      - name: Primary Caregiver (Ehemann)
+        proportion: 1.0
+        characteristics: 87J, will Ehefrau zuhause behalten, emotional belastet
+        sigma: 0.8
+      - name: Secondary Caregivers (Töchter)
+        proportion: 1.0
+        characteristics: Berufstätig, geografisch verteilt, teils für Heimunterbringung
+        sigma: 1.2
+    intervention_mix:
+    - id: INT-HLT-001
+      type: information
+      subtype: cognitive_reframing
+      name: Kognitives Reframing für Pflegeheim
+      description: 'Rahmen-Änderung: Pflegeheim als ''Sicherheitsnetz'' statt ''Abschiebung'''
+      mechanism: 'Verlust-Aversions-Reframing: ''Was verlieren wir, wenn wir zu lange
+        warten?'''
+      timing: Frühzeitig in Familiengesprächen
+      target_segment: Ehemann + Töchter
+      target_10c: WHAT (Framing)
+      parameters:
+        intensity: 0.8
+        duration: einmalig, dann Verstärkung
+        frequency: bei Eskalationszeichen
+      expected_contribution:
+        E_i: 0.25
+        confidence: 0.7
+        source: MS-IN-003 (Framing Effects)
+      side_effects:
+      - Kann emotional belastend sein
+      - Erfordert sensible Kommunikation
+      warnings: []
+    - id: INT-HLT-002
+      type: commitment
+      subtype: role_commitment
+      name: Rollen-Commitment für Töchter
+      description: 'Explizite Rollenverteilung: ''Wer übernimmt welche Aufgabe?'''
+      mechanism: Pre-Commitment reduziert Diffusion of Responsibility
+      timing: Nach Höherstufungs-Bescheid
+      target_segment: Töchter
+      target_10c: HOW (Commitment)
+      parameters:
+        intensity: 0.85
+        duration: permanent
+        frequency: monatliche Review
+      expected_contribution:
+        E_i: 0.3
+        confidence: 0.75
+        source: MS-IN-001 (Pre-Commitment)
+      side_effects:
+      - Kann Konflikte zwischen Töchtern auslösen
+      - Erfordert faire Verteilung
+      warnings: []
+    - id: INT-HLT-003
+      type: planning
+      subtype: pre_mortem
+      name: Pre-Mortem Analyse
+      description: '''Was wenn Vater zusammenbricht?'' - Notfallplan erstellen'
+      mechanism: 'Prospective Hindsight: Wahrscheinliche Probleme antizipieren'
+      timing: Jetzt, proaktiv
+      target_segment: Gesamte Familie
+      target_10c: AWARE (Risikobewusstsein)
+      parameters:
+        intensity: 0.9
+        duration: einmalig + Updates
+        frequency: quartalsweise Review
+      expected_contribution:
+        E_i: 0.35
+        confidence: 0.8
+        source: Klein (2007) Pre-Mortem
+      side_effects:
+      - Kann Ängste auslösen
+      - Muss lösungsorientiert bleiben
+      warnings: []
+    - id: INT-HLT-004
+      type: nudge
+      subtype: default_setting
+      name: Defaults für den Ehemann
+      description: Automatische Termine + Lieferdienste + Tagespflege als Standard
+      mechanism: 'Status Quo Bias nutzen: Opt-out statt Opt-in'
+      timing: Sofort nach Höherstufung
+      target_segment: Ehemann
+      target_10c: WHEN (Defaults)
+      parameters:
+        intensity: 0.75
+        duration: permanent
+        frequency: wöchentliche Routine
+      expected_contribution:
+        E_i: 0.4
+        confidence: 0.85
+        source: MS-NU-002 (Default Effects)
+      side_effects:
+      - Ehemann könnte Autonomieverlust empfinden
+      - Muss mit Respekt implementiert werden
+      warnings:
+      - Autonomie-Wahrung beachten
+    - id: INT-HLT-005
+      type: planning
+      subtype: implementation_intention
+      name: Wenn-Dann-Pläne für Eskalation
+      description: '''WENN Vater stürzt → DANN rufe ich [Tochter X] an'''
+      mechanism: 'Implementation Intentions: Automatische Verhaltensaktivierung'
+      timing: Jetzt definieren
+      target_segment: Alle Familienmitglieder
+      target_10c: HOW (Implementation Intentions)
+      parameters:
+        intensity: 0.7
+        duration: permanent
+        frequency: bei Trigger-Events
+      expected_contribution:
+        E_i: 0.28
+        confidence: 0.78
+        source: MS-IN-002 (Implementation Intentions)
+      side_effects:
+      - Erfordert regelmäßige Aktualisierung
+      - Muss praktikabel bleiben
+      warnings: []
+    complementarity_matrix:
+    - pair:
+      - INT-HLT-001
+      - INT-HLT-003
+      gamma_ij: 0.35
+      interaction: synergy
+      mechanism: Reframing + Pre-Mortem verstärken Akzeptanz für Notfallpläne
+    - pair:
+      - INT-HLT-002
+      - INT-HLT-005
+      gamma_ij: 0.4
+      interaction: synergy
+      mechanism: Rollen-Commitment + Wenn-Dann macht Zuständigkeiten actionable
+    - pair:
+      - INT-HLT-003
+      - INT-HLT-005
+      gamma_ij: 0.3
+      interaction: synergy
+      mechanism: Pre-Mortem identifiziert Szenarien, Wenn-Dann operationalisiert sie
+    - pair:
+      - INT-HLT-004
+      - INT-HLT-002
+      gamma_ij: 0.25
+      interaction: synergy
+      mechanism: Defaults entlasten Ehemann, Rollen verteilen Verantwortung
+    predictions:
+      portfolio_effect:
+        E_P: 0.72
+        CI_lower: 0.58
+        CI_upper: 0.86
+        complementarity_contribution: 0.14
+        formula_used: E(P) = Σᵢ βᵢ·Iᵢ + Σᵢⱼ γᵢⱼ·√(Iᵢ·Iⱼ)
+      kpis:
+      - name: Höherstufung auf PG3+
+        baseline: PG2
+        predicted_value: PG3 oder PG4
+        predicted_delta: +1-2 Stufen
+        predicted_delta_pct: null
+        confidence: 0.85
+      - name: Finanzielle Verbesserung
+        baseline: ~2.900€/Jahr
+        predicted_value: ~8.100-15.100€/Jahr
+        predicted_delta: +5.200-12.200€/Jahr
+        predicted_delta_pct: 180
+        confidence: 0.8
+      - name: Nachhaltige Pflegesituation nach 12 Monaten
+        baseline: Instabil
+        predicted_value: Stabil mit Backup-Plan
+        predicted_delta: null
+        predicted_delta_pct: null
+        confidence: 0.7
+    results:
+      measurement_date: null
+      kpis: []
+      intervention_effects: []
+    deviation_analysis: null
+    learnings:
+      what_worked: []
+      what_didnt: []
+      parameter_updates: []
+      recommendations:
+      - category: documentation
+        recommendation: 3-4 Wochen Pflegetagebuch VOR MDK-Begutachtung führen
+        priority: critical
+      - category: timing
+        recommendation: Höherstufungsantrag SOFORT stellen
+        priority: critical
+      - category: family
+        recommendation: Familiengespräch mit Pre-Mortem-Analyse durchführen
+        priority: high
+      - category: backup
+        recommendation: Parallel Demenz-Pflegeheim auf Warteliste setzen
+        priority: high
+      - category: finance
+        recommendation: Kombinationsleistung + Verhinderungspflege optimal nutzen
+        priority: medium
+  CUS-ALPLA-CUS-ALPLA-PRJ-008:
+    meta:
+      name: ALPLA Steinabrückl Management Team Strategy 2030
+      client: ALPLA Werk Steinabrückl (Österreich)
+      domain: organization
+      start_date: '2026-01-26'
+      end_date: null
+      status: planning
+      session_reference: EBF-S-2026-01-26-ORG-001
+      model_reference: EBF-MOD-DAPL-001
+    context:
+      target_behavior: Team-Formation + Strategie-Akzeptanz für teilweise Verlagerung
+      target_population: Management-Team Steinabrückl (dysfunktional)
+      sample_size: null
+      baseline_behavior: Dysfunktionales Team, keine Vertrauensbasis zum neuen Manager
+      journey_phase: preparation
+      situation:
+        manager_status: Neu, ohne Vertrauensbasis
+        team_status: Dysfunktional, arbeitet nicht gut zusammen
+        plant_status: '''Problemwerk'''
+        strategy_content: Teilweise Verlagerung nach Osteuropa (Lohnkosten AT ~47%)
+        deadline: Anfang Mai 2026
+        timeline_weeks: 12
+        superior: Rainer Widmar (CEEU Region MD)
+        matrix_structure: 3-D (Region × Operations × Divisions)
+      segments:
+      - name: Supportive Team Members
+        proportion: 0.3
+        characteristics: Offen für Veränderung, sehen Notwendigkeit
+        sigma: 1.4
+      - name: Skeptical Team Members
+        proportion: 0.5
+        characteristics: Verlustängste, aber rational erreichbar
+        sigma: 1.0
+      - name: Resistant Team Members
+        proportion: 0.2
+        characteristics: Hohe Reaktanz, starke Verlustangst
+        sigma: 0.6
+    intervention_mix:
+    - id: INT-ALPLA-001
+      type: process
+      subtype: procedural_fairness
+      name: Echte Partizipation
+      description: Team erarbeitet Szenarien SELBST - keine vorgefasste Meinung signalisieren
+      mechanism: 'Procedural Fairness (MS-SP-013): Menschen akzeptieren negative Outcomes
+        wenn Prozess fair'
+      timing: Woche 1-6
+      target_segment: all
+      target_10c: HOW (Partizipation)
+      parameters:
+        intensity: 0.95
+        duration: 12 Wochen
+        frequency: täglich/wöchentlich
+      expected_contribution:
+        E_i: 0.35
+        confidence: 0.8
+        source: MS-SP-013 (Bolton et al. 2005)
+      side_effects:
+      - Erfordert echte Offenheit des Managers
+      - Zeitintensiv
+      warnings: []
+    - id: INT-ALPLA-002
+      type: information
+      subtype: brutal_facts
+      name: Brutale Fakten Session
+      description: AT-Lohnnebenkosten 47%, Benchmarks vs. Osteuropa - Team entdeckt
+        Problem selbst
+      mechanism: 'Data-driven insight: ''Die Zahlen haben uns überzeugt, nicht der
+        Manager'''
+      timing: Woche 2
+      target_segment: all
+      target_10c: AWARE (Problemerkenntnis)
+      parameters:
+        intensity: 0.9
+        duration: 1 Tag Workshop
+        frequency: einmalig (mit Follow-ups)
+      expected_contribution:
+        E_i: 0.25
+        confidence: 0.75
+        source: Collins (2001) Good to Great
+      side_effects:
+      - Kann initial Schock/Angst auslösen
+      - Muss mit Lösungsorientierung verbunden werden
+      warnings:
+      - Framing beachten - Fakten präsentieren, nicht bewerten
+    - id: INT-ALPLA-003
+      type: identity
+      subtype: we_language
+      name: '''Wir''-Sprache & In-Group Building'
+      description: Konsequente 'Wir Steinabrückler' Sprache, physische Präsenz im
+        Werk
+      mechanism: 'Identity Economics (MS-IB-001): Shared identity reduces resistance'
+      timing: Ab Tag 1, durchgehend
+      target_segment: all
+      target_10c: WHO (Identität)
+      parameters:
+        intensity: 0.85
+        duration: permanent
+        frequency: bei jeder Interaktion
+      expected_contribution:
+        E_i: 0.2
+        confidence: 0.7
+        source: MS-IB-001 (Akerlof & Kranton 2000)
+      side_effects:
+      - Wirkt nur bei authentischer Umsetzung
+      - Erfordert physische Präsenz
+      warnings: []
+    - id: INT-ALPLA-004
+      type: framing
+      subtype: loss_reframing
+      name: Verlust-Reframing
+      description: Verlagerung als 'Sicherung des Kerns' statt 'Abbau' kommunizieren
+      mechanism: 'Prospect Theory (MS-RD-001): Reframe loss as securing remaining
+        positions'
+      timing: Ab Woche 4 (nach eigener Analyse)
+      target_segment: all
+      target_10c: WHAT (Framing)
+      parameters:
+        intensity: 0.8
+        duration: permanent
+        frequency: bei Kommunikation
+      expected_contribution:
+        E_i: 0.15
+        confidence: 0.65
+        source: MS-RD-001 (Kahneman & Tversky 1979)
+      side_effects:
+      - Darf nicht manipulativ wirken
+      - Team muss Logik selbst erarbeitet haben
+      warnings:
+      - Nur nach echtem Verstehen des Problems einsetzen
+    - id: INT-ALPLA-005
+      type: commitment
+      subtype: team_presentation
+      name: Team präsentiert MIT
+      description: 'Bei Zentrale-Präsentation: Team-Mitglieder präsentieren ihre Teile
+        selbst'
+      mechanism: 'Commitment device + Ownership: ''Das ist UNSERE Strategie'''
+      timing: Woche 12 (Präsentation)
+      target_segment: all
+      target_10c: HOW (Commitment)
+      parameters:
+        intensity: 0.9
+        duration: einmalig
+        frequency: Finale Präsentation
+      expected_contribution:
+        E_i: 0.25
+        confidence: 0.78
+        source: MS-IN-001 (Pre-Commitment)
+      side_effects:
+      - Erfordert gute Vorbereitung
+      - Team muss Präsentations-Kompetenz haben
+      warnings: []
+    complementarity_matrix:
+    - pair:
+      - INT-ALPLA-001
+      - INT-ALPLA-002
+      gamma_ij: 0.4
+      interaction: synergy
+      mechanism: 'Partizipation + Fakten: Team entdeckt Problem selbst'
+    - pair:
+      - INT-ALPLA-001
+      - INT-ALPLA-003
+      gamma_ij: 0.35
+      interaction: synergy
+      mechanism: 'Partizipation + Identity: Echte Einbindung stärkt Zugehörigkeit'
+    - pair:
+      - INT-ALPLA-002
+      - INT-ALPLA-004
+      gamma_ij: 0.3
+      interaction: synergy
+      mechanism: Fakten-Verständnis ermöglicht sinnvolles Reframing
+    - pair:
+      - INT-ALPLA-001
+      - INT-ALPLA-005
+      gamma_ij: 0.45
+      interaction: synergy
+      mechanism: Partizipation → Ownership → authentische Präsentation
+    - pair:
+      - INT-ALPLA-003
+      - INT-ALPLA-005
+      gamma_ij: 0.3
+      interaction: synergy
+      mechanism: 'Identity + Team-Präsentation: ''Wir Steinabrückler zeigen unsere
+        Strategie'''
+    predictions:
+      portfolio_effect:
+        E_P: 0.78
+        CI_lower: 0.65
+        CI_upper: 0.91
+        complementarity_contribution: 0.18
+        formula_used: E(P) = Σᵢ βᵢ·Iᵢ + Σᵢⱼ γᵢⱼ·√(Iᵢ·Iⱼ)
+      kpis:
+      - name: Team-Akzeptanz der Strategie
+        baseline: 25%
+        predicted_value: 70%
+        predicted_delta: +45pp
+        predicted_delta_pct: 180
+        confidence: 0.75
+      - name: Umsetzungsqualität
+        baseline: 40%
+        predicted_value: 80%
+        predicted_delta: +40pp
+        predicted_delta_pct: 100
+        confidence: 0.7
+      - name: Zentrale-Zufriedenheit
+        baseline: 60%
+        predicted_value: 85%
+        predicted_delta: +25pp
+        predicted_delta_pct: 42
+        confidence: 0.72
+      - name: Manager-Credibility (beide Audiences)
+        baseline: 35%
+        predicted_value: 75%
+        predicted_delta: +40pp
+        predicted_delta_pct: 114
+        confidence: 0.68
+    results:
+      measurement_date: null
+      kpis: []
+      intervention_effects: []
+    deviation_analysis: null
+    learnings:
+      what_worked: []
+      what_didnt: []
+      parameter_updates: []
+      recommendations:
+      - category: process
+        recommendation: Procedural Fairness als Haupthebel - Team muss Analyse SELBST
+          durchführen
+        priority: critical
+      - category: timing
+        recommendation: Brutale Fakten früh (Woche 2), Reframing erst nach eigenem
+          Verstehen
+        priority: high
+      - category: identity
+        recommendation: '''Wir''-Sprache konsequent ab Tag 1'
+        priority: high
+      - category: presentation
+        recommendation: Team-Mitglieder präsentieren bei Zentrale MIT
+        priority: high
+      - category: support
+        recommendation: FehrAdvice CO-PILOT Begleitung empfohlen für diesen Case
+        priority: medium
+  # ==========================================================================
+  # ALPLA HR - Employee Retention Management NOAM 2024-2025
+  # ==========================================================================
+  CUS-ALPLA-PRJ-009:
+    meta:
+      name: "ALPLA Employee Retention Management NOAM"
+      client: "ALPLA Group"
+      domain: hr
+      start_date: "2024-06-01"
+      end_date: "2025-11-24"
+      status: completed
+      session_reference: "EBF-S-2026-01-28-HR-001"
+      model_reference: "alpla-retention-model.yaml"
+      customer_context_ref: "data/customers/alpla/"
+      presentation_date: "2025-11-24"
+    stakeholders:
+      primary:
+        - name: "Andrea Becker"
+          role: "HR Director"
+          company: "ALPLA Group"
+          responsibility: "HR sponsor, intervention design, measurement framework"
+          note: "Successor to Gerhard Geismayr"
+      secondary:
+        - name: "Walter Ritzer"
+          role: "COO / Operations"
+          company: "ALPLA Group"
+          responsibility: "Operations sponsor, plant selection"
+        - name: "Philipp Lehner"
+          role: "CEO"
+          company: "ALPLA Group"
+          responsibility: "Executive sponsor"
+    context:
+      target_behavior: "Employee retention / Turnover reduction in hourly workforce"
+      target_population: "Hourly employees in 17 NOAM plants"
+      total_plants: 17
+      plant_codes:
+        - code: "BET"
+          name: "Bethlehem"
+          pilot: true
+        - code: "BOW1"
+          name: "Bowling Green 1"
+          pilot: false
+        - code: "BOW2"
+          name: "Bowling Green 2"
+          pilot: false
+        - code: "DAY"
+          name: "Dayton"
+          pilot: false
+        - code: "FLO"
+          name: "Florence"
+          pilot: false
+        - code: "HOU"
+          name: "Houston"
+          pilot: false
+        - code: "IOW1"
+          name: "Iowa 1"
+          pilot: false
+        - code: "IOW2"
+          name: "Iowa 2"
+          pilot: false
+        - code: "JEF"
+          name: "Jefferson"
+          pilot: false
+        - code: "KC"
+          name: "Kansas City"
+          pilot: false
+        - code: "LIM"
+          name: "Lima"
+          pilot: false
+        - code: "MCD"
+          name: "McDonald"
+          pilot: false
+        - code: "SHE"
+          name: "Shelbyville"
+          pilot: false
+        - code: "SLC"
+          name: "Salt Lake City"
+          pilot: true
+        - code: "STP1"
+          name: "St. Paul"
+          pilot: false
+        - code: "WEB"
+          name: "West Bend"
+          pilot: true
+        - code: "SVC"
+          name: "Service Center"
+          pilot: false
+        - code: "TC"
+          name: "Technical Center"
+          pilot: false
+        - code: "RHQ"
+          name: "Regional HQ"
+          pilot: false
+      pilot_plants:
+        - name: "Bethlehem"
+          code: "BET"
+          region: "NOAM"
+          go_live: "2024-10-01"
+          status: "stable_low_turnover_since_oct_2024"
+        - name: "West Bend"
+          code: "WEB"
+          region: "NOAM"
+          go_live: "2024-10-01"
+          status: "turnover_reduction_observed"
+        - name: "Salt Lake City"
+          code: "SLC"
+          region: "NOAM"
+          go_live: "2024-10-01"
+          status: "turnover_reduction_observed"
+      sample_size: 1500
+      hourly_workers: 1200
+      baseline_behavior_2022: 0.75  # 75% annual turnover rate in 2022
+      baseline_behavior_2024: 0.59  # 59% annual turnover rate pre-intervention
+      annual_exits_baseline: 900
+      cost_per_exit_usd: 5000
+      annual_cost_baseline_usd: 4500000
+      journey_phase: "action"
+      key_challenges:
+        - "Hoher Onboarding-Aufwand und Einarbeitungskosten"
+        - "Kulturelle Spannungen und mangelnde Erwartungsklarheit bei neuen MA"
+        - "Unterschiedliche Voraussetzungen an den Pilotstandorten"
+      strategic_context: |
+        ALPLA NOAM hatte 2022 eine Fluktuationsrate von 75%.
+        2023 gab es erste leichte Verbesserungen, jedoch blieben
+        Rekrutierungsprobleme und kulturelle Herausforderungen bestehen.
+        Projektziele: Reduktion von Fluktuationskosten, Stärkung von
+        Mitarbeiterbindung und Unternehmenskultur, Aufbau stabiler Teams.
+    insights_from_workshops:
+      workshop_count: 30
+      participants: "Mitarbeitende, HR, Führungskräfte"
+      key_findings:
+        - dimension: "Integration & Zugehörigkeit"
+          finding: "Neue MA fühlen sich anfangs orientierungslos und isoliert"
+          quote: "Some people leave after the first week because they don't feel welcome."
+          source: "HR workshop participant"
+          implication: "Ohne emotionalen Anker entsteht kein Zugehörigkeitsgefühl - der Startmoment entscheidet"
+        - dimension: "Führung & Kommunikation"
+          finding: "Führung wird als kontrollierend statt unterstützend erlebt"
+          quote: "Supervisors often don't know what to do – how are they supposed to guide others?"
+          source: "Plant manager"
+          implication: "Mitarbeiterbindung braucht sichtbare, glaubwürdige Führung"
+        - dimension: "Arbeitsrealität & Erwartungen"
+          finding: "Hohe physische Belastung, Erwartungen nicht geklärt"
+          quote: "People walk in and are shocked – nobody told them what it's really like."
+          source: "Production lead"
+          implication: "Realistische Erwartungssteuerung durch Storytelling zentral"
+    intervention_mix:
+      - id: "INT1"
+        type: "onboarding"
+        subtype: "expectation_management"
+        name: "Extended Interview"
+        description: "Erwartungsklarheit durch strukturierte Bewerbungsgespräche und realistische Einblicke"
+        target_10c: "AWARE (Erwartungsklarheit) + STAGE (Pre-Entry)"
+        timing: "Q4/2024"
+        status: "implemented"
+        target_segment: "all_candidates"
+        behavioral_mechanism: |
+          Realistic Job Preview reduziert Desillusionierung nach Eintritt.
+          Kandidaten können informierte Entscheidung treffen.
+        observed_effect: "Reduzierte Frühfluktuation (<90 Tage)"
+      - id: "INT2"
+        type: "communication"
+        subtype: "nudges"
+        name: "Personalisierte Onboarding-Nudges"
+        description: "Personalisierte Nachrichten vor und während des Onboardings"
+        target_10c: "AWARE (Salienz) + WHEN (Timing)"
+        timing: "Q4/2024"
+        status: "implemented"
+        target_segment: "all_new_hires"
+        behavioral_mechanism: |
+          Timely reminders und personalisierte Nachrichten erhöhen
+          Engagement und Zugehörigkeitsgefühl in kritischer Phase.
+        observed_effect: "Verbesserte Willkommenskultur"
+      - id: "INT3"
+        type: "social"
+        subtype: "symbolic_recognition"
+        name: "Welcome Gift"
+        description: "Symbolische Willkommensgeschenke zur Wertschätzung"
+        target_10c: "WHAT(S) (Social) + WHO (Identity)"
+        timing: "Q4/2024"
+        status: "implemented"
+        target_segment: "all_new_hires"
+        behavioral_mechanism: |
+          Reziprozität und symbolische Wertschätzung stärken
+          emotionale Bindung ab Tag 1.
+        observed_effect: "MA fühlen sich früher eingebunden"
+      - id: "INT4"
+        type: "culture"
+        subtype: "team_norms"
+        name: "Shift Commitment"
+        description: "Gemeinsame Werte und Verhaltensstandards je Schicht"
+        target_10c: "WHO (Team Identity) + HOW (Normen)"
+        timing: "Q4/2024"
+        status: "implemented"
+        target_segment: "all_shifts"
+        behavioral_mechanism: |
+          Explizite Normen und Commitments stärken Teamkohäsion
+          und schaffen klare Verhaltenserwartungen.
+        observed_effect: "Stärkere Teamkohäsion durch symbolische Rituale"
+      - id: "INT5"
+        type: "financial"
+        subtype: "supervisor_incentive"
+        name: "Supervisor Bonus"
+        description: "Anreize für Vorgesetzte bei niedriger Fluktuation"
+        target_10c: "WHAT(F) (Financial) + HIERARCHY (Leadership)"
+        timing: "Q4/2024"
+        status: "implemented"
+        target_segment: "all_supervisors"
+        behavioral_mechanism: |
+          Finanzielle Anreize alignieren Supervisor-Ziele mit
+          Retention-Zielen. Retention wird zur Führungsaufgabe.
+        observed_effect: "Führungskräfte motiviert zur aktiven Begleitung"
+        warning: "Ohne Begleitung/Training verliert Programm Zugkraft"
+    complementarity_matrix:
+      - pair: ["INT1", "INT2"]
+        gamma_ij: 0.35
+        interaction: "synergy"
+        mechanism: "Extended Interview + Nudges = konsistente Erwartungssteuerung"
+      - pair: ["INT2", "INT3"]
+        gamma_ij: 0.40
+        interaction: "synergy"
+        mechanism: "Nudges + Welcome Gift = emotionale Bindung ab Tag 1"
+      - pair: ["INT3", "INT4"]
+        gamma_ij: 0.30
+        interaction: "synergy"
+        mechanism: "Welcome Gift + Shift Commitment = Team-Integration"
+      - pair: ["INT4", "INT5"]
+        gamma_ij: 0.25
+        interaction: "synergy"
+        mechanism: "Shift Commitment + Supervisor Bonus = Führung als Retention-Hebel"
+      - pair: ["INT5", "INT3"]
+        gamma_ij: -0.10
+        interaction: "potential_interference"
+        mechanism: "Financial incentive kann intrinsische Wertschätzung untergraben"
+        warning: "Monitor for crowding-out effects"
+    results:
+      measurement_date: "2025-11-24"
+      data_period: "2019-01 to 2024-05"
+      status: "positive_impact_observed"
+      kpis:
+        - name: "Turnover Reduction"
+          baseline: 0.59
+          target: 0.30
+          observed_trend: "deutlicher Rückgang nach Go-live Herbst 2024"
+          example: "Bethlehem: stabil niedrige Turnover seit Oktober 2024"
+        - name: "Annual Exits"
+          baseline: 900
+          target: 450
+          observed: "Reduktion auf ~450 Exits/Jahr"
+          confidence: "observed_in_pilot"
+        - name: "Cost Savings"
+          baseline_cost_usd: 4500000
+          target_cost_usd: 2250000
+          savings_usd: 2250000
+          note: "2,25 Mio. USD Kosteneinsparung/Jahr durch geringere Onboarding- und Rekrutierungskosten"
+      # Detailed Data Files (separate for maintainability)
+      data_files:
+        project_summary: "data/customers/alpla/hr-retention-noam/project_summary.yaml"
+        turnover_monthly: "data/customers/alpla/hr-retention-noam/turnover_monthly.yaml"
+        separations_monthly: "data/customers/alpla/hr-retention-noam/separations_monthly.yaml"
+        bls_benchmark: "data/customers/alpla/hr-retention-noam/bls_jolts_separations.yaml"
+      # Summary Statistics (extracted from data files)
+      summary_statistics:
+        data_period: "2019-01 to 2024-05"
+        total_months: 65
+        plant_count: 17
+        annual_turnover_rate:
+          "2019": 0.037  # 37%
+          "2020": 0.041  # 41%
+          "2021": 0.056  # 56% (Great Resignation)
+          "2022": 0.059  # 59% (Peak year)
+          "2023": 0.044  # 44% (improvement starts)
+          "2024": 0.034  # 34% YTD (clear improvement)
+        pre_intervention_avg_2022: 0.049  # 4.9% monthly
+        post_intervention_avg_2024: 0.034  # 3.4% monthly
+        improvement_pct: 31  # 31% reduction
+        pilot_plants_improvement:
+          BET: 66  # 66% reduction (11.2% → 3.8% monthly)
+          WEB: 67  # 67% reduction (6.7% → 2.2% monthly)
+          SLC: 53  # 53% reduction (10.6% → 5.0% monthly)
+        total_separations_by_year:
+          "2019": 515
+          "2020": 526
+          "2021": 912
+          "2022": 948
+          "2023": 795
+          "2024": 261  # YTD through May
+        peak_turnover_events:
+          - plant: "SLC"
+            month: "2021-04"
+            value: 0.44
+          - plant: "HOU"
+            month: "2023-08"
+            value: 0.25
+          - plant: "BET"
+            month: "2022-09"
+            value: 0.22
+      impact_dimensions:
+        - dimension: "KPI-Wirkung"
+          description: "Rückgang der Fluktuation"
+          evidence: "Alle drei Pilotwerke zeigten deutlichen Rückgang der Turnover-Raten nach Go-live"
+          quote: "The observed trend reflects progress in building more stable and engaged teams."
+        - dimension: "Kulturelle Wirkung"
+          description: "Stärkere Bindung & Teamintegration"
+          evidence:
+            - "Neue MA fühlen sich früher eingebunden und unterstützt"
+            - "Verbesserte Feedback- und Willkommenskultur"
+            - "Teamkohäsion durch Shift Commitment und symbolische Rituale gestärkt"
+          quote: "The program is seen as helpful in creating a more welcoming environment for new employees."
+        - dimension: "Organisationale Wirkung"
+          description: "Führung & Routinen gestärkt"
+          evidence:
+            - "Führungskräfte als Retention-Hebel: Bonusprogramm motiviert"
+            - "Regelmässige Check-ins, strukturierte Interviews"
+            - "Retention als Führungsaufgabe sichtbar gemacht"
+          quote: "Structured onboarding, leadership engagement, and cultural reinforcement proved critical for retention success."
+    barriers_observed:
+      - id: "B1"
+        category: "responsibility"
+        finding: "Unklare Verantwortlichkeiten"
+        quote: "Einige Supervisor wussten gar nicht, dass das Programm gestartet war."
+        implication: "Rollen und Zuständigkeiten müssen klar definiert sein"
+      - id: "B2"
+        category: "time"
+        finding: "Zeitmangel im Alltag"
+        quote: "Wir haben kaum Kapazitäten für tägliche Check-ins."
+        implication: "Retention-Massnahmen benötigen Zeitfenster im operativen Tagesgeschäft"
+      - id: "B3"
+        category: "culture"
+        finding: "Kulturelle Skepsis"
+        quote: "Das funktioniert bei uns nicht – unsere Leute ticken anders."
+        implication: "Lokale Kontexte müssen berücksichtigt werden"
+      - id: "B4"
+        category: "training"
+        finding: "Fehlendes Training für Führung"
+        quote: "Ich würde gerne mehr unterstützen, aber mir fehlt das richtige Werkzeug."
+        implication: "Supervisors brauchen Schulung für Nudging, Interviews & Kommunikation"
+      - id: "B5"
+        category: "structure"
+        finding: "Fehlende Verankerung in Strukturen"
+        quote: "Wenn das Bonusprogramm nicht läuft, machen es viele halt nicht."
+        implication: "Ohne KPI-Einbindung und Management-Commitment verliert Programm Zugkraft"
+    learnings:
+      what_worked:
+        - "Strukturiertes Onboarding mit Extended Interview"
+        - "Symbolische Wertschätzung (Welcome Gift)"
+        - "Supervisor Bonus als Leadership-Incentive"
+        - "Shift Commitment für Teamkohäsion"
+        - "Personalisierte Nudges im Onboarding"
+      what_didnt:
+        - "Unklare Rollenverteilung zu Projektstart"
+        - "Fehlende Zeitfenster für Check-ins"
+        - "Kulturelle Skepsis ohne lokale Anpassung"
+      key_insights:
+        - "Retention ist multifaktoriell: Lohnniveau, Struktur, Kultur & Verhalten müssen zusammenspielen"
+        - "Der grösste Hebel liegt im strukturierten Onboarding und in der frühen Mitarbeiterbindung"
+        - "Führungskräfte als Schlüsselakteure: Ihre Haltung, Kommunikation und Präsenz wirken direkt auf Bleibeverhalten"
+      recommendations:
+        - category: "institutionalization"
+          recommendation: "Strukturiertes Onboarding institutionalisieren (inkl. Interview, Nudges, Feedbackprozesse)"
+          priority: critical
+        - category: "rollout"
+          recommendation: "Massnahmen regional ausrollen – angepasst an jeweilige Bedingungen"
+          priority: high
+        - category: "strategy"
+          recommendation: "Retention als Teil der strategischen Personal- und Unternehmensplanung verankern"
+          priority: high
+        - category: "scaling"
+          recommendation: "Mit klaren Rollen, geschulten Führungskräften, lokaler Anpassung und KPI-Verankerung skalieren"
+          priority: high
+
+  # ==========================================================================
+  # ALPLA INDUSTRIAL - Vertriebs-Transformation 2025-2027
+  # ==========================================================================
+  CUS-ALPLA-PRJ-010:
+    meta:
+      name: "ALPLA Industrial Vertriebs-Transformation"
+      client: "ALPLA Industrial"
+      domain: sales
+      start_date: "2025-10-01"
+      end_date: "2027-12-31"
+      status: proposal
+      lead_reference: "LEAD-047"
+      customer_context_ref: "data/customers/alpla/"
+      proposal_date: "2025-09-18"
+
+    stakeholders:
+      primary:
+        - name: "TBD"
+          role: "Geschäftsführung ALPLA Industrial"
+          company: "ALPLA Industrial"
+          responsibility: "Auftraggeber, strategische Entscheidungen"
+      advisory:
+        - name: "FehrAdvice Austria"
+          role: "Projektleitung"
+          responsibility: "Beratung, Workshops, Pilotbegleitung"
+
+    context:
+      target_behavior: "Vertriebstransformation: Großkunden erschließen, KMU effizienter, Anreize neu"
+      target_population: "Vertriebsorganisation ALPLA Industrial (AT, HU, RO)"
+      regions: ["Österreich", "Ungarn", "Rumänien"]
+
+      ausgangslage:
+        commodity_grosskundengeschaeft:
+          status: "Bisher weniger erfolgreich als in anderen ALPLA-Sparten"
+          gruende:
+            - "Kaum Differenzierungsmöglichkeiten"
+            - "Preislich nicht attraktiv genug"
+            - "Vertrieb nicht auf lange Buying Cycles und Key-Account-Logiken eingestellt"
+          herausforderung: "Differenzierung jenseits des Preises (Service, Nachhaltigkeit, Co-Development)"
+
+        kmu_segment:
+          status: "Stärke durch Flexibilität, persönliche Interaktion, schnelle Lieferung"
+          herausforderung: "Effizienz durch Technologie & Automatisierung (Self-Service, KI)"
+          ziel: "Außendienst entlasten für Akquise & Wachstumsprojekte"
+
+        anreizsysteme:
+          heute: "Fokus auf Bestandspflege"
+          morgen: "Neukundenakquise und Business Development honorieren"
+          bedarf: "Neue Bonusmodelle, Persönlichkeiten für Akquise"
+
+      fazit: "KMU stärken & effizienter machen – Commodity/Großkunden erschließen – Anreize neu ausrichten"
+
+    strategic_directions:
+      - id: "SD1"
+        name: "Strategisch"
+        actions:
+          - "Entwicklung einer Segmentlogik (ABC-Kunden)"
+          - "Großkundengeschäft differenzieren (USP über Service, Nachhaltigkeit, Kooperation)"
+          - "Roadmap für Pilotprojekte im Commodity-Segment"
+
+      - id: "SD2"
+        name: "Organisational"
+        actions:
+          - "Aufbau einer werksübergreifenden Vertriebsorganisation"
+          - "Einführung von Key Account Management (für Commodity/Großkunden)"
+          - "Customer Success Management für KMU (Technologie & Automatisierung)"
+          - "Klare Governance, Schnittstellen und Verantwortlichkeiten"
+
+      - id: "SD3"
+        name: "Taktisch / verhaltensökonomisch"
+        actions:
+          - "Neue Incentives: Fokus auf Neukundenakquise & Großkundenentwicklung"
+          - "Relative Boni (Team + Individuum) für Balance Kooperation & Wettbewerb"
+          - "Transparenz & Social Proof: Dashboards & Erfolgsstories"
+          - "Upskilling & Community-Learning für Außen- & Innendienst"
+
+    intervention_mix:
+      - id: "INT1"
+        type: "incentive"
+        subtype: "bonus_restructuring"
+        name: "Neue Incentive-Struktur"
+        description: "Fokus auf Neukundenakquise & Großkundenentwicklung statt nur Bestandspflege"
+        target_10c: "WHAT(F) (Financial Incentives)"
+        timing: "Phase 2 (2026)"
+        status: "planned"
+        behavioral_mechanism: |
+          Alignment von individuellen Zielen mit Unternehmenszielen.
+          Neukundenakquise wird finanziell attraktiv.
+
+      - id: "INT2"
+        type: "incentive"
+        subtype: "relative_bonus"
+        name: "Relative Team-Boni"
+        description: "Balance zwischen Kooperation (Team) und Wettbewerb (Individuum)"
+        target_10c: "WHAT(F) + HOW (Complementarity)"
+        timing: "Phase 2 (2026)"
+        status: "planned"
+        behavioral_mechanism: |
+          Relative Boni fördern gesunden Wettbewerb ohne Kooperation zu zerstören.
+          Team-Komponente verhindert Siloing.
+
+      - id: "INT3"
+        type: "transparency"
+        subtype: "dashboard"
+        name: "Sales Dashboards & KPIs"
+        description: "Transparenz durch Echtzeit-Dashboards und Erfolgsstories"
+        target_10c: "AWARE (Salience) + WHAT(S) (Social Proof)"
+        timing: "Phase 1-2"
+        status: "planned"
+        behavioral_mechanism: |
+          Sichtbarkeit von Erfolgen motiviert und schafft Benchmarks.
+          Social Proof durch Erfolgsstories der Top-Performer.
+
+      - id: "INT4"
+        type: "organization"
+        subtype: "kam"
+        name: "Key Account Management"
+        description: "Dedizierte KAM-Struktur für Commodity/Großkunden"
+        target_10c: "WHO (Identity) + HIERARCHY"
+        timing: "Phase 2-3"
+        status: "planned"
+        behavioral_mechanism: |
+          Spezialisierung ermöglicht Fokus auf lange Buying Cycles.
+          Karrierepfad für Akquise-orientierte Persönlichkeiten.
+
+      - id: "INT5"
+        type: "technology"
+        subtype: "automation"
+        name: "KMU Self-Service & Automatisierung"
+        description: "Self-Service-Portale, KI-gestützte Anfragenbearbeitung"
+        target_10c: "WHEN (Choice Architecture)"
+        timing: "Phase 2-3"
+        status: "planned"
+        behavioral_mechanism: |
+          Entlastung des Außendienstes von Routine.
+          Freiräume für Akquise und Wachstumsprojekte.
+
+      - id: "INT6"
+        type: "culture"
+        subtype: "community"
+        name: "Community Learning"
+        description: "Werksübergreifender Best Practice Austausch (AT, HU, RO)"
+        target_10c: "WHO (Team Identity) + WHAT(S) (Social)"
+        timing: "Phase 2-3"
+        status: "planned"
+        behavioral_mechanism: |
+          Gemeinsame Identität über Ländergrenzen hinweg.
+          Lernen von Top-Performern statt Erfinden des Rades.
+
+    project_phases:
+      - phase: 1
+        name: "Analyse & Zielbild"
+        timing: "Q3-Q4 2025"
+        status: "proposal"
+        deliverables:
+          - "Optionen für strategische, organisatorische und taktische Maßnahmen"
+          - "Abschätzung der Wirkung auf Kunden & Mitarbeitende"
+          - "High-Level Roadmap & Pilotentscheidungsgrundlage"
+        vorgehen: "Workshops, Marktanalysen, optional Kundeninterviews"
+
+      - phase: 2
+        name: "Pilotierung & Einführung"
+        timing: "2026"
+        status: "planned"
+        deliverables:
+          - "Funktionsfähige Pilotstruktur (KAM, Incentives, KMU-Automatisierung)"
+          - "Briefings, Debriefings, Pit-Stops"
+          - "Umfassende Empfehlungsanalyse zur Weiterentwicklung"
+        vorgehen: "Kontrollierte Pilotumsetzung, Feedback-Loops, Evaluation"
+
+      - phase: 3
+        name: "Rollout & Verankerung"
+        timing: "2026-2027"
+        status: "planned"
+        deliverables:
+          - "Rollout der KAM-Struktur"
+          - "Briefings für Job-Hirings"
+          - "Entwicklungspfade für Mitarbeitende im Sales"
+          - "Einführung neuer Preis- & Vertragsmodelle"
+          - "Kultur- & Community-Learning"
+        vorgehen: "Recruiting, Trainings, Resonanz-Workshops, Monitoring"
+
+    current_offer:
+      package: "IMPULS + DESIGN"
+      scope: "Begleitung Phase 1 & 2"
+      teil_1:
+        timing: "Oktober-November 2025"
+        leistungen:
+          - "Health Check → Interviews, Stärken/Schwächen"
+          - "Impuls-Workshop → Maßnahmenoptionen in drei Stoßrichtungen"
+          - "Strategie-Sparring → Diskussion & Sparring mit Management"
+      teil_2:
+        timing: "Januar-Februar 2026"
+        leistungen:
+          - "Funktionsfähige Pilotstruktur"
+          - "Evaluation"
+          - "Rollout-Entscheidungsvorlage"
+          - "Kick-off mit dem Team"
+      deliverables:
+        - "Vertiefte Markt- und Wettbewerbsanalyse (Commodity vs. KMU)"
+        - "Kundeninterviews / Integration vorhandener Befragungen"
+        - "Abschätzung der Wirkung (Kundenattraktivität, MA-Motivation)"
+        - "High-Level Roadmap 2025-2027"
+        - "Pilot-Entscheidungsvorlage (was, wo, mit wem starten?)"
+        - "Pilot-Kick-off: Vision, Ziele, Regeln, Commitment"
+      investition:
+        total_eur: 25000
+        zahlung_1: "EUR 15.000 per Oktober 2025"
+        zahlung_2: "EUR 10.000 per Projektende"
+
+    vision_2027: |
+      Martin, Key Account Manager bei ALPLA Industrial, startet seinen Tag mit allen KPIs
+      auf seinem Tablet: Pipeline-Übersicht, Großkunden-Projekte, Feedback aus Service-Calls.
+
+      Er ist motiviert:
+      - Klare Ziele, die fordern und belohnen (Bonus auch für neue Großprojekte)
+      - Teil eines High-Performance-Sales-Teams mit Best Practice Austausch
+      - Seine Arbeit macht Sinn: ALPLA Industrial als Partner, nicht nur Lieferant
+
+      Am Nachmittag trifft er sich virtuell mit Kolleg:innen aus Österreich, Ungarn, Rumänien.
+      Werksübergreifend, organisiert, kundenorientiert.
+
+  # ==========================================================================
+  # SPÖ PROJEKT 2029 - Strategische Neupositionierung für Nationalratswahl
+  # ==========================================================================
+  SPO-PRJ-2029-001:
+    meta:
+      name: "Projekt 2029 - Strategische Neupositionierung SPÖ"
+      client: "SPÖ (Sozialdemokratische Partei Österreichs)"
+      domain: political
+      start_date: "2026-01-27"
+      end_date: "2029-09-30"
+      status: planning
+      session_ref: "EBF-S-2026-01-27-POL-001"
+      customer_context_ref: "data/customers/spo/"
+    context:
+      target_behavior: "Wahlentscheidung für SPÖ"
+      target_population: "Österreichische Wahlberechtigte (6.4 Mio)"
+      sample_size: null
+      baseline_behavior: 0.21  # Nationalratswahl 2024: 21.0%
+      target_behavior_2029: 0.28  # Ziel: 28%+ (Regierungsfähigkeit)
+      journey_phase: "precontemplation→action"
+      key_challenge: "γ_class-Kollaps bei gleichzeitigem γ_EX-Defizit"
+      segments:
+        - name: "loyale_kernwähler"
+          description: "Traditionelle SPÖ-Wähler (Gewerkschaft, öffentlicher Dienst)"
+          proportion: 0.35
+          sigma: 0.8
+          gamma_class: 0.45
+          priority: "retain"
+        - name: "verlorene_arbeiter"
+          description: "Ehemalige SPÖ-Arbeiter, jetzt FPÖ/nichtwähler"
+          proportion: 0.25
+          sigma: 1.6
+          gamma_class: 0.10
+          gamma_EX_current: 0.38
+          priority: "reconquer"
+        - name: "urbane_progressive"
+          description: "Grün-affine, akademisch, klimabewusst"
+          proportion: 0.20
+          sigma: 1.2
+          gamma_class: 0.08
+          priority: "expand"
+        - name: "pragmatische_mitte"
+          description: "Wechselwähler, wirtschaftsorientiert"
+          proportion: 0.20
+          sigma: 1.4
+          priority: "compete"
+    ebf_diagnosis:
+      primary_problem: "Strukturelles Utility-Mismatch"
+      mechanism: |
+        SPÖ bietet: F (Financial) + S (Social)
+        Wähler fordern: E (Emotional) + X (Existential)
+        FPÖ liefert: E×X mit γ_{E×X} = 0.42
+      gamma_analysis:
+        gamma_class_1979: 0.50
+        gamma_class_2024: 0.15
+        gamma_class_decline_rate: -0.78  # pro Jahr ca. -1.7%
+        gamma_EX_spo: 0.15
+        gamma_EX_fpo: 0.42
+        gamma_EX_gap: -0.27
+      root_causes:
+        - cause: "Tertiarisierung"
+          weight: 0.30
+          reversible: false
+        - cause: "Bildungsexpansion"
+          weight: 0.25
+          reversible: false
+        - cause: "Identitätspolitik-Fokus"
+          weight: 0.20
+          reversible: true
+        - cause: "Digitales Defizit"
+          weight: 0.15
+          reversible: true
+        - cause: "Interne Fragmentierung"
+          weight: 0.10
+          reversible: true
+    strategic_options:
+      option_A:
+        name: "γ_class Rekonstruktion"
+        description: "Klassenkomplementarität wiederherstellen"
+        feasibility: 0.25
+        time_required: "10+ Jahre"
+        risk: "Strukturell unmöglich wegen Tertiarisierung"
+      option_B:
+        name: "γ_EX Reframing"
+        description: "E×X-Positionierung übernehmen (Kickl-Strategie spiegeln)"
+        feasibility: 0.35
+        time_required: "2-3 Jahre"
+        risk: "Authentizitätsproblem, Babler-Profil passt nicht"
+      option_C:
+        name: "Hybrid: F×S + E-Light"
+        description: "Kernkompetenz (F+S) behalten, E (Emotional) hinzufügen"
+        feasibility: 0.55
+        time_required: "18-24 Monate"
+        risk: "Verwässerung möglich"
+      recommended: "option_C"
+    intervention_mix:
+      - id: I1
+        type: "information"
+        subtype: "narrative_reframing"
+        description: "Emotionale Narrative statt Policy-Papiere ('Sicherheit durch Gemeinschaft')"
+        target_10c: "WHAT(E)"
+        timing: "ab Q2/2026"
+        target_segment: "verlorene_arbeiter"
+        parameters:
+          intensity: 0.8
+          duration: "36 Monate"
+          frequency: "kontinuierlich"
+        expected_contribution:
+          E_i: 0.03
+          confidence: 0.45
+          source: "hypothesis"
+      - id: I2
+        type: "digital"
+        subtype: "platform_presence"
+        description: "TikTok/Telegram-Offensive (Reichweite von 8% auf 50% vs. FPÖ)"
+        target_10c: "AWARE"
+        timing: "ab Q1/2026"
+        target_segment: "all"
+        parameters:
+          intensity: 0.9
+          duration: "36 Monate"
+          frequency: "täglich"
+        expected_contribution:
+          E_i: 0.02
+          confidence: 0.50
+          source: "benchmark"
+      - id: I3
+        type: "social"
+        subtype: "community_organizing"
+        description: "Grassroots-Mobilisierung in verlorenen Arbeiterbezirken"
+        target_10c: "WHO(S)"
+        timing: "ab Q3/2026"
+        target_segment: "verlorene_arbeiter"
+        parameters:
+          intensity: 0.7
+          duration: "30 Monate"
+          frequency: "wöchentlich"
+        expected_contribution:
+          E_i: 0.015
+          confidence: 0.40
+          source: "case_studies"
+      - id: I4
+        type: "structural"
+        subtype: "candidate_selection"
+        description: "Arbeiter-Kandidaten in Top-20 Listenplätzen (aktuell: 3%)"
+        target_10c: "WHO(representation)"
+        timing: "2028"
+        target_segment: "verlorene_arbeiter"
+        parameters:
+          intensity: 0.6
+          duration: "einmalig"
+          frequency: "Listenaufstellung"
+        expected_contribution:
+          E_i: 0.01
+          confidence: 0.35
+          source: "hypothesis"
+    complementarity_matrix:
+      - pair: [I1, I2]
+        gamma_ij: 0.3
+        interaction: "synergy"
+        mechanism: "Emotionale Narrative verstärkt durch digitale Reichweite"
+      - pair: [I1, I3]
+        gamma_ij: 0.4
+        interaction: "synergy"
+        mechanism: "Narrative + persönlicher Kontakt = Glaubwürdigkeit"
+      - pair: [I2, I3]
+        gamma_ij: 0.2
+        interaction: "synergy"
+        mechanism: "Online mobilisiert für Offline-Events"
+      - pair: [I3, I4]
+        gamma_ij: 0.5
+        interaction: "synergy"
+        mechanism: "Authentische Kandidaten verstärken Grassroots-Glaubwürdigkeit"
+    predictions:
+      portfolio_effect:
+        E_P: 0.07
+        CI_lower: 0.04
+        CI_upper: 0.10
+        formula_used: "E(P) = Σ E_i + Σ γ_ij · √(E_i · E_j)"
+      kpis:
+        - name: "Stimmenanteil Nationalratswahl 2029"
+          baseline: 0.21
+          predicted_value: 0.28
+          predicted_delta: 0.07
+          predicted_delta_pct: 33
+          confidence: 0.40
+          uncertainty_note: "Hohe Unsicherheit - 36-Monats-Horizont"
+        - name: "Arbeiter-Segment Rückgewinnung"
+          baseline: 0.18
+          predicted_value: 0.28
+          predicted_delta: 0.10
+          predicted_delta_pct: 56
+          confidence: 0.35
+        - name: "Digital Reach Ratio vs. FPÖ"
+          baseline: 0.32
+          predicted_value: 0.55
+          predicted_delta: 0.23
+          predicted_delta_pct: 72
+          confidence: 0.55
+        - name: "Mitgliederzuwachs (netto)"
+          baseline: -3.2  # % pro Jahr
+          predicted_value: 1.0
+          predicted_delta: 4.2
+          predicted_delta_pct: 131
+          confidence: 0.30
+    results:
+      measurement_date: null
+      kpis: []
+      intervention_effects: []
+    deviation_analysis: null
+    learnings:
+      what_worked: []
+      what_didnt: []
+      parameter_updates: []
+      recommendations:
+        - category: "strategy"
+          recommendation: "Option C (Hybrid) empfohlen: F×S-Kern + E-Ergänzung"
+          priority: critical
+        - category: "digital"
+          recommendation: "TikTok-Team aufbauen mit 5+ FTEs, Telegram-Channel starten"
+          priority: high
+        - category: "narrative"
+          recommendation: "Weg von Policy-Details, hin zu emotionalen Geschichten"
+          priority: high
+        - category: "personnel"
+          recommendation: "Arbeiter-Quote in Parteiführung erhöhen (aktuell: 3%)"
+          priority: high
+        - category: "timing"
+          recommendation: "Doskozil-Konflikt klären vor 2027 Landtagswahlen"
+          priority: critical
+
+  # -------------------------------------------------------------------------
+  # PROJECT 11: BFE ECHfP - Energie Schweiz für Private
+  # -------------------------------------------------------------------------
+  CUS-BFE-PRJ-011:
+    meta:
+      name: "ECHfP Kontextanalyse - Heizungsersatz auf Erneuerbar"
+      client: "BFE - Bundesamt für Energie"
+      domain: "energy"
+      start_date: "2026-01-28"
+      end_date: null
+      status: "planning"
+      session_reference: "EBF-S-2026-01-28-ENE-001"
+
+    context:
+      target_behavior: "Heizungsersatz von fossil auf erneuerbar"
+      target_population: "Schweizer Hausbesitzer (EFH, MFH, STWE)"
+      baseline_behavior: 0.65
+      goal_behavior: 0.75
+      journey_phase: "considering"
+
+      segments:
+        - name: "SEG_EFH"
+          description: "Einfamilienhaus-Eigentümer"
+          proportion: 0.45
+          beta: 0.82
+          lambda: 2.1
+          theta: 0.65
+
+        - name: "SEG_MFH"
+          description: "Mehrfamilienhaus-Eigentümer"
+          proportion: 0.15
+          beta: 0.78
+          lambda: 2.3
+          theta: 0.72
+
+        - name: "SEG_STWE"
+          description: "Stockwerkeigentümer"
+          proportion: 0.25
+          beta: 0.75
+          lambda: 2.5
+          theta: 0.78
+
+        - name: "SEG_INST"
+          description: "Installateure (Gatekeeper)"
+          proportion: 0.15
+          role: "Entscheidet bei 55% Notfall-Ersetzungen"
+
+    intervention_mix:
+      existing:
+        - id: "M1"
+          type: "information"
+          description: "Informationskampagne zu erneuerbaren Heizsystemen"
+          target_10c: "AWARE"
+
+        - id: "M2"
+          type: "service"
+          description: "Beratungsangebote (Impulsberatung, GEAK)"
+          target_10c: "READY"
+
+        - id: "M3"
+          type: "financial"
+          description: "Förderprogramme (Gebäudeprogramm, kantonal)"
+          target_10c: "WHAT (u_F)"
+
+        - id: "M4"
+          type: "timing"
+          description: "Trigger-Marketing bei kritischen Momenten"
+          target_10c: "WHEN"
+
+        - id: "M5"
+          type: "digital"
+          description: "erneuerbarheizen.ch Plattform"
+          target_10c: "AWARE"
+
+      proposed_new:
+        - id: "M6"
+          type: "gatekeeper"
+          subtype: "installer_activation"
+          description: "Installateur-Aktivierung: Training, Toolkit, Incentives"
+          target_10c: "WHO (Gatekeeper)"
+          target_segment: "SEG_INST"
+          parameters:
+            intensity: 0.9
+            expected_contribution:
+              E_i: 0.32
+              confidence: 0.70
+              source: "literature + LLMMC"
+          rationale: "Bei 55% Notfall-Ersetzungen entscheidet Installateur in 24-48h"
+
+        - id: "M7"
+          type: "social"
+          subtype: "peer_effects"
+          description: "Nachbarschafts-Cluster: Sichtbarkeit, Gruppenangebote"
+          target_10c: "WHAT (u_S)"
+          target_segment: "SEG_EFH"
+          parameters:
+            intensity: 0.7
+            expected_contribution:
+              E_i: 0.24
+              confidence: 0.65
+              source: "Solar-Cluster Evidenz"
+          rationale: "Social influence bei EFH = 0.68, Nachbar-Effekt stark"
+
+        - id: "M8"
+          type: "facilitation"
+          subtype: "collective_decision"
+          description: "STWE-Facilitierung: Professionelle Versammlungsmoderation"
+          target_10c: "HOW (γ Coordination)"
+          target_segment: "SEG_STWE"
+          parameters:
+            intensity: 0.8
+            expected_contribution:
+              E_i: 0.18
+              confidence: 0.55
+              source: "STWE Koordinationsproblem-Literatur"
+          rationale: "θ_STWE = 0.78, collective_decision_threshold = 67%"
+
+    complementarity_matrix:
+      - pair: ["M6", "M3"]
+        gamma_ij: 0.25
+        interaction: "synergy"
+        mechanism: "Installateur kennt Fördermöglichkeiten, berät aktiv"
+
+      - pair: ["M7", "M3"]
+        gamma_ij: -0.20
+        interaction: "crowding_out"
+        mechanism: "Social Norm + Financial kann intrinsische Motivation untergraben"
+        mitigation: "Sequenzielle Kommunikation: erst Social, dann Financial als Enabler"
+
+      - pair: ["M6", "M4"]
+        gamma_ij: 0.35
+        interaction: "synergy"
+        mechanism: "Installateur ist präsent bei kritischem Moment (Defekt)"
+
+      - pair: ["M7", "M8"]
+        gamma_ij: 0.15
+        interaction: "synergy"
+        mechanism: "Nachbarschafts-Erfolge können STWE motivieren"
+
+    predictions:
+      monte_carlo:
+        draws: 10000
+        baseline_scenario:
+          mean: 0.71
+          ci_95: [0.65, 0.77]
+        with_new_interventions:
+          mean: 0.78
+          ci_95: [0.682, 0.824]
+        p_goal_75: 0.51
+
+      kpis:
+        - name: "Ersetzungsrate fossil → erneuerbar"
+          baseline: 0.65
+          predicted_value: 0.78
+          predicted_delta: 0.13
+          predicted_delta_pct: 20
+          confidence: 0.51
+
+        - name: "Installateur-Aktivierungsrate"
+          baseline: 0.30
+          predicted_value: 0.60
+          predicted_delta: 0.30
+          predicted_delta_pct: 100
+          confidence: 0.60
+
+    results:
+      measurement_date: null
+      kpis: []
+      intervention_effects: []
+
+    deviation_analysis: null
+
+    learnings:
+      what_worked: []
+      what_didnt: []
+      parameter_updates: []
+      recommendations:
+        - category: "priority"
+          recommendation: "M6 Installateur-Aktivierung als Top-Priorität (32% Impact)"
+          priority: "critical"
+        - category: "segment"
+          recommendation: "STWE als separates Segment mit eigener Strategie (M8)"
+          priority: "high"
+        - category: "crowding_out"
+          recommendation: "Social vor Financial kommunizieren (3-Phasen-Modell)"
+          priority: "high"
+        - category: "monitoring"
+          recommendation: "Notfall-Ersetzungs-Anteil tracken (Baseline: 55%)"
+          priority: "medium"
+
+  CUS-ZINDEL-PRJ-ZIN003:
+    meta:
+      name: Kreislaufwirtschaft Verhaltensänderung
+      client: Zindel United
+      domain: organization
+      start_date: '2026-02-01'
+      end_date: '2026-09-30'
+      status: active
+      model_reference: MOD-ZIN-001
+      portfolio_file: data/customers/zindel-united/ZIN003_intervention_portfolio.yaml
+    context:
+      target_behavior: Kreislaufwirtschafts-Praktiken adoptieren
+      target_population: Zindel United Mitarbeiter
+      sample_size: 200
+      baseline_behavior: 0.05
+      journey_phase: awareness
+      context_factors: 983
+      cva_level: VERTIEFT
+      segments:
+        - name: innovators
+          proportion: 0.15
+          sigma: 2.0
+        - name: early_majority
+          proportion: 0.35
+          sigma: 1.2
+        - name: late_majority
+          proportion: 0.35
+          sigma: 0.8
+        - name: skeptics
+          proportion: 0.15
+          sigma: 0.4
+    intervention_mix:
+      - id: INT-ZIN-001
+        type: social
+        subtype: champions_network
+        description: CU-Champions Netzwerk
+        timing: "Monat 1-8"
+        target_10c: "WHO (u_S)"
+        parameters:
+          intensity: 0.7
+          duration: "32 Wochen"
+        expected_contribution:
+          E_i: 0.25
+          confidence: 0.75
+          source: "LLMMC + Zindel Context"
+      - id: INT-ZIN-002
+        type: social
+        subtype: team_retrospectives
+        description: Kreislauf-Retrospektiven
+        timing: "Monat 1-8"
+        target_10c: "WHAT (u_S)"
+        parameters:
+          intensity: 0.6
+          duration: "32 Wochen"
+        expected_contribution:
+          E_i: 0.20
+          confidence: 0.70
+          source: "Agile/Scrum Evidence"
+      - id: INT-ZIN-003
+        type: development
+        subtype: pilot_training
+        description: CU-Pilot Trainings
+        timing: "Monat 1-4"
+        target_10c: "WHAT (u_D)"
+        parameters:
+          intensity: 0.8
+          duration: "16 Wochen"
+        expected_contribution:
+          E_i: 0.30
+          confidence: 0.70
+          source: "Training ROI Studies"
+      - id: INT-ZIN-004
+        type: information
+        subtype: storytelling
+        description: Quick-Win Storytelling
+        timing: "Monat 2-8"
+        target_10c: "AWARE"
+        parameters:
+          intensity: 0.5
+          duration: "24 Wochen"
+        expected_contribution:
+          E_i: 0.15
+          confidence: 0.65
+          source: "Internal Communication Studies"
+      - id: INT-ZIN-005
+        type: identity
+        subtype: purpose_narrative
+        description: "«Zukunft Bauen» Narrativ"
+        timing: "Monat 1-8"
+        target_10c: "WHAT (u_X)"
+        parameters:
+          intensity: 0.7
+          duration: "32 Wochen"
+        expected_contribution:
+          E_i: 0.25
+          confidence: 0.75
+          source: "Zindel Context (8. Generation)"
+      - id: INT-ZIN-006
+        type: financial
+        subtype: roi_bonus
+        description: "CU-ROI Bonus"
+        timing: "Monat 6-8 ONLY"
+        target_10c: "WHAT (u_F)"
+        parameters:
+          intensity: 0.5
+          duration: "12 Wochen"
+          hard_constraint: "START NICHT VOR MONAT 6!"
+        expected_contribution:
+          E_i: 0.15
+          confidence: 0.60
+          source: "Incentive Studies"
+        crowding_out_warning: "γ(F,S) = -0.15 - ERST nach Social gefestigt!"
+    complementarity_matrix:
+      - pair: [INT-ZIN-001, INT-ZIN-005]
+        gamma_ij: 0.35
+        interaction: synergy
+        mechanism: "Social × Existential: Team verstärkt Sinn"
+      - pair: [INT-ZIN-003, INT-ZIN-005]
+        gamma_ij: 0.40
+        interaction: synergy
+        mechanism: "Development × Existential: Lernen verstärkt Purpose"
+      - pair: [INT-ZIN-001, INT-ZIN-006]
+        gamma_ij: -0.15
+        interaction: crowding_out
+        mechanism: "CROWDING-OUT: Financial untergräbt Social"
+        mitigation: "INT-ZIN-006 ERST ab Monat 6!"
+    predictions:
+      portfolio_effect:
+        E_P: 0.85
+        CI_lower: 0.70
+        CI_upper: 0.95
+        formula_used: "ODE-System mit Komplementaritäten"
+      scenarios:
+        - name: "Szenario 1: Der Beweis ist da"
+          probability: "50-60%"
+          adoption_final: 1.00
+          stage_final: 4
+        - name: "Szenario 2: Fast geschafft"
+          probability: "25-30%"
+          adoption_final: 0.995
+          stage_final: 4
+        - name: "Szenario 3: Technisch ok"
+          probability: "10-15%"
+          adoption_final: 0.523
+          stage_final: 2
+        - name: "Szenario 4: Kein Nutzen"
+          probability: "5-10%"
+          adoption_final: 0.216
+          stage_final: 1
+      kpis:
+        - name: "Adoption Rate"
+          baseline: 0.05
+          predicted_value: 0.85
+          predicted_delta: 0.80
+          predicted_delta_pct: 1600
+          confidence: 0.75
+    results: null
+    deviation_analysis: null
+    learnings:
+      what_worked: []
+      what_didnt: []
+      parameter_updates: []
+      recommendations:
+        - category: "timing"
+          recommendation: "Financial Incentives ERST ab Monat 6 (Crowding-Out Protection)"
+          priority: "critical"
+        - category: "sequence"
+          recommendation: "Social + Development ZUERST, dann AWARE, dann Financial"
+          priority: "high"
+        - category: "monitoring"
+          recommendation: "Monatliche Habit-Score Messung vor Financial Start"
+          priority: "high"
+
+  PRJ-A1-001:
+    meta:
+      name: "BEATRIX Market Intelligence Suite - A1 Jugend-Abomodell"
+      client: "A1 Telekom Austria AG"
+      client_id: "a1-telekom"
+      lead_id: "LEAD-030"
+      domain: "telecom"
+      project_type: "POC"
+      start_date: "2026-02-13"
+      end_date: "2026-04-11"
+      poc_validity: "2026-12-31"
+      status: "active"
+      value_eur: 30000
+      payment_terms: "50% Start, 50% Abschluss"
+      exclusivity: "Telekommunikationsbranche AT - Jugendsegment"
+      owner: "GF"
+      contact: "Frau Kantauer-Gansch"
+    context:
+      target_behavior: "Adoption und Bindung Jugend-Abomodell"
+      target_population: "Jugendliche und junge Erwachsene 18-29 Jahre"
+      market_segment:
+        name: "Youth Segment"
+        cva_reference: "A1-SEG-02"
+        size: 680000
+        current_arpu_eur: 16.50
+        current_churn_monthly: 0.018
+      sinus_milieus: "selektiert"
+      journey_phases:
+        - awareness
+        - consideration
+        - decision
+        - onboarding
+      behavioral_characteristics:
+        digital_native: true
+        price_sensitive: "high"
+        brand_loyalty: "low"
+        social_influence: "high"
+        self_efficacy_seeking: true
+        identity_formation: "active"
+    objectives:
+      primary:
+        - id: "O1"
+          description: "Verständnis und Strukturierung der Entscheidungslogik junger Kund:innen"
+          10C_dimension: "WHAT"
+          metrics:
+            - "Nutzenstruktur-Mapping (individuell, kollektiv, identitär)"
+            - "Awareness-Treiber identifiziert"
+            - "Willingness-Faktoren dokumentiert"
+        - id: "O2"
+          description: "Stärkung der strategischen Steuerungs- und Innovationsfähigkeit"
+          10C_dimension: "HOW"
+          metrics:
+            - "BEATRIX eigenständig nutzbar"
+            - "Simulationsfähigkeit etabliert"
+        - id: "O3"
+          description: "Entwicklung verhaltensökonomisch fundiertes Jugend-Abomodell"
+          10C_dimension: "WHAT"
+          metrics:
+            - "Balance: Preis, Freiheit, Zugehörigkeit, Selbstwirksamkeit"
+            - "Modellvarianten dokumentiert"
+        - id: "O4"
+          description: "Konsistente, identitätsstärkende Storyline"
+          10C_dimension: "AWARE"
+          metrics:
+            - "Storyline-Dokument erstellt"
+            - "Narrative Erzählstruktur validiert"
+        - id: "O5"
+          description: "Simulation und Validierung strategischer Varianten"
+          10C_dimension: "HOW"
+          metrics:
+            - "BEATRIX-Simulationen durchgeführt"
+            - "Varianten bewertet und priorisiert"
+        - id: "O6"
+          description: "Vorbereitung interner Entscheidungs- und Kommunikationsprozesse"
+          10C_dimension: "READY"
+          metrics:
+            - "Management-Präsentation erstellt"
+            - "Entscheidungsgrundlage dokumentiert"
+    10C_framework:
+      WHO:
+        levels:
+          - "L1: Individual (Jugendliche:r)"
+          - "L2: Social (Peer Group, Familie)"
+          - "L3: Community (A1 Youth Community)"
+        hierarchy_focus: "L1 → L2 (Peer Influence)"
+      WHAT:
+        utility_dimensions:
+          U_F:
+            name: "Financial Utility"
+            components:
+              - "Preis-Leistungs-Verhältnis"
+              - "Flexibilität (keine Lock-in)"
+              - "Datenvolumen"
+            weight_estimate: 0.30
+          U_S:
+            name: "Social Utility"
+            components:
+              - "Peer Acceptance"
+              - "Social Connectivity"
+              - "Community Belonging"
+            weight_estimate: 0.25
+          U_IDN:
+            name: "Identity Utility"
+            components:
+              - "Selbstbestimmung"
+              - "Selbstwirksamkeit"
+              - "Markenidentifikation"
+            weight_estimate: 0.30
+          U_E:
+            name: "Emotional Utility"
+            components:
+              - "Freiheitsgefühl"
+              - "Sicherheit (digitaler Alltag)"
+              - "Zugehörigkeit"
+            weight_estimate: 0.15
+      HOW:
+        complementarities:
+          - pair: ["U_F", "U_IDN"]
+            gamma: 0.25
+            mechanism: "Fairer Preis stärkt Selbstwirksamkeit"
+          - pair: ["U_S", "U_IDN"]
+            gamma: 0.35
+            mechanism: "Community verstärkt Identität"
+          - pair: ["U_F", "U_S"]
+            gamma: -0.15
+            mechanism: "Zu günstig = nicht cool (potential)"
+      WHEN:
+        psi_dimensions:
+          Ψ_S:
+            name: "Social Context"
+            factors:
+              - "Peer Influence Intensity"
+              - "Family Involvement"
+              - "Social Media Exposure"
+          Ψ_I:
+            name: "Institutional Context"
+            factors:
+              - "Contract Flexibility"
+              - "Cancellation Ease"
+              - "Digital First"
+          Ψ_K:
+            name: "Cultural Context"
+            factors:
+              - "Austrian Youth Culture"
+              - "Digital Native Expectations"
+              - "Brand Perception A1"
+      WHERE:
+        parameters_to_estimate:
+          - "λ_youth (Loss Aversion Youth)"
+          - "β_youth (Present Bias Youth)"
+          - "γ_peer (Peer Influence Strength)"
+          - "σ_identity (Identity Sensitivity)"
+      AWARE:
+        awareness_dimensions:
+          A_cognitive:
+            - "Produkt-Features bekannt"
+            - "Preis-Vergleich möglich"
+          A_emotional:
+            - "Marke emotional ansprechend"
+            - "Storyline resoniert"
+          A_social:
+            - "Peers nutzen A1"
+            - "Social Proof vorhanden"
+        awareness_channels:
+          - "Digital (Social Media, Influencer)"
+          - "Physical (Store, Events)"
+          - "Word-of-Mouth (Peers, Family)"
+      READY:
+        willingness_components:
+          W_AX:
+            name: "Action Willingness"
+            barriers:
+              - "Contract Commitment Fear"
+              - "Information Overload"
+              - "Decision Fatigue"
+            enablers:
+              - "Simple Choice Architecture"
+              - "Peer Validation"
+              - "Try Before Buy"
+          τ:
+            name: "Temporal Discount"
+            youth_specific: "Higher present bias (β < 1)"
+          θ:
+            name: "Threshold"
+            activation_conditions:
+              - "Clear Value Proposition"
+              - "Social Proof"
+              - "Identity Fit"
+      STAGE:
+        journey_mapping:
+          awareness:
+            touchpoints: ["Social Media", "WOM", "Events"]
+            interventions_planned: ["Storyline", "Influencer"]
+          consideration:
+            touchpoints: ["Website", "Store", "Comparison"]
+            interventions_planned: ["BEATRIX Simulation"]
+          decision:
+            touchpoints: ["Online", "Store", "App"]
+            interventions_planned: ["Choice Architecture"]
+          onboarding:
+            touchpoints: ["Welcome", "App Setup", "First Use"]
+            interventions_planned: ["Quick Win Experience"]
+    scope:
+      in_scope:
+        primary:
+          - "Value Proposition Jugendprodukte"
+          - "Kommunikation: Botschaften, Storylines"
+          - "Kommunikationskanäle und Medienarten"
+          - "Abtestung via BEATRIX-Simulation"
+        secondary:
+          - "Digitale POS im Jugendsegment"
+          - "Physische POS im Jugendsegment"
+      out_of_scope:
+        - "Preisgestaltung (nicht primär)"
+        - "IT-Implementierung (CRM, Billing, IT)"
+        - "Detailkonzepte Fachbereiche (Tarifmodellierung, Mediaplanung, UX)"
+        - "Externe Kommunikation und Kampagnen"
+        - "Langfristige Implementierungsbegleitung"
+        - "Empirische Marktforschung / quantitative Datenerhebung"
+    deliverables:
+      - id: "D1"
+        name: "BEATRIX-Suite (A1 Edition)"
+        description: "Konfiguriertes BEATRIX-System mit Fokus Jugendsegment und Abo-Architektur"
+        includes:
+          - "Zugriff für Projektteam"
+          - "Management-Ansichten für Frau Kantauer-Gansch"
+        status: "planned"
+      - id: "D2"
+        name: "Strukturierte Kontext- und Nutzenanalyse"
+        description: "Dokumentierte Übersicht zu individuellen, kollektiven und identitären Nutzenstrukturen"
+        includes:
+          - "WHAT-Dimension Mapping"
+          - "AWARE-Faktoren"
+          - "READY-Faktoren"
+        status: "planned"
+      - id: "D3"
+        name: "Prozess- und Strukturvorschläge Jugend-Abomodell"
+        description: "Verhaltensökonomisch fundierte Modellvarianten"
+        includes:
+          - "Preis-Architektur Optionen"
+          - "Leistungs-Architektur Optionen"
+          - "Storyline-Architektur Optionen"
+        status: "planned"
+      - id: "D4"
+        name: "Storyline- und Kommunikationsdokument"
+        description: "Narrative Erzählstruktur 'A1 - Freiheit, die verbindet'"
+        includes:
+          - "Kernbotschaften"
+          - "Tonalität"
+          - "Zielgruppenansprache"
+        target_use: ["Marketing", "Produktmanagement", "Unternehmenskommunikation"]
+        status: "planned"
+      - id: "D5"
+        name: "Simulationsergebnisse und Handlungsempfehlungen"
+        description: "BEATRIX-Simulationen zu Abo-Szenarien"
+        includes:
+          - "Nutzen-Kohärenzen"
+          - "Psychologische Wirkungsprofile"
+          - "Akzeptanz-Prognosen"
+        status: "planned"
+      - id: "D6"
+        name: "Management-Präsentation & Entscheidungsgrundlage"
+        description: "Kompakte Visualisierung für Vorstand, Marketing, Produktentwicklung"
+        status: "planned"
+      - id: "D7"
+        name: "Dokumentierte Sparring- und Debriefing-Sessions"
+        description: "Zusammenfassung Erkenntnisse, Entscheidungen, Empfehlungen"
+        participants: ["Frau Kantauer-Gansch", "A1 Projektteam"]
+        status: "planned"
+    services:
+      - id: "S1"
+        name: "BEATRIX Einrichtung und Onboarding"
+        description: "Aufbau eigener BEATRIX-Arbeitsumgebung für A1"
+      - id: "S2"
+        name: "Verhaltensökonomische Analyse Jugendsegment"
+        description: "Identifikation Nutzenkomponenten und Awareness/Willingness-Treiber"
+      - id: "S3"
+        name: "Strukturierung strategischer Entscheidungsfaktoren"
+        description: "Ableitung Handlungsfelder aus Verhaltenslogik"
+      - id: "S4"
+        name: "Entwicklung Angebotsvarianten"
+        description: "Modellarchitekturen für Abo-Designs und Storylines"
+      - id: "S5"
+        name: "BEATRIX-Simulationen"
+        description: "Durchführung digitaler Simulationen zu Produktnarrativen"
+      - id: "S6"
+        name: "Storyline-Gestaltung"
+        description: "Entwicklung identitätsstärkender Erzählung"
+      - id: "S7"
+        name: "Management-Sparring"
+        description: "Laufende Begleitung bei Modellbewertung und Abstimmung"
+      - id: "S8"
+        name: "Abschluss- und Debriefing-Session"
+        description: "Präsentation und strategische Empfehlungen"
+    team:
+      projektleiter: "Marvin"
+      projektmitarbeit: "Emily"
+      kunde: "A1 Telekom Austria AG"
+    timeline:
+      phases:
+        - id: "P1"
+          name: "Kick-off & Onboarding"
+          calendar_weeks: ["KW07", "KW08"]
+          start: "2026-02-13"
+          end: "2026-02-25"
+          description: "Projektstart, BEATRIX-Setup, Team-Onboarding"
+          milestones:
+            - id: "M1.1"
+              name: "BEATRIX-Instanz live"
+              date: "2026-02-16"
+              owner: "FehrAdvice"
+              status: "pending"
+            - id: "M1.2"
+              name: "Onboarding abgeschlossen"
+              date: "2026-02-25"
+              owner: "FehrAdvice + A1"
+              status: "pending"
+          deliverables:
+            - id: "D1.1"
+              name: "BEATRIX Setup & Access"
+              date: "2026-02-16"
+              owner: "FehrAdvice"
+              priority: "MUST"
+        - id: "P2"
+          name: "Analyse"
+          calendar_weeks: ["KW09", "KW10", "KW11"]
+          start: "2026-02-28"
+          end: "2026-03-18"
+          description: "Kontexterfassung, Nutzenstrukturierung, 10C-Mapping"
+          milestones:
+            - id: "M2.1"
+              name: "Kontext-Analyse abgeschlossen"
+              date: "2026-03-04"
+              owner: "FehrAdvice"
+              status: "pending"
+            - id: "M2.2"
+              name: "Nutzenstruktur validiert"
+              date: "2026-03-10"
+              owner: "FehrAdvice + A1"
+              status: "pending"
+            - id: "M2.3"
+              name: "10C-Mapping komplett"
+              date: "2026-03-18"
+              owner: "FehrAdvice"
+              status: "pending"
+          deliverables:
+            - id: "D2.1"
+              name: "Context Analysis Document"
+              date: "2026-03-04"
+              owner: "Emily"
+              priority: "MUST"
+            - id: "D2.2"
+              name: "10C Model (Youth Segment)"
+              date: "2026-03-18"
+              owner: "Marvin"
+              priority: "MUST"
+        - id: "P3"
+          name: "Entwicklung"
+          calendar_weeks: ["KW11", "KW12", "KW13"]
+          start: "2026-03-14"
+          end: "2026-04-01"
+          description: "Modellvarianten entwickeln, Storyline-Gestaltung"
+          milestones:
+            - id: "M3.1"
+              name: "3 Modellvarianten definiert"
+              date: "2026-03-24"
+              owner: "FehrAdvice"
+              status: "pending"
+            - id: "M3.2"
+              name: "Storyline-Draft fertig"
+              date: "2026-04-01"
+              owner: "FehrAdvice + A1"
+              status: "pending"
+          deliverables:
+            - id: "D3.1"
+              name: "Model Variants Document"
+              date: "2026-03-28"
+              owner: "Marvin"
+              priority: "MUST"
+            - id: "D3.2"
+              name: "Storyline Draft"
+              date: "2026-04-01"
+              owner: "Emily"
+              priority: "SHOULD"
+        - id: "P4"
+          name: "Simulation"
+          calendar_weeks: ["KW13", "KW14", "KW15"]
+          start: "2026-03-28"
+          end: "2026-04-12"
+          description: "BEATRIX-Simulationen, Varianten-Bewertung"
+          milestones:
+            - id: "M4.1"
+              name: "Simulationen durchgeführt"
+              date: "2026-04-06"
+              owner: "FehrAdvice"
+              status: "pending"
+            - id: "M4.2"
+              name: "Varianten-Ranking erstellt"
+              date: "2026-04-11"
+              owner: "FehrAdvice + A1"
+              status: "pending"
+          deliverables:
+            - id: "D4.1"
+              name: "Simulation Results"
+              date: "2026-04-11"
+              owner: "Marvin"
+              priority: "MUST"
+            - id: "D4.2"
+              name: "Variant Ranking & Recommendation"
+              date: "2026-04-11"
+              owner: "Marvin"
+              priority: "MUST"
+        - id: "P5"
+          name: "Abschluss"
+          calendar_weeks: ["KW15", "KW16"]
+          start: "2026-04-10"
+          end: "2026-04-15"
+          description: "Management-Präsentation, Debriefing, Handover"
+          milestones:
+            - id: "M5.1"
+              name: "Management-Präsentation gehalten"
+              date: "2026-04-12"
+              owner: "FehrAdvice"
+              status: "pending"
+            - id: "M5.2"
+              name: "Debriefing abgeschlossen"
+              date: "2026-04-13"
+              owner: "FehrAdvice + A1"
+              status: "pending"
+            - id: "M5.3"
+              name: "Abschlussbericht übergeben"
+              date: "2026-04-14"
+              owner: "FehrAdvice"
+              status: "pending"
+            - id: "M5.4"
+              name: "BEATRIX Go-Live für A1"
+              date: "2026-04-15"
+              owner: "FehrAdvice + A1"
+              status: "pending"
+          deliverables:
+            - id: "D5.1"
+              name: "Final Presentation Deck"
+              date: "2026-04-12"
+              owner: "Marvin"
+              priority: "MUST"
+            - id: "D5.2"
+              name: "Final Report"
+              date: "2026-04-14"
+              owner: "Marvin + Emily"
+              priority: "MUST"
+            - id: "D5.3"
+              name: "BEATRIX Handover Documentation"
+              date: "2026-04-15"
+              owner: "Emily"
+              priority: "SHOULD"
+      sparring_sessions:
+        - id: "SP1"
+          name: "Sparring 1: Kontext & Nutzenstruktur"
+          date: "2026-03-10"
+          phase: "P2"
+          participants: ["FehrAdvice", "A1 Projektteam"]
+          focus: "Validierung Kontext-Analyse, Abstimmung Nutzenstruktur"
+        - id: "SP2"
+          name: "Sparring 2: Modellvarianten"
+          date: "2026-03-24"
+          phase: "P3"
+          participants: ["FehrAdvice", "A1 Projektteam", "A1 Management"]
+          focus: "Review Modellvarianten, Storyline-Feedback"
+        - id: "SP3"
+          name: "Sparring 3: Simulationsergebnisse"
+          date: "2026-04-10"
+          phase: "P4"
+          participants: ["FehrAdvice", "A1 Projektteam", "A1 Management"]
+          focus: "Bewertung Simulationen, Entscheidungsvorbereitung"
+      critical_path:
+        description: "Verzögerungen auf diesem Pfad gefährden den Projektabschluss"
+        milestones: ["M1.1", "M2.3", "M3.1", "M4.2", "M5.1"]
+        dependencies:
+          - from: "M1.1"
+            to: "M2.1"
+            lag_days: 0
+          - from: "M2.3"
+            to: "M3.1"
+            lag_days: 0
+          - from: "M3.1"
+            to: "M4.1"
+            lag_days: 0
+          - from: "M4.2"
+            to: "M5.1"
+            lag_days: 1
+      communication:
+        weekly_sync:
+          day: "Dienstag"
+          time: "10:00"
+          format: "Teams Call"
+          participants: ["Marvin", "Emily", "A1 Projektteam"]
+        status_update:
+          frequency: "Freitags"
+          format: "Email"
+          owner: "Marvin"
+          recipients: ["A1 Projektleitung"]
+        internes_sync:
+          frequency: "Mittwochs"
+          format: "Teams Call"
+          participants: ["Marvin", "Emily"]
+      escalation:
+        level_1:
+          trigger: "Verzögerung > 2 Tage"
+          action: "Eskalation an Projektleitung"
+          owner: "Marvin"
+        level_2:
+          trigger: "Verzögerung > 5 Tage oder kritischer Pfad betroffen"
+          action: "Eskalation an FehrAdvice Partner + A1 Management"
+          owner: "FehrAdvice Partner"
+    predictions:
+      expected_outcomes:
+        - metric: "Storyline Resonance Score"
+          target: "> 0.7"
+          measurement: "BEATRIX Simulation"
+        - metric: "Modellvarianten Kohärenz"
+          target: "> 0.8"
+          measurement: "10C Alignment Check"
+        - metric: "Management Confidence"
+          target: "> 0.85"
+          measurement: "Stakeholder Survey"
+      success_criteria:
+        - "BEATRIX eigenständig nutzbar durch A1 Team"
+        - "Mindestens 3 bewertete Modellvarianten"
+        - "Finalisierte Storyline für Marketing-Umsetzung"
+        - "Klare Entscheidungsgrundlage für Management"
+    data_protection:
+      server_location: "Schweiz"
+      compliance: ["Schweizer Datenschutz", "EU-DSGVO"]
+      data_requirements:
+        - type: "Nutzungscluster"
+          format: "anonymisiert, aggregiert"
+        - type: "Angebotsportfolios"
+          format: "anonymisiert, aggregiert"
+        - type: "Kommunikationsmuster"
+          format: "anonymisiert, aggregiert"
+      excluded: ["personenbezogene Daten", "Einzeltransaktionen"]
+    results:
+      actual_outcomes: []
+      deviations: []
+    learnings:
+      what_worked: []
+      what_didnt: []
+      parameter_updates: []
+      recommendations: []
+
+aggregated_learnings:
+  parameter_adjustments:
+    DACH_context:
+    - parameter: Default-Effekt Stärke
+      literature_value: 0.35
+      observed_DACH: 0.42
+      adjustment_factor: 1.2
+      n_projects: 1
+      confidence: medium
+    - parameter: Social Norm Feedback
+      literature_value: 0.02
+      observed_DACH: 0.018
+      adjustment_factor: 0.9
+      n_projects: 1
+      confidence: medium
+    - parameter: Gamification (Erwachsene)
+      literature_value: 0.06
+      observed_DACH: 0.03
+      adjustment_factor: 0.5
+      n_projects: 1
+      confidence: medium
+  design_principles:
+  - principle: Max 3 sichtbare Interventionen gleichzeitig
+    source: CUS-UNKNOWN-PRJ-002
+    evidence: 23% Reaktanz bei 5 Interventionen
+  - principle: Gamification nur für extrinsisch motivierte Segmente
+    source: CUS-UNKNOWN-PRJ-002
+    evidence: Crowding-Out bei health-conscious
+  - principle: DACH-kulturelle Anpassung für US-Literaturwerte
+    source: CUS-UNKNOWN-PRJ-001, CUS-UNKNOWN-PRJ-003
+    evidence: Systematische Abweichungen
+  segment_insights:
+  - segment: rational-calculative
+    insight: Reagieren skeptisch auf Defaults, bevorzugen Argumentation
+    observed_sigma: 0.6
+    literature_sigma: 0.8
+  - segment: present-biased
+    insight: Stärkere Response auf Defaults als erwartet (DACH)
+    observed_sigma: 1.9
+    literature_sigma: 1.5
+  CUS-BMW-PRJ-001:
+    meta:
+      name: "BMW Produkt-Compliance: Choice Architecture FK-Transformation"
+      client: BMW AG, Abteilung AF4
+      domain: automotive
+      start_date: '2026-02-05'
+      end_date: '2026-03-31'
+      status: planning
+      session_reference: EBF-S-2026-02-05-ORG-001
+      model_reference: MOD-ORG-BMW-001
+      project_reference: PRJ-BMW-001
+    context:
+      target_behavior: "Vollständige Compliance bei Führungskräften in Produkt-Compliance-Prozessen"
+      target_population: "Führungskräfte (Abteilungsleiter, Teamleiter) in compliance-relevanten Rollen"
+      sample_size: null
+      baseline_behavior: 0.021
+      baseline_note: "P(full_compliance) FK = 2.1% vs. 5.8% MA (MOD-ORG-BMW-001)"
+      journey_phase: action
+      problem_diagnosis: |
+        FK sind ~2.8× weniger compliant als MA aufgrund von 5 Mechanismen:
+        1. Zeitdruck × Identitäts-Erosion (W_base × Ψ_Tp = -0.45) — 45%
+        2. Fehlendes Vorgesetzten-Signal (Ψ_Sv existiert nicht für FK) — 25%
+        3. Effort × Hierarchie-Verstärker (u_E × Ψ_H = +0.30) — 15%
+        4. Finanzieller Crowding-Out (u_F × u_S = -0.25) — 10%
+        5. P3-Bottleneck Konzentration — 5%
+      segments:
+        - name: "FK unter hohem Projektdruck"
+          proportion: 0.55
+          characteristics: "Ψ_Tp > 0.85, multiple Deadlines, P3 Bottleneck"
+          sigma: 1.6
+        - name: "FK mit stabilen Projekten"
+          proportion: 0.30
+          characteristics: "Ψ_Tp < 0.70, klare Timelines"
+          sigma: 1.0
+        - name: "FK in Sandwich-Position"
+          proportion: 0.15
+          characteristics: "Hohe Ψ_H, Druck von oben UND unten"
+          sigma: 0.7
+    # ═══════════════════════════════════════════════════════════════════
+    # CHOICE ARCHITECTURE: 4 Pfade von EVOLUTION bis REVOLUTION
+    # ═══════════════════════════════════════════════════════════════════
+    #
+    # 3 HEBEL (aus MOD-ORG-BMW-001 Diagnose):
+    #   HEBEL A: PEER-ACCOUNTABILITY   → Ψ_Sv schaffen (fehlt bei FK)
+    #   HEBEL B: ZEITPUFFER            → Ψ_Tp senken (Identitäts-Erosion brechen)
+    #   HEBEL C: EFFORT-REDUKTION      → u_E × Ψ_H entkoppeln
+    #
+    # 4 PFADE (unterschiedliche Geschwindigkeit + Interventionsmix):
+    #   PATH 1: EVOLUTION    (24+ Monate)  — minimal disruptiv
+    #   PATH 2: REFORM       (12-18 Monate) — balanciert
+    #   PATH 3: TRANSFORMATION (6-12 Monate) — aggressiv
+    #   PATH 4: REVOLUTION   (3-6 Monate)  — maximal schnell
+    #
+    # CROWDING-OUT VERBOT (gilt für ALLE Pfade):
+    #   ⛔ KEINE monetären Compliance-Boni (u_F × u_S = -0.25)
+    #
+    # ═══════════════════════════════════════════════════════════════════
+
+    # ─────────────────────────────────────────────────────────────────
+    # INTERVENTIONS-KATALOG (alle 12 Interventionen)
+    # ─────────────────────────────────────────────────────────────────
+    intervention_catalog:
+
+      # ═══════════════════════════════════════════════════════════════
+      # HEBEL A: PEER-ACCOUNTABILITY (Ψ_Sv schaffen)
+      # Kernproblem: FK haben kein Vorgesetzten-Signal
+      # ═══════════════════════════════════════════════════════════════
+      - id: INT-BMW-A1
+        type: social
+        subtype: peer_accountability
+        name: "Compliance-Buddy (1:1)"
+        hebel: A
+        intensity_level: low
+        description: |
+          Cross-Ressort Peer-Pairing: Jede FK hat eine Buddy-FK die vor P3-Entscheidungen
+          informiert wird. Kein Veto, nur Sichtbarkeit. Framing: «Sparring-Partner».
+        mechanism: "Ψ_Sv-Substitut via Beobachtbarkeit (Bateson et al. 2006: Watching Eyes)"
+        target_10c: "WHO (Soziale Beobachtbarkeit)"
+        delta_target: "Ψ_Sv: 0.0 → 0.35"
+        intervention_vector: I_WHO_o
+        parameters:
+          intensity: 0.50
+          duration: permanent
+          frequency: "bei jeder P3-Entscheidung"
+        expected_contribution:
+          E_i: 0.12
+          confidence: 0.72
+          delta_P_compliance: "+1.2pp"
+        implementation:
+          effort: low
+          cost: negligible
+          time_to_deploy: "1 Woche"
+          prerequisites: "FK-Pairing-Liste (HR, 1 Tag)"
+          reversibility: high
+        warnings:
+          - "Framing entscheidend — «Sparring» nicht «Kontrolle»"
+
+      - id: INT-BMW-A2
+        type: social
+        subtype: structured_peer_review
+        name: "Compliance-Peer-Review Runden"
+        hebel: A
+        intensity_level: medium
+        description: |
+          Monatliche 90-min Sessions: 4-5 FK gleicher Stufe reviewen gegenseitig ihre
+          kritischsten Compliance-Entscheidungen. Strukturiert: (1) Fall, (2) Fragen,
+          (3) Feedback. Keine Dokumentation, keine Eskalation.
+        mechanism: |
+          Deskriptive Norm (MS-IB-008) + Antizipierte Rechtfertigung (Lerner & Tetlock 1999):
+          FK sehen Peer-Verhalten UND wissen, dass sie nächsten Monat berichten.
+        target_10c: "WHO (Norm) + AWARE (Accountability)"
+        delta_target: "Ψ_Sp: 0.62 → 0.78"
+        intervention_vector: I_WHO_o
+        parameters:
+          intensity: 0.70
+          duration: permanent
+          frequency: "1× Monat, 90 min"
+        expected_contribution:
+          E_i: 0.20
+          confidence: 0.65
+          delta_P_compliance: "+2.0pp"
+        implementation:
+          effort: medium
+          cost: "~2h FK-Zeit/Monat + Moderator-Schulung"
+          time_to_deploy: "4-6 Wochen"
+          prerequisites: "Moderatoren-Training, Raum-/Zeitslot"
+          reversibility: high
+        warnings:
+          - "NICHT mit Vorgesetzten kombinieren"
+          - "Erfordert psychologische Sicherheit"
+
+      - id: INT-BMW-A3
+        type: process
+        subtype: structural_accountability
+        name: "Compliance-Gate mit Peer-Sign-Off"
+        hebel: A
+        intensity_level: high
+        description: |
+          Formales Gate im Produktentwicklungsprozess: Vor jedem Meilenstein zeichnet
+          eine Peer-FK aus anderem Ressort die Compliance-Dokumentation gegen. Dokumentierte
+          Stellungnahme, kein Veto.
+        mechanism: |
+          Strukturelle Ψ_Sv (prozess-eingebettet, nicht personenabhängig) +
+          Effort-Reduktion durch standardisiertes Template +
+          Compliance-PAUSE bricht W_base × Ψ_Tp Interaktion
+        target_10c: "WHEN (Prozess-Default) + WHO (Peer-Accountability)"
+        delta_target: "P3: 0.43 → 0.58"
+        intervention_vector: I_WHEN
+        parameters:
+          intensity: 0.85
+          duration: permanent
+          frequency: "bei jedem Meilenstein"
+        expected_contribution:
+          E_i: 0.28
+          confidence: 0.60
+          delta_P_compliance: "+3.0pp"
+        implementation:
+          effort: high
+          cost: "Prozess-Redesign + SAP/PLM Anpassung"
+          time_to_deploy: "3-6 Monate"
+          prerequisites: "Prozess-Mapping, Template, IT, Pilot"
+          reversibility: medium
+        warnings:
+          - "48h-Reaktionsfrist für Peer → kein Flaschenhals"
+          - "Checkliste, nicht Gutachten"
+
+      - id: INT-BMW-A4
+        type: identity
+        subtype: cultural_transformation
+        name: "Compliance-Leadership-Identität"
+        hebel: A
+        intensity_level: transformative
+        description: |
+          Identitätstransformation: «Compliance-Champion» wird Teil der FK-Rolle.
+          (1) Compliance-KPI im Zielsystem (neben Termin + Budget)
+          (2) Jährlicher Peer-Award «Compliance Leadership»
+          (3) Compliance-Mentoring (erfahrene FK coachen neue FK)
+        mechanism: |
+          Identity Economics (MS-IB-001): W_base Redefinition so dass Compliance ⊂ Identität.
+          Status-Kanal nutzen (σ_status = 0.75) für Compliance statt nur Projekt-Erfolg.
+          Langfristig: γ(W_base, Ψ_Tp) von -0.45 → -0.20
+        target_10c: "WHAT (Identität) + WHO (Status)"
+        delta_target: "W_base neu: Compliance ⊂ Ingenieur-Identität"
+        intervention_vector: I_WHO_o
+        parameters:
+          intensity: 0.90
+          duration: permanent
+          frequency: "kontinuierlich + jährlich"
+        expected_contribution:
+          E_i: 0.35
+          confidence: 0.45
+          delta_P_compliance: "+4-6pp"
+        implementation:
+          effort: very_high
+          cost: "Zielsystem-Redesign + Award + Mentoring"
+          time_to_deploy: "12-18 Monate"
+          prerequisites: "Vorstand, HR, Betriebsrat"
+          reversibility: low
+        warnings:
+          - "Award von PEERS, nicht Compliance-Abteilung"
+          - "Erfordert CEO-Commitment"
+
+      # ═══════════════════════════════════════════════════════════════
+      # HEBEL B: ZEITPUFFER (Ψ_Tp senken)
+      # Kernproblem: W_base × Ψ_Tp = -0.45 (Identitäts-Erosion unter Druck)
+      # ═══════════════════════════════════════════════════════════════
+      - id: INT-BMW-B1
+        type: nudge
+        subtype: temporal_buffer
+        name: "Compliance-Zeitfenster in Projekt-Meetings"
+        hebel: B
+        intensity_level: low
+        description: |
+          In jedem Projekt-Meeting werden die letzten 10 Minuten als «Compliance-Check»
+          reserviert. Default-Agendapunkt, nicht optional. Einfache Frage: «Gibt es
+          offene Compliance-Themen die wir ansprechen müssen?»
+        mechanism: |
+          Temporal Nudge: Erzwingt Compliance-Salienz im Moment des höchsten Zeitdrucks.
+          Bricht den automatischen «Zeitdruck → Compliance überspringen» Loop.
+          AWARE-Dimension aktivieren in P1 (ERKENNEN) → Downstream-Effekt auf P3.
+        target_10c: "AWARE (Salienz) + WHEN (Temporal Anchor)"
+        delta_target: "Ψ_Tp-Effekt auf P1: von -0.30 → -0.15"
+        intervention_vector: I_AWARE
+        parameters:
+          intensity: 0.40
+          duration: permanent
+          frequency: "jedes Projekt-Meeting"
+        expected_contribution:
+          E_i: 0.10
+          confidence: 0.75
+          delta_P_compliance: "+1.0pp"
+        implementation:
+          effort: very_low
+          cost: "0 (nur Agenda-Änderung)"
+          time_to_deploy: "sofort"
+          prerequisites: "Kommunikation an Projektleiter"
+          reversibility: high
+        warnings:
+          - "Darf nicht zum «Compliance-Theater» werden (kurzes Abhaken)"
+
+      - id: INT-BMW-B2
+        type: process
+        subtype: deadline_buffer
+        name: "Compliance-Puffer in Projekt-Gates"
+        hebel: B
+        intensity_level: medium
+        description: |
+          Jeder Projekt-Meilenstein bekommt einen eingebauten 48h-Compliance-Puffer:
+          Das offizielle Gate-Datum liegt 48h VOR der tatsächlichen Deadline.
+          FK haben strukturell Zeit für Compliance-Prüfung ohne Terminverschiebung.
+        mechanism: |
+          Ψ_Tp direkt senken: Puffer bricht die Wahrnehmung «keine Zeit für Compliance».
+          Entscheidend: Puffer ist im PLAN, nicht Ausnahme → Default-Effekt (MS-NU-002).
+          Ziel: Ψ_Tp von 0.88 (FK) → 0.70 → γ(W_base, Ψ_Tp) Effekt halbiert.
+        target_10c: "WHEN (Temporal Buffer) + HOW (Prozess-Default)"
+        delta_target: "Ψ_Tp FK: 0.88 → 0.70"
+        intervention_vector: I_WHEN
+        parameters:
+          intensity: 0.65
+          duration: permanent
+          frequency: "bei jedem Gate"
+        expected_contribution:
+          E_i: 0.22
+          confidence: 0.60
+          delta_P_compliance: "+2.5pp"
+        implementation:
+          effort: medium
+          cost: "~2-3% längere Projekt-Timelines"
+          time_to_deploy: "2-3 Monate"
+          prerequisites: "PMO-Alignment, Template-Anpassung"
+          reversibility: medium
+        warnings:
+          - "Puffer darf NICHT für andere Aufgaben «aufgefressen» werden"
+          - "Erfordert PMO + Management Buy-In"
+
+      - id: INT-BMW-B3
+        type: process
+        subtype: workload_cap
+        name: "FK-Projekt-Cap (max. parallele Projekte)"
+        hebel: B
+        intensity_level: high
+        description: |
+          Harte Obergrenze für parallele Projekte pro FK: Max. 3 gleichzeitige
+          compliance-relevante Projekte. Bei Überschreitung: automatische Eskalation
+          an nächsthöhere Ebene zur Priorisierung. Keine Ausnahmen.
+        mechanism: |
+          Kapazitäts-Schutz: Ψ_Tp steigt exponentiell mit Parallelität.
+          Bei 5+ Projekten ist Ψ_Tp > 0.90 → Compliance kollabiert.
+          Cap bei 3 hält Ψ_Tp ≤ 0.75 → W_base bleibt intakt.
+          Kognitive Belastung (Ψ_C = 0.70) wird ebenfalls gesenkt.
+        target_10c: "WHEN (Kapazität) + HOW (Strukturelle Begrenzung)"
+        delta_target: "Ψ_Tp: 0.88 → 0.65 + Ψ_C: 0.70 → 0.55"
+        intervention_vector: I_WHEN
+        parameters:
+          intensity: 0.90
+          duration: permanent
+          frequency: "kontinuierliches Monitoring"
+        expected_contribution:
+          E_i: 0.30
+          confidence: 0.55
+          delta_P_compliance: "+3.5pp"
+        implementation:
+          effort: high
+          cost: "Möglicherweise mehr FK nötig → Personalkosten"
+          time_to_deploy: "3-6 Monate"
+          prerequisites: "Vorstand-Beschluss, PMO-Redesign, Eskalations-Workflow"
+          reversibility: low
+        warnings:
+          - "Grösster Widerstand von Vorgesetzten die «Flexibilität» wollen"
+          - "Erfordert Portfolio-Management-Reife"
+          - "Kann kurzfristig Projektdurchsatz senken"
+
+      - id: INT-BMW-B4
+        type: process
+        subtype: compliance_first_scheduling
+        name: "Compliance-First Projekt-Scheduling"
+        hebel: B
+        intensity_level: transformative
+        description: |
+          Fundamentaler Scheduling-Umbau: Compliance-Meilensteine werden ZUERST geplant,
+          Entwicklungs-Meilensteine DANACH. Inversion des Status Quo. Compliance ist nicht
+          «was noch dazukommt», sondern «was zuerst steht». Automotive SPICE / ISO 26262
+          Compliance-Gates als Primär-Skelett des Projektplans.
+        mechanism: |
+          Default-Inversion: Im Status Quo ist Compliance optional/nachgelagert (Low Default).
+          Nach Inversion: Compliance ist Default, Abweichung erfordert Begründung.
+          Prospect Theory (MS-RD-001): Non-Compliance wird zum «Verlust» (Abweichung vom Plan)
+          statt zum «Gewinn» (Zeitersparnis).
+        target_10c: "WHEN (Default-Inversion) + WHAT (Reframing)"
+        delta_target: "Compliance als Reference Point → λ × Compliance-Kosten bei Abweichung"
+        intervention_vector: I_WHEN
+        parameters:
+          intensity: 0.95
+          duration: permanent
+          frequency: "bei jeder Projektplanung"
+        expected_contribution:
+          E_i: 0.35
+          confidence: 0.45
+          delta_P_compliance: "+4-5pp"
+        implementation:
+          effort: very_high
+          cost: "PMO-Transformation, IT-Anpassung, Schulung"
+          time_to_deploy: "12-18 Monate"
+          prerequisites: "Vorstand + PMO + IT + Betriebsrat"
+          reversibility: low
+        warnings:
+          - "Grösster kultureller Widerstand aller Interventionen"
+          - "Erfordert «Compliance ist kein Bremser»-Narrativ"
+          - "Pilotprojekt zwingend vor Rollout"
+
+      # ═══════════════════════════════════════════════════════════════
+      # HEBEL C: EFFORT-REDUKTION (u_E × Ψ_H entkoppeln)
+      # Kernproblem: Compliance-Aufwand wird durch Hierarchie multipliziert
+      # ═══════════════════════════════════════════════════════════════
+      - id: INT-BMW-C1
+        type: nudge
+        subtype: simplification
+        name: "One-Click Compliance-Report"
+        hebel: C
+        intensity_level: low
+        description: |
+          Compliance-Dokumentation auf EIN Formular reduzieren: 5 Felder, davon 3
+          vorausgefüllt aus dem Projektsystem. FK klickt «Bestätigen» oder ergänzt
+          1-2 Felder. Maximaler Zeitaufwand: 3 Minuten pro Meilenstein.
+        mechanism: |
+          Effort-Minimierung: u_E von -0.75 (FK) → -0.30. Direkt auf P5 (MELDEN = 0.31).
+          Wenn Reporting trivial wird, steigt P5 massiv (Hypothese H1: +17pp).
+          Ψ_H wird irrelevant weil keine Abstimmungsschleifen nötig.
+        target_10c: "HOW (Effort-Reduktion)"
+        delta_target: "u_E FK: -0.75 → -0.30 | P5: 0.31 → 0.48"
+        intervention_vector: I_HOW
+        parameters:
+          intensity: 0.60
+          duration: permanent
+          frequency: "bei jedem Gate"
+        expected_contribution:
+          E_i: 0.18
+          confidence: 0.75
+          delta_P_compliance: "+2.0pp"
+        implementation:
+          effort: medium
+          cost: "IT-Entwicklung (SAP-Formular, ~2 Sprints)"
+          time_to_deploy: "4-8 Wochen"
+          prerequisites: "UX-Design, SAP-Anpassung, Test"
+          reversibility: high
+        warnings:
+          - "Formular muss WIRKLICH einfach sein (UX-Test!)"
+          - "Vorausfüllung erfordert Datenschnittstelle"
+
+      - id: INT-BMW-C2
+        type: process
+        subtype: hierarchy_bypass
+        name: "Compliance-Direct-Line"
+        hebel: C
+        intensity_level: medium
+        description: |
+          FK können Compliance-Themen DIREKT an Compliance-Beauftragten melden —
+          ohne Dienstweg über Hierarchie. Anonyme Option verfügbar.
+          Bricht u_E × Ψ_H = +0.30 Interaktion, weil Ψ_H umgangen wird.
+        mechanism: |
+          Hierarchie-Bypass: Ψ_H wird für Compliance-Meldungen auf ~0.20 reduziert.
+          u_E × Ψ_H Interaktion von 0.30 → ~0.08 (fast neutral).
+          Zusätzlich: Anonymität senkt u_R (Risiko-Aversion) in P5 (MELDEN).
+        target_10c: "HOW (Hierarchie-Bypass) + WHAT (Risiko-Reduktion)"
+        delta_target: "Ψ_H für Compliance: 0.80 → 0.20 | u_R: -0.35 → -0.15"
+        intervention_vector: I_HOW
+        parameters:
+          intensity: 0.70
+          duration: permanent
+          frequency: "bei Bedarf"
+        expected_contribution:
+          E_i: 0.20
+          confidence: 0.60
+          delta_P_compliance: "+2.0pp"
+        implementation:
+          effort: medium
+          cost: "Hotline/Portal + Compliance-Beauftragter Kapazität"
+          time_to_deploy: "2-3 Monate"
+          prerequisites: "Compliance-Team Kapazität, IT-Portal, Anonymisierung"
+          reversibility: high
+        warnings:
+          - "Darf nicht als «Denunziations-Kanal» wahrgenommen werden"
+          - "Compliance-Team muss Kapazität für Anfragen haben"
+
+      - id: INT-BMW-C3
+        type: process
+        subtype: automated_compliance
+        name: "Automatische Compliance-Checks im PLM"
+        hebel: C
+        intensity_level: high
+        description: |
+          PLM-System (Product Lifecycle Management) prüft automatisch: Sind alle
+          Compliance-relevanten Dokumente vorhanden? Sind Prüfschritte erledigt?
+          Rote Ampel bei Lücken, automatische Erinnerung. FK muss nicht selbst
+          prüfen, System zeigt Handlungsbedarf.
+        mechanism: |
+          Effort → ~0: Wenn System automatisch prüft, entfällt manueller Aufwand.
+          u_E wird nahezu neutral für P1 (ERKENNEN) und P5 (MELDEN).
+          AWARE-Dimension wird automatisch bedient (System erinnert).
+          Ψ_M (Material/Tools) wird von 0.73 → 0.90 gehoben.
+        target_10c: "AWARE (Auto-Check) + HOW (Automatisierung)"
+        delta_target: "u_E (P1, P5): → ~0 | Ψ_M: 0.73 → 0.90"
+        intervention_vector: I_AWARE
+        parameters:
+          intensity: 0.85
+          duration: permanent
+          frequency: "automatisch, kontinuierlich"
+        expected_contribution:
+          E_i: 0.30
+          confidence: 0.55
+          delta_P_compliance: "+3.5pp"
+        implementation:
+          effort: very_high
+          cost: "PLM-Customization (~500k-1M EUR)"
+          time_to_deploy: "6-12 Monate"
+          prerequisites: "IT-Architektur-Entscheidung, Budget, PLM-Team"
+          reversibility: low
+        warnings:
+          - "Grösste Investition im Portfolio"
+          - "Risiko: «System macht es ja» → moralisches Disengagement"
+          - "Muss mit Identitäts-Intervention (A4) kombiniert werden"
+
+      - id: INT-BMW-C4
+        type: process
+        subtype: compliance_by_design
+        name: "Compliance-by-Design in Prozessarchitektur"
+        hebel: C
+        intensity_level: transformative
+        description: |
+          Fundamentaler Umbau: Compliance wird in den Entwicklungsprozess so eingebettet,
+          dass Non-Compliance AKTIVEN Aufwand erfordert (statt Compliance). Inversion:
+          Der Default-Pfad IST compliant. Abweichung erfordert dokumentierte Begründung
+          mit Vier-Augen-Prinzip.
+        mechanism: |
+          Default-Inversion auf Prozessebene: Aktuell ist Non-Compliance der pfadabhängige
+          Default (weniger Aufwand). Nach Inversion ist Compliance der Default.
+          u_E kippt: Compliance u_E ≈ 0, Non-Compliance u_E < 0 (Aufwand für Begründung).
+          Prospect Theory: Non-Compliance wird zur «Verlustaktion» (λ = 2.35 bei BMW).
+        target_10c: "WHEN (Default-Inversion) + HOW (Process Architecture)"
+        delta_target: "u_E Compliance → 0 | u_E Non-Compliance → negativ"
+        intervention_vector: I_WHEN
+        parameters:
+          intensity: 0.95
+          duration: permanent
+          frequency: "systemisch"
+        expected_contribution:
+          E_i: 0.40
+          confidence: 0.40
+          delta_P_compliance: "+5-7pp"
+        implementation:
+          effort: very_high
+          cost: "Mehrjähriges Transformationsprojekt"
+          time_to_deploy: "18-24 Monate"
+          prerequisites: "Vorstand, alle Prozesseigner, IT-Architektur, Change Management"
+          reversibility: very_low
+        warnings:
+          - "Grösste strukturelle Veränderung — erfordert organisationale Reife"
+          - "Scheitert ohne parallele Kultur-Transformation (A4)"
+          - "Pilotlinie zwingend (6 Monate Vorlauf)"
+
+    # ─────────────────────────────────────────────────────────────────
+    # CHOICE ARCHITECTURE: 4 Pfade
+    # ─────────────────────────────────────────────────────────────────
+    choice_architecture:
+      description: |
+        BMW wählt EINEN der 4 Pfade. Jeder Pfad kombiniert Interventionen aus
+        allen 3 Hebeln (A, B, C) mit unterschiedlicher Intensität und Geschwindigkeit.
+        Die Pfade sind aufeinander aufbauend: Pfad 2 enthält alles aus Pfad 1 plus mehr.
+
+      # ─────────────────────────────────────────────────────────────
+      path_1_evolution:
+        name: "EVOLUTION — Sanfte Veränderung"
+        speed: "Langsam (24+ Monate)"
+        philosophy: "Vertrauen aufbauen, organisch wachsen, minimaler Widerstand"
+        risk_level: low
+        disruption_level: minimal
+        interventions:
+          hebel_a: [INT-BMW-A1, INT-BMW-A2]
+          hebel_b: [INT-BMW-B1]
+          hebel_c: [INT-BMW-C1]
+        total_interventions: 4
+        implementation_sequence:
+          - phase: "Monat 0-1"
+            actions: ["INT-BMW-A1 (Buddy)", "INT-BMW-B1 (Meeting-Zeitfenster)"]
+            theme: "Sichtbarkeit schaffen"
+          - phase: "Monat 2-6"
+            actions: ["INT-BMW-A2 (Peer-Review)"]
+            theme: "Soziale Normen etablieren"
+          - phase: "Monat 6-12"
+            actions: ["INT-BMW-C1 (One-Click Report)"]
+            theme: "Effort senken"
+          - phase: "Monat 12-24"
+            actions: ["Konsolidierung, Messung, Optimierung"]
+            theme: "Lernen und anpassen"
+        predicted_effect:
+          delta_P_compliance: "+6.2pp"
+          target_P: "8.3%"
+          CI_95: [0.05, 0.12]
+          time_to_effect: "12-18 Monate für Vollwirkung"
+        complementarity_bonus: "+1.0pp (γ A1×A2 = 0.30)"
+        cost_estimate: "Gering (~50k EUR + FK-Zeit)"
+        organizational_prerequisites:
+          - "HR erstellt Buddy-Pairing"
+          - "Projektleiter akzeptieren 10-min Compliance-Slot"
+          - "IT baut One-Click Formular"
+        ideal_for: |
+          Organisationen die noch KEINE Erfahrung mit Verhaltensinterventionen haben.
+          Wenn Vertrauen erst aufgebaut werden muss. Wenn Betriebsrat skeptisch ist.
+        limitations: |
+          Erreicht nicht Aviation Benchmark (15%). Strukturelle Probleme (Ψ_Tp, Ψ_H)
+          bleiben bestehen. Ohne Prozess-Änderung ist Decke bei ~10%.
+
+      # ─────────────────────────────────────────────────────────────
+      path_2_reform:
+        name: "REFORM — Gezielte Veränderung"
+        speed: "Moderat (12-18 Monate)"
+        philosophy: "Strukturelle Hebel aktivieren, aber mit Puffern und Pilotphasen"
+        risk_level: medium
+        disruption_level: moderate
+        interventions:
+          hebel_a: [INT-BMW-A1, INT-BMW-A2, INT-BMW-A3]
+          hebel_b: [INT-BMW-B1, INT-BMW-B2]
+          hebel_c: [INT-BMW-C1, INT-BMW-C2]
+        total_interventions: 7
+        implementation_sequence:
+          - phase: "Monat 0-1"
+            actions: ["INT-BMW-A1 (Buddy)", "INT-BMW-B1 (Meeting-Slot)"]
+            theme: "Quick Wins"
+          - phase: "Monat 1-3"
+            actions: ["INT-BMW-A2 (Peer-Review)", "INT-BMW-C1 (One-Click)"]
+            theme: "Normen + Effort"
+          - phase: "Monat 3-6"
+            actions: ["INT-BMW-B2 (Zeitpuffer)", "INT-BMW-C2 (Direct-Line)"]
+            theme: "Prozess-Anpassungen"
+          - phase: "Monat 6-12"
+            actions: ["INT-BMW-A3 (Compliance-Gate) — Pilot 1 Abteilung"]
+            theme: "Strukturelle Accountability"
+          - phase: "Monat 12-18"
+            actions: ["INT-BMW-A3 Rollout + Konsolidierung"]
+            theme: "Skalierung"
+        predicted_effect:
+          delta_P_compliance: "+12.2pp"
+          target_P: "14.3%"
+          CI_95: [0.09, 0.20]
+          time_to_effect: "12 Monate für Vollwirkung"
+        complementarity_bonus: "+2.5pp (multiple γ > 0)"
+        cost_estimate: "Moderat (~200-300k EUR + Prozess-Redesign)"
+        organizational_prerequisites:
+          - "Alles aus Pfad 1"
+          - "PMO-Alignment für Zeitpuffer"
+          - "Compliance-Team für Direct-Line"
+          - "IT für Gate + PLM-Anpassung"
+          - "1 Pilot-Abteilung identifiziert"
+        ideal_for: |
+          BMW's aktuelle Situation: Projekt PRJ-BMW-001 läuft, Management ist sensibilisiert
+          (VW Dieselgate Awareness), aber organisationale Reife für Transformation fehlt noch.
+          EMPFOHLENER PFAD für Phase 1 (Q1-Q3 2026).
+        limitations: |
+          Erreicht Aviation Benchmark knapp (14%). Identitäts-Transformation (langfristig)
+          fehlt noch. Ohne Pfad 3/4 stagniert Effekt bei ~14%.
+
+      # ─────────────────────────────────────────────────────────────
+      path_3_transformation:
+        name: "TRANSFORMATION — Tiefgreifende Veränderung"
+        speed: "Schnell (6-12 Monate)"
+        philosophy: "Alle drei Hebel gleichzeitig, parallele Implementierung, ambitioniert"
+        risk_level: high
+        disruption_level: significant
+        interventions:
+          hebel_a: [INT-BMW-A1, INT-BMW-A2, INT-BMW-A3, INT-BMW-A4]
+          hebel_b: [INT-BMW-B1, INT-BMW-B2, INT-BMW-B3]
+          hebel_c: [INT-BMW-C1, INT-BMW-C2, INT-BMW-C3]
+        total_interventions: 10
+        implementation_sequence:
+          - phase: "Monat 0-1"
+            actions: ["INT-BMW-A1", "INT-BMW-B1", "INT-BMW-C1"]
+            theme: "Sofort-Massnahmen (alle 3 Hebel)"
+          - phase: "Monat 1-3"
+            actions: ["INT-BMW-A2", "INT-BMW-B2", "INT-BMW-C2"]
+            theme: "Mittlere Intensität (alle 3 Hebel)"
+          - phase: "Monat 3-6"
+            actions: ["INT-BMW-A3", "INT-BMW-B3", "INT-BMW-C3 Start"]
+            theme: "Strukturelle Veränderungen"
+          - phase: "Monat 6-12"
+            actions: ["INT-BMW-A4 Start", "INT-BMW-C3 Rollout"]
+            theme: "Kulturelle Transformation beginnt"
+        predicted_effect:
+          delta_P_compliance: "+18.7pp"
+          target_P: "20.8%"
+          CI_95: [0.13, 0.29]
+          time_to_effect: "9 Monate für Hauptwirkung"
+        complementarity_bonus: "+4.5pp (γ-Netzwerk über alle Hebel)"
+        cost_estimate: "Hoch (~800k-1.2M EUR + Organisationsumbau)"
+        organizational_prerequisites:
+          - "Alles aus Pfad 1 + 2"
+          - "Vorstand-Beschluss für FK-Projekt-Cap"
+          - "Budget für PLM-Automatisierung (~500k-1M)"
+          - "Dediziertes Transformations-Team (3-5 FTE)"
+          - "Change Management Begleitung"
+        ideal_for: |
+          Wenn ein konkreter Compliance-Vorfall (z.B. Rückruf, Audit-Finding) den
+          Handlungsdruck erhöht hat. Wenn Vorstand explizit «Best in Class» will.
+          Wenn Budget und Organisationsreife vorhanden sind.
+        limitations: |
+          Hoher Widerstand wahrscheinlich (besonders B3: Projekt-Cap).
+          Parallele Implementierung erfordert starkes Programm-Management.
+          Risiko der Überforderung bei zu vielen gleichzeitigen Veränderungen.
+
+      # ─────────────────────────────────────────────────────────────
+      path_4_revolution:
+        name: "REVOLUTION — Maximale Geschwindigkeit"
+        speed: "Sehr schnell (3-6 Monate)"
+        philosophy: "Alles gleichzeitig, maximale Intensität, akzeptierter Widerstand"
+        risk_level: very_high
+        disruption_level: maximal
+        interventions:
+          hebel_a: [INT-BMW-A1, INT-BMW-A2, INT-BMW-A3, INT-BMW-A4]
+          hebel_b: [INT-BMW-B1, INT-BMW-B2, INT-BMW-B3, INT-BMW-B4]
+          hebel_c: [INT-BMW-C1, INT-BMW-C2, INT-BMW-C3, INT-BMW-C4]
+        total_interventions: 12
+        implementation_sequence:
+          - phase: "Monat 0-1"
+            actions: ["ALLE Low-Intensity: A1, B1, C1, C2"]
+            theme: "Sofort-Paket"
+          - phase: "Monat 1-2"
+            actions: ["ALLE Medium: A2, B2"]
+            theme: "Soziale + Temporale Hebel"
+          - phase: "Monat 2-4"
+            actions: ["ALLE High: A3, B3, C3"]
+            theme: "Struktureller Umbau (parallel)"
+          - phase: "Monat 4-6"
+            actions: ["ALLE Transformative: A4, B4, C4 — Kickoff"]
+            theme: "Kulturelle Revolution starten"
+          - phase: "Monat 6-12"
+            actions: ["Rollout + Stabilisierung aller 12 Interventionen"]
+            theme: "Verankerung"
+        predicted_effect:
+          delta_P_compliance: "+23pp"
+          target_P: "25.1%"
+          CI_95: [0.14, 0.36]
+          time_to_effect: "6 Monate für Hauptwirkung"
+        complementarity_bonus: "+6pp (maximales γ-Netzwerk)"
+        cost_estimate: "Sehr hoch (~2-3M EUR + Organisations-Transformation)"
+        organizational_prerequisites:
+          - "Alles aus Pfad 1 + 2 + 3"
+          - "CEO-Mandat mit Board-Backing"
+          - "Dediziertes Compliance-Transformation-Office (5-8 FTE)"
+          - "Budget für IT (PLM + Process), HR (Zielsysteme), Change (Kommunikation)"
+          - "Externe Begleitung (FehrAdvice + Management Consulting)"
+          - "Betriebsrat frühzeitig einbinden"
+        ideal_for: |
+          NUR wenn existenzielle Bedrohung vorliegt (z.B. behördliche Auflage,
+          drohender Lizenzentzug, schwerer Compliance-Verstoss mit Strafverfahren).
+          Wenn «Business as Usual» keine Option mehr ist.
+        limitations: |
+          Höchstes Widerstandsrisiko. Breites CI [14%, 36%] zeigt Unsicherheit.
+          Kann Organisation überfordern → Implementierungs-Ermüdung.
+          Transformative Interventionen (A4, B4, C4) brauchen TROTZDEM 12+ Monate
+          für volle Wirkung — Revolution beschleunigt den START, nicht das Ergebnis.
+        critical_warning: |
+          ⛔ Pfad 4 ist NICHT «Pfad 3 nur schneller». Die Parallelisierung aller
+          12 Interventionen erzeugt Interaktionseffekte die schwer vorhersagbar sind.
+          Empfehlung: Nur mit dediziertem Transformations-Office und externer Begleitung.
+
+    # ─────────────────────────────────────────────────────────────────
+    # PFAD-VERGLEICH (Zusammenfassung)
+    # ─────────────────────────────────────────────────────────────────
+    path_comparison:
+      summary_table:
+        - path: "1 EVOLUTION"
+          interventions: 4
+          hebel: "A:2 B:1 C:1"
+          speed: "24+ Mo"
+          target_P: "8.3%"
+          cost: "~50k"
+          risk: "Low"
+          benchmark: "< ISO 26262"
+        - path: "2 REFORM"
+          interventions: 7
+          hebel: "A:3 B:2 C:2"
+          speed: "12-18 Mo"
+          target_P: "14.3%"
+          cost: "~250k"
+          risk: "Medium"
+          benchmark: "≈ Aviation"
+        - path: "3 TRANSFORMATION"
+          interventions: 10
+          hebel: "A:4 B:3 C:3"
+          speed: "6-12 Mo"
+          target_P: "20.8%"
+          cost: "~1M"
+          risk: "High"
+          benchmark: "> Aviation"
+        - path: "4 REVOLUTION"
+          interventions: 12
+          hebel: "A:4 B:4 C:4"
+          speed: "3-6 Mo"
+          target_P: "25.1%"
+          cost: "~2.5M"
+          risk: "Very High"
+          benchmark: ">> Aviation"
+      recommendation: |
+        EMPFEHLUNG: Pfad 2 (REFORM) als Startpunkt für PRJ-BMW-001.
+        Nach 12 Monaten evaluieren und ggf. auf Pfad 3 eskalieren.
+        Pfad 4 nur bei existenzieller Bedrohung.
+
+    # ─────────────────────────────────────────────────────────────────
+    # CROWDING-OUT REGELN (für ALLE Pfade)
+    # ─────────────────────────────────────────────────────────────────
+    crowding_out_rules:
+      absolute_prohibition:
+        - intervention: "Monetäre Compliance-Boni"
+          reason: "u_F × u_S = -0.25 — zerstört soziale Normen die ALLE Pfade tragen"
+        - intervention: "Compliance-Rankings mit Bestrafung"
+          reason: "Erzeugt Vertuschung statt Meldung → P5 kollabiert"
+      conditional_warnings:
+        - combination: "B3 (Projekt-Cap) + hohe Parallelisierung"
+          risk: "FK-Frustration → passive Resistance"
+          mitigation: "Priorisierungs-Workshops, nicht einfach «weniger machen»"
+        - combination: "C3 (PLM-Automatisierung) + ohne A4 (Identität)"
+          risk: "Moralisches Disengagement: «System macht es ja»"
+          mitigation: "IMMER C3 mit A4 kombinieren"
+
+    complementarity_matrix:
+      cross_hebel_synergies:
+        - pair: [A3, B2]
+          gamma_ij: 0.35
+          mechanism: "Gate (A3) profitiert von Zeitpuffer (B2) — FK hat Zeit für Sign-Off"
+        - pair: [A2, C2]
+          gamma_ij: 0.30
+          mechanism: "Peer-Review (A2) nutzt Direct-Line (C2) als Eskalationskanal"
+        - pair: [A4, C4]
+          gamma_ij: 0.50
+          mechanism: "Identität (A4) + Compliance-by-Design (C4) = stärkstes Cross-Hebel-Paar"
+        - pair: [B3, C3]
+          gamma_ij: 0.40
+          mechanism: "Weniger Projekte (B3) + Automatisierung (C3) = dramatisch weniger Effort"
+        - pair: [A1, B1]
+          gamma_ij: 0.20
+          mechanism: "Buddy (A1) und Meeting-Slot (B1) verstärken sich gegenseitig bei niedrigem Aufwand"
+      within_hebel_synergies:
+        - pair: [A1, A2]
+          gamma_ij: 0.30
+          mechanism: "Buddy baut Vertrauen für Peer-Review"
+        - pair: [A3, A4]
+          gamma_ij: 0.45
+          mechanism: "Gate (Struktur) + Identität (Kultur) = nachhaltigstes Paar"
+        - pair: [B2, B3]
+          gamma_ij: 0.35
+          mechanism: "Zeitpuffer + Projekt-Cap = Ψ_Tp massiv gesenkt"
+        - pair: [C1, C3]
+          gamma_ij: 0.40
+          mechanism: "One-Click (manuell) → Automatisierung (systemisch): gleitender Übergang"
+
+    predictions:
+      portfolio_effect:
+        path_1: "+6.2pp → 8.3%"
+        path_2: "+12.2pp → 14.3%"
+        path_3: "+18.7pp → 20.8%"
+        path_4: "+23pp → 25.1%"
+        baseline: "2.1% (FK Full Compliance)"
+        aviation_benchmark: "15-25%"
+      recommendation: "Pfad 2 (REFORM) → nach Evaluation Pfad 3"
+
+    learnings: []
+
+  CUS-PC-PRJ-001:
+    meta:
+      name: "PUC036_Kundensegmente_und_Playbook"
+      client: "Peek & Cloppenburg"
+      domain: retail
+      start_date: '2026-02-23'
+      end_date: null
+      status: planning
+      session_reference: EBF-S-2026-01-27-ORG-001
+      context_reference: "data/customers/peek-cloppenburg/peek-cloppenburg_context.yaml"
+    context:
+      target_behavior: "Segment-spezifische Kaufentscheidungen und Kanalnutzung"
+      target_population: "P&C Bestandskunden in Deutschland (4 Segmente)"
+      sample_size: null
+      baseline_behavior: null
+      journey_phase: planning
+      segments:
+        - name: "Conscious Premium"
+          proportion: 0.35
+          avg_basket_eur: 180
+          loss_aversion: 2.3
+        - name: "Fashion Enthusiasts"
+          proportion: 0.30
+          avg_basket_eur: 120
+          loss_aversion: 1.8
+        - name: "Classic Loyalists"
+          proportion: 0.25
+          avg_basket_eur: 250
+          loss_aversion: 2.5
+        - name: "Gen Z Explorers"
+          proportion: 0.10
+          avg_basket_eur: 80
+          loss_aversion: 1.5
+    intervention_mix: []
+    complementarity_matrix: []
+    predictions: {}
+    learnings: []
+
+metadata:
+  version: '2.1'
+  created: '2026-01-14'
+  last_updated: '2026-02-23'
+  total_projects: 16
+  status_distribution:
+    completed: 4
+    active: 3
+    planning: 9
+  domains_covered:
+  - finance
+  - health
+  - energy
+  - workplace
+  - organization
+  - political
+  - hr
+  - automotive
+  intervention_types_used:
+  - nudge/default
+  - nudge/labeling
+  - environmental/positioning
+  - environmental/portion_size
+  - social/descriptive_norm
+  - social/injunctive_norm
+  - information/personalized
+  - information/tips
+  - incentive/gamification
+  average_prediction_accuracy:
+    mean_delta_pct: -17.1
+    range:
+    - -37
+    - 9.6
+  key_learnings_count: 12
+  parameter_updates_count: 7
+  recommendations_count: 11

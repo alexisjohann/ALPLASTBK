@@ -1,0 +1,85 @@
+name: PCT Coverage Gate
+
+on:
+  push:
+    branches:
+      - main
+      - claude/**
+    paths:
+      - 'scripts/generate_measurement_contexts.py'
+      - 'scripts/validate_psi_scales.py'
+      - 'scripts/auto_extract_pipeline.py'
+      - 'scripts/pct.py'
+      - 'scripts/extract_measurement_contexts.py'
+      - 'data/parameter-registry.yaml'
+      - 'data/pct-psi-scales.yaml'
+      - 'data/pct-measurement-contexts.yaml'
+      - 'data/pct-multiplier-tables.yaml'
+      - 'tests/test_generate_measurement_contexts.py'
+      - 'tests/test_psi_scale_validation.py'
+  pull_request:
+    paths:
+      - 'scripts/generate_measurement_contexts.py'
+      - 'scripts/validate_psi_scales.py'
+      - 'scripts/auto_extract_pipeline.py'
+      - 'scripts/pct.py'
+      - 'scripts/extract_measurement_contexts.py'
+      - 'data/parameter-registry.yaml'
+      - 'data/pct-psi-scales.yaml'
+      - 'data/pct-measurement-contexts.yaml'
+      - 'data/pct-multiplier-tables.yaml'
+      - 'tests/test_generate_measurement_contexts.py'
+      - 'tests/test_psi_scale_validation.py'
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    name: PCT Parameter Coverage
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Run PCT coverage check (70% threshold)
+        run: python scripts/validate_psi_scales.py --coverage --threshold 70
+
+      - name: Run psi-scale label validation (strict)
+        run: python scripts/validate_psi_scales.py --strict
+
+      - name: Run measurement context tests
+        run: python tests/test_generate_measurement_contexts.py
+
+      - name: Run psi-scale validation tests
+        run: python tests/test_psi_scale_validation.py
+
+      - name: Check failure advice
+        if: failure()
+        run: |
+          echo "❌ PCT Coverage Gate failed!"
+          echo ""
+          echo "To fix:"
+          echo "1. Run: python scripts/validate_psi_scales.py --coverage"
+          echo "2. If below 70%: python scripts/generate_measurement_contexts.py --update-all"
+          echo "3. If unmapped labels: add them to data/pct-psi-scales.yaml"
+          echo "4. Run tests: python tests/test_psi_scale_validation.py"
+          echo "5. Run tests: python tests/test_generate_measurement_contexts.py"
+          exit 1
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          echo "## PCT Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          python scripts/validate_psi_scales.py --coverage >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Threshold: 70%" >> $GITHUB_STEP_SUMMARY

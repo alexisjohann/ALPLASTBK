@@ -1,0 +1,330 @@
+# ============================================================================
+# MANDATORY TRIGGERS: Konsolidierter Index aller Auto-Trigger
+# ============================================================================
+# SSOT für alle Trigger-Wörter → Skill/Workflow Zuordnungen.
+# Wird im Pre-Response Protocol geprüft (session-context.yaml → hier).
+#
+# PROTOCOL:
+# 1. Bei JEDER User-Nachricht: Keywords extrahieren
+# 2. Keywords gegen trigger_words matchen (case-insensitive)
+# 3. Bei Match: Skill/Workflow SOFORT starten (vor inhaltlicher Antwort)
+# 4. Bei multi-match: Priorität nach priority_order
+#
+# Created: 2026-02-13
+# Reason: Trigger-Vergessen verhindern (Lesson Learned: PSF-2.0, Sutter-Interview)
+# ============================================================================
+
+metadata:
+  version: "1.0"
+  created: "2026-02-13"
+  last_updated: "2026-02-13"
+  total_triggers: 9
+  description: "Alle mandatory Auto-Trigger an einem Ort — wird bei jeder Frage geprüft"
+
+# ============================================================================
+# TRIGGER-DEFINITIONEN
+# ============================================================================
+
+triggers:
+
+  # -------------------------------------------------------------------------
+  # T1: Modell-Matching (Schritt 0 der Quellen-Hierarchie)
+  # -------------------------------------------------------------------------
+  - trigger_id: "T-MODEL"
+    name: "Eigene Modelle prüfen"
+    priority_order: 1
+    type: "always"                   # IMMER bei jeder Frage
+    action: "Schritt 0: models.registry.yaml use_cases matchen"
+    action_file: "models/models.registry.yaml"
+    context_file: ".claude/session-context.yaml"
+    description: |
+      Bei JEDER inhaltlichen Frage: Keywords gegen use_cases aller 7 Modelle prüfen.
+      Bei >= 1 Overlap: Modell ist KANDIDAT.
+      Bei >= 3 Overlap: Modell ist HOCHRELEVANT → PFLICHT zu laden.
+    lesson_learned: "2026-02-13: PSF-2.0 ignoriert bei Konklave-Frage → 6 unnötige WebSearches"
+
+  # -------------------------------------------------------------------------
+  # T2: Paper Integration (/integrate-paper)
+  # -------------------------------------------------------------------------
+  - trigger_id: "T-PAPER"
+    name: "Paper Integration"
+    priority_order: 2
+    type: "keyword"
+    skill: "/integrate-paper"
+    trigger_words:
+      - "neues paper"
+      - "paper hinzufügen"
+      - "paper integrieren"
+      - "DOI"
+      - "10.3386"               # NBER DOI prefix
+      - "10.1257"               # AER DOI prefix
+      - "10.1093"               # OUP DOI prefix
+      - "10.1016"               # Elsevier DOI prefix
+      - "NBER"
+      - "working paper"
+      - "et al."
+    trigger_patterns:
+      - "\\d{4}.*et al"         # "Goodman et al. (2026)"
+      - "10\\.\\d{4,}"          # DOI pattern
+    trigger_contexts:
+      - "Paper-Titel wird genannt"
+      - "Paper-Abstract wird geteilt"
+      - "DOI oder NBER Working Paper Nummer"
+      - "Autoren + Jahr genannt"
+    response: |
+      "Ich erkenne ein neues Paper. Starte /integrate-paper Workflow..."
+    claude_md_ref: "Zeile ~1395-1600"
+
+  # -------------------------------------------------------------------------
+  # T3: Innosuisse/BEATRIX (/innosuisse)
+  # -------------------------------------------------------------------------
+  - trigger_id: "T-INNOSUISSE"
+    name: "Innosuisse Workflow"
+    priority_order: 3
+    type: "keyword"
+    skill: "/innosuisse"
+    trigger_words:
+      - "innosuisse"
+      - "beatrix"
+      - "innovation cheque"
+      - "innovationsscheck"
+    trigger_contexts:
+      - "Datei in docs/funding/ wird bearbeitet"
+      - "Dokument-Adaption angefragt"
+      - "Meeting-Transkript verarbeitet wird"
+    response: |
+      "Ich erkenne ein Innosuisse/BEATRIX-Projekt. Starte /innosuisse Workflow..."
+    claude_md_ref: "Zeile ~1901-2080"
+
+  # -------------------------------------------------------------------------
+  # T4: Intervention Design (/design-intervention)
+  # -------------------------------------------------------------------------
+  - trigger_id: "T-INTERVENTION"
+    name: "Intervention Design"
+    priority_order: 4
+    type: "keyword"
+    skill: "/design-intervention"
+    trigger_words:
+      - "intervention"
+      - "interventionen"
+      - "massnahme"
+      - "massnahmen"
+      - "maßnahme"
+      - "maßnahmen"
+      - "initiative"
+      - "initiativen"
+      - "nudge"
+      - "nudges"
+      - "behavior change"
+      - "verhaltensänderung"
+      - "verhaltensaenderung"
+      - "was können wir tun"
+      - "was sollen wir machen"
+      - "ideen für"
+      - "vorschläge für"
+      - "baukasten"
+      - "toolkit"
+    response: |
+      "Ich starte den /design-intervention Workflow..."
+    forbidden_patterns:
+      - "Hier sind einige Maßnahmen: 1. ..."
+      - "Folgende Interventionen könnten helfen: ..."
+      - "Jede Liste ohne 10C-Dimension-Zuordnung"
+    claude_md_ref: "Zeile ~4148-4195"
+
+  # -------------------------------------------------------------------------
+  # T5: SPÖ Präambel Loading Protocol (PLP)
+  # -------------------------------------------------------------------------
+  - trigger_id: "T-SPO"
+    name: "SPÖ Präambel Loading"
+    priority_order: 5
+    type: "keyword"
+    skill: null                      # Kein Slash-Command, sondern Protocol
+    action: "Präambel laden + Auto-Research (5 WebSearches parallel)"
+    trigger_words:
+      - "spö"
+      - "babler"
+      - "vizekanzler"
+      - "österreichische sozialdemokratie"
+      - "sozialdemokratie österreich"
+    preamble_file: "data/customers/spo/spo_mandate_preamble.yaml"
+    superkey: "PRE-SPO-2026-02-01-001"
+    response: |
+      1. Präambel laden (YAML lesen)
+      2. WebSearch für alle 5 Themen (parallel)
+      3. Research-Summary Box anzeigen
+      4. Dann inhaltlich antworten
+    claude_md_ref: "Zeile ~340-420"
+
+  # -------------------------------------------------------------------------
+  # T6: Evidence Integration Pipeline (EIP)
+  # -------------------------------------------------------------------------
+  - trigger_id: "T-EIP"
+    name: "Evidence Integration Pipeline"
+    priority_order: 6
+    type: "keyword"
+    skill: null                      # Kein Slash-Command, sondern Workflow
+    action: "EIP starten: Interne Quellen → Externe → PRO/CONTRA → Entscheidung"
+    trigger_words:
+      - "neues konzept"
+      - "neue terminologie"
+      - "neuer mechanismus"
+      - "neue formel"
+      - "neue gleichung"
+      - "neue intervention"
+    trigger_patterns:
+      - "γ\\(.*\\)\\s*=\\s*[+-]?0\\.\\d+"    # Neue γ-Werte: γ(X,Y) = +0.4
+    trigger_contexts:
+      - "Neue Terminologie eingeführt (z.B. 'Mental Identity Budgeting')"
+      - "Neuer Mechanismus beschrieben"
+      - "Neue γ-Werte behauptet"
+      - "Neue Formel/Gleichung entwickelt"
+    response: |
+      "Ich erkenne ein neues Konzept. Starte Evidence Integration Pipeline..."
+    claude_md_ref: "Zeile ~1822-1900"
+
+  # -------------------------------------------------------------------------
+  # T7: Reverse Engineering Workflow (REW)
+  # -------------------------------------------------------------------------
+  - trigger_id: "T-REW"
+    name: "Reverse Engineering Workflow"
+    priority_order: 7
+    type: "keyword"
+    skill: null                      # Workflow, kein Slash-Command
+    action: "REW starten: Dokument → Operationalisierung → Axiome → Beliefs → Theorien"
+    trigger_words:
+      - "validiere"
+      - "prüfe compliance"
+      - "ebf-konform"
+      - "woher kommt"
+      - "fundierung"
+      - "quellcode"
+      - "kausalkette"
+      - "reverse engineering"
+      - "wissenschaftlich fundiert"
+      - "evidenz-basiert"
+    response: |
+      "Ich erkenne eine Validierungs-Anfrage. Starte Reverse Engineering Workflow..."
+    claude_md_ref: "Zeile ~4531-4600"
+
+  # -------------------------------------------------------------------------
+  # T9: Parameter Query (/query-parameter)
+  # -------------------------------------------------------------------------
+  - trigger_id: "T-QUERY"
+    name: "Parameter Query"
+    priority_order: 9
+    type: "keyword"
+    skill: "/query-parameter"
+    trigger_words:
+      - "query parameter"
+      - "parameter abfragen"
+      - "parameter nachschlagen"
+      - "parameterwert"
+      - "PAR-BEH-"
+      - "PAR-COMP-"
+      - "PAR-TA-"
+      - "PAR-CM-"
+      - "PAR-REP-"
+      - "PAR-TP-"
+      - "loss aversion wert"
+      - "lambda_R"
+      - "discount factor"
+    trigger_patterns:
+      - "PAR-[A-Z]+-\\d+"
+      - "was ist der wert von"
+      - "welchen wert hat"
+    trigger_contexts:
+      - "User fragt nach einem spezifischen Parameterwert"
+      - "User nennt eine PAR-xxx-xxx ID"
+      - "User fragt nach Loss Aversion, Discount Factor, etc."
+    response: |
+      "Ich starte den /query-parameter Workflow (Three-Layer Pipeline)..."
+    claude_md_ref: "AXIOM 6: Three-Layer Architecture"
+
+  # -------------------------------------------------------------------------
+  # T8: Content Level Auto-Upgrade
+  # -------------------------------------------------------------------------
+  - trigger_id: "T-UPGRADE"
+    name: "Paper Content Level Auto-Upgrade"
+    priority_order: 8
+    type: "contextual"               # Kein Keyword, sondern Kontext-Erkennung
+    skill: null
+    action: "Paper-Content erkennen → Automatisch upgraden → YAML aktualisieren"
+    trigger_contexts:
+      - "User teilt Paper-Text (PDF, Abstract, Volltext)"
+      - "User teilt DOI"
+      - "Paper in Session referenziert mit Content Level < L2"
+    response: |
+      Auto-Upgrade durchführen (OHNE User zu fragen!).
+      Am Ende: "📊 Paper-Update: PAP-xxx L1→L3 (automatisch)"
+    forbidden_patterns:
+      - "Soll ich das Paper upgraden?"
+      - "Möchtest du, dass ich den Content Level aktualisiere?"
+    claude_md_ref: "Zeile ~1750-1820"
+
+# ============================================================================
+# SESSION-LEVEL PFLICHTEN (nicht keyword-basiert, sondern immer)
+# ============================================================================
+
+session_obligations:
+
+  # Modus-Wahl bei jeder inhaltlichen Frage
+  - obligation_id: "O-MODUS"
+    name: "Modus-Wahl anzeigen"
+    when: "Bei JEDER inhaltlichen Frage (erste Frage einer Analyse)"
+    action: "SCHNELL / STANDARD [DEFAULT] / TIEF anbieten"
+    claude_md_ref: "Zeile ~50-85"
+
+  # 3-Tier-Box nach jedem Task-Abschluss
+  - obligation_id: "O-3TIER"
+    name: "3-Tier-Box nach Task"
+    when: "NACH jedem abgeschlossenen Task"
+    action: "Quick Win / Mittel / Gross empfehlen + DEFAULT + PAUSIEREN"
+    forbidden: "Soll ich...? / Was möchtest du...? / Soll ich weitermachen?"
+    claude_md_ref: "Zeile ~2240-2280"
+
+  # Paper Queue bei Session-Start
+  - obligation_id: "O-QUEUE"
+    name: "Paper Queue abarbeiten"
+    when: "Bei JEDER Session mindestens 1 Paper aus Queue"
+    action: "python scripts/paper_queue_manager.py --next"
+    claude_md_ref: "Zeile ~4870-4910"
+
+  # Experiment-First Coding
+  - obligation_id: "O-CODING"
+    name: "Coding Mode entscheiden"
+    when: "VOR jeder Coding-Aufgabe"
+    action: "TRADITIONAL vs EXPERIMENTAL entscheiden + in coding-mode-log.yaml protokollieren"
+    claude_md_ref: "Zeile ~120-180"
+
+  # Task Logging
+  - obligation_id: "O-TASKLOG"
+    name: "Task loggen"
+    when: "BEI jedem Task"
+    action: "In data/task-log.yaml: status, timing, outcome, ebf_impact"
+    claude_md_ref: "Zeile ~2200-2300"
+
+# ============================================================================
+# MATCHING-ALGORITHMUS
+# ============================================================================
+
+matching:
+  algorithm: |
+    1. User-Nachricht tokenisieren (lowercase, Sonderzeichen entfernen)
+    2. FÜR JEDEN Trigger in triggers[]:
+       a. trigger_words gegen Tokens matchen (substring-match, case-insensitive)
+       b. trigger_patterns als Regex gegen volle Nachricht matchen
+       c. trigger_contexts als semantische Prüfung (Claude-Judgement)
+    3. Bei Match: Trigger nach priority_order sortieren
+    4. Höchst-priorisierten Trigger zuerst ausführen
+    5. T-MODEL (Schritt 0) wird IMMER ausgeführt (type: "always")
+
+  priority_rules:
+    - "T-MODEL ist IMMER aktiv (type: always)"
+    - "Bei multi-match: Niedrigere priority_order zuerst"
+    - "Keyword-Triggers (type: keyword) haben Vorrang vor contextual"
+    - "Session-Obligations laufen parallel zu Trigger-Checks"
+
+# ============================================================================
+# END
+# ============================================================================

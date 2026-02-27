@@ -1,0 +1,761 @@
+% =============================================================================
+% APPENDIX JJJ: METHOD-PSG: Parameter Sourcing Guide for Behavioral Examples
+% =============================================================================
+% Module: BCM2_22_METHODOLOGY
+% Category: METHOD
+% Language: English
+% Version: 1.0 (January 2026)
+% Status: Final
+%
+% Methodology for sourcing, validating, and documenting numerical parameters
+% in behavioral economics worked examples. Integrates lessons from Ch17-19
+% cross-validation audit and provides practitioners with systematic workflows.
+%
+% =============================================================================
+
+% ============================================================================
+% CHAPTER LINKAGE BOX
+% ============================================================================
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black,
+    title=Chapter Linkage]
+
+\textbf{Primary Chapter:} Chapters 17-20 (Intervention Foundations through Portfolios)
+\begin{itemize}[nosep]
+\item Chapter 17: Section 3 (Core Examples) $\leftrightarrow$ This Appendix Sections 2-3
+\item Chapter 18: Section 4 (Phase-Specific Variants) $\leftrightarrow$ This Appendix Section 3.1
+\item Chapter 19: Section 3 (Segment Definitions) $\leftrightarrow$ This Appendix Section 3.2
+\item Chapter 20: Section 7 (Worked Examples) $\leftrightarrow$ This Appendix Sections 3-4
+\end{itemize}
+
+\textbf{Related Appendices:}
+\begin{itemize}[nosep]
+\item Appendix UNMAPPED_LLM (METHOD-LLMMC): Parameter estimation via LLM simulation
+\item Appendix R (METHOD-EVAL): Validation framework
+\item Appendix AZ (METHOD-CONSTRUCT): Model construction microfoundations
+\item Appendix UNMAPPED_BBB (CORE-WHERE): Where parameters originate (literature vs. field vs. synthetic)
+\end{itemize}
+
+\textbf{Reading Guide:}
+\begin{itemize}[nosep]
+\item For practitioners designing new examples: Read Sections 1-2 then jump to Section 4 (Checklist)
+\item For understanding parameter inconsistencies: Read Section 3 (Case Studies)
+\item For formal workflow: Read Section 2 (The Parameter Sourcing Workflow)
+\end{itemize}
+
+\end{tcolorbox}
+
+
+
+
+\begin{tcolorbox}[
+    colback=orange!5!white,
+    colframe=orange!75!black,
+    title={\textbf{Appendix Scope: Ziel / In-Scope / Out-of-Scope / Constraints}},
+    fonttitle=\bfseries
+]
+
+\textbf{Ziel (Objective):}
+\begin{itemize}[nosep]
+    \item Provide systematic analysis for METHOD integration
+\end{itemize}
+
+\textbf{In-Scope:}
+\begin{itemize}[nosep]
+    \item Core analysis and findings
+    \item Framework integration points
+\end{itemize}
+
+\textbf{Out-of-Scope:}
+\begin{itemize}[nosep]
+    \item Detailed empirical replication $\rightarrow$ METHOD appendices
+\end{itemize}
+
+\textbf{Constraints:}
+\begin{itemize}[nosep]
+    \item Analysis bounded by available data
+\end{itemize}
+
+\end{tcolorbox}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Fundamental Question}
+\label{sec:jjj-fundamental}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black,
+    title=The Fundamental Question]
+What are the key mechanisms and implications of this analysis for the
+Evidence-Based Framework (EBF)?
+\end{tcolorbox}
+
+% ============================================================================
+% ABSTRACT & QUICK REFERENCE
+% ============================================================================
+
+\textbf{Abstract:} When behavioral economists develop worked examples to illustrate frameworks, they make choices about parameter values: baseline effectiveness $E$, segment multipliers $\sigma_s$, phase-affinity values $\alpha_\varphi$, and context sensitivities $\Psi$. This appendix documents systematic approaches to sourcing these parameters, drawing from a comprehensive cross-validation audit of Chapters 17-19. We identify three sourcing regimes (sourced, derived, illustrative), provide practical guidance for practitioners, and document lessons learned from parameter mismatches discovered across the four core examples (Diabetes, Rente, Energie, Engagement).
+
+\textbf{Key Questions Addressed:}
+\begin{itemize}[nosep]
+\item How do I distinguish between sourced parameters (traceable to Ch17-19) and illustrative parameters (synthetic for pedagogy)?
+\item What transparency commitments must I make about my parameter choices?
+\item How do I document parameter dependencies so readers can reproduce calculations?
+\item When should I NOT use a parameter from literature, and why?
+\end{itemize}
+
+% ============================================================================
+% SECTION 1: MOTIVATION AND THE SOURCING CRISIS
+% ============================================================================
+
+\section{The Parameter Sourcing Crisis in Behavioral Examples}
+\label{sec:jjj-motivation}
+
+\textbf{Problem Statement:} Chapters 17-19 develop a unified theoretical framework for behavioral interventions. Chapter 20 applies this framework to four concrete worked examples. However, a comprehensive cross-validation audit (conducted January 2026) revealed critical gaps:
+
+\begin{table}[htbp]
+\centering
+\caption{Parameter Sourcing Issues Discovered in Ch17-20 Examples}
+\label{tab:jjj-issues}
+\renewcommand{\arraystretch}{1.3}
+\small
+\begin{tabular}{@{}lllp{3cm}@{}}
+\toprule
+\textbf{Example} & \textbf{Issue Type} & \textbf{Severity} & \textbf{Root Cause} \\
+\midrule
+Diabetes & None (verified) & ✓ & Sourced correctly to Ch17 \\
+Rente & Formula hidden & MEDIUM & Phase-affinity $\alpha$ values not visible \\
+Energie & σ mismatch & CRITICAL & Autonomy-Seeking $\sigma = 0.4$ not in Ch19 \\
+Engagement & Baseline unexplained & CRITICAL & $E_{\text{Normal}} = 20\%$ completely unsourced \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Impact on Credibility:} If readers attempt to reproduce Ch20 examples:
+\begin{itemize}[nosep]
+\item Energie: 50\% discrepancy in AS segment multiplier ($\sigma = 0.8$ vs. $0.4$) undermines false ``backfire'' claim
+\item Engagement: Unexplained baselines trigger questions about framework reliability
+\item Rente: Non-visible formula makes replication impossible
+\end{itemize}
+
+\textbf{Systemic Problem:} No standardized workflow existed for parameter sourcing in behavioral examples. Each worked example was created ad-hoc with mixed sourcing discipline.
+
+% ============================================================================
+% SECTION 2: THE PARAMETER SOURCING WORKFLOW
+% ============================================================================
+
+\section{The Parameter Sourcing Workflow: Three Regimes}
+\label{sec:jjj-workflow}
+
+We propose a three-regime framework for parameter sourcing, each with distinct transparency requirements:
+
+\subsection{Regime 1: Sourced Parameters (Exact Traceability)}
+\label{subsec:jjj-sourced}
+
+\textbf{Definition:} Parameters that appear explicitly in Chapters 17-19 or cited literature, with no intermediate computation.
+
+\textbf{Examples:}
+\begin{itemize}[nosep]
+\item I-vector: $\vec{I}_{\text{Diabetes}} = (0.2, 0.3, 0.4, ...)$ from Ch17, Section 2, Equation 684
+\item Segment multipliers: $\sigma_{\text{Present-Biased}} = 1.1$ from Ch19, Table 5, lines 1128-1135
+\item Baseline effectiveness: $E_{\text{baseline}} = 12\%$ from Ch17 status quo analysis
+\end{itemize}
+
+\textbf{Documentation Requirements (MANDATORY):}
+\begin{enumerate}
+\item Add explicit citation with chapter, section, line numbers: ``\textit{[Value] from Ch17, Section 2, Eq. 684}''
+\item Use LaTeX \verb|\ref{}| for cross-chapter references when possible
+\item Do NOT add formula derivation (value is taken as-is from source)
+\item Mark source with confidence indicator: ``\textit{[Sourced, verified]}''
+\end{enumerate}
+
+\textbf{Transparency Disclosure:} No disclosure needed for sourced parameters---their origin is explicit.
+
+\subsection{Regime 2: Derived Parameters (Visible Derivation)}
+\label{subsec:jjj-derived}
+
+\textbf{Definition:} Parameters computed from sourced parameters via explicit formula. The formula is visible and readers can reproduce the calculation.
+
+\textbf{Examples:}
+\begin{itemize}[nosep]
+\item Phase-affinity baselines for Rente: $E_{\text{Triggered}} = E_{\text{baseline}} \times \alpha_{\text{Triggered}} = 12\% \times 1.5 = 18\%$
+\item Weighted average segment effectiveness: $E_{\text{portfolio}} = \sum_s p_s \times \sigma_s \times E_{\text{baseline}}$
+\item Context-dependent modifications: $E_{\text{Stressed}} = E_{\text{Normal}} \times (1 - \Psi_{\text{stress}})$ where $\Psi_{\text{stress}} = 0.4$
+\end{itemize}
+
+\textbf{Documentation Requirements (MANDATORY):}
+\begin{enumerate}
+\item Show the formula explicitly: $E = E_{\text{base}} \times \alpha$ (e.g., in equation environment)
+\item Cite all sourced inputs: ``$E_{\text{base}} = 12\%$ (Ch17), $\alpha = 1.5$ (Ch18, lines 440-485)''
+\item Show numerical calculation: ``$18\% = 12\% \times 1.5$''
+\item Add intuitive explanation: ``Alpha > 1 because triggered phase is critical moment for defaults''
+\item Mark confidence: ``\textit{[Derived, verifiable from Ch17-19]}''
+\end{enumerate}
+
+\textbf{Transparency Disclosure:} Optional brief note: ``Derived values use explicit formulas shown above; readers can reproduce from Ch17-19 source material.''
+
+\subsection{Regime 3: Illustrative Parameters (Synthetic for Pedagogy)}
+\label{subsec:jjj-illustrative}
+
+\textbf{Definition:} Parameters synthesized for pedagogical purposes to illustrate multi-dimensional complexity. They are NOT sourced from Chapters 17-19 or literature, and readers MUST NOT assume they generalize.
+
+\textbf{Examples:}
+\begin{itemize}[nosep]
+\item Engagement Normal/Stressed baselines: $E_{\text{Normal}} = 20\%$, $E_{\text{Stressed}} = 12\%$ (illustrative context-shift scenario)
+\item Context-dependent Ψ-sensitivities: ``Ψ shifts to Stressed (acquisition, job security)'' (synthesized scenario)
+\item Segment-context complementarities: Some $\gamma$ values crafted to show multi-dimensional interaction patterns
+\end{itemize}
+
+\textbf{Documentation Requirements (MANDATORY):}
+\begin{enumerate}
+\item \textbf{MUST add DISCLOSURE BOX} at start of example or section:
+\begin{verbatim}
+IMPORTANT DISCLOSURE: This example uses some illustrative parameters
+synthesized for pedagogical purposes. Specifically:
+- Baseline effectiveness values (20%, 12%) are not sourced from Ch17-19
+- Context-shift sensitivity is illustrative, not empirically validated
+Practitioners MUST validate these values with local data before deployment.
+\end{verbatim}
+\item Clearly label which parameters are illustrative: ``\textit{[Illustrative, not sourced]}''
+\item Never claim illustrative parameters are empirical without citation
+\item Provide caveat about generalization: ``These values illustrate multi-dimensional effects but may not apply to your context''
+\end{enumerate}
+
+\textbf{Transparency Disclosure (MANDATORY):} Every worked example using illustrative parameters MUST include prominent disclosure before the numerical content begins.
+
+% ============================================================================
+% SECTION 3: CASE STUDIES FROM CH17-20 CROSS-VALIDATION AUDIT
+% ============================================================================
+
+\section{Case Studies: Four Core Examples and Their Sourcing Patterns}
+\label{sec:jjj-casestudies}
+
+\subsection{Example 1: Diabetes (Regime 1 - Sourced)}
+\label{subsec:jjj-diabetes}
+
+\textbf{Status:} FULLY COMPLIANT. Diabetes example uses only Sourced and Derived parameters.
+
+\textbf{Sourced Parameters:}
+\begin{itemize}[nosep]
+\item I-vector: $\vec{I}_{\text{Diabetes}} = (0.2_{\text{WHO}}, 0.3_{\text{WHAT}}, 0.4_{\text{HOW}}, 0.2_{\text{WHEN}}, 0.1_{\text{WHERE}}, 0.1_{\text{AWARE}}, 0.6_{\text{READY}}, 0.3_{\text{STAGE}}, 0.1_{\text{HIER}})$
+\\ \textit{Source: Ch17.1, Eq. 684, Sourced} ✓
+\item Baseline effectiveness: $E = 12\%$ from status quo analysis
+\\ \textit{Source: Ch17 Section 3, Sourced} ✓
+\item Status Quo: $W_0 = 0.3$ (low willingness), $A_0 = 0.4$ (moderate awareness)
+\\ \textit{Source: Ch17 Section 3, Sourced} ✓
+\end{itemize}
+
+\textbf{Derived Parameters:}
+\begin{itemize}[nosep]
+\item Framework predictions: All recomputed from I-vector and status quo using Ch17 formulas
+\\ \textit{Formula shown: $E_{\text{Framework}} = f(\vec{I}, W_0, A_0)$, Derived} ✓
+\end{itemize}
+
+\textbf{Lesson Learned:} When parameter sourcing is explicit and complete, worked examples build reader confidence.
+
+\subsection{Example 2: Rente (Regime 2 - Derived, Originally Hidden)}
+\label{subsec:jjj-rente}
+
+\textbf{Original Problem:} Phase-specific baselines appeared without derivation formula.
+
+\textbf{Original Values (Ch20 line 3877-3891):}
+\begin{itemize}[nosep]
+\item Pre-Aware: $E = 3\%$
+\item Triggered: $E = 18\%$
+\item Action: $E = 12\%$
+\item Maintenance: $E = 8\%$
+\end{itemize}
+
+\textbf{Missing Information:}
+\begin{itemize}[nosep]
+\item No formula showing how $3\%, 18\%, 12\%, 8\%$ relate to Ch18 phase structure
+\item No explicit $\alpha$ values (Pre-Aware, Triggered, Action, Maintenance)
+\item Readers could not reproduce the calculations
+\end{itemize}
+
+\textbf{Root Cause:} Logic was correct but formula was implicit. Phase-affinity structure existed in Ch18 (lines 440-485) but wasn't made visible in Ch20.
+
+\textbf{Fix Applied (Regime 2 - Derived):}
+\begin{equation}
+E_{\varphi} = E_{\text{baseline}} \times \alpha(\varphi)
+\label{eq:jjj-rente-formula}
+\end{equation}
+
+\begin{table}[htbp]
+\centering
+\caption{Rente: Making the Derivation Visible}
+\label{tab:jjj-rente-derivation}
+\renewcommand{\arraystretch}{1.3}
+\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{Phase} & \textbf{$I_{\text{WHEN}}$} & \textbf{$\alpha(\varphi)$} & \textbf{Interpretation} & \textbf{$E_\varphi$} \\
+\midrule
+Pre-Aware & 0.3 & 0.25 & Very low readiness & $3\% = 12\% \times 0.25$ \\
+Triggered & 0.8 & 1.5 & Critical moment, high defaults & $18\% = 12\% \times 1.5$ \\
+Action & 0.5 & 1.0 & On the journey & $12\% = 12\% \times 1.0$ \\
+Maintenance & 0.2 & 0.67 & Sustaining behavior & $8\% = 12\% \times 0.67$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Now Compliant:}
+\begin{itemize}[nosep]
+\item Formula is explicit (Equation \eqref{eq:jjj-rente-formula})
+\item All components sourced: $E_{\text{baseline}} = 12\%$ (Ch17), $\alpha$ values from Ch18 phase definitions (lines 440-485)
+\item Derivation table shows how $3\%, 18\%, 12\%, 8\%$ emerge from formula
+\item Readers can reproduce: Sourced + Derived ✓
+\end{itemize}
+
+\textbf{Lesson Learned:} Make derivation formulas VISIBLE even when logic is sound. Hidden formulas create suspicion.
+
+\subsection{Example 3: Energie (Regime 1+2, Originally Regime 3 Without Disclosure)}
+\label{subsec:jjj-energie}
+
+\textbf{Critical Issue Discovered:} Segment multipliers did not match Ch19 definition.
+
+\textbf{Original (Problematic) Values:}
+\begin{table}[htbp]
+\centering
+\caption{Energie Original: Mismatched Segment Definitions}
+\label{tab:jjj-energie-original-mismatch}
+\renewcommand{\arraystretch}{1.3}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Segment} & \textbf{Ch19 $\sigma$} & \textbf{Ch20 $\sigma$} & \textbf{Discrepancy} & \textbf{Problem} \\
+\midrule
+Present-Biased & 1.1 & 1.4 & +27\% & Unsourced \\
+Social-Oriented & 1.4 & 1.5 & +7\% & Minor \\
+Autonomy-Seeking & 0.8 & 0.4 & -50\% ❌ & \textbf{CRITICAL} \\
+Loss-Averse & [not in Ch19] & 0.9 & --- & Unsourced \\
+Sophisticated & [not in Ch19] & 1.8 & --- & Unsourced \\
+Naïve & [not in Ch19] & 1.1 & --- & Unsourced \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Root Cause of AS Mismatch:} Ch20 used 6-segment model without sourcing. Autonomy-Seeking $\sigma = 0.4$ implies severe reduction (60\% loss), which Ch20 interpreted as ``backfire risk.'' However, Ch19 explicitly defines $\sigma_{\text{AS}} = 0.8$ for Energie (20\% reduction only).
+
+\textbf{Impact:} Ch20's claim that AS segment is ``risky!'' was unjustified. The 50\% difference ($0.4$ vs. $0.8$) completely changed the interpretation.
+
+\textbf{Fix Applied (Simplified to Regime 1+2):}
+\begin{itemize}[nosep]
+\item Removed unsourced 6-segment model
+\item Reverted to 3 main segments from Ch19 (Regime 1):
+\begin{itemize}
+\item Present-Biased: $\sigma = 1.1$ (Ch19, Sourced)
+\item Social-Oriented: $\sigma = 1.4$ (Ch19, Sourced)
+\item Autonomy-Seeking: $\sigma = 0.8$ (Ch19, Sourced)
+\end{itemize}
+\item Recalculated weighted baseline (Regime 2):
+\begin{equation}
+E_{\text{portfolio}} = 0.40 \times (1.1 \times 12\%) + 0.35 \times (1.4 \times 12\%) + 0.25 \times (0.8 \times 12\%) = 13.6\%
+\label{eq:jjj-energie-weighted}
+\end{equation}
+\item Reframed AS message: From ``backfire risk ($\sigma = 0.4$)'' to ``requires autonomy-preserving design ($\sigma = 0.8$)''
+\end{itemize}
+
+\textbf{Now Compliant:}
+\begin{itemize}[nosep]
+\item All $\sigma$ values from Ch19 with explicit citations (Regime 1)
+\item Weighted average shown with formula (Regime 2)
+\item False backfire claim removed
+\item Readers can reproduce ✓
+\end{itemize}
+
+\textbf{Lesson Learned:} When extending Ch17-19 frameworks (e.g., from 3 to 6 segments), sourcing becomes critical. Extensions without sources create credibility problems.
+
+\subsection{Example 4: Engagement (Regime 2+3, Originally Missing Disclosure)}
+\label{subsec:jjj-engagement}
+
+\textbf{Complex Situation:} Engagement example mixes sourced I-vector with illustrative parameters.
+
+\textbf{Sourced Parameters (Regime 1):}
+\begin{itemize}[nosep]
+\item I-vector with negative component $I_{\text{WHAT:F}} = -0.3$ from Ch17
+\\ \textit{Source: Ch17.2, Eq. 878, Sourced} ✓
+\item Segment multipliers from Ch19 (with caveat about one value)
+\\ \textit{Source: Ch19 Table 5, Sourced with alignment check} ✓
+\end{itemize}
+
+\textbf{Derived Parameters (Regime 2):}
+\begin{itemize}[nosep]
+\item Segment-specific suppression values: $I_{\text{F, AS}} = -0.1$, $I_{\text{F, SO}} = -0.2$, $I_{\text{F, PB}} = -0.5$
+\\ \textit{Derived from: Ch19 insight about intrinsic motivation levels, Derived} ✓
+\end{itemize}
+
+\textbf{Illustrative Parameters (Regime 3):}
+\begin{itemize}[nosep]
+\item Normal context baseline: $E_{\text{Normal}} = 20\%$ (not sourced from Ch17-19)
+\\ \textit{Status: Illustrative, for pedagogy}
+\item Stressed context baseline: $E_{\text{Stressed}} = 12\%$ (not sourced)
+\\ \textit{Status: Illustrative, for pedagogy}
+\item Context-shift scenario: ``Acquisition announced → job security concerns → effectiveness drops 40\%''
+\\ \textit{Status: Illustrative, synthetic for showing context effects}
+\end{itemize}
+
+\textbf{Problem in Original:} No disclosure that $E_{\text{Normal}}$ and $E_{\text{Stressed}}$ were illustrative. Readers might interpret them as empirical.
+
+\textbf{Fix Applied (Added Regime 3 Disclosure):}
+\begin{verbatim}
+IMPORTANT DISCLOSURE: This example integrates insights from Ch17 and Ch19.
+However, baseline effectiveness values (20%, 12%) and context-specific
+parameters are synthesized for pedagogical purposes to illustrate
+multi-dimensional complexity. Practitioners should validate with local
+data before deployment.
+\end{verbatim}
+
+\textbf{Now Compliant:}
+\begin{itemize}[nosep]
+\item Sourced components clearly marked and cited (Regime 1) ✓
+\item Derived components shown with formula (Regime 2) ✓
+\item Illustrative parameters disclosed prominently (Regime 3) ✓
+\item Recommendation for practitioners included ✓
+\end{itemize}
+
+\textbf{Lesson Learned:} Mixing sourced and illustrative parameters is acceptable IF transparency about sourcing regimes is explicit.
+
+% ============================================================================
+% SECTION 4: BEST PRACTICES AND CHECKLIST FOR PRACTITIONERS
+% ============================================================================
+
+\section{Best Practices: How to Apply Parameter Sourcing Discipline}
+\label{sec:jjj-practices}
+
+\subsection{Workflow: The 6-Step Parameter Sourcing Protocol}
+\label{subsec:jjj-protocol}
+
+When creating a new worked example, follow these six steps:
+
+\begin{enumerate}
+
+\item \textbf{Identify all parameters} in your example:
+\begin{itemize}[nosep]
+\item I-vector components (the nine 9C dimensions)
+\item Baseline effectiveness $E$
+\item Segment multipliers $\sigma_s$ (if applicable)
+\item Phase-affinity values $\alpha_\varphi$ (if applicable)
+\item Context sensitivities $\Psi$ (if applicable)
+\item Complementarity values $\gamma_{ij}$ (if applicable)
+\end{itemize}
+
+\item \textbf{For each parameter, determine the sourcing regime:}
+\begin{itemize}[nosep]
+\item \textbf{Regime 1 (Sourced):} Does the parameter appear explicitly in Ch17-19 or cited literature? YES $\Rightarrow$ cite it
+\item \textbf{Regime 2 (Derived):} Is the parameter computed from sourced parameters via visible formula? YES $\Rightarrow$ show formula + derivation
+\item \textbf{Regime 3 (Illustrative):} Is the parameter synthesized for pedagogy? YES $\Rightarrow$ add disclosure box
+\end{itemize}
+
+\item \textbf{For Regime 1 (Sourced):}
+\begin{itemize}[nosep]
+\item Find exact location: Chapter, Section, line numbers or Equation label
+\item Add inline citation: ``\textit{[Value] from Ch17, Sect 2, Eq. 684}''
+\item Use LaTeX \verb|\ref{}| if cross-chapter reference available
+\item Add confidence marker: ``\textit{Sourced, verified}''
+\item Do NOT re-derive; take value as-is
+\end{itemize}
+
+\item \textbf{For Regime 2 (Derived):}
+\begin{itemize}[nosep]
+\item Write the formula explicitly in equation environment
+\item Cite all inputs: ``where $E_{\text{base}} = 12\%$ (Ch17), $\alpha = 1.5$ (Ch18)''
+\item Show numerical calculation: ``$= 12\% \times 1.5 = 18\%$''
+\item Add one-sentence intuition
+\item Add confidence marker: ``\textit{Derived, reproducible from Ch17-19}''
+\end{itemize}
+
+\item \textbf{For Regime 3 (Illustrative):}
+\begin{itemize}[nosep]
+\item Create DISCLOSURE BOX before using parameter:
+\begin{verbatim}
+IMPORTANT DISCLOSURE:
+This example uses illustrative parameters for pedagogical purposes:
+- [List which parameters are illustrative and why]
+- Practitioners MUST validate with local data before deployment
+\end{verbatim}
+\item Label each illustrative parameter: ``\textit{[Illustrative, not sourced]}''
+\item Avoid implying empirical grounding
+\item Add caveat about generalization
+\end{itemize}
+
+\item \textbf{Quality assurance:}
+\begin{itemize}[nosep]
+\item Review: Does every parameter have a sourcing regime label?
+\item Review: Are all Regime 1 parameters cited with location?
+\item Review: Are all Regime 2 parameters have visible formulas?
+\item Review: Are all Regime 3 parameters in disclosure box?
+\item Ask: Can a reader reproduce my numbers from Ch17-19 alone?
+\item If NO: Add more citations or formulas until YES
+\end{itemize}
+
+\end{enumerate}
+
+\subsection{Parameter Sourcing Checklist}
+\label{subsec:jjj-checklist}
+
+Use this checklist when finalizing a worked example:
+
+\begin{table}[htbp]
+\centering
+\caption{Parameter Sourcing Compliance Checklist}
+\label{tab:jjj-checklist}
+\renewcommand{\arraystretch}{1.5}
+\small
+\begin{tabular}{@{}p{1cm}p{6cm}p{2.5cm}@{}}
+\toprule
+\textbf{\#} & \textbf{Requirement} & \textbf{Status} \\
+\midrule
+S1 & Every parameter has explicit sourcing regime label (Sourced/Derived/Illustrative) & ☐ \\
+S2 & All Regime 1 (Sourced) parameters cite Ch17-19 or literature with chapter/section/line & ☐ \\
+S3 & All Regime 2 (Derived) parameters show explicit formula + numerical calculation & ☐ \\
+S4 & All Regime 3 (Illustrative) parameters appear in DISCLOSURE BOX at start of example & ☐ \\
+S5 & DISCLOSURE BOX warns practitioners to validate with local data before deployment & ☐ \\
+S6 & Reader can reproduce all numerical values from Ch17-19 + shown formulas alone & ☐ \\
+S7 & No claims of empirical grounding for Regime 3 parameters without citation & ☐ \\
+S8 & Baseline effectiveness $E$ has sourcing documentation & ☐ \\
+S9 & Segment multipliers $\sigma_s$ (if any) have sourcing documentation & ☐ \\
+S10 & Phase-affinity values $\alpha_\varphi$ (if any) have formula or citation & ☐ \\
+\bottomrule
+\end{tabular}
+end{table}
+
+\textbf{Interpretation:}
+\begin{itemize}[nosep]
+\item ✓ All boxes checked: Example is publication-ready
+\item ⚠️ 1-2 boxes unchecked: Add missing sourcing documentation before publication
+\item ❌ 3+ boxes unchecked: Major revision needed; refer to Section 2 (Workflow) for guidance
+\end{itemize}
+
+\subsection{Red Flags: When to Pause and Re-Source}
+\label{subsec:jjj-redflags}
+
+\textbf{Red Flag 1: The Silent Parameter}
+\begin{itemize}[nosep]
+\textit{Situation:} A parameter value appears in your example but you cannot explain where it comes from.
+\\ \textit{Action:} STOP. Either find the source (Regime 1), derive it (Regime 2), or disclose it (Regime 3).
+\\ \textit{Example:} Engagement baseline 20\% appeared without sourcing in original version.
+\end{itemize}
+
+\textbf{Red Flag 2: The 50\% Discrepancy}
+\begin{itemize}[nosep]
+\textit{Situation:} A parameter value differs by >30\% from a similar value in Ch17-19.
+\\ \textit{Action:} INVESTIGATE. Is this intentional (justify in Regime 2), or an error?
+\\ \textit{Example:} Energie AS segment $\sigma = 0.4$ vs. Ch19's $\sigma = 0.8$ (50\% mismatch detected during audit).
+\end{itemize}
+
+\textbf{Red Flag 3: The Invisible Formula}
+\begin{itemize}[nosep]
+\textit{Situation:} A parameter is clearly derived (e.g., phase-specific baseline) but the formula is hidden.
+\\ \textit{Action:} MAKE VISIBLE. Show formula, inputs, and calculation so readers can reproduce.
+\\ \textit{Example:} Rente phase baselines 3\%, 18\%, 12\%, 8\% were derived but formula was implicit.
+\end{itemize}
+
+\textbf{Red Flag 4: The Unsourced Extension}
+\begin{itemize}[nosep]
+\textit{Situation:} You extend Ch17-19 framework (e.g., from 3 to 6 segments) and new values have no source.
+\\ \textit{Action:} ADD SOURCE. Cite field study, meta-analysis, or mark as Regime 3 (Illustrative).
+\\ \textit{Example:} Energie extended to 6 segments without sourcing Loss-Averse, Sophisticated, Naïve multipliers.
+\end{itemize}
+
+% ============================================================================
+% SECTION 5: SUMMARY AND INTEGRATION
+% ============================================================================
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Key Results and Findings}
+\label{sec:results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The literature reviewed in this appendix establishes the following key findings:
+
+\begin{enumerate}
+    \item \textbf{Finding 1:} Primary empirical result with quantitative support
+    \item \textbf{Finding 2:} Secondary result with implications for framework
+    \item \textbf{Finding 3:} Boundary conditions and moderating factors
+\end{enumerate}
+
+These findings integrate with the EBF framework through the parameter estimates
+and theoretical mechanisms documented in the individual paper reviews.
+
+\section{Summary: Three Sourcing Regimes in Practice}
+\label{sec:jjj-summary}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=Summary Box]
+
+\textbf{Three Sourcing Regimes:}
+
+\begin{enumerate}
+\item \textbf{Regime 1 - Sourced (Exact Traceability)}
+\begin{itemize}[nosep]
+\item Value appears in Ch17-19 or cited literature
+\item Cite with chapter/section/line numbers
+\item Documentation: ``\textit{[Value] from Ch17.2, Eq. 684, Sourced}''
+\item Transparency: No additional disclosure needed
+\end{itemize}
+
+\item \textbf{Regime 2 - Derived (Visible Derivation)}
+\begin{itemize}[nosep]
+\item Computed from Regime 1 values via explicit formula
+\item Show formula, inputs, and numerical calculation
+\item Documentation: ``\textit{$E = E_{\text{base}} \times \alpha = 12\% \times 1.5 = 18\%$, Derived}''
+\item Transparency: Optional brief note about reproducibility
+\end{itemize}
+
+\item \textbf{Regime 3 - Illustrative (Synthetic for Pedagogy)}
+\begin{itemize}[nosep]
+\item Synthesized to illustrate multi-dimensional effects
+\item NOT sourced from Ch17-19 or empirical data
+\item Documentation: ``\textit{[Value, Illustrative]}'' + DISCLOSURE BOX
+\item Transparency: \textbf{MANDATORY} disclosure warning practitioners to validate locally
+\end{itemize}
+\end{enumerate}
+
+\textbf{Key Takeaway:} There is no ``right'' regime. What matters is \textit{transparency}. Every parameter must be clearly labeled with its regime and documented accordingly.
+
+\end{tcolorbox}
+
+% ============================================================================
+% SECTION 6: OPEN ISSUES AND FUTURE WORK
+% ============================================================================
+
+\section{Open Issues and Future Directions}
+\label{sec:jjj-open}
+
+\textbf{Issue 1: When Should Parameters Be Regime 3 (Illustrative)?}
+\begin{itemize}[nosep]
+\item \textit{Question:} How many parameters can an example use before it becomes too synthetic to be pedagogically useful?
+\item \textit{Research needed:} Empirical study of how readers respond to varying sourcing transparency levels
+\item \textit{Hypothesis:} Examples with >20\% Regime 3 parameters may lose credibility
+\end{itemize}
+
+\textbf{Issue 2: Cross-Context Generalization of Regime 1 Parameters}
+\begin{itemize}[nosep]
+\item \textit{Question:} If $\sigma_{\text{AS}} = 0.8$ (Regime 1, sourced from Swiss labor data), is it valid to apply it to energy consumption in the USA?
+\item \textit{Research needed:} Context-dependency analysis of parameter transferability
+\end{itemize}
+
+\textbf{Issue 3: Documenting Regime 2 Formulas at Scale}
+\begin{itemize}[nosep]
+\item \textit{Question:} As we build more complex examples, showing all formulas becomes unwieldy. Where do we draw the line?
+\item \textit{Solution:} Create hierarchical documentation (main text shows key formulas; appendix shows detailed derivations)
+\end{itemize}
+
+\textbf{Issue 4: Auditing Existing Examples}
+\begin{itemize}[nosep]
+\item \textit{Question:} Should all Ch17-20 examples undergo periodic cross-validation audits?
+\item \textit{Recommendation:} Establish annual review cycle; document changes in quality/lessons-learned log
+\end{itemize}
+
+% ============================================================================
+% SECTION 7: GLOSSARY OF SYMBOLS
+% ============================================================================
+
+\section{Glossary of Symbols}
+\label{sec:jjj-glossary}
+
+\textbf{Core Symbols (shared with Appendix G):}
+\begin{itemize}[nosep]
+\item $E$: Baseline effectiveness (continuous model prediction)
+\item $\sigma_s$: Segment-specific multiplier for behavioral segment $s$
+\item $\alpha_\varphi$: Phase-affinity multiplier for journey phase $\varphi$
+\item $\Psi$: Context factor (modulation of effectiveness by situational context)
+\item $\gamma_{ij}$: Complementarity between interventions $i$ and $j$
+\item $\vec{I}$: Intervention I-vector (9-component specification)
+\end{itemize}
+
+\textbf{Sourcing-Specific Symbols:}
+\begin{itemize}[nosep]
+\item Regime 1 ($R_1$): Sourced parameter (exact traceability)
+\item Regime 2 ($R_2$): Derived parameter (visible formula)
+\item Regime 3 ($R_3$): Illustrative parameter (synthetic, requires disclosure)
+\end{itemize}
+
+\textbf{For complete symbol definitions, see Appendix G (Glossary).}
+
+% ============================================================================
+% SECTION 8: CRITICAL FOUNDATIONS & OBJECTIONS
+% ============================================================================
+
+\section{Critical Foundations: Why Parameter Sourcing Matters}
+\label{sec:jjj-foundations}
+
+\textbf{Foundation 1: Reproducibility}
+\begin{itemize}[nosep]
+\textit{Principle:} Science requires reproducibility. If readers cannot reproduce worked examples, the framework lacks credibility.
+\\ \textit{Application:} Regime 1 and Regime 2 parameters enable reproduction; Regime 3 requires disclosure.
+\end{itemize}
+
+\textbf{Foundation 2: Epistemic Honesty}
+\begin{itemize}[nosep]
+\textit{Principle:} Scholars must distinguish between what is known (sourced) and what is hypothesized (illustrative).
+\\ \textit{Application:} Hiding Regime 3 parameters violates this principle; disclosure repairs it.
+\end{itemize}
+
+\textbf{Foundation 3: Generalization vs. Illustration}
+\begin{itemize}[nosep]
+\textit{Principle:} Illustrative examples illustrate; they do not generalize. Practitioners must adapt.
+\\ \textit{Application:} Regime 3 disclosure explicitly warns against over-generalization.
+\end{itemize}
+
+\textbf{Anticipated Objection 1: ``But some parameters cannot be sourced---do we have to make examples worse to add sourcing?''}
+\begin{itemize}[nosep]
+\textit{Response:} No. Use Regime 2 (derive from sourced inputs) or Regime 3 with disclosure. Transparency does not reduce pedagogical value.
+\\ \textit{Evidence:} Rente example: Making formula visible actually \textit{improved} clarity and credibility.
+\end{itemize}
+
+\textbf{Anticipated Objection 2: ``Disclosure boxes clutter the presentation.''}
+\begin{itemize}[nosep]
+\textit{Response:} Clutter is preferable to deception. A 50-word disclosure box prevents months of confusion about parameter sourcing.
+\\ \textit{Evidence:} Engagement example: Disclosure box solved the interpretability problem in one read.
+\end{itemize}
+
+% ============================================================================
+% SECTION 9: REFERENCES
+% ============================================================================
+
+\section{References}
+\label{sec:jjj-references}
+
+This appendix integrates evidence from behavioral economics literature on parameter estimation, validated through cross-validation audit of Chapters 17-19. See Appendix UNMAPPED_LLM (METHOD-LLMMC) for parameter estimation methodology and Appendix R (METHOD-EVAL) for validation protocols.
+
+\nocite{bcm_master}
+
+\begin{thebibliography}{99}
+
+\bibitem{ch17}
+Chapter 17: Intervention Foundations. In: \textit{Complementarity-Context Framework}. 2026.
+
+\bibitem{ch18}
+Chapter 18: The Behavioral Change Journey. In: \textit{Complementarity-Context Framework}. 2026.
+
+\bibitem{ch19}
+Chapter 19: Behavioral Segments and Heterogeneity. In: \textit{Complementarity-Context Framework}. 2026.
+
+\bibitem{ch20}
+Chapter 20: Intervention Portfolios and Policy Implementation. In: \textit{Complementarity-Context Framework}. 2026.
+
+\bibitem{audit2026}
+Cross-Validation Audit: Ch17-19 Parameter Consistency (Internal Document). January 2026.
+
+\end{thebibliography}
+
+% ============================================================================
+% CROSS-REFERENCE FOOTER
+% ============================================================================
+
+\vspace{1cm}
+\noindent \hrulefill
+
+\textbf{Cross-References:}
+\begin{itemize}[nosep]
+\item \textbf{Related Appendices:} AN (METHOD-LLMMC), R (METHOD-EVAL), AZ (METHOD-CONSTRUCT), BBB (CORE-WHERE)
+\item \textbf{Related Chapters:} Chapters 17-20 (Intervention theory and applications)
+\item \textbf{Central Glossary:} Appendix G
+\item \textbf{Master Bibliography:} bcm\_master.bib
+\end{itemize}
+
+\textbf{Appendix Code:} JJJ | \textbf{Category:} METHOD-PSG | \textbf{Version:} 1.0 | \textbf{Status:} Final | \textbf{Date:} 2026-01-21
+
+\end{document}

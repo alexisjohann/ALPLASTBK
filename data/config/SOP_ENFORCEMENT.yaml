@@ -1,0 +1,667 @@
+# ============================================================================
+# SOP ENFORCEMENT CONFIGURATION
+# ============================================================================
+# Central configuration for SOP-based governance.
+# This file controls HOW SOPs are enforced across the repository.
+#
+# Used by:
+# - Pre-commit hooks (.claude/hooks/pre-commit.sh)
+# - Validation scripts (scripts/validate_*.py)
+# - Monitoring system (scripts/run_monitoring.py)
+# - Infrastructure scripts
+#
+# Version: 1.0.0 (2026-01-15)
+# Source of Truth: THIS FILE
+# ============================================================================
+
+# ============================================================================
+# ENFORCEMENT LEVELS
+# ============================================================================
+# How strictly SOPs are enforced:
+# - STRICT: Block operation if violation detected
+# - WARNING: Warn but allow operation
+# - INFO: Log violation but don't warn
+# - OFF: No enforcement
+
+enforcement_levels:
+  script_compliance: STRICT      # Pre-commit blocks non-compliant scripts
+  template_compliance: STRICT    # Pre-commit blocks LaTeX files < 85%
+  code_validation: STRICT        # Block code conflicts before assignment
+  audit_logging: STRICT          # Every operation must be logged
+  backup_creation: STRICT        # Backup required before modifications
+  index_sync: STRICT             # All 4 locations must stay in sync
+  dependency_validation: WARNING # Warn on unresolved dependencies
+
+# ============================================================================
+# SOP-SCRIPT-01: SCRIPT MANAGEMENT
+# ============================================================================
+
+script_management:
+  enabled: true
+  phase: "IMPLEMENT"             # Which phase are scripts in?
+
+  # Required fields in SCRIPT_METADATA for all scripts
+  required_metadata_fields:
+    - name
+    - version
+    - purpose
+    - phase
+    - sop
+    - preconditions
+    - postconditions
+    - files_modified
+    - files_read
+    - dependencies
+    - author
+    - dry_run_capable
+
+  # 4-phase lifecycle enforcement
+  lifecycle:
+    DESIGN:
+      description: "Script being planned, not yet implemented"
+      allows_execution: false
+      requires_preconditions: false
+      requires_backup: false
+
+    IMPLEMENT:
+      description: "Script being developed, test only"
+      allows_execution: true       # Local dev only
+      requires_preconditions: true
+      requires_backup: true
+      requires_dry_run_mode: true
+
+    VALIDATE:
+      description: "Script tested and ready for production"
+      allows_execution: true
+      requires_preconditions: true
+      requires_backup: true
+      requires_dry_run_mode: false
+
+    EXECUTE:
+      description: "Script approved and running in production"
+      allows_execution: true
+      requires_preconditions: true
+      requires_backup: true
+      requires_audit_logging: true
+
+  # Validation rules for all scripts
+  validation:
+    - rule: "Must use SCRIPT_TEMPLATE.py structure"
+      enforced_by: "pre-commit.sh"
+      severity: STRICT
+
+    - rule: "Must have SCRIPT_METADATA block"
+      enforced_by: "pre-commit.sh"
+      severity: STRICT
+
+    - rule: "Must include error handling"
+      enforced_by: "pre-commit.sh"
+      severity: STRICT
+
+    - rule: "Must log via AuditLogger"
+      enforced_by: "pre-commit.sh"
+      severity: STRICT
+
+    - rule: "Must support --dry-run flag"
+      enforced_by: "pre-commit.sh"
+      severity: WARNING
+
+    - rule: "Preconditions must be checkable"
+      enforced_by: "infrastructure_init.py"
+      severity: STRICT
+
+# ============================================================================
+# SOP-RECOVERY-04: BACKUP MANAGEMENT
+# ============================================================================
+
+backup_management:
+  enabled: true
+
+  # 3-tier backup retention policy
+  tiers:
+    TIER_1:
+      description: "Operation-level backups (automatic)"
+      location: "data/backups/tier1"
+      retention_days: 7
+      created_by: "Every script before modification"
+      naming_pattern: "FILE.BACKUP.TIMESTAMP.EXT"
+
+    TIER_2:
+      description: "Daily scope snapshots"
+      location: "data/backups/tier2"
+      retention_days: 30
+      created_by: "run_daily_backup.py via cron (0 2 * * *)"
+      scope: ["appendices", "chapters", "data"]
+
+    TIER_3:
+      description: "Monthly archive"
+      location: "data/backups/tier3"
+      retention_days: 2555      # ~7 years
+      created_by: "Monthly manual archive"
+
+  # Backup validation
+  validation:
+    - rule: "Backup must be created before file modification"
+      enforced_by: "scripts/backup_manager.py"
+      severity: STRICT
+
+    - rule: "Backup file must be readable"
+      enforced_by: "scripts/backup_manager.py"
+      severity: STRICT
+
+    - rule: "Backup must be recoverable"
+      enforced_by: "Weekly verification (SOP-MONITOR-08)"
+      severity: WARNING
+
+  # Restore scenarios
+  restore_scenarios:
+    - trigger: "Script failed midway"
+      decision: "Restore from TIER 1 backup"
+      procedure: "see SOP-RECOVERY-04 section 3"
+
+    - trigger: "Multiple files corrupted"
+      decision: "Restore from TIER 2 daily backup"
+      procedure: "see SOP-RECOVERY-04 section 3"
+
+    - trigger: "Major incident (weeks ago)"
+      decision: "Restore from TIER 3 archive"
+      procedure: "see SOP-RECOVERY-04 section 3"
+
+# ============================================================================
+# SOP-APPEND-02: APPENDIX CODE MANAGEMENT
+# ============================================================================
+
+appendix_code_management:
+  enabled: true
+
+  # Master registry location (SINGLE SOURCE OF TRUTH)
+  registry_location: "docs/operations/APPENDIX_CODE_REGISTRY.yaml"
+
+  # Code allocation ranges
+  allocated:
+    - range: "A-Z"
+      count: 26
+      status: "EXHAUSTED"
+      note: "All single-letter codes assigned"
+
+    - range: "AA-BZ"
+      count: 59
+      status: "ACTIVE (56 assigned, 3 available)"
+      available: ["BX", "BY", "BZ"]
+
+  available:
+    - range: "CA-DZ"
+      count: 78
+      status: "AVAILABLE (recommend here for new appendices)"
+
+  # Code conflict detection
+  validation:
+    - rule: "Code must not be already assigned"
+      check: "compare against APPENDIX_CODE_REGISTRY"
+      enforced_by: "pre-commit.sh"
+      severity: STRICT
+
+    - rule: "Code must follow naming convention"
+      pattern: "[A-Z][A-Z]?"
+      enforced_by: "pre-commit.sh"
+      severity: STRICT
+
+    - rule: "Code assignment creates RESERVED entry first"
+      lifecycle: "RESERVED → DRAFT → ACTIVE"
+      enforced_by: "register_lit_appendices.py"
+      severity: STRICT
+
+  # 5-point validation checklist
+  pre_assignment_validation:
+    1: "Check code availability in registry"
+    2: "Detect existing conflicts (search all appendices)"
+    3: "Create RESERVED entry in registry"
+    4: "Create appendix file with code"
+    5: "Update all 4 index locations"
+
+  # Known conflicts (historical)
+  known_conflicts:
+    - code: "X"
+      conflicts:
+        - "AAA (CORE-WHO)"
+        - "L (FORMAL-LOGIC)"
+        - "I (LIT-KAHNEMAN)"
+      status: "RESOLVED in SOP-APPEND-02"
+
+# ============================================================================
+# SOP-INDEX-03: INDEX INTEGRITY
+# ============================================================================
+
+index_integrity:
+  enabled: true
+
+  # 4-location atomic update protocol
+  critical_locations:
+    1:
+      name: "Summary Table"
+      file: "appendices/00_appendix_index.tex"
+      lines: "~430"
+      pattern: "CODE & CATEGORY & ..."
+      description: "Main appendix directory table"
+
+    2:
+      name: "Category Counts"
+      file: "appendices/00_appendix_index.tex"
+      lines: "~68"
+      pattern: "CORE- & ... & NNN"
+      description: "Count of appendices per category"
+
+    3:
+      name: "Status Table"
+      file: "appendices/00_appendix_index.tex"
+      lines: "~612"
+      pattern: "CODE & CATEGORY & TITLE & DOMAIN & PRIORITY"
+      description: "Development status and priority tracking"
+
+    4:
+      name: "Reading Paths"
+      file: "appendices/00_appendix_index.tex"
+      lines: "~898"
+      pattern: "CODE & CATEGORY & RELATED & CHAPTERS"
+      description: "Navigation and cross-references"
+
+  # Sync requirements
+  validation:
+    - rule: "All 4 locations must be updated atomically"
+      enforced_by: "AppendixIndexManager class"
+      severity: STRICT
+
+    - rule: "Category count must match actual count"
+      check: "quarterly audit"
+      enforced_by: "scripts/audit_index_integrity.py"
+      severity: WARNING
+
+    - rule: "Code must appear in all 4 tables"
+      enforced_by: "pre-commit.sh"
+      severity: STRICT
+
+    - rule: "No orphaned entries (in index but no file)"
+      check: "quarterly audit"
+      enforced_by: "scripts/audit_index_integrity.py"
+      severity: WARNING
+
+# ============================================================================
+# SOP-AUDIT-05: AUDIT LOGGING
+# ============================================================================
+
+audit_logging:
+  enabled: true
+
+  # 3-tier audit system
+  tiers:
+    TIER_1:
+      name: "Real-time Event Log"
+      format: "JSONL (append-only)"
+      location: "data/audit/events.jsonl"
+      rotation: "daily (data/audit/events-YYYY-MM-DD.jsonl)"
+      retention: "30 days rolling"
+      immutability: "SHA256 validation after each write"
+
+    TIER_2:
+      name: "Daily Sealed Digests"
+      format: "YAML + Cryptographic Hash"
+      location: "data/audit/digests/"
+      naming: "YYYY-MM-DD-digest.yaml"
+      sealing: "SHA256(previous_digest + today_events)"
+      retention: "365 days (1 year)"
+
+    TIER_3:
+      name: "Git Permanent Archive"
+      location: ".git/logs/HEAD, git history"
+      retention: "permanent"
+      uses: "Disaster recovery, compliance audit"
+
+  # Event schema (all operations must log these)
+  event_schema:
+    WHO:
+      description: "Who initiated the operation"
+      examples: ["SYSTEM", "claude", "user@example.com"]
+
+    WHAT:
+      description: "What category of operation"
+      examples: ["SCRIPT", "BACKUP", "INDEX", "AUDIT", "MONITORING"]
+
+    WHEN:
+      description: "Timestamp (automatic)"
+      format: "ISO 8601"
+
+    WHERE:
+      description: "Target of operation"
+      examples: ["appendices/AA_core.tex", "data/backups/"]
+
+    WHY:
+      description: "Purpose/reason for operation"
+      examples: ["Register new appendix", "Daily backup", "Precondition check"]
+
+    HOW:
+      description: "Method/result of operation"
+      examples: ["status: SUCCESS", "error: Code conflict detected"]
+
+  # Mandatory fields per operation type
+  required_fields:
+    SCRIPT:
+      - category: "SCRIPT"
+      - operation: ["EXECUTE", "VALIDATE", "FAIL"]
+      - target: {type, name, version}
+      - execution: {status, exit_code, duration_seconds}
+
+    BACKUP:
+      - category: "BACKUP"
+      - operation: ["CREATE", "RESTORE", "VERIFY"]
+      - target: {type, path, scope}
+      - metadata: {backup_size_mb, tier, retention_days}
+
+    INDEX:
+      - category: "INDEX"
+      - operation: ["CREATE", "UPDATE", "SYNC"]
+      - target: {type, code, category}
+      - metadata: {locations_updated, conflicts_found}
+
+    MONITORING:
+      - category: "MONITORING"
+      - operation: ["MONITOR", "ALERT"]
+      - execution: {status, overall_status}
+      - metadata: {alerts_triggered, metrics_collected}
+
+  # Audit trail validation
+  validation:
+    - rule: "Every script execution must be logged"
+      enforced_by: "audit_logger.py"
+      severity: STRICT
+
+    - rule: "Log entry must have complete schema"
+      enforced_by: "audit_logger.py"
+      severity: STRICT
+
+    - rule: "TIER 2 digest must seal previous digest"
+      enforced_by: "daily cron job"
+      severity: STRICT
+
+# ============================================================================
+# SOP-DEPEND-06: DEPENDENCY MANAGEMENT
+# ============================================================================
+
+dependency_management:
+  enabled: true
+
+  # Dependency graph location
+  graph_location: "data/dependencies/DEPENDENCY_GRAPH.yaml"
+
+  # Topological sort for execution order
+  execution_validation:
+    - rule: "Scripts must execute in dependency order"
+      check: "topological sort"
+      enforced_by: "scripts/dependency_graph.py"
+      severity: WARNING
+
+    - rule: "Circular dependencies must be detected"
+      enforced_by: "DependencyGraph.validate_dependencies()"
+      severity: STRICT
+
+    - rule: "Missing dependencies must be detected"
+      enforced_by: "DependencyGraph.validate_dependencies()"
+      severity: WARNING
+
+  # Critical path analysis
+  critical_paths:
+    - name: "Daily Backup Chain"
+      scripts: ["run_daily_backup.py", "infrastructure_init.py"]
+      order: "Must complete by 3 AM UTC"
+
+    - name: "Monitoring Chain"
+      scripts: ["run_monitoring.py"]
+      order: "Must complete within 1 hour"
+
+# ============================================================================
+# SOP-VALID-07: VALIDATION FRAMEWORK
+# ============================================================================
+
+validation_framework:
+  enabled: true
+
+  # 4-tier validation system
+  tiers:
+    TIER_0:
+      name: "Pre-Execution Validation"
+      when: "Before script runs"
+      checks:
+        - "Preconditions verified"
+        - "Dependencies resolved"
+        - "Backups created"
+      enforced_by: "SCRIPT_TEMPLATE.py"
+      severity: STRICT
+
+    TIER_1:
+      name: "Pre-Commit Validation"
+      when: "Before git commit"
+      checks:
+        - "LaTeX files: compliance ≥ 85%"
+        - "Python scripts: SCRIPT_METADATA present"
+        - "Code conflicts: none detected"
+        - "Index sync: all 4 locations updated"
+      enforced_by: ".claude/hooks/pre-commit.sh"
+      severity: STRICT
+
+    TIER_2:
+      name: "Post-Execution Validation"
+      when: "After script completes"
+      checks:
+        - "Postconditions verified"
+        - "Audit log has event"
+        - "Backup is valid"
+      enforced_by: "SCRIPT_TEMPLATE.py"
+      severity: STRICT
+
+    TIER_3:
+      name: "Continuous Validation"
+      when: "Hourly/Daily/Weekly/Monthly"
+      checks:
+        - "Index integrity (Location 1-4 sync)"
+        - "Code conflict detection"
+        - "Orphaned entry detection"
+        - "Backup coverage"
+        - "Audit log health"
+      enforced_by: "scripts/run_monitoring.py (cron)"
+      interval:
+        hourly: "Operational metrics"
+        daily: "Index sync check"
+        weekly: "Code conflict scan"
+        monthly: "Full validation suite"
+      severity: WARNING
+
+  # 47+ validation rules
+  rules:
+    # Structural rules
+    - id: "STRUCT-001"
+      name: "Appendix file exists"
+      type: "file_exists"
+      target: "appendices/*[CODE]*.tex"
+
+    - id: "STRUCT-002"
+      name: "Code in index"
+      type: "registry_check"
+      target: "APPENDIX_CODE_REGISTRY.yaml"
+
+    - id: "STRUCT-003"
+      name: "4-location index sync"
+      type: "atomic_consistency"
+      target: "appendices/00_appendix_index.tex (4 locations)"
+
+    # Naming rules
+    - id: "NAME-001"
+      name: "Code follows pattern"
+      type: "regex_match"
+      pattern: "^[A-Z]{1,2}$"
+
+    - id: "NAME-002"
+      name: "File follows pattern"
+      type: "regex_match"
+      pattern: "^[A-Z]{1,2}_[a-z_]+\\.tex$"
+
+    # Conflict rules
+    - id: "CONFLICT-001"
+      name: "No code conflicts"
+      type: "uniqueness"
+      target: "APPENDIX_CODE_REGISTRY.yaml"
+
+    - id: "CONFLICT-002"
+      name: "No orphaned entries"
+      type: "bidirectional_consistency"
+      check: "registry entry ↔ file exists"
+
+    # Template rules
+    - id: "TEMPLATE-001"
+      name: "LaTeX compliance"
+      type: "scoring"
+      threshold: 85
+      target: "chapters/*.tex, appendices/*[!00].tex"
+
+    - id: "TEMPLATE-002"
+      name: "Script METADATA"
+      type: "dict_check"
+      target: "scripts/*.py (not SCRIPT_TEMPLATE)"
+      required_keys: ["name", "version", "purpose", "phase", "sop"]
+
+# ============================================================================
+# SOP-MONITOR-08: REAL-TIME MONITORING
+# ============================================================================
+
+monitoring:
+  enabled: true
+
+  # Metrics collection schedule
+  collection_schedule:
+    hourly:
+      time: "0 * * * *"                # Every hour on the hour
+      metrics:
+        - operational.script_success_rate
+        - operational.avg_execution_time
+        - integrity.index_consistency
+        - integrity.code_conflicts
+        - resources.audit_log_size_mb
+
+    daily:
+      time: "0 6 * * *"                # 6 AM UTC daily
+      metrics:
+        - resources.backup_count_tier1
+        - resources.backup_count_tier2
+        - resources.disk_usage_mb
+        - compliance.template_compliance_avg
+
+    weekly:
+      time: "0 7 * * 1"                # Monday 7 AM UTC
+      metrics:
+        - integrity.orphaned_entries
+        - integrity.missing_dependencies
+        - compliance.full_validation
+
+  # Alert thresholds
+  alerts:
+    CRITICAL:
+      - metric: "integrity.index_consistency"
+        condition: "< 100"
+        message: "Index out of sync across locations"
+        action: "IMMEDIATE: Run SOP-INDEX-03 audit"
+
+      - metric: "integrity.code_conflicts"
+        condition: "> 0"
+        message: "Code conflicts detected"
+        action: "IMMEDIATE: Run SOP-APPEND-02 resolution"
+
+    HIGH:
+      - metric: "resources.audit_log_size_mb"
+        condition: "> 1000"
+        message: "Audit log exceeds 1 GB"
+        action: "URGENT: Run cleanup (SOP-AUDIT-05)"
+
+      - metric: "resources.backup_count"
+        condition: "< 5"
+        message: "Insufficient backups"
+        action: "URGENT: Run daily backup manually"
+
+    MEDIUM:
+      - metric: "operational.script_success_rate"
+        condition: "< 95"
+        message: "Script failure rate increasing"
+        action: "Review recent script changes"
+
+  # Alerting destinations
+  alerting:
+    console:
+      enabled: true
+      format: "Pretty-printed to stdout"
+
+    file:
+      enabled: true
+      location: "data/monitoring/alerts.log"
+      format: "TIMESTAMP: SEVERITY - NAME: MESSAGE (value=VALUE)"
+
+    # Future: email, slack, etc.
+
+# ============================================================================
+# INTEGRATION POINTS
+# ============================================================================
+# Where SOPs are enforced:
+
+integration:
+  git_hooks:
+    pre_commit: ".claude/hooks/pre-commit.sh"
+    purpose: "Validate before allowing commits"
+    enforces:
+      - "SOP-SCRIPT-01 (SCRIPT_METADATA presence)"
+      - "SOP-APPEND-02 (code conflicts)"
+      - "SOP-INDEX-03 (4-location sync)"
+      - "SOP-VALID-07 (LaTeX compliance ≥85%)"
+
+  script_templates:
+    location: "scripts/SCRIPT_TEMPLATE.py"
+    purpose: "Enforce SOP compliance in all scripts"
+    enforces:
+      - "SOP-SCRIPT-01 (4-phase lifecycle)"
+      - "SOP-RECOVERY-04 (backup before modify)"
+      - "SOP-AUDIT-05 (logging via AuditLogger)"
+
+  cron_jobs:
+    location: "docs/operations/CRON-JOBS-SETUP.sh"
+    purpose: "Continuous enforcement via scheduled tasks"
+    jobs:
+      hourly: "run_monitoring.py (SOP-MONITOR-08)"
+      daily: "run_daily_backup.py (SOP-RECOVERY-04)"
+      weekly: "validate dependencies (SOP-DEPEND-06)"
+      monthly: "full validation (SOP-VALID-07 TIER 3)"
+
+  initialization:
+    location: "scripts/infrastructure_init.py"
+    purpose: "One-time setup to enable enforcement"
+    creates:
+      - "All required directories"
+      - "Registry files"
+      - "Dependency graph"
+      - "Initial audit trail"
+
+  validation_engine:
+    location: "scripts/validate_tier4.py"
+    purpose: "On-demand comprehensive validation"
+    coverage: "All 47+ rules"
+
+# ============================================================================
+# CONFIGURATION VERSION
+# ============================================================================
+# Version history for tracking changes
+
+version: "1.0.0"
+last_updated: "2026-01-15"
+last_updated_by: "claude"
+changelog:
+  - version: "1.0.0"
+    date: "2026-01-15"
+    changes:
+      - "Initial comprehensive SOP enforcement configuration"
+      - "8 SOPs fully defined with enforcement mechanisms"
+      - "Integration points documented"
+      - "5 enforcement levels across all operations"

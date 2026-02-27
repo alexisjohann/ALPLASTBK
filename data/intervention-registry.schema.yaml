@@ -1,0 +1,890 @@
+# ============================================================================
+# EBF INTERVENTION REGISTRY SCHEMA
+# ============================================================================
+#
+# ACHTUNG: Diese Datei ist die EINZIGE autoritative Quelle für die Struktur
+# der Intervention Registry Datenbank. Alle YAML Einträge in
+# data/intervention-registry.yaml MÜSSEN mit dieser Definition konsistent sein.
+#
+# Version: 1.0
+# Erstellt: 2026-01-18
+# ============================================================================
+
+version: "1.0"
+created: "2026-01-18"
+description: "Authoritative schema for EBF Intervention Registry database (50+ behavior change projects)"
+
+# ============================================================================
+# CORE ENTITIES
+# ============================================================================
+
+entities:
+
+  # =========================================================================
+  # PROJECT ENTITY: Master record for each intervention project
+  # =========================================================================
+  Project:
+    description: "A complete behavior change intervention with predictions, execution, and results"
+    required_fields:
+      id:
+        type: string
+        pattern: "^PRJ-[0-9]{3,4}$"
+        example: "PRJ-001"
+        immutable: true
+        description: "Unique project identifier"
+
+  # =========================================================================
+  # PROJECT_METADATA ENTITY
+  # =========================================================================
+  ProjectMetadata:
+    description: "Core project information and administrative data"
+    required_fields:
+      name:
+        type: string
+        min_length: 20
+        max_length: 300
+        description: "Full project title"
+
+      client:
+        type: string
+        max_length: 200
+        description: "Organization/client undertaking the intervention"
+
+      domain:
+        type: enum
+        allowed: ["finance", "health", "sustainability", "hr", "social_policy", "education", "behavior", "other"]
+        description: "Primary application domain"
+
+      start_date:
+        type: date
+        format: "YYYY-MM-DD"
+
+      status:
+        type: enum
+        allowed: ["planned", "in_progress", "completed", "paused", "cancelled"]
+
+    optional_fields:
+      end_date:
+        type: date
+        format: "YYYY-MM-DD"
+
+      project_manager:
+        type: string
+
+      budget:
+        type: number
+        min: 0
+        description: "Total project volume/budget"
+
+      budget_currency:
+        type: string
+        default: "CHF"
+
+      billing_model:
+        type: enum
+        allowed: ["FIXED_PRICE", "TIME_AND_MATERIALS", "RETAINER", "BLENDED"]
+        description: "How the project is billed"
+
+      geographic_scope:
+        type: string
+        enum: ["local", "regional", "national", "international"]
+
+      expected_duration_months:
+        type: integer
+        min: 1
+
+      expected_duration_weeks:
+        type: integer
+        min: 1
+
+      team:
+        type: object
+        description: "Project team members with roles and allocation"
+        optional_fields:
+          fa_team:
+            type: array
+            items:
+              type: object
+              fields:
+                name:
+                  type: string
+                  description: "Team member name"
+                role:
+                  type: string
+                  description: "Role (e.g., Project Lead, Senior Consultant, Analyst)"
+                owner_code:
+                  type: string
+                  description: "FehrAdvice partner code (e.g., GF, EB, MR)"
+                allocation_pct:
+                  type: integer
+                  min: 0
+                  max: 100
+                  description: "Allocation percentage (e.g., 50 = half-time)"
+          client_team:
+            type: array
+            items:
+              type: object
+              fields:
+                name:
+                  type: string
+                role:
+                  type: string
+                availability:
+                  type: string
+                  description: "e.g., '2 days/week', 'full-time'"
+          external:
+            type: array
+            items:
+              type: object
+              fields:
+                name:
+                  type: string
+                organization:
+                  type: string
+                role:
+                  type: string
+
+  # =========================================================================
+  # CONTEXT ENTITY: Target population and baseline behavior
+  # =========================================================================
+  Context:
+    description: "Detailed description of the target behavior change and population"
+    required_fields:
+      target_behavior:
+        type: string
+        min_length: 20
+        max_length: 500
+        description: "What specific behavior are we trying to change?"
+
+      target_population:
+        type: string
+        min_length: 20
+        max_length: 500
+        description: "Who is the target population?"
+
+      sample_size:
+        type: integer
+        min: 1
+
+      baseline_behavior:
+        type: number
+        min: 0.0
+        max: 1.0
+        description: "Baseline rate of target behavior (0.34 = 34% already do it)"
+
+      journey_phase:
+        type: enum
+        allowed: ["awareness", "contemplation", "preparation", "action", "maintenance", "termination"]
+        description: "Where in the behavior change journey is the population?"
+
+    optional_fields:
+      behavioral_metric:
+        type: string
+        description: "How is the behavior measured? (e.g., 'participation rate', 'days since action')"
+
+      segments:
+        type: array
+        items:
+          type: object
+          required_fields:
+            name:
+              type: string
+              description: "Segment name (e.g., 'present-biased', 'loss-averse')"
+            proportion:
+              type: number
+              min: 0.0
+              max: 1.0
+              description: "Proportion of population in segment"
+          optional_fields:
+            sigma:
+              type: number
+              description: "Social preference parameter (Fehr-Schmidt)"
+            beta:
+              type: number
+              description: "Time preference (discount factor)"
+            lambda:
+              type: number
+              description: "Loss aversion parameter"
+
+      dropout_rate:
+        type: number
+        min: 0.0
+        max: 1.0
+        description: "Expected attrition rate"
+
+  # =========================================================================
+  # INTERVENTION_COMPONENT ENTITY: Individual interventions in the mix
+  # =========================================================================
+  InterventionComponent:
+    description: "A single intervention element (one of possibly multiple)"
+    required_fields:
+      id:
+        type: string
+        pattern: "^I[0-9]+$"
+        example: "I1"
+        description: "Internal identifier within intervention mix"
+
+      type:
+        type: enum
+        allowed: ["nudge", "incentive", "institutional", "information", "education", "social", "mixed"]
+        description: "Category of intervention"
+
+      description:
+        type: string
+        min_length: 20
+        max_length: 500
+        description: "Plain language description"
+
+    optional_fields:
+      subtype:
+        type: string
+        enum: ["default", "opt_out", "salience", "framing", "personalized_projection", "descriptive_norm", "injunctive_norm", "financial", "non_financial", "rule_based", "habit_formation", "other"]
+        description: "More specific intervention type"
+
+      timing:
+        type: string
+        max_length: 200
+        description: "When is intervention deployed? (e.g., 'onboarding', 'before decision point')"
+
+      target_segment:
+        type: string
+        enum: ["all", "segment_specific"]
+        description: "Which population segment(s) receive this?"
+
+      parameters:
+        type: object
+        optional_fields:
+          intensity:
+            type: number
+            min: 0.0
+            max: 1.0
+            description: "Intensity/salience of intervention (0=subtle, 1=very strong)"
+          duration:
+            type: string
+            description: "How long is intervention active? (e.g., 'permanent', '30 days', 'one-time')"
+          frequency:
+            type: string
+            description: "How often? (e.g., 'once', 'weekly', '3x mentioned')"
+          cost_per_unit:
+            type: number
+            min: 0.0
+            description: "Cost to implement per person"
+
+      expected_contribution:
+        type: object
+        required_fields:
+          E_i:
+            type: number
+            min: 0.0
+            max: 1.0
+            description: "Expected individual contribution to overall effect"
+        optional_fields:
+          confidence:
+            type: number
+            min: 0.0
+            max: 1.0
+            description: "Confidence in this estimate (0.5 = 50%)"
+          source:
+            type: enum
+            allowed: ["literature", "pilot", "expert_elicitation", "theory", "other"]
+            description: "Where does this estimate come from?"
+          mechanism:
+            type: string
+            max_length: 300
+            description: "Mechanism through which intervention works"
+
+  # =========================================================================
+  # COMPLEMENTARITY_PAIR ENTITY: Interaction between two interventions
+  # =========================================================================
+  ComplementarityPair:
+    description: "How two interventions interact (Γ-matrix)"
+    required_fields:
+      pair:
+        type: array
+        items:
+          type: string
+          pattern: "^I[0-9]+$"
+        length: 2
+        example: ["I1", "I2"]
+
+      gamma_ij:
+        type: number
+        min: -1.0
+        max: 1.0
+        description: "Complementarity coefficient (γ_ij)"
+
+    optional_fields:
+      interaction:
+        type: enum
+        allowed: ["synergy", "substitutable", "independent", "antagonistic"]
+        description: "Type of interaction"
+
+      mechanism:
+        type: string
+        max_length: 300
+        description: "Why do these interventions complement each other?"
+
+      empirical_evidence:
+        type: string
+        max_length: 300
+        description: "What evidence supports this γ value?"
+
+  # =========================================================================
+  # PREDICTIONS ENTITY: Expected outcomes before intervention
+  # =========================================================================
+  Predictions:
+    description: "Predicted effectiveness based on theory, literature, and pilot data"
+    optional_fields:
+      portfolio_effect:
+        type: object
+        fields:
+          E_P:
+            type: number
+            min: 0.0
+            max: 1.0
+            description: "Total portfolio effect size"
+          CI_lower:
+            type: number
+            min: 0.0
+            max: 1.0
+            description: "95% confidence interval lower bound"
+          CI_upper:
+            type: number
+            min: 0.0
+            max: 1.0
+            description: "95% confidence interval upper bound"
+          formula_used:
+            type: string
+            description: "LaTeX formula used to compute E_P"
+
+      kpis:
+        type: array
+        items:
+          type: object
+          required_fields:
+            name:
+              type: string
+              description: "KPI name (e.g., 'Participation rate')"
+          optional_fields:
+            baseline:
+              type: number
+              description: "Baseline value"
+            predicted_value:
+              type: number
+              description: "Expected value after intervention"
+            predicted_delta:
+              type: number
+              description: "Absolute change"
+            predicted_delta_pct:
+              type: number
+              description: "Percentage change"
+            confidence:
+              type: number
+              min: 0.0
+              max: 1.0
+              description: "Confidence in this prediction"
+            unit:
+              type: string
+              description: "Unit of measurement"
+
+      risk_factors:
+        type: array
+        items:
+          type: object
+          fields:
+            factor: string
+            likelihood: enum ["high", "medium", "low"]
+            impact: enum ["critical", "high", "medium", "low"]
+            mitigation: string
+
+  # =========================================================================
+  # RESULTS ENTITY: Actual outcomes measured post-intervention
+  # =========================================================================
+  Results:
+    description: "Actual measured outcomes"
+    required_fields:
+      measurement_date:
+        type: date
+        format: "YYYY-MM-DD"
+        description: "When were results measured?"
+
+    optional_fields:
+      measurement_method:
+        type: enum
+        allowed: ["administrative_data", "survey", "experiment", "qualitative", "mixed"]
+
+      kpis:
+        type: array
+        items:
+          type: object
+          fields:
+            name: string
+            actual_value:
+              type: number
+              description: "Measured value"
+            actual_delta:
+              type: number
+              description: "Actual change from baseline"
+            actual_delta_pct:
+              type: number
+              description: "Percentage change"
+            measurement_confidence:
+              type: enum
+              allowed: ["high", "medium", "low"]
+            notes:
+              type: string
+
+      intervention_effects:
+        type: array
+        items:
+          type: object
+          fields:
+            id:
+              type: string
+              pattern: "^I[0-9]+$"
+              description: "Which intervention?"
+            observed_E_i:
+              type: number
+              min: 0.0
+              max: 1.0
+              description: "Empirically observed contribution"
+            attribution_confidence:
+              type: number
+              min: 0.0
+              max: 1.0
+              description: "How confident are we in this attribution?"
+            mechanism_notes:
+              type: string
+              description: "What actually happened?"
+
+      unintended_consequences:
+        type: array
+        items:
+          type: object
+          fields:
+            consequence: string
+            magnitude: enum ["major", "moderate", "minor"]
+            direction: enum ["positive", "negative"]
+
+  # =========================================================================
+  # DEVIATION_ANALYSIS ENTITY: Prediction vs. Reality
+  # =========================================================================
+  DeviationAnalysis:
+    description: "Analysis of differences between predictions and actual results"
+    optional_fields:
+      overall:
+        type: object
+        fields:
+          predicted_E_P: number
+          actual_E_P: number
+          delta:
+            type: number
+            description: "Absolute difference (actual - predicted)"
+          delta_pct:
+            type: number
+            description: "Percentage error"
+          direction:
+            type: enum
+            allowed: ["overestimate", "underestimate", "accurate"]
+          explanation:
+            type: string
+            max_length: 500
+
+      by_intervention:
+        type: array
+        items:
+          type: object
+          fields:
+            id:
+              type: string
+              pattern: "^I[0-9]+$"
+            predicted: number
+            actual: number
+            delta: number
+            likely_causes:
+              type: array
+              items:
+                type: string
+
+      by_segment:
+        type: array
+        items:
+          type: object
+          fields:
+            segment_name: string
+            predicted_effect: number
+            actual_effect: number
+            delta: number
+            explanation: string
+
+  # =========================================================================
+  # LEARNINGS ENTITY: Key insights from project execution
+  # =========================================================================
+  Learnings:
+    description: "Lessons learned and insights for future interventions"
+    optional_fields:
+      what_worked:
+        type: array
+        items:
+          type: object
+          fields:
+            finding: string
+              min_length: 30
+              max_length: 300
+            mechanism: string
+              description: "Why did this work?"
+            transferability:
+              type: enum
+              allowed: ["high", "medium", "low", "context_specific"]
+
+      what_didnt_work:
+        type: array
+        items:
+          type: object
+          fields:
+            finding: string
+            barrier: string
+            transferability: enum ["high", "medium", "low", "context_specific"]
+
+      unexpected_effects:
+        type: array
+        items:
+          type: object
+          fields:
+            effect: string
+            magnitude: enum ["major", "moderate", "minor"]
+            direction: enum ["positive", "negative"]
+            mechanism: string
+
+      segment_heterogeneity:
+        type: array
+        items:
+          type: object
+          fields:
+            segment_name: string
+            differential_effect: number
+            explanation: string
+
+      implementation_insights:
+        type: array
+        items:
+          type: object
+          fields:
+            challenge: string
+            solution_applied: string
+            success: enum ["fully", "partially", "not"]
+
+      recommendations:
+        type: array
+        items:
+          type: string
+          max_length: 300
+
+      theory_updates:
+        type: object
+        fields:
+          parameter_updates:
+            type: array
+            items:
+              type: object
+              fields:
+                parameter: string
+                old_value: number
+                new_value: number
+                confidence: enum ["high", "medium", "low"]
+          mechanism_refinements: array of string
+          new_9c_insights:
+            type: string
+            max_length: 500
+
+  # =========================================================================
+  # REFERENCE_MAPPING ENTITY
+  # =========================================================================
+  ReferenceMappings:
+    description: "Links to papers, cases, and other resources"
+    optional_fields:
+      linked_papers:
+        type: array
+        items:
+          type: string
+          pattern: "^[a-z0-9]+[a-z0-9]{4,20}$"
+        description: "Paper IDs used to design this intervention"
+
+      linked_cases:
+        type: array
+        items:
+          type: string
+          pattern: "^CASE-[0-9]{3,4}$"
+        description: "Case studies that informed this intervention"
+
+      model_seed:
+        type: string
+        pattern: "^[A-Z]+-[A-Z0-9]+(\\-[0-9]{4})?$"
+        description: "Which seed model was used for predictions?"
+
+      case_created:
+        type: string
+        pattern: "^CASE-[0-9]{3,4}$"
+        description: "Case ID created from this project's results"
+
+      appendices:
+        type: array
+        items:
+          type: string
+          pattern: "^[A-Z]$"
+        description: "Relevant EBF appendices"
+
+# ============================================================================
+# RELATIONSHIPS (Foreign Keys & Constraints)
+# ============================================================================
+
+relationships:
+  Project_Metadata:
+    from: Project
+    to: ProjectMetadata
+    cardinality: "1:1"
+    description: "Each project has metadata"
+
+  Project_Context:
+    from: Project
+    to: Context
+    cardinality: "1:1"
+    description: "Each project has context specification"
+
+  Project_InterventionComponents:
+    from: Project
+    to: InterventionComponent
+    cardinality: "1:N"
+    description: "A project has multiple intervention components"
+
+  Project_Complementarity:
+    from: Project
+    to: ComplementarityPair
+    cardinality: "1:N"
+    description: "A project can have multiple γ-pairs"
+
+  Project_Predictions:
+    from: Project
+    to: Predictions
+    cardinality: "1:1"
+    description: "Each project has predictions"
+
+  Project_Results:
+    from: Project
+    to: Results
+    cardinality: "1:1"
+    description: "Each completed project has results"
+
+  Project_DeviationAnalysis:
+    from: Project
+    to: DeviationAnalysis
+    cardinality: "1:1"
+    description: "Completed projects have deviation analysis"
+
+  Project_Learnings:
+    from: Project
+    to: Learnings
+    cardinality: "1:1"
+    description: "Completed projects have learnings"
+
+  Project_References:
+    from: Project
+    to: ReferenceMappings
+    cardinality: "1:1"
+    description: "Each project has reference mappings"
+
+  Project_LinkedPapers:
+    from: Project
+    to: Paper
+    cardinality: "N:N"
+    foreign_key: "linked_papers[*] → paper-sources.yaml:id"
+    description: "Project links to informing papers"
+
+  Project_LinkedCases:
+    from: Project
+    to: Case
+    cardinality: "N:N"
+    foreign_key: "linked_cases[*] → case-registry.yaml:id"
+    description: "Project links to related cases"
+
+  Project_CaseGenerated:
+    from: Project
+    to: Case
+    cardinality: "1:1"
+    foreign_key: "case_created → case-registry.yaml:id"
+    description: "Project results documented as case"
+
+# ============================================================================
+# CONSTRAINTS & VALIDATION RULES
+# ============================================================================
+
+constraints:
+  project_id_uniqueness:
+    rule: "Project IDs must be globally unique"
+    check: "UNIQUE constraint on id"
+
+  date_logic:
+    rule: "start_date <= end_date"
+    check: "start_date <= end_date OR end_date is null"
+
+  baseline_range:
+    rule: "Baseline behavior rate must be [0, 1]"
+    check: "0.0 <= baseline_behavior <= 1.0"
+
+  segment_proportions:
+    rule: "Segment proportions must sum to ~1.0"
+    check: "0.95 <= SUM(segment.proportion) <= 1.05"
+
+  gamma_range:
+    rule: "Complementarity coefficients must be [-1, 1]"
+    check: "-1.0 <= gamma_ij <= 1.0"
+
+  intervention_ids:
+    rule: "Intervention IDs must be consecutive starting from I1"
+    check: "IDs = {I1, I2, I3, ..., In}"
+
+  portfolio_formula:
+    rule: "E_P should follow: E_P = Σ E_i + Σ γ_ij × √(E_i × E_j)"
+    check: "Validate formula calculation"
+
+  prediction_confidence:
+    rule: "Confidence levels should be in [0, 1]"
+    check: "0.0 <= confidence <= 1.0"
+
+  measurement_coverage:
+    rule: "All KPIs in predictions should have results for completed projects"
+    check: "IF status = 'completed' THEN predictions.kpis matches results.kpis"
+
+  paper_validity:
+    rule: "All linked papers must exist in paper-sources.yaml"
+    check: "linked_papers[*] → paper-sources.yaml:id"
+
+  case_validity:
+    rule: "All linked cases must exist in case-registry.yaml"
+    check: "linked_cases[*] → case-registry.yaml:id"
+
+  status_workflow:
+    rule: "Status progression: planned → in_progress → completed"
+    allowed_transitions:
+      planned: ["in_progress", "cancelled"]
+      in_progress: ["completed", "paused"]
+      paused: ["in_progress", "cancelled"]
+      completed: []
+      cancelled: []
+
+  deviation_completeness:
+    rule: "Completed projects must have deviation analysis"
+    check: "IF status = 'completed' THEN deviation_analysis is present"
+
+  learnings_completeness:
+    rule: "Completed projects should have learnings"
+    check: "IF status = 'completed' THEN learnings is ideally present"
+
+# ============================================================================
+# DATABASE OPERATIONS
+# ============================================================================
+
+operations:
+  CREATE:
+    required_fields: ["id", "meta", "context", "intervention_mix"]
+    validation: "All required fields must be present and valid"
+
+  UPDATE:
+    immutable_fields: ["id"]
+    mutable_fields: ["status", "predictions", "results", "learnings"]
+    note: "Status transitions follow defined workflow"
+
+  QUERY:
+    supported_queries:
+      - "SELECT * FROM projects WHERE domain = 'finance' AND status = 'completed'"
+      - "SELECT * FROM projects WHERE E_P > 0.5"
+      - "SELECT * FROM projects WHERE delta_pct > 20 ORDER BY delta_pct DESC"
+      - "SELECT * FROM projects WHERE direction = 'overestimate'"
+      - "SELECT * FROM projects WHERE status IN ('in_progress', 'paused')"
+
+  BULK_OPERATIONS:
+    portfolio_analysis: "Aggregate results across all projects"
+    learning_synthesis: "Extract meta-learnings from all completed projects"
+    parameter_calibration: "Update BBB (parameter repository) from results"
+
+# ============================================================================
+# SCHEMA VALIDATION RULES
+# ============================================================================
+
+validation_rules:
+  rule_1:
+    description: "Project ID must be unique"
+    check: "UNIQUE constraint on id"
+
+  rule_2:
+    description: "Project dates must be logically ordered"
+    check: "start_date <= end_date OR end_date is null"
+
+  rule_3:
+    description: "Baseline behavior must be in [0, 1]"
+    check: "0.0 <= baseline_behavior <= 1.0"
+
+  rule_4:
+    description: "Segment proportions must sum to 1.0 (±0.05)"
+    check: "0.95 <= SUM(proportions) <= 1.05"
+
+  rule_5:
+    description: "Intervention IDs must be consecutive I1, I2, I3, ..."
+    check: "All IDs match ^I[1-9]$|^I[1-9][0-9]$"
+
+  rule_6:
+    description: "Gamma coefficients must be in [-1, 1]"
+    check: "-1.0 <= gamma_ij <= 1.0"
+
+  rule_7:
+    description: "Confidence and attribution confidences must be [0, 1]"
+    check: "0.0 <= confidence <= 1.0 AND 0.0 <= attribution_confidence <= 1.0"
+
+  rule_8:
+    description: "Portfolio effect formula must be valid"
+    check: "E_P = Σ E_i + Σ γ_ij × √(E_i × E_j)"
+
+  rule_9:
+    description: "Completed projects must have results"
+    check: "IF status = 'completed' THEN results is present"
+
+  rule_10:
+    description: "Completed projects should have deviation analysis"
+    check: "IF status = 'completed' THEN deviation_analysis should be present"
+
+# ============================================================================
+# QUALITY ASSURANCE CHECKLIST
+# ============================================================================
+
+qa_checklist:
+  - "All 50+ projects have valid IDs (PRJ-XXX format)"
+  - "All projects have metadata and context"
+  - "All intervention components are documented"
+  - "Segment proportions sum to 1.0 (±0.05)"
+  - "Intervention IDs are consecutive starting from I1"
+  - "Gamma coefficients are in [-1, 1]"
+  - "For completed projects: results are present"
+  - "For completed projects: deviation analysis is present"
+  - "All linked papers exist in paper-sources.yaml"
+  - "All linked cases exist in case-registry.yaml"
+  - "No duplicate project IDs"
+
+# ============================================================================
+# MIGRATION & VERSIONING
+# ============================================================================
+
+versioning:
+  current_version: "1.0"
+  backward_compatible: true
+  migration_notes: |
+    No previous version.
+    Initial schema created January 18, 2026 to standardize 50+ projects.
+
+---
+
+**SCHEMA DEFINITION COMPLETE**
+
+This schema defines the authoritative structure for the Intervention Registry.
+It ensures consistency, completeness, and validity of all 50+ projects.
+
+Version 1.0 | January 18, 2026

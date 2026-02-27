@@ -1,0 +1,420 @@
+# SPÖ MANDAT - SINGLE SOURCE OF TRUTH ARCHITEKTUR
+#
+# Definiert welche Dateien MASTER sind und welche ABGELEITET.
+# Bei Inkonsistenzen gilt IMMER der MASTER.
+#
+# Version: 1.0
+# Erstellt: 2026-02-03
+# Basiert auf: L-SPO-001 (Synchronisation-Fehler)
+
+---
+
+# ═══════════════════════════════════════════════════════════════════════════
+# EBENE 1: GLOBALE MASTER (für ALLE Anfragen gültig)
+# ═══════════════════════════════════════════════════════════════════════════
+
+globale_master:
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # M1: Axiom-System (K1-K10)
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "M1-AXIOME"
+    name: "Axiom-System K1-K10"
+    ssot_datei: "spo_mandate_preamble.yaml → axiom_system{}"
+    backup_ssot: "deliverables/EMRK_STRATEGIE_KOMPLETT_*.md → Appendix A"
+    beschreibung: |
+      Die 10 Kommunikations-Axiome gelten für ALLE SPÖ-Kommunikation.
+      Jede Kernaussage MUSS gegen alle 10 Axiome geprüft werden.
+
+    axiome:
+      K1: "Kickl-Differenzierung - Niemals FPÖ-Rhetorik kopieren"
+      K2: "Zahlen als Beleg - Fakten vor Emotionen"
+      K3: "Ordnung-Frame - 'Ordnung' statt 'Sicherheit'"
+      K4: "USP herausarbeiten - Was kann NUR die SPÖ?"
+      K5: "EMRK würdigen - Historische Bedeutung"
+      K6: "Gegner-Motive aufdecken - Wahre Absichten benennen"
+      K7: "Weiterentwicklung statt Rückschritt"
+      K8: "Level-Komplementarität - L1+L2+L3 > Summe"
+      K9: "Populär, nicht populistisch"
+      K10: "Drei Nutzen - U_IND, U_COLL, U_IDN neutral"
+
+    sync_pflicht:
+      - "Alle kernaussagen{} in ANFRAGEN_REGISTER.yaml"
+      - "Alle Deliverables"
+      - "Alle Wordings, Taktiken, Briefings"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # M2: Drei-Level-Framework
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "M2-LEVELS"
+    name: "Drei-Level-Framework (L1/L2/L3)"
+    ssot_datei: "frameworks/FRAMEWORK_3_levels.md"
+    beschreibung: |
+      Jede Botschaft muss auf drei Ebenen funktionieren:
+      L1 = THEMA ordnen (Beweisen)
+      L2 = DEBATTE ordnen (Framen)
+      L3 = LAND ordnen (Bedeuten)
+
+    sync_pflicht:
+      - "Alle kernaussagen{}.level_1, .level_2, .level_3"
+      - "Alle Deliverables müssen L1/L2/L3 enthalten"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # M3: Aktuelle Lage (Auto-Research)
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "M3-LAGE"
+    name: "Aktuelle politische Lage"
+    ssot_dateien:
+      - "database/BELIEBTHEIT_POLITIKER_AT.yaml"
+      - "database/SONNTAGSFRAGE_PARTEIEN_AT.yaml"
+      - "spo_mandate_preamble.yaml → aktuelle_lage{}"
+    beschreibung: |
+      Aktuelle Umfragewerte und politische Situation.
+      Wird automatisch aktualisiert (Auto-Research).
+
+    freshness: "2 Tage"
+    auto_update: true
+
+---
+
+# ═══════════════════════════════════════════════════════════════════════════
+# EBENE 2: ANFRAGE-SPEZIFISCHE MASTER (pro Thema)
+# ═══════════════════════════════════════════════════════════════════════════
+
+anfrage_master:
+
+  beschreibung: |
+    Für JEDE Anfrage (Spitalstouristen, SOG, EMRK, etc.) gilt:
+    - kernaussagen{} in ANFRAGEN_REGISTER.yaml ist MASTER
+    - Alle anderen Dokumente sind ABGELEITET
+
+  hierarchie:
+    1_master: "ANFRAGEN_REGISTER.yaml → anfragen[].kernaussagen{}"
+    2_deliverable: "deliverables/*_STRATEGIE_KOMPLETT_*.md"
+    3_operativ: "reports/REPORT_*.md, TAKTIK_*.md, WORDING_*.md, BRIEFING_*.md"
+    4_review: "database/INTERAKTIVER_REVIEW_*.md"
+    5_archiv: "Alle anderen Versionen (v1, v2, etc.)"
+
+  sync_regel: |
+    WENN kernaussagen{} geändert wird:
+    1. Deliverable aktualisieren
+    2. Operative Dokumente aktualisieren
+    3. Review-Template aktualisieren
+    4. Alte Versionen als "ARCHIV" markieren
+
+---
+
+# ═══════════════════════════════════════════════════════════════════════════
+# EBENE 3: DOKUMENTEN-KLASSIFIKATION
+# ═══════════════════════════════════════════════════════════════════════════
+
+dokument_klassifikation:
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # EMRK (ANF-2026-02-02-001)
+  # ─────────────────────────────────────────────────────────────────────────
+  emrk:
+    anfrage_id: "ANF-2026-02-02-001"
+
+    master:
+      kernaussagen: "ANFRAGEN_REGISTER.yaml → anfragen[2].kernaussagen{}"
+
+    aktuell_gueltig:
+      deliverable: "deliverables/EMRK_STRATEGIE_KOMPLETT_2026-02-03.md"
+      review: "database/INTERAKTIVER_REVIEW_emrk_2026-02-03.md"
+      report: "reports/REPORT_emrk_strategie_2026-02-03.md"
+      quellcode: "reports/QUELLCODE_ARCHITEKTUR_emrk_2026-02-03.md"
+      wording: "wordings/WORDING_babler_emrk_position_v5.md"
+      briefing: "wordings/BRIEFING_babler_emrk_operativ_v4.md"
+      taktik: "taktik/TAKTIK_babler_emrk_2026-02-03.md"
+      simulation: "simulations/WAEHLERBEFRAGUNG_emrk_strategie_2026-02-03.md"
+      strategiepapier: "reports/STRATEGIEPAPIER_ordnung_statt_spalten_2026-02-03.md"
+      grundlagen: "strategie/GRUNDLAGEN_strategische_entscheidung.md"
+
+    archiv_nicht_mehr_gueltig:
+      - pfad: "reports/REPORT_emrk_strategie_2026-02-02.md"
+        status: "ARCHIV - vor Strategie-Transformation"
+        warnung: "Enthält noch '14.156 Abschiebungen' Framing"
+
+      - pfad: "reports/REPORT_emrk_strategie_axiomkonform_2026-02-02.md"
+        status: "ARCHIV - Zwischenversion"
+        warnung: "Möglicherweise nicht mit finaler Strategie synchron"
+
+      - pfad: "reports/REPORT_emrk_strategische_neuausrichtung_2026-02-02.md"
+        status: "ARCHIV - Konzeptpapier"
+        warnung: "Vor finaler Entscheidung erstellt"
+
+      - pfad: "reports/LEITFADEN_emrk_kommunikation_2026-02-02.md"
+        status: "ARCHIV - vor Strategie-Transformation"
+        warnung: "Verwendet möglicherweise alte Kernaussagen"
+
+      - pfad: "reports/LEITFADEN_migration_emrk_narrativ_2026-02-02.md"
+        status: "ARCHIV - Konzeptpapier"
+        warnung: "Vor '95% EMRK-konform' Pivot erstellt"
+
+      - pfad: "reports/LEITFADEN_chaos_achse_segmente_2026-02-02.md"
+        status: "ARCHIV - Analyse-Dokument"
+        warnung: "Konzeptionell, nicht operativ"
+
+      - pfad: "onepager/ONEPAGER_emrk_ordnung_2026-02-02.md"
+        status: "ARCHIV - mit Warnung versehen 2026-02-03"
+        warnung: "Enthält '14.156 Abschiebungen' und '50% Straftäter' Framing"
+
+      - pfad: "wordings/WORDING_babler_emrk_position.md"
+        status: "ARCHIV - ersetzt durch v5.md"
+        warnung: "Version 4.0 - enthält '14.156' und '50% Straftäter'"
+
+      - pfad: "wordings/BRIEFING_babler_emrk_operativ.md"
+        status: "ARCHIV - ersetzt durch v4.md"
+        warnung: "Version 3.0 - Representativeness Bias nicht korrigiert"
+
+      - pfad: "wordings/wording_daenemark_emrk_2026-02-01.md"
+        status: "ARCHIV - erstes Konzeptpapier"
+        warnung: "Version 1.0 vom 1. Feb - vor Strategie-Finalisierung"
+
+      - pfad: "taktik/TAKTIK_babler_emrk_2026-02-02.md"
+        status: "REFERENZ - strategische Fundierung"
+        warnung: "Historisch wichtig, nicht operativ verwendbar"
+
+    referenz_dokumente:
+      - pfad: "strategie/ANALYSE_warum_rechte_emrk_angreifen.md"
+        status: "REFERENZ - Gegner-Analyse"
+        beschreibung: "Konzeptionelle Analyse der FPÖ-Motive"
+
+      - pfad: "strategie/EMRK_wuerdigung_und_geschichte.md"
+        status: "REFERENZ - Hintergrund"
+        beschreibung: "Historischer Kontext der EMRK"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # SOG (ANF-2026-01-30-001)
+  # ─────────────────────────────────────────────────────────────────────────
+  sog:
+    anfrage_id: "ANF-2026-01-30-001"
+
+    master:
+      kernaussagen: "ANFRAGEN_REGISTER.yaml → anfragen[1].kernaussagen{}"
+
+    aktuell_gueltig:
+      report: "reports/REPORT_social_media_sog_2026-02-03.md"
+      # TODO: Kein explizites Deliverable erstellt?
+
+    zu_pruefen:
+      - pfad: "spo_sog_wording_vizekanzler.md"
+        status: "PRÜFEN"
+        aktion: "Mit kernaussagen{} abgleichen"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # SPITALSTOURISTEN (ANF-2026-01-27-001)
+  # ─────────────────────────────────────────────────────────────────────────
+  spitalstouristen:
+    anfrage_id: "ANF-2026-01-27-001"
+
+    master:
+      kernaussagen: "ANFRAGEN_REGISTER.yaml → anfragen[0].kernaussagen{}"
+
+    aktuell_gueltig:
+      briefing_v1: "spo_briefing_spitalstouristen_v1.md"
+      briefing_v2: "spo_briefing_spitalstouristen_v2_arnold.md"
+
+    zu_pruefen:
+      - pfad: "spo_boulevard_attack_spitalstouristen.yaml"
+        status: "PRÜFEN"
+        aktion: "Mit kernaussagen{} abgleichen"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ALLGEMEINE SPÖ-DOKUMENTE (keine spezifische Anfrage)
+  # ─────────────────────────────────────────────────────────────────────────
+  allgemein:
+    beschreibung: |
+      Dokumente die nicht an eine spezifische Anfrage gebunden sind,
+      sondern allgemeine SPÖ-Strategie und Kommunikation betreffen.
+
+    mandate_grundlagen:
+      - pfad: "spo_mandate_preamble.yaml"
+        status: "SSOT - Mandate Konfiguration"
+      - pfad: "spo_strategiebriefing_parteitag_2026.md"
+        status: "AKTUELL - Parteitag-Strategie"
+      - pfad: "frameworks/FRAMEWORK_3_levels.md"
+        status: "SSOT - Drei-Level-Framework"
+      - pfad: "strategie/AXIOME_ordnung_statt_spalten.yaml"
+        status: "SSOT - Axiom-System K1-K10"
+
+    person_babler:
+      - pfad: "spo_babler_biography.yaml"
+        status: "REFERENZ - Biografie"
+      - pfad: "frameworks/BABLER_erkenntnisse.md"
+        status: "REFERENZ - Kommunikations-Erkenntnisse"
+      - pfad: "spo_kommunikationshandbuch_babler_v1.md"
+        status: "REFERENZ - Handbuch"
+      - pfad: "spo_speech_optimized.md"
+        status: "REFERENZ - Rede-Optimierung"
+
+    analysen:
+      - pfad: "spo_migration_analysis_deep.yaml"
+        status: "REFERENZ - Migration Deep Dive"
+      - pfad: "spo_migration_strategy.yaml"
+        status: "REFERENZ - Migrations-Strategie"
+      - pfad: "spo_slogan_analysis.yaml"
+        status: "REFERENZ - Slogan-Analyse"
+      - pfad: "spo_two_path_model.yaml"
+        status: "REFERENZ - Zwei-Wege-Modell"
+      - pfad: "spo_media_retaliation_analysis.yaml"
+        status: "REFERENZ - Medien-Analyse"
+      - pfad: "spo_llmmc_spaltungsboulevard_test.yaml"
+        status: "REFERENZ - LLMMC Test"
+      - pfad: "spo_history_reference.yaml"
+        status: "REFERENZ - Historische Referenz"
+
+    briefings_parteitag:
+      - pfad: "briefings/BRIEFING_parteitag_2026-03-07.md"
+        status: "AKTUELL - Parteitag Briefing"
+
+    templates:
+      - pfad: "templates/TEMPLATE_infografik_strategie.md"
+        status: "TEMPLATE - v2.0 (NotebookLM + Design System)"
+        version: "2.0"
+        aktualisiert: "2026-02-06"
+      - pfad: "templates/TEMPLATE_praesentation_strategie.md"
+        status: "TEMPLATE"
+      - pfad: "templates/TEMPLATE_report_strategische_kommunikation.md"
+        status: "TEMPLATE"
+      - pfad: "templates/TEMPLATE_strategische_fragestellung.yaml"
+        status: "TEMPLATE"
+      - pfad: "templates/TEMPLATE_taktische_ableitung.md"
+        status: "TEMPLATE"
+
+    workflows:
+      - pfad: "workflows/WORKFLOW_interaktiver_review.yaml"
+        status: "META - Workflow Definition"
+      - pfad: "workflows/WORKFLOW_strategische_frage.md"
+        status: "META - Workflow Definition"
+      - pfad: "workflows/WORKFLOW_infographic.yaml"
+        status: "META - Workflow Definition"
+        beschreibung: "NotebookLM Infografik-Generierung mit 3-Iterationen QA-Loop"
+        skill: "/infographic --preset spo"
+        ssot_referenzen:
+          - "templates/infographic-design-system.yaml"
+          - "templates/infographic-presets/spo.yaml"
+          - "templates/infographic-scoring-checklist.yaml"
+
+    index:
+      - pfad: "SPO_KOMMUNIKATION_INDEX.md"
+        status: "INDEX - Navigations-Dokument"
+
+---
+
+# ═══════════════════════════════════════════════════════════════════════════
+# EBENE 4: SYNC-AKTIONEN (SOFORT ERFORDERLICH)
+# ═══════════════════════════════════════════════════════════════════════════
+
+sync_aktionen:
+
+  erledigt:
+
+    - id: "SYNC-001"
+      prioritaet: "HOCH"
+      beschreibung: "ONEPAGER_emrk_ordnung_2026-02-02.md prüfen"
+      status: "✅ ERLEDIGT 2026-02-03"
+      ergebnis: |
+        Enthielt '14.156 Abschiebungen' und '50% Straftäter'.
+        Als ARCHIV markiert mit Warnungs-Header.
+
+    - id: "SYNC-002"
+      prioritaet: "HOCH"
+      beschreibung: "Alle LEITFADEN_*.md als ARCHIV markieren"
+      status: "✅ ERLEDIGT 2026-02-03"
+      ergebnis: |
+        2 Leitfäden als ARCHIV markiert:
+        - LEITFADEN_emrk_kommunikation_2026-02-02.md
+        - LEITFADEN_migration_emrk_narrativ_2026-02-02.md
+
+  sofort_erforderlich:
+
+    - id: "SYNC-003"
+      prioritaet: "MITTEL"
+      beschreibung: "SOG Deliverable erstellen"
+      aktion: |
+        SOG hat keinen *_STRATEGIE_KOMPLETT_*.md -
+        sollte erstellt werden für Konsistenz.
+
+    - id: "SYNC-004"
+      prioritaet: "MITTEL"
+      beschreibung: "Spitalstouristen Deliverable prüfen"
+      aktion: |
+        Wurde vor dem standardisierten Workflow erstellt.
+        Prüfen ob Format angepasst werden sollte.
+
+  automatisierung:
+
+    - id: "AUTO-001"
+      name: "Pre-Load Validation"
+      beschreibung: |
+        VOR dem Laden eines operativen Dokuments:
+        1. kernaussagen{} aus ANFRAGEN_REGISTER laden
+        2. Dokument-Kernaussagen extrahieren
+        3. Vergleichen
+        4. Bei Mismatch: Warnung
+      status: "VORGESCHLAGEN"
+      script: "scripts/validate_spo_sync.py"  # TODO
+
+    - id: "AUTO-002"
+      name: "Archiv-Header für alte Dokumente"
+      beschreibung: |
+        Automatisch Header einfügen in alte Dokumente:
+        "⚠️ ARCHIV - Dieses Dokument ist möglicherweise veraltet.
+         SSOT: ANFRAGEN_REGISTER.yaml → kernaussagen{}"
+      status: "VORGESCHLAGEN"
+
+---
+
+# ═══════════════════════════════════════════════════════════════════════════
+# EBENE 5: WORKFLOW-REGELN (AB SOFORT GÜLTIG)
+# ═══════════════════════════════════════════════════════════════════════════
+
+workflow_regeln:
+
+  bei_strategie_aenderung:
+    regel: |
+      WENN eine Kernaussage geändert werden soll:
+
+      1. ZUERST in ANFRAGEN_REGISTER.yaml → kernaussagen{} ändern
+      2. DANN Deliverable aktualisieren
+      3. DANN operative Dokumente aktualisieren
+      4. DANN Review-Template aktualisieren
+      5. ALTE Versionen als ARCHIV markieren
+
+      NIEMALS: Änderung nur in einem Dokument machen!
+
+  bei_review_start:
+    regel: |
+      VOR dem Start eines Reviews:
+
+      1. PRÜFEN: Ist das Review-Template mit kernaussagen{} synchron?
+      2. WENN NICHT: Erst synchronisieren, dann Review starten
+      3. VALIDIERUNGSSTATUS im Review-Header anzeigen
+
+  bei_neuem_dokument:
+    regel: |
+      WENN ein neues operatives Dokument erstellt wird:
+
+      1. kernaussagen{} als Basis verwenden
+      2. Axiom-Compliance prüfen (K1-K10)
+      3. In SSOT_ARCHITEKTUR_spo_mandate.yaml eintragen
+      4. Dokumenten-Klassifikation angeben (aktuell_gueltig / archiv)
+
+---
+
+# Statistiken
+statistiken:
+  dokumente_gesamt: 73
+  klassifiziert:
+    aktuell_gueltig: 16  # EMRK (10) + SOG (1) + Spitalstouristen (2) + Parteitag (2) + SSOT (1)
+    archiv: 12  # Alle mit ARCHIV-Header markiert
+    referenz: 15  # Analysen, Biografie, Handbücher
+    meta_infrastruktur: 21  # SSOT, CVA, Templates, Workflows
+    templates: 5  # Template-Dateien
+    zu_pruefen: 2  # SOG wording + Spitalstouristen boulevard
+    nicht_klassifiziert: 2  # CVA-Dateien ohne explizite Klassifikation
+  sync_aktionen_offen: 2  # SYNC-003 und SYNC-004
+  letzte_aktualisierung: "2026-02-03"
+  klassifikations_fortschritt: "97%"  # (71 von 73 klassifiziert)

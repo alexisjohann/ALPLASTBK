@@ -1,0 +1,411 @@
+# =============================================================================
+# FORMULA REGISTRY: Exclusion Principle Compliance (EXC-1 to EXC-5)
+# =============================================================================
+#
+# Purpose: Track all aggregation formulas and their EXC compliance status
+# Reference: Appendix FRM, Axioms EXC-1 to EXC-5
+#
+# Formulation Types:
+#   - additive: Y = Y_0 + Σ δ_j·f_j (DEFAULT - no justification needed)
+#   - multiplicative: Y = Y_0 × Π f_j (requires justification from whitelist)
+#   - hybrid: Y = Y_0 × Π(veto) + Σ(non-veto) (partial justification)
+#
+# Status:
+#   - compliant: Properly justified per EXC-5 whitelist
+#   - pending_review: Needs justification added
+#   - needs_revision: Formulation should change
+#
+# =============================================================================
+
+metadata:
+  version: "3.0.0"
+  last_updated: "2026-01-24"
+  maintainer: "EBF Team"
+  reference_axioms: ["EXC-1", "EXC-2", "EXC-3", "EXC-4", "EXC-5", "EXC-6"]
+
+# =============================================================================
+# EXC-6: CAUSAL IDENTIFICATION METHODS
+# =============================================================================
+# For E1 (Empirically Validated) claims, one of these methods must be used:
+identification_methods:
+  RCT:
+    name: "Randomized Controlled Trial"
+    condition: "(X,Z) ⊥ Y(x,z) via randomization"
+    test: "∆ = (μ₁₁ + μ₀₀) - (μ₁₀ + μ₀₁) ≥ 0"
+  IV:
+    name: "Instrumental Variables"
+    condition: "Cov(W_X·Z, U) = 0 with valid instruments"
+    test: "2SLS interaction coefficient significant"
+  DiD:
+    name: "Difference-in-Differences"
+    condition: "Parallel trends PT(z) for each z"
+    test: "δ in (X × Z × Post) ≥ 0"
+    pre_trends_required: true
+    note: "Pre-trends test MANDATORY per LLMMC Fehr validation (2026-01-24)"
+  Panel:
+    name: "Panel Fixed Effects"
+    condition: "E[U|X,Z,α_i] = 0 with unit FE"
+    test: "Within-unit interaction significant"
+  RD:
+    name: "Regression Discontinuity"
+    condition: "Running variable continuous at cutoff, no manipulation"
+    test: "Interaction effect at discontinuity threshold"
+    note: "Added per LLMMC Fehr validation recommendation (2026-01-24)"
+
+# Note: For formulas with justification_code: "E1", an identification_method
+# field is REQUIRED specifying which of RCT/IV/DiD/RD/Panel was used.
+# Example:
+#   justification_code: "E1"
+#   identification_method: "DiD"
+#   identification_details: "Triple-difference with state×year FE, δ=0.23 (p<0.01)"
+
+# =============================================================================
+# EXC-5 WHITELIST: Only these 10 justifications are acceptable
+# =============================================================================
+accepted_justifications:
+  V1:
+    name: "Veto-Logic"
+    definition: "f_j = 0 ⇒ Y = 0"
+    test: "Does factor=0 make outcome impossible (not just reduced)?"
+    example: "Budget=0 → K*=0"
+  V2:
+    name: "Reversal-Logic"
+    definition: "f_j < 0 ⇒ sign(Y) flips"
+    test: "Can factor cause outcome to reverse (backfire)?"
+    example: "σ_s < 0 → intervention backfires"
+  S1:
+    name: "Percentage-Scaling"
+    definition: "f_j ∈ [1-ε, 1+ε], ε ≤ 0.5"
+    test: "Is factor a percentage adjustment centered around 1?"
+    example: "g(φ) = 1 + 0.3·Δφ ∈ [1.0, 1.3]"
+  S2:
+    name: "Bounded-Output"
+    definition: "Y = g(∏ f_j) with g bounding function"
+    test: "Is the product inside a sigmoid/logit/etc.?"
+    example: "P_eff = σ(WEC·α·β)"
+  P1:
+    name: "Dimensional-Necessity"
+    definition: "Units require multiplication"
+    test: "Would addition violate dimensional analysis?"
+    example: "Area = Length × Width"
+  P2:
+    name: "Conditional-Probability"
+    definition: "P(A∩B) = P(A)·P(B|A)"
+    test: "Is this a probability chain structure?"
+    example: "P(success) = P(aware)·P(act|aware)"
+  G1:
+    name: "Binary-Gate"
+    definition: "f_j ∈ {0, 1}"
+    test: "Is this an on/off switch mechanism?"
+    example: "𝟙[eligible]·Benefit"
+  C1:
+    name: "Capacity-Constraint"
+    definition: "f_j = min(1, capacity/demand)"
+    test: "Is there an exhaustible capacity?"
+    example: "Attention·Salience"
+  E1:
+    name: "Empirically-Validated"
+    definition: "H₀: γ=0 rejected at p<0.05"
+    test: "Was additive form statistically tested and rejected?"
+    example: "Meta-analysis shows γ≠0"
+  T1:
+    name: "Theoretically-Derived"
+    definition: "Axiom ⇒ multiplicative"
+    test: "Does established theory require multiplication?"
+    example: "Fehr-Schmidt → α·β interaction"
+
+# Any justification NOT in V1-T1 is automatically REJECTED per EXC-5
+
+# =============================================================================
+# REJECTED JUSTIFICATIONS: These do NOT justify multiplicative formulation
+# =============================================================================
+# Purpose: Document common but invalid arguments for reference and training.
+# Rule: If a justification matches any pattern below, it is INADMISSIBLE.
+# =============================================================================
+
+rejected_justifications:
+  # ---------------------------------------------------------------------------
+  # OBVIOUS REJECTIONS (X1-X10): Clearly invalid arguments
+  # ---------------------------------------------------------------------------
+  X1:
+    name: "Aesthetic-Preference"
+    pattern: "Multiplication looks more elegant"
+    why_rejected: "Mathematical aesthetics have no bearing on empirical accuracy"
+  X2:
+    name: "Complexity-Signaling"
+    pattern: "Makes the model look more sophisticated"
+    why_rejected: "Complexity without justification violates parsimony (Occam)"
+  X3:
+    name: "Historical-Inertia"
+    pattern: "Previous version used multiplication"
+    why_rejected: "Legacy is not evidence; requires fresh EXC-5 analysis"
+  X4:
+    name: "Authority-Appeal"
+    pattern: "Famous paper X uses multiplication"
+    why_rejected: "Appeal to authority; even famous papers can have unjustified forms"
+  X5:
+    name: "Intuition-Only"
+    pattern: "It just feels like factors should multiply"
+    why_rejected: "Intuition must be translated into V1-T1 criteria"
+  X6:
+    name: "Convenience"
+    pattern: "Easier to estimate/compute"
+    why_rejected: "Computational convenience ≠ behavioral accuracy"
+  X7:
+    name: "Symmetry-Desire"
+    pattern: "All factors should be treated equally"
+    why_rejected: "Equal treatment ≠ multiplicative; additive also treats equally"
+  X8:
+    name: "Range-Matching"
+    pattern: "Output should be in [0,1] like inputs"
+    why_rejected: "Use S2 (bounded output) properly, not as post-hoc rationalization"
+  X9:
+    name: "Non-Linearity-Desire"
+    pattern: "Relationship should be non-linear"
+    why_rejected: "Non-linearity can be additive (f(x)+g(y)); doesn't require ×"
+  X10:
+    name: "Publication-Pressure"
+    pattern: "Reviewers expect interaction terms"
+    why_rejected: "Publication norms ≠ scientific validity"
+
+  # ---------------------------------------------------------------------------
+  # SUBTLE REJECTIONS (Y1-Y10): Plausible-sounding but still invalid
+  # ---------------------------------------------------------------------------
+  Y1:
+    name: "Pseudo-Veto"
+    pattern: "Factor is very important, so should multiply"
+    why_rejected: "Importance ≠ veto. V1 requires f=0→Y=0, not 'f matters a lot'"
+    correct_test: "Does f=0 make outcome IMPOSSIBLE, not just unlikely?"
+  Y2:
+    name: "Correlation-Confusion"
+    pattern: "Factors are correlated, so should interact"
+    why_rejected: "Correlation ≠ complementarity. Can model correlation additively"
+    correct_test: "Does the MECHANISM require multiplication?"
+  Y3:
+    name: "Diminishing-Returns-Misuse"
+    pattern: "Diminishing returns require multiplication"
+    why_rejected: "Diminishing returns = concave f(x), not x·y"
+    correct_test: "Use additive with concave transformation: Y = f(x) + g(y)"
+  Y4:
+    name: "Saturation-Confusion"
+    pattern: "Effect saturates, so needs bounded product"
+    why_rejected: "Saturation = bounded function, not necessarily multiplicative"
+    correct_test: "Use S2 only if product is INSIDE bounding function"
+  Y5:
+    name: "Synergy-Intuition"
+    pattern: "Factors work together synergistically"
+    why_rejected: "'Synergy' is vague; must specify V1/V2/S1/etc. mechanism"
+    correct_test: "What happens when one factor = 0? Does it veto or just reduce?"
+  Y6:
+    name: "Moderation-Misuse"
+    pattern: "One factor moderates the other"
+    why_rejected: "Moderation can be additive: Y = a + b·x + c·z + d·x·z"
+    correct_test: "Is the interaction term NECESSARY or just convenient?"
+  Y7:
+    name: "Cobb-Douglas-Appeal"
+    pattern: "Economics uses Cobb-Douglas, so should we"
+    why_rejected: "CD has P1 (dimensional) justification; doesn't transfer automatically"
+    correct_test: "Do YOUR factors have dimensional necessity?"
+  Y8:
+    name: "Neural-Network-Analogy"
+    pattern: "Like weights in neural networks"
+    why_rejected: "NN weights are learned; doesn't justify theoretical specification"
+    correct_test: "Use E1 (empirical) if you have data rejecting additive"
+  Y9:
+    name: "Risk-Compounding"
+    pattern: "Risks compound multiplicatively"
+    why_rejected: "Only true for INDEPENDENT risks; P2 requires conditional structure"
+    correct_test: "Is this actually P(A)·P(B|A) or just assumed compounding?"
+  Y10:
+    name: "Threshold-Confusion"
+    pattern: "Need all factors above threshold"
+    why_rejected: "Threshold = min{f_j} > θ, not product. Use G1 if truly binary"
+    correct_test: "Is it on/off (G1) or continuous threshold?"
+
+formulas:
+  # ---------------------------------------------------------------------------
+  # K* OPTIMAL PORTFOLIO SIZE
+  # ---------------------------------------------------------------------------
+  - id: "K*-Ch11"
+    name: "K* Optimal Portfolio Size (Chapter 11)"
+    location: "chapters/11_20_emergent_interventions.tex:101"
+    formula_latex: "K^*(\\Psi) = K_{base} + \\delta_{budget} + \\delta_{complexity} + \\delta_{stage} + \\delta_{crowding}"
+    formulation: "additive"
+    status: "compliant"
+    justification: "Additive is default per EXC-1. No justification required."
+    factors:
+      - name: "δ_budget"
+        veto_logic: false
+        reason: "Low budget reduces K*, doesn't make it impossible"
+      - name: "δ_complexity"
+        veto_logic: false
+        reason: "High complexity reduces K*, doesn't prevent interventions"
+      - name: "δ_stage"
+        veto_logic: false
+        reason: "Wrong stage reduces effectiveness, not possibility"
+      - name: "δ_crowding"
+        veto_logic: false
+        reason: "Crowding requires caution, not prohibition"
+
+  - id: "K*-Ch20"
+    name: "K* Optimal Portfolio Size (Chapter 20) - HYBRID"
+    location: "chapters/20_intervention_portfolios.tex:2684"
+    formula_latex: "K^* = K_{base} \\cdot f_B + \\delta_C + \\delta_S + \\delta_\\gamma + \\delta_L"
+    formulation: "hybrid"
+    status: "compliant"
+    justification_code: "V1"
+    justification: |
+      EXC-5 V1 (Veto-Logic): f_B (budget) satisfies veto logic (Budget=0 → K*=0).
+      Other factors (C, S, γ, L) are additive adjustments per EXC-1 default.
+      Hybrid formulation per EXC-3. Revised 2026-01-24.
+    factors:
+      - name: "f_B"
+        veto_logic: true
+        reason: "Budget = 0 → No interventions possible (MULTIPLICATIVE)"
+      - name: "δ_C"
+        veto_logic: false
+        reason: "Complexity adjustment (ADDITIVE per EXC-1)"
+      - name: "δ_S"
+        veto_logic: false
+        reason: "Stage adjustment (ADDITIVE per EXC-1)"
+      - name: "δ_γ"
+        veto_logic: false
+        reason: "Crowding adjustment (ADDITIVE per EXC-1)"
+      - name: "δ_L"
+        veto_logic: false
+        reason: "Scope adjustment (ADDITIVE per EXC-1)"
+
+  # ---------------------------------------------------------------------------
+  # WAX WILLINGNESS-TO-ACT
+  # ---------------------------------------------------------------------------
+  - id: "WAX"
+    name: "Willingness-to-Act Index"
+    location: "chapters/12_willingness_master.tex"
+    formula_latex: "WAX = \\tau \\cdot \\min\\{U^*\\} + (1-\\tau) \\cdot \\sum U^*"
+    formulation: "hybrid"
+    status: "compliant"
+    justification_code: "T1"
+    justification: |
+      EXC-5 T1 (Theoretically-Derived): τ parameter is theoretically derived from
+      Thinking Style (Chapter 12). τ=0 (default): Fully additive (EXC-1 compliant).
+      τ=1 (complementary): Only when theoretically justified by thinking style.
+      The formula explicitly makes additive the baseline.
+    factors:
+      - name: "τ (thinking style)"
+        veto_logic: "parameterized"
+        reason: "τ explicitly controls the degree of complementarity"
+
+  # ---------------------------------------------------------------------------
+  # P_eff EFFECTIVE PROBABILITY
+  # ---------------------------------------------------------------------------
+  - id: "P_eff"
+    name: "Effective Behavior Change Probability"
+    location: "chapters/16_probability_of_behavior_change.tex"
+    formula_latex: "P_{eff} = \\sigma(WEC \\cdot \\alpha_{BCJ} \\cdot \\beta_{BCS})"
+    formulation: "multiplicative"
+    status: "compliant"
+    justification_code: "S2"
+    justification: |
+      EXC-5 S2 (Bounded-Output): The product WEC·α_BCJ·β_BCS is inside a sigmoid
+      function σ(), which bounds the output to (0,1). The multiplicative form
+      inside the sigmoid represents scaling of willingness by stage and segment
+      factors. No factor can cause unbounded behavior due to the sigmoid wrapper.
+      Reviewed 2026-01-24.
+    factors:
+      - name: "WEC"
+        veto_logic: false
+        reason: "WEC=0 → σ(0)=0.5, not 0. No veto."
+      - name: "α_BCJ"
+        veto_logic: false
+        reason: "Bounded [0.3, 1.2], cannot be 0. Scaling factor."
+      - name: "β_BCS"
+        veto_logic: false
+        reason: "Bounded [0.5, 2.0], cannot be 0. Scaling factor."
+
+  # ---------------------------------------------------------------------------
+  # E INTERVENTION EFFECTIVENESS
+  # ---------------------------------------------------------------------------
+  - id: "E-effectiveness"
+    name: "Intervention Effectiveness"
+    location: "chapters/19_segment_specific_interventions.tex"
+    formula_latex: "E = E_{base} \\cdot \\alpha_{t,\\varphi} \\cdot \\sigma_s \\cdot \\delta_{t,s}"
+    formulation: "multiplicative"
+    status: "compliant"
+    justification_code: "V2"
+    justification: |
+      EXC-5 V2 (Reversal-Logic): The segment multiplier σ_s ∈ [-0.5, 2.0] can be
+      NEGATIVE, causing the intervention to backfire (E < 0). This reversal
+      semantics requires multiplicative formulation - addition cannot capture
+      sign reversal. The other factors (α, δ) are scaling factors that compound
+      the effect. Reviewed 2026-01-24.
+    factors:
+      - name: "α_{t,φ}"
+        veto_logic: false
+        reason: "Bounded [0.3, 0.9], scaling factor. No veto, no reversal."
+      - name: "σ_s"
+        veto_logic: "reversal"
+        reason: "Can be NEGATIVE [-0.5, 2.0] → BACKFIRE. Justifies V2."
+      - name: "δ_{t,s}"
+        veto_logic: false
+        reason: "Bounded [0.7, 1.5], interaction scaling. No veto."
+
+  # ---------------------------------------------------------------------------
+  # K*(t) DYNAMIC PORTFOLIO SIZE
+  # ---------------------------------------------------------------------------
+  - id: "K*-dynamic"
+    name: "Dynamic Portfolio Size (Chapter 21)"
+    location: "chapters/21_dynamic_portfolio_evolution.tex:128"
+    formula_latex: "K^*(t) = K^*_0 \\cdot g(\\varphi_t) \\cdot h(\\Psi_t) \\cdot \\ell(\\Theta_t)"
+    formulation: "multiplicative"
+    status: "compliant"
+    justification_code: "S1"
+    justification: |
+      EXC-5 S1 (Percentage-Scaling): All three factors are percentage adjustments
+      centered around 1:
+        - g(φ_t) = 1 + 0.3·|Δφ| ∈ [1.0, ~1.3]
+        - h(Ψ_t) = 1 + 0.5·𝟙[shock] ∈ {1.0, 1.5}
+        - ℓ(Θ_t) = 1 - 0.2·converged ∈ [0.8, 1.0]
+      None can be 0 (all bounded away from 0). Multiplicative form represents
+      standard compounding of percentage adjustments (like compound interest).
+      Reviewed 2026-01-24.
+    factors:
+      - name: "g(φ_t)"
+        veto_logic: false
+        reason: "Minimum 1.0 (no phase change). Percentage scaling around 1."
+      - name: "h(Ψ_t)"
+        veto_logic: false
+        reason: "Either 1.0 or 1.5 (shock). Percentage scaling around 1."
+      - name: "ℓ(Θ_t)"
+        veto_logic: false
+        reason: "Range [0.8, 1.0]. Percentage scaling around 1."
+
+# =============================================================================
+# SUMMARY STATISTICS
+# =============================================================================
+summary:
+  total_formulas: 6
+  compliant: 6  # All formulas now have EXC-5 justifications
+  pending_review: 0
+  needs_revision: 0
+  by_justification_code:
+    V1: 1  # K*-Ch20 (Budget veto)
+    V2: 1  # E-effectiveness (σ_s reversal)
+    S1: 2  # K*-Ch11 (additive=S1 trivially), K*-dynamic (percentage scaling)
+    S2: 1  # P_eff (bounded by sigmoid)
+    T1: 1  # WAX (theoretically derived from τ thinking style)
+
+# =============================================================================
+# VALIDATION RULES (for check_formula_compliance.py)
+# =============================================================================
+validation_rules:
+  - rule: "multiplicative_requires_justification"
+    description: "All multiplicative formulas must have veto_logic analysis"
+    severity: "error"
+
+  - rule: "needs_revision_blocking"
+    description: "Formulas with needs_revision status block commits"
+    severity: "warning"
+
+  - rule: "pending_review_reminder"
+    description: "Formulas with pending_review trigger reminder"
+    severity: "info"

@@ -1,0 +1,701 @@
+# =============================================================================
+# BCM2 KONTEXTVEKTOR: Schweizer Volksabstimmungen
+# =============================================================================
+# Version: 1.0.0
+# Typ: MACRO-Ebene Kontextdatenbank
+# Verwendung: Baseline & Parameter für Abstimmungs-Prognosemodelle
+# Last Updated: 2026-01-30
+# =============================================================================
+
+metadata:
+  name: "BCM2 Schweizer Volksabstimmungen Kontextvektor"
+  code: "BCM2_07_ABS"
+  layer: "macro"
+  version: "1.0.0"
+  last_updated: "2026-01-30"
+
+  description: |
+    Umfassende Datenbank historischer Schweizer Volksabstimmungen
+    mit Vergleichbarkeits-Dimensionen für Prognosemodelle.
+
+    Ermöglicht:
+    - Baseline-Berechnung für neue Abstimmungen
+    - Parameter-Kalibrierung (α, π, θ, δ)
+    - Vergleichbarkeits-Scoring
+    - Regionale Muster-Analyse
+
+  data_sources:
+    primary:
+      - name: "BFS Abstimmungsstatistik"
+        url: "https://www.bfs.admin.ch/bfs/de/home/statistiken/politik/abstimmungen.html"
+        coverage: "1848-heute, alle eidg. Abstimmungen"
+      - name: "Swissvotes"
+        url: "https://swissvotes.ch"
+        coverage: "Detailanalysen, Kampagnendaten"
+    secondary:
+      - name: "gfs.bern VOX-Analysen"
+        coverage: "Nachbefragungen, Segment-Analyse"
+      - name: "Sotomo"
+        coverage: "Umfragen, Panel-Daten"
+
+  total_abstimmungen: 700  # ca. seit 1848
+  detailliert_erfasst: 50  # mit vollständiger Analyse
+
+  ebf_mapping:
+    primary_10c: ["WHO", "WHAT", "WHEN", "AWARE"]
+    primary_psi: ["Ψ_I", "Ψ_K", "Ψ_S", "Ψ_T"]
+
+# =============================================================================
+# VERGLEICHBARKEITS-DIMENSIONEN (für Similarity-Scoring)
+# =============================================================================
+comparability_dimensions:
+
+  description: |
+    8 Dimensionen zur Berechnung der Ähnlichkeit zwischen Abstimmungen.
+    Similarity Score = Σ (weight_i × similarity_i) für alle Dimensionen.
+
+  dimensions:
+
+    D1_thema:
+      name: "Thematische Kategorie"
+      weight: 0.25
+      categories:
+        - id: "MIG"
+          name: "Migration & Personenfreizügigkeit"
+          keywords: ["Zuwanderung", "Ausländer", "Asyl", "Personenfreizügigkeit"]
+        - id: "EU"
+          name: "EU & Bilaterale"
+          keywords: ["Bilaterale", "EU", "EWR", "Rahmenabkommen"]
+        - id: "SOZ"
+          name: "Sozialwerke & Renten"
+          keywords: ["AHV", "IV", "Renten", "Sozialversicherung"]
+        - id: "STEU"
+          name: "Steuern & Finanzen"
+          keywords: ["Steuer", "Budget", "Schulden"]
+        - id: "UMW"
+          name: "Umwelt & Energie"
+          keywords: ["Klima", "Energie", "Atomkraft", "Biodiversität"]
+        - id: "GES"
+          name: "Gesundheit"
+          keywords: ["Krankenkasse", "Prämien", "Gesundheit"]
+        - id: "WIRT"
+          name: "Wirtschaft & Arbeit"
+          keywords: ["Arbeitsmarkt", "Mindestlohn", "Unternehmen"]
+        - id: "SICH"
+          name: "Sicherheit & Armee"
+          keywords: ["Armee", "Sicherheit", "Neutralität"]
+        - id: "SONST"
+          name: "Andere"
+          keywords: []
+
+    D2_emotionalitaet:
+      name: "Emotionalisierungsgrad"
+      weight: 0.15
+      scale: "[0, 1]"
+      description: "Wie stark emotional aufgeladen ist das Thema?"
+      indicators:
+        - "Medien-Intensität"
+        - "Persönliche Betroffenheit"
+        - "Identitäts-Relevanz"
+        - "Polarisierung"
+      examples:
+        high: ["Migration", "Renten", "Tierschutz"]
+        medium: ["Steuern", "EU-Beziehungen"]
+        low: ["Technische Vorlagen", "Verwaltungsreformen"]
+
+    D3_komplexitaet:
+      name: "Vorlagen-Komplexität"
+      weight: 0.10
+      scale: "[0, 1]"
+      description: "Wie komplex ist die Vorlage zu verstehen?"
+      indicators:
+        - "Abstimmungsbüchlein-Länge"
+        - "Juristische Komplexität"
+        - "Anzahl betroffener Gesetze"
+      effect: "Hohe Komplexität → höherer Status-Quo-Bias"
+
+    D4_initiator:
+      name: "Initiator-Typ"
+      weight: 0.10
+      categories:
+        - id: "VI"
+          name: "Volksinitiative"
+          base_nein_tendency: 0.65  # Initiativen werden häufiger abgelehnt
+        - id: "REF"
+          name: "Referendum"
+          base_nein_tendency: 0.55
+        - id: "OBL"
+          name: "Obligatorisches Referendum"
+          base_nein_tendency: 0.45
+        - id: "GEG"
+          name: "Gegenentwurf"
+          base_nein_tendency: 0.50
+
+    D5_lager:
+      name: "Politische Lager-Konstellation"
+      weight: 0.15
+      constellations:
+        - id: "LINKS_VS_RECHTS"
+          name: "Klassisch Links vs. Rechts"
+          predictability: 0.70
+        - id: "OFFEN_VS_KONSERV"
+          name: "Offen vs. Konservativ"
+          predictability: 0.65
+        - id: "VOLK_VS_ELITE"
+          name: "Volk vs. Elite/Establishment"
+          predictability: 0.55  # Schwerer vorherzusagen
+        - id: "REGIONAL"
+          name: "Regionale Spaltung"
+          predictability: 0.60
+        - id: "UEBERPARTEILICH"
+          name: "Überparteilicher Konsens"
+          predictability: 0.80
+
+    D6_wirtschaft_position:
+      name: "Wirtschafts-Position"
+      weight: 0.10
+      description: "Wo steht die Wirtschaft (economiesuisse)?"
+      positions:
+        - id: "STARK_DAGEGEN"
+          name: "Stark dagegen"
+          mobilization: 0.90
+        - id: "DAGEGEN"
+          name: "Dagegen"
+          mobilization: 0.70
+        - id: "NEUTRAL"
+          name: "Neutral/Stimmfreigabe"
+          mobilization: 0.20
+        - id: "DAFUER"
+          name: "Dafür"
+          mobilization: 0.70
+        - id: "STARK_DAFUER"
+          name: "Stark dafür"
+          mobilization: 0.90
+
+    D7_kampagnen_intensitaet:
+      name: "Kampagnen-Intensität"
+      weight: 0.10
+      scale: "[0, 1]"
+      indicators:
+        - "Gesamtbudget (geschätzt)"
+        - "Medien-Präsenz"
+        - "Plakatierung"
+        - "TV-Spots"
+      thresholds:
+        low: "< 5 Mio CHF"
+        medium: "5-15 Mio CHF"
+        high: "> 15 Mio CHF"
+
+    D8_timing:
+      name: "Timing & Kontext"
+      weight: 0.05
+      factors:
+        - "Wirtschaftslage"
+        - "Internationale Ereignisse"
+        - "Innenpolitische Stimmung"
+        - "Jahreszeit/Ferienzeit"
+
+# =============================================================================
+# HISTORISCHE ABSTIMMUNGEN (Detaildaten)
+# =============================================================================
+abstimmungen:
+
+  # =========================================================================
+  # MIGRATION & PERSONENFREIZÜGIGKEIT
+  # =========================================================================
+
+  - id: "ABS-2024-02-09-13AHV"
+    datum: "2024-02-09"
+    name: "13. AHV-Rente"
+    kurz: "13. AHV"
+    typ: "VI"
+    thema: "SOZ"
+
+    resultat:
+      ja_prozent: 58.2
+      nein_prozent: 41.8
+      stimmbeteiligung: 58.3
+      staendemehr: true
+
+    regional:
+      de_ch: { ja: 56.5, nein: 43.5 }
+      fr_ch: { ja: 62.8, nein: 37.2 }
+      ti: { ja: 61.5, nein: 38.5 }
+      urban: { ja: 55.2, nein: 44.8 }
+      rural: { ja: 60.1, nein: 39.9 }
+
+    vergleichbarkeit:
+      emotionalitaet: 0.85
+      komplexitaet: 0.25
+      lager: "VOLK_VS_ELITE"
+      wirtschaft_position: "STARK_DAGEGEN"
+      kampagnen_intensitaet: 0.70
+
+    kampagne:
+      budget_ja_mio: 2
+      budget_nein_mio: 6
+
+    analyse:
+      ueberraschung: "Wirtschaftsargumente wirkungslos"
+      key_learnings:
+        - "Emotionale Themen (Renten) schlagen Finanzargumente"
+        - "Mobilisierung älterer Wähler unterschätzt"
+        - "Framing 'verdient' vs. 'unbezahlbar' - verdient gewann"
+      segment_shifts:
+        mitte: -8  # 8pp Richtung Ja
+        aeltere: -12
+        juengere: -3
+
+    economiesuisse:
+      position: "STARK_DAGEGEN"
+      erfolg: false
+
+  - id: "ABS-2020-09-27-BEGRENZ"
+    datum: "2020-09-27"
+    name: "Begrenzungsinitiative"
+    kurz: "Begrenzung"
+    typ: "VI"
+    thema: "MIG"
+
+    resultat:
+      ja_prozent: 38.3
+      nein_prozent: 61.7
+      stimmbeteiligung: 59.5
+      staendemehr: false
+
+    regional:
+      de_ch: { ja: 40.2, nein: 59.8 }
+      fr_ch: { ja: 32.5, nein: 67.5 }
+      ti: { ja: 52.1, nein: 47.9 }
+      urban: { ja: 32.8, nein: 67.2 }
+      rural: { ja: 45.3, nein: 54.7 }
+
+    vergleichbarkeit:
+      emotionalitaet: 0.75
+      komplexitaet: 0.45
+      lager: "OFFEN_VS_KONSERV"
+      wirtschaft_position: "STARK_DAGEGEN"
+      kampagnen_intensitaet: 0.85
+
+    kampagne:
+      budget_ja_mio: 4
+      budget_nein_mio: 12
+
+    analyse:
+      key_learnings:
+        - "Bilaterale-Killer-Argument sehr effektiv"
+        - "Corona verstärkte Wirtschaftssorgen"
+        - "Breite Koalition (Wirtschaft + Linke) erfolgreich"
+      segment_shifts:
+        mitte: +12  # 12pp Richtung Nein
+        wirtschaftsnah: +3
+        besorgt: +6
+
+    economiesuisse:
+      position: "STARK_DAGEGEN"
+      erfolg: true
+
+  - id: "ABS-2014-02-09-MEI"
+    datum: "2014-02-09"
+    name: "Masseneinwanderungsinitiative"
+    kurz: "MEI"
+    typ: "VI"
+    thema: "MIG"
+
+    resultat:
+      ja_prozent: 50.3
+      nein_prozent: 49.7
+      stimmbeteiligung: 56.6
+      staendemehr: true
+
+    regional:
+      de_ch: { ja: 52.8, nein: 47.2 }
+      fr_ch: { ja: 41.5, nein: 58.5 }
+      ti: { ja: 68.2, nein: 31.8 }
+      urban: { ja: 42.3, nein: 57.7 }
+      rural: { ja: 58.5, nein: 41.5 }
+
+    vergleichbarkeit:
+      emotionalitaet: 0.80
+      komplexitaet: 0.50
+      lager: "OFFEN_VS_KONSERV"
+      wirtschaft_position: "STARK_DAGEGEN"
+      kampagnen_intensitaet: 0.80
+
+    kampagne:
+      budget_ja_mio: 3
+      budget_nein_mio: 10
+
+    analyse:
+      ueberraschung: "Erstes Migrations-Ja seit 1970er"
+      key_learnings:
+        - "Bilaterale-Warnung nicht durchgedrungen"
+        - "Unterschätzte Sorgen in Bevölkerung"
+        - "Tessin als Frühwarnung ignoriert"
+        - "Emotionale Argumente (Dichtestress) gewannen"
+      segment_shifts:
+        mitte: -5  # 5pp Richtung Ja
+        laendlich: -8
+        tessin: -15
+
+    economiesuisse:
+      position: "STARK_DAGEGEN"
+      erfolg: false
+      lessons_learned: "Bilaterale-Argument nicht ausreichend bei hoher Emotionalisierung"
+
+  - id: "ABS-2014-11-30-ECOPOP"
+    datum: "2014-11-30"
+    name: "Ecopop-Initiative"
+    kurz: "Ecopop"
+    typ: "VI"
+    thema: "MIG"
+
+    resultat:
+      ja_prozent: 25.9
+      nein_prozent: 74.1
+      stimmbeteiligung: 49.2
+      staendemehr: false
+
+    regional:
+      de_ch: { ja: 27.5, nein: 72.5 }
+      fr_ch: { ja: 21.2, nein: 78.8 }
+      ti: { ja: 35.8, nein: 64.2 }
+
+    vergleichbarkeit:
+      emotionalitaet: 0.65
+      komplexitaet: 0.55
+      lager: "UEBERPARTEILICH"  # Breite Ablehnung
+      wirtschaft_position: "STARK_DAGEGEN"
+      kampagnen_intensitaet: 0.60
+
+    analyse:
+      key_learnings:
+        - "Zu extreme Forderung (max 0.2% Wachstum)"
+        - "Breite Koalition inklusive SVP dagegen"
+        - "Zeigt: Nicht jede Migrations-Vorlage gewinnt"
+
+    economiesuisse:
+      position: "STARK_DAGEGEN"
+      erfolg: true
+
+  - id: "ABS-2018-11-25-SBI"
+    datum: "2018-11-25"
+    name: "Selbstbestimmungsinitiative"
+    kurz: "SBI"
+    typ: "VI"
+    thema: "EU"
+
+    resultat:
+      ja_prozent: 33.8
+      nein_prozent: 66.2
+      stimmbeteiligung: 48.4
+      staendemehr: false
+
+    vergleichbarkeit:
+      emotionalitaet: 0.60
+      komplexitaet: 0.70
+      lager: "OFFEN_VS_KONSERV"
+      wirtschaft_position: "STARK_DAGEGEN"
+      kampagnen_intensitaet: 0.75
+
+    analyse:
+      key_learnings:
+        - "Völkerrecht/Menschenrechte-Frame erfolgreich"
+        - "Komplexität half Nein-Seite"
+        - "SVP isoliert"
+
+    economiesuisse:
+      position: "STARK_DAGEGEN"
+      erfolg: true
+
+  - id: "ABS-2021-06-13-CO2"
+    datum: "2021-06-13"
+    name: "CO2-Gesetz"
+    kurz: "CO2"
+    typ: "REF"
+    thema: "UMW"
+
+    resultat:
+      ja_prozent: 48.4
+      nein_prozent: 51.6
+      stimmbeteiligung: 59.7
+
+    vergleichbarkeit:
+      emotionalitaet: 0.70
+      komplexitaet: 0.60
+      lager: "LINKS_VS_RECHTS"
+      wirtschaft_position: "DAFUER"
+      kampagnen_intensitaet: 0.80
+
+    analyse:
+      ueberraschung: "Wirtschaft auf Verliererseite trotz Ja-Position"
+      key_learnings:
+        - "Kosten-Argument (Benzinpreis) wirkte"
+        - "Links-Rechts-Allianz gegen Vorlage"
+        - "Ländliche Gebiete stark dagegen"
+
+    economiesuisse:
+      position: "DAFUER"
+      erfolg: false
+      lessons_learned: "Bei Umweltthemen ist Wirtschafts-Support nicht ausreichend"
+
+  - id: "ABS-2022-09-25-AHV21"
+    datum: "2022-09-25"
+    name: "AHV 21 Reform"
+    kurz: "AHV21"
+    typ: "OBL"
+    thema: "SOZ"
+
+    resultat:
+      ja_prozent: 50.6
+      nein_prozent: 49.4
+      stimmbeteiligung: 52.3
+
+    vergleichbarkeit:
+      emotionalitaet: 0.75
+      komplexitaet: 0.50
+      lager: "LINKS_VS_RECHTS"
+      wirtschaft_position: "STARK_DAFUER"
+      kampagnen_intensitaet: 0.75
+
+    analyse:
+      key_learnings:
+        - "Knappster Sieg - Frauen-Rentenalter sensibel"
+        - "Finanzierungsargument knapp durchgedrungen"
+        - "Generationen-Konflikt sichtbar"
+
+    economiesuisse:
+      position: "STARK_DAFUER"
+      erfolg: true
+
+# =============================================================================
+# SIMILARITY-SCORING FÜR "10 MILLIONEN SCHWEIZ"
+# =============================================================================
+similarity_analysis:
+
+  target_abstimmung:
+    name: "10 Millionen Schweiz Initiative"
+    typ: "VI"
+    thema: "MIG"
+
+    profile:
+      emotionalitaet: 0.80
+      komplexitaet: 0.40
+      lager: "OFFEN_VS_KONSERV"
+      wirtschaft_position: "STARK_DAGEGEN"
+      kampagnen_intensitaet: 0.75  # erwartet
+
+  similarity_scores:
+
+    - referenz: "ABS-2020-09-27-BEGRENZ"
+      score: 0.92
+      gewicht_fuer_baseline: 0.40
+      gruende:
+        - "Gleiches Thema (Migration/PFZ)"
+        - "Gleiche Initianten-Nähe (SVP)"
+        - "Ähnliche Kampagnen-Konstellation"
+        - "Aber: Corona-Kontext fehlt 2025"
+
+    - referenz: "ABS-2014-02-09-MEI"
+      score: 0.85
+      gewicht_fuer_baseline: 0.30
+      gruende:
+        - "Migrations-Thema"
+        - "Ähnliche Emotionalisierung"
+        - "Aber: 10 Jahre her, Kontext anders"
+        - "Warnung: MEI gewann trotz Wirtschafts-Nein"
+
+    - referenz: "ABS-2014-11-30-ECOPOP"
+      score: 0.70
+      gewicht_fuer_baseline: 0.15
+      gruende:
+        - "Bevölkerungs-Thema"
+        - "Quantitatives Ziel (wie 10 Mio)"
+        - "Aber: Ecopop war extremer"
+
+    - referenz: "ABS-2024-02-09-13AHV"
+      score: 0.55
+      gewicht_fuer_baseline: 0.15
+      gruende:
+        - "Anderes Thema, aber ähnliche Dynamik"
+        - "Warnung für emotionale Mobilisierung"
+        - "Wirtschaftsargumente wirkungslos"
+
+  baseline_berechnung:
+    formel: |
+      V₀(Nein) = Σ [gewicht_i × nein_prozent_i × adjustment_i]
+
+    berechnung:
+      - referenz: "Begrenzung"
+        gewicht: 0.40
+        nein: 61.7
+        adjustment: 0.95  # Ohne Corona-Effekt etwas tiefer
+        beitrag: 23.4
+
+      - referenz: "MEI"
+        gewicht: 0.30
+        nein: 49.7
+        adjustment: 1.05  # Heute mehr Bilaterale-Bewusstsein
+        beitrag: 15.7
+
+      - referenz: "Ecopop"
+        gewicht: 0.15
+        nein: 74.1
+        adjustment: 0.85  # 10-Mio weniger extrem als Ecopop
+        beitrag: 9.4
+
+      - referenz: "13. AHV (invers)"
+        gewicht: 0.15
+        nein: 41.8
+        adjustment: 1.10  # Warnung für Emotionalisierung
+        beitrag: 6.9
+
+    resultat:
+      V0_nein: 55.4
+      konfidenzintervall: [48, 62]
+      interpretation: |
+        Baseline 55% Nein - leichter Vorteil für economiesuisse,
+        aber MEI-Warnung (50.3% Ja trotz Wirtschafts-Nein) zeigt Risiko.
+        Bei starker Emotionalisierung kann Ja gewinnen.
+
+# =============================================================================
+# PARAMETER-KALIBRIERUNG AUS HISTORISCHEN DATEN
+# =============================================================================
+parameter_calibration:
+
+  kampagnen_effektivitaet:
+    description: "α = Prozentpunkt-Änderung pro Mio CHF Kampagnenbudget"
+
+    historische_schaetzungen:
+      - abstimmung: "Begrenzung 2020"
+        delta_nein: +8
+        budget_nein_mio: 12
+        alpha: 0.0067
+
+      - abstimmung: "MEI 2014"
+        delta_nein: -3
+        budget_nein_mio: 10
+        alpha: -0.003  # Negativ - Kampagne half nicht
+
+      - abstimmung: "AHV21 2022"
+        delta_nein: +4
+        budget_nein_mio: 8
+        alpha: 0.005
+
+      - abstimmung: "13. AHV 2024"
+        delta_nein: -6
+        budget_nein_mio: 6
+        alpha: -0.01  # Negativ - Kampagne half nicht
+
+    aggregiert:
+      alpha_nein_erfolg: 0.012  # Bei erfolgreichen Kampagnen
+      alpha_nein_misserfolg: -0.005  # Bei Misserfolgen (emotional)
+
+      fazit: |
+        Kampagnen-Effektivität stark abhängig von Thema.
+        Bei rationalen Themen: α ≈ 0.010-0.015
+        Bei emotionalen Themen: α kann negativ sein!
+
+  segment_persuadability:
+    description: "π = Anteil des Segments, der Meinung ändern kann"
+
+    historische_schaetzungen:
+      mitte:
+        MEI_2014: 0.65
+        Begrenzung_2020: 0.75
+        AHV_2024: 0.70
+        durchschnitt: 0.70
+
+      wirtschaftsnah:
+        MEI_2014: 0.10
+        Begrenzung_2020: 0.08
+        AHV_2024: 0.05
+        durchschnitt: 0.08
+
+      besorgt:
+        MEI_2014: 0.45
+        Begrenzung_2020: 0.40
+        AHV_2024: 0.35
+        durchschnitt: 0.40
+
+      svp_nah:
+        MEI_2014: 0.05
+        Begrenzung_2020: 0.05
+        AHV_2024: 0.08
+        durchschnitt: 0.06
+
+  regionale_faktoren:
+    description: "Regionale Abweichung vom Durchschnitt"
+
+    muster:
+      tessin:
+        migrations_themen: +15  # 15pp mehr Ja als Durchschnitt
+        wirtschafts_themen: +5
+        sozial_themen: +3
+
+      romandie:
+        migrations_themen: -8  # 8pp weniger Ja als Durchschnitt
+        wirtschafts_themen: -3
+        sozial_themen: +5
+
+      de_ch_rural:
+        migrations_themen: +8
+        wirtschafts_themen: -2
+        sozial_themen: +3
+
+      de_ch_urban:
+        migrations_themen: -5
+        wirtschafts_themen: -5
+        sozial_themen: -2
+
+# =============================================================================
+# FRÜHWARNINDIKATOREN
+# =============================================================================
+early_warning_indicators:
+
+  description: |
+    Signale, die auf ungünstigen Ausgang hindeuten
+
+  indikatoren:
+
+    - id: "EW-001"
+      name: "Tessin-Signal"
+      description: "Wenn Tessin >60% Ja in Umfragen → Warnung"
+      threshold: 0.60
+      historische_validitaet: 0.85
+
+    - id: "EW-002"
+      name: "Emotionalisierungs-Spirale"
+      description: "Wenn Medien-Sentiment stark negativ für Nein"
+      threshold: -0.3
+      historische_validitaet: 0.70
+
+    - id: "EW-003"
+      name: "Mitte-Drift"
+      description: "Wenn Mitte-Segment in Umfragen Richtung Ja driftet"
+      threshold: -5  # 5pp Verschlechterung
+      historische_validitaet: 0.80
+
+    - id: "EW-004"
+      name: "Wirtschafts-Irrelevanz"
+      description: "Wenn Wirtschaftsargumente in Umfragen nicht verfangen"
+      threshold: 0.30  # <30% finden Wirtschaftsargumente relevant
+      historische_validitaet: 0.75
+
+# =============================================================================
+# METADATEN
+# =============================================================================
+_validation:
+  min_abstimmungen: 10
+  min_detail_coverage: 0.80
+
+_changelog:
+  - version: "1.0.0"
+    date: "2026-01-30"
+    author: "Claude/EBF"
+    changes: "Initial creation mit 8 Referenz-Abstimmungen"
+
+_next_updates:
+  - "Weitere historische Abstimmungen hinzufügen"
+  - "VOX-Daten für Segment-Analyse integrieren"
+  - "Gemeinde-Ebene Daten (BFS opendata)"

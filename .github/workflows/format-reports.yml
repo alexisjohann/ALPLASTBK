@@ -1,0 +1,192 @@
+# =============================================================================
+# FEHRADVICE REPORT FORMATTER - GitHub Actions Workflow
+# =============================================================================
+# Automatisierte Konvertierung von Markdown-Reports zu formatierten PDFs
+#
+# Trigger:
+#   - Push zu outputs/sessions/**/*.md
+#   - Manuell mit workflow_dispatch
+#
+# Output:
+#   - PDF im gleichen Verzeichnis wie Markdown
+#   - Artifact zum Download
+# =============================================================================
+
+name: Format Reports
+
+on:
+  push:
+    paths:
+      - 'outputs/sessions/**/*.md'
+    branches:
+      - main
+      - 'claude/**'
+
+  workflow_dispatch:
+    inputs:
+      input_file:
+        description: 'Pfad zur Markdown-Datei (relativ zu Repository-Root)'
+        required: true
+        default: 'outputs/sessions/'
+        type: string
+      output_format:
+        description: 'Ausgabeformat'
+        required: true
+        default: 'pdf'
+        type: choice
+        options:
+          - pdf
+          - html
+          - pptx
+          - docx
+      batch_mode:
+        description: 'Batch-Modus (alle MDs im Verzeichnis)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  format-reports:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      # -----------------------------------------------------------------------
+      # CHECKOUT
+      # -----------------------------------------------------------------------
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Für diff-Erkennung
+
+      # -----------------------------------------------------------------------
+      # SETUP DEPENDENCIES
+      # -----------------------------------------------------------------------
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            pandoc \
+            texlive-xetex \
+            texlive-fonts-recommended \
+            texlive-fonts-extra \
+            texlive-latex-extra \
+            texlive-lang-german \
+            latexmk \
+            fonts-roboto \
+            fonts-open-sans
+
+      - name: Install Python Dependencies
+        run: |
+          pip install pyyaml weasyprint
+
+      # -----------------------------------------------------------------------
+      # DETECT CHANGED FILES (für Push-Trigger)
+      # -----------------------------------------------------------------------
+      - name: Detect Changed Markdown Files
+        if: github.event_name == 'push'
+        id: changed-files
+        run: |
+          # Finde alle geänderten .md Dateien in outputs/sessions/
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD -- 'outputs/sessions/**/*.md' || echo "")
+          echo "files=$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "Geänderte Dateien: $CHANGED_FILES"
+
+      # -----------------------------------------------------------------------
+      # FORMAT REPORTS
+      # -----------------------------------------------------------------------
+      - name: Format Reports (Push Trigger)
+        if: github.event_name == 'push' && steps.changed-files.outputs.files != ''
+        run: |
+          for file in ${{ steps.changed-files.outputs.files }}; do
+            if [ -f "$file" ]; then
+              echo "📄 Formatiere: $file"
+              python scripts/format_report.py "$file" -f pdf
+            fi
+          done
+
+      - name: Format Reports (Manual Trigger - Single File)
+        if: github.event_name == 'workflow_dispatch' && !inputs.batch_mode
+        run: |
+          echo "📄 Formatiere: ${{ inputs.input_file }}"
+          python scripts/format_report.py "${{ inputs.input_file }}" -f ${{ inputs.output_format }}
+
+      - name: Format Reports (Manual Trigger - Batch)
+        if: github.event_name == 'workflow_dispatch' && inputs.batch_mode
+        run: |
+          echo "📂 Batch-Formatierung: ${{ inputs.input_file }}"
+          python scripts/format_report.py --batch "${{ inputs.input_file }}" -f ${{ inputs.output_format }}
+
+      # -----------------------------------------------------------------------
+      # UPLOAD ARTIFACTS
+      # -----------------------------------------------------------------------
+      - name: Find Generated Files
+        id: find-outputs
+        run: |
+          # Finde alle neu generierten PDF/HTML/PPTX/DOCX Dateien
+          OUTPUTS=$(find outputs/sessions -name "*.pdf" -o -name "*.html" -o -name "*.pptx" -o -name "*.docx" -mmin -5 2>/dev/null || echo "")
+          echo "outputs=$OUTPUTS" >> $GITHUB_OUTPUT
+          echo "Generierte Dateien: $OUTPUTS"
+
+      - name: Upload Artifacts
+        if: steps.find-outputs.outputs.outputs != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: formatted-reports-${{ github.run_number }}
+          path: |
+            outputs/sessions/**/*.pdf
+            outputs/sessions/**/*.html
+            outputs/sessions/**/*.pptx
+            outputs/sessions/**/*.docx
+          retention-days: 30
+
+      # -----------------------------------------------------------------------
+      # COMMIT GENERATED FILES (optional)
+      # -----------------------------------------------------------------------
+      - name: Commit Generated PDFs
+        if: github.event_name == 'push'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          # Stage nur PDF/DOCX/PPTX Dateien
+          git add outputs/sessions/**/*.pdf outputs/sessions/**/*.docx outputs/sessions/**/*.pptx 2>/dev/null || true
+
+          # Commit falls Änderungen vorhanden
+          if git diff --staged --quiet; then
+            echo "Keine neuen PDFs zu committen"
+          else
+            git commit -m "chore(reports): Auto-format reports [skip ci]"
+            git push
+          fi
+
+      # -----------------------------------------------------------------------
+      # SUMMARY
+      # -----------------------------------------------------------------------
+      - name: Job Summary
+        run: |
+          echo "## 📊 Report Formatting Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Generierte Dateien" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Liste alle generierten Dateien
+          for ext in pdf html pptx docx; do
+            count=$(find outputs/sessions -name "*.$ext" -mmin -5 2>/dev/null | wc -l)
+            if [ "$count" -gt 0 ]; then
+              echo "- **.$ext**: $count Dateien" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Template-Versionen" >> $GITHUB_STEP_SUMMARY
+          echo "- LaTeX: \`templates/fehradvice-report.latex\`" >> $GITHUB_STEP_SUMMARY
+          echo "- CSS: \`templates/fehradvice-report.css\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Style Guide: \`appendices/REF-STYLE_SG_corporate_style_guide.tex\`" >> $GITHUB_STEP_SUMMARY

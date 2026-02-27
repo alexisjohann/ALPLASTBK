@@ -1,0 +1,500 @@
+# =============================================================================
+# EBF INTERVENTION SCHEMA
+# =============================================================================
+# Version: 1.0 (January 2026)
+# Purpose: Defines the required structure for EBF-compliant interventions
+#          based on the 20-Field Schema from Chapter 17
+# Reference: Chapter 17, Appendix HHH (METHOD-TOOLKIT)
+# =============================================================================
+
+schema_version: "1.0"
+schema_date: "2026-01-19"
+
+# -----------------------------------------------------------------------------
+# INTERVENTION DEFINITION TEMPLATE
+# -----------------------------------------------------------------------------
+# Every intervention MUST follow this structure.
+# Use: templates/intervention-template.yaml as starting point.
+# Validate: python scripts/check_intervention_compliance.py <file>
+# -----------------------------------------------------------------------------
+
+intervention_template:
+  # ===========================================================================
+  # TIER 1: EMERGENT FIELDS (from 10C via Theorems) - REQUIRED
+  # ===========================================================================
+
+  # F1: Title/Label (Administrative but essential)
+  F1_title:
+    id: "INT-XXX"  # Format: INT-[DOMAIN]-[NUMBER], e.g., INT-HR-001
+    name: ""  # Human-readable title
+
+  # F2: 10C Target Dimension (REQUIRED - from 10C Framework)
+  # Interventions are specified via 10C dimensions, NOT discrete types
+  F2_target_dimension:
+    dimension_10c: "AWARE"  # AWARE, WHEN, WHAT, HOW (from 10C Framework)
+    delta_target: "A(·)↑"  # What change is intended? (e.g., A↑, κ_KON→, u_S↑, γ→)
+    intervention_vector: "I_AWARE"  # 10C notation: I_AWARE, I_AWARE_k, I_WHEN, I_WHEN_t, I_WHO, I_WHO_o, I_WHAT_F, I_HOW
+    # 10C-to-Target mapping:
+    # AWARE (AU)  → A(·)   [I_AWARE: Awareness/Information]
+    # AWARE (AU)  → κ_AWX  [I_AWARE_k: Feedback]
+    # WHEN (V)    → κ_KON  [I_WHEN: Contextual/Choice Architecture]
+    # WHEN (V)    → κ_JNY  [I_WHEN_t: Temporal/Timing]
+    # WHAT (C.X)  → W_base [I_WHO: Identity/Self-concept]
+    # WHAT (C.S)  → u_S    [I_WHO_o: Social/Norms]
+    # WHAT (C.F)  → u_F    [I_WHAT_F: Financial]
+    # HOW (B)     → γ_ij   [I_HOW: Commitment]
+
+  # F4: Target Structure (REQUIRED - from WHO/AAA)
+  F4_target_structure:
+    level: "IND"  # IND (Individual), IDN (Dyadic), COL (Collective)
+    aggregation: "direct"  # direct, emergent, composed
+
+  # F5: FEPSDE Dimension (REQUIRED - from WHAT/C)
+  F5_fepsde_dimension:
+    primary: "F"  # F/E/P/S/D/X
+    secondary: null  # Optional second dimension
+    weights:
+      F: 0.0  # Financial
+      E: 0.0  # Emotional
+      P: 0.0  # Physical
+      S: 0.0  # Social
+      D: 0.0  # Development
+      X: 0.0  # Existential
+
+  # F6: Journey Phase (REQUIRED - from STAGE/AW)
+  F6_journey_phase:
+    optimal_phases: ["action"]  # List of phases where α > 0.7
+    # Valid phases: awareness, triggered, action, maintenance, stable
+    phase_affinity:  # α values from Phase-Type Affinity Matrix (Chapter 18)
+      awareness: 0.0
+      triggered: 0.0
+      action: 0.0
+      maintenance: 0.0
+      stable: 0.0
+
+  # F12: Temporal Scope (REQUIRED - from HIERARCHY/HI)
+  F12_temporal_scope:
+    scope: "tactical"  # instant, operative, tactical, strategic, systemic
+    duration_weeks: 12  # Expected duration
+    persistence: "medium"  # low, medium, high (effect after removal)
+    decision_level: "L1"  # L0 (Operative), L1 (Strategic), L1+ (Corporate), L2 (Derived), L3 (Emergent)
+
+  # ===========================================================================
+  # TIER 2: OPERATIONAL FIELDS - REQUIRED FOR HYBRID/PROFOUND MODE
+  # ===========================================================================
+
+  # F7: Framing Logic
+  F7_framing:
+    frame_type: "positive"  # positive, negative, social, neutral
+    loss_gain_frame: "gain"  # gain, loss, mixed
+    message_template: ""  # Template for communication
+
+  # F8: Autonomy Level (CRITICAL for reactance - from Chapter 19)
+  F8_autonomy:
+    level: "voluntary"  # voluntary, default, mandate, prohibition
+    reactance_risk: "low"  # low, medium, high
+    autonomy_cue_required: false  # If true, must include autonomy messaging
+
+  # F11: Side Effect Risk
+  F11_side_effects:
+    risk_level: "low"  # low, medium, high
+    positive_spillovers: []  # List of positive spillovers
+    negative_spillovers: []  # List of negative spillovers
+    crowding_out_risk: []  # 10C targets that may be crowded out (e.g., WHAT(C.S) if WHAT(C.F) used)
+
+  # F14: Path Function (from Chapter 18)
+  F14_path_function:
+    primary: "amplifier"  # door_opener, escalator, amplifier, stabilizer
+    # door_opener: Enables Phase 1→2 (Awareness → Triggered)
+    # escalator: Accelerates phase transition
+    # amplifier: Strengthens behavior within phase
+    # stabilizer: Prevents relapse, anchors change
+
+  # F15: Repetition
+  F15_repetition:
+    pattern: "one_time"  # one_time, cyclic, continuous
+    frequency: null  # e.g., "weekly", "monthly", "quarterly"
+    decay_expected: false  # Does effect decay without repetition?
+
+  # ===========================================================================
+  # TIER 3: INTERFACE FIELDS - REQUIRED FOR PORTFOLIO DESIGN
+  # ===========================================================================
+
+  # F9: Target Segment (REQUIRED - from Chapter 19)
+  F9_target_segment:
+    optimal_segments: ["social_oriented"]  # List where σ > 1.3
+    # Valid segments: present_biased, social_oriented, autonomy_seeking,
+    #                 loss_averse, sophisticates, naifs
+    segment_multipliers:  # σ values from Segment-Multiplier Matrix (Chapter 19)
+      present_biased: 1.0
+      social_oriented: 1.0
+      autonomy_seeking: 1.0
+      loss_averse: 1.0
+      sophisticates: 1.0
+      naifs: 1.0
+    warnings: []  # Segments where σ < 0 (CRITICAL!)
+
+  # F10: Complementarity (REQUIRED - from Chapter 20)
+  F10_complementarity:
+    synergies: []  # List of {type: "I_AWARE", gamma: 0.5} with γ > 0.3
+    conflicts: []  # List of {type: "I_WHAT_F", gamma: -0.3} with γ < -0.1
+    # CRITICAL: Document crowding-out risks!
+    crowding_out_warnings:
+      - "I_WHO_o + I_WHAT_F: γ=-0.2 (Social norms undermined by financial incentives)"
+      - "I_WHAT_F + I_HOW: γ=-0.3 (Commitment undermined by external rewards)"
+
+  # ===========================================================================
+  # ADMINISTRATIVE FIELDS (F13, F16-F20)
+  # ===========================================================================
+
+  # F13: Evaluation Plan
+  F13_evaluation:
+    metric: ""  # Primary KPI
+    baseline: null  # Baseline value
+    target: null  # Target value
+    measurement_method: ""  # How to measure
+    measurement_timing: ""  # When to measure
+
+  # F16: Responsible Role
+  F16_responsibility:
+    decision_maker: ""  # Role responsible for decision
+    implementer: ""  # Role responsible for implementation
+    approval_required: []  # List of roles that must approve
+
+  # F17: Source/Evidence
+  F17_evidence:
+    literature_sources: []  # Key citations (BibTeX keys)
+    effect_size_estimate: 0.0  # Expected Cohen's d or percentage
+    confidence: "medium"  # low, medium, high
+    epistemic_status: "THR"  # EMP (empirical), THR (theoretical), EXP (expert)
+    llmmc_validated: false  # Has LLMMC calibration been done?
+
+  # F18: System Link/ID
+  F18_system:
+    external_id: null  # ID in external system
+    integration_notes: ""
+
+  # F19: Description
+  F19_description:
+    mechanism: ""  # How does it work?
+    rationale: ""  # Why this intervention?
+
+  # F20: Status
+  F20_status:
+    current: "planned"  # planned, tested, active, rejected
+    created: "2026-01-19"
+    updated: "2026-01-19"
+    author: ""
+
+# -----------------------------------------------------------------------------
+# VALIDATION RULES
+# -----------------------------------------------------------------------------
+
+validation_rules:
+  # RULE 1: 10C dimension must be valid
+  dimension_10c_valid:
+    field: "F2_target_dimension.dimension_10c"
+    allowed: ["AWARE", "WHEN", "WHAT", "HOW"]
+    error: "10C dimension must be AWARE, WHEN, WHAT, or HOW (from 10C Framework)"
+
+  # RULE 2: Delta target must match 10C dimension
+  delta_target_consistent:
+    field: "F2_target_dimension"
+    check: "delta_matches_dimension"
+    mappings:
+      AWARE: ["A(·)↑", "A(·)→", "κ_AWX↑", "κ_AWX→"]
+      WHEN: ["κ_KON→", "κ_KON↑", "κ_JNY→", "κ_JNY↑"]
+      WHAT: ["W_base↑", "W_base→", "u_S↑", "u_S→", "u_F↑", "u_F→"]
+      HOW: ["γ_ij→", "γ_ij↑"]
+    error: "Delta target must match 10C dimension"
+
+  # RULE 2b: Intervention vector must match dimension
+  intervention_vector_consistent:
+    field: "F2_target_dimension.intervention_vector"
+    allowed: ["I_AWARE", "I_AWARE_k", "I_WHEN", "I_WHEN_t", "I_WHO", "I_WHO_o", "I_WHAT_F", "I_HOW"]
+    note: "Interventions exist in continuous 10C space, NOT as discrete types"
+    error: "Intervention vector must be one of: I_AWARE, I_AWARE_k, I_WHEN, I_WHEN_t, I_WHO, I_WHO_o, I_WHAT_F, I_HOW"
+
+  # RULE 3: Phase affinity must have at least one high value
+  phase_affinity_valid:
+    field: "F6_journey_phase.phase_affinity"
+    check: "at_least_one_above_0.5"
+    error: "At least one phase must have α > 0.5"
+
+  # RULE 4: Segment warnings required if σ < 0
+  segment_warnings_required:
+    field: "F9_target_segment.segment_multipliers"
+    check: "negative_values_must_have_warnings"
+    error: "Segments with σ < 0 must be listed in warnings"
+
+  # RULE 5: Crowding-out must be documented for known conflicts
+  crowding_out_documented:
+    field: "F10_complementarity"
+    check: "known_conflicts_documented"
+    known_conflicts:
+      - pair: ["I_WHO_o", "I_WHAT_F"]
+        expected_gamma: -0.2
+        description: "Social norms undermined by financial incentives"
+      - pair: ["I_WHAT_F", "I_HOW"]
+        expected_gamma: -0.3
+        description: "Commitment undermined by external rewards"
+    error: "Known I_WHO_o+I_WHAT_F and I_WHAT_F+I_HOW conflicts must be documented if relevant"
+
+  # RULE 6: Autonomy cue required for high-reactance
+  autonomy_cue_check:
+    fields: ["F8_autonomy.reactance_risk", "F8_autonomy.autonomy_cue_required"]
+    check: "if_high_reactance_then_cue_required"
+    error: "High reactance risk requires autonomy_cue_required=true"
+
+  # RULE 7: Decision level must match scope
+  hierarchy_consistent:
+    fields: ["F12_temporal_scope.scope", "F12_temporal_scope.decision_level"]
+    check: "scope_matches_level"
+    mappings:
+      instant: ["L0"]
+      operative: ["L0", "L1"]
+      tactical: ["L1", "L1+"]
+      strategic: ["L1+", "L2"]
+      systemic: ["L2", "L3"]
+    error: "Temporal scope must match decision level"
+
+# -----------------------------------------------------------------------------
+# 10C INTERVENTION DIMENSION REFERENCE (from HHH, Axiom IT-2)
+# -----------------------------------------------------------------------------
+# Interventions exist as vectors I⃗ ∈ [0,1]^9 in continuous 10C space.
+# The following are dimension-specific intensities, NOT discrete types.
+
+intervention_dimensions_reference:
+  I_AWARE:
+    name: "Awareness"
+    target: "A(·)"
+    mechanism: "Information provision, salience enhancement"
+    optimal_phases: ["awareness"]
+    phase_affinity:
+      awareness: 0.9
+      triggered: 0.6
+      action: 0.3
+      maintenance: 0.2
+      stable: 0.1
+    example: "Health risk information, career path visibility"
+
+  I_AWARE_k:
+    name: "Feedback"
+    target: "κ_AWX"
+    mechanism: "Performance information, progress tracking"
+    optimal_phases: ["action", "maintenance"]
+    phase_affinity:
+      awareness: 0.3
+      triggered: 0.5
+      action: 0.9
+      maintenance: 0.8
+      stable: 0.4
+    example: "Dashboard, weekly check-ins, progress reports"
+
+  I_WHEN:
+    name: "Contextual"
+    target: "κ_KON"
+    mechanism: "Choice architecture, defaults, friction reduction"
+    optimal_phases: ["triggered", "action"]
+    phase_affinity:
+      awareness: 0.2
+      triggered: 0.8
+      action: 0.9
+      maintenance: 0.5
+      stable: 0.3
+    example: "Auto-enrollment, ergonomic design, simplified forms"
+
+  I_WHEN_t:
+    name: "Temporal"
+    target: "κ_JNY"
+    mechanism: "Timing, urgency, deadlines, milestones"
+    optimal_phases: ["triggered"]
+    phase_affinity:
+      awareness: 0.4
+      triggered: 0.9
+      action: 0.6
+      maintenance: 0.3
+      stable: 0.2
+    example: "90-day review, seasonal campaigns, countdown timers"
+
+  I_WHO:
+    name: "Identity"
+    target: "W_base"
+    mechanism: "Self-concept, role identity, group belonging"
+    optimal_phases: ["maintenance", "stable"]
+    phase_affinity:
+      awareness: 0.2
+      triggered: 0.3
+      action: 0.4
+      maintenance: 0.7
+      stable: 0.9
+    example: "Career titles, certifications, team identity, alumni status"
+
+  I_WHO_o:
+    name: "Social"
+    target: "u_S"
+    mechanism: "Norms, peer effects, recognition, social comparison"
+    optimal_phases: ["awareness", "triggered"]
+    phase_affinity:
+      awareness: 0.8
+      triggered: 0.7
+      action: 0.5
+      maintenance: 0.6
+      stable: 0.4
+    crowding_out_warning: "γ(I_WHO_o, I_WHAT_F) = -0.2 - DO NOT combine with I_WHAT_F without careful analysis"
+    example: "Peer recognition, social comparison, team events, norm messaging"
+
+  I_WHAT_F:
+    name: "Financial"
+    target: "u_F"
+    mechanism: "Monetary incentives, compensation, benefits"
+    optimal_phases: ["action"]
+    phase_affinity:
+      awareness: 0.2
+      triggered: 0.5
+      action: 0.9
+      maintenance: 0.4
+      stable: 0.2
+    crowding_out_warning: "γ(I_WHO_o, I_WHAT_F) = -0.2, γ(I_WHAT_F, I_HOW) = -0.3 - Can undermine intrinsic motivation"
+    example: "Bonuses, wage increases, benefits packages, rewards"
+
+  I_HOW:
+    name: "Commitment"
+    target: "γ_ij"
+    mechanism: "Pre-commitment, goal setting, public commitment, accountability"
+    optimal_phases: ["triggered", "action"]
+    phase_affinity:
+      awareness: 0.3
+      triggered: 0.8
+      action: 0.7
+      maintenance: 0.5
+      stable: 0.3
+    crowding_out_warning: "γ(I_WHAT_F, I_HOW) = -0.3 - External rewards undermine self-commitment"
+    example: "Goal contracts, development plans, accountability partners"
+
+# -----------------------------------------------------------------------------
+# PHASE-TYPE AFFINITY MATRIX (from Chapter 18)
+# -----------------------------------------------------------------------------
+
+phase_type_affinity_matrix:
+  description: "Shows optimal phase for each intervention dimension (α values)"
+  interpretation: |
+    α > 0.7: Strongly recommended
+    α 0.5-0.7: Recommended with care
+    α 0.3-0.5: Possible but suboptimal
+    α < 0.3: Not recommended
+  matrix:
+    #           awareness  triggered  action  maintenance  stable
+    I_AWARE:    [0.9,      0.6,       0.3,    0.2,         0.1]
+    I_AWARE_k:  [0.3,      0.5,       0.9,    0.8,         0.4]
+    I_WHEN:     [0.2,      0.8,       0.9,    0.5,         0.3]
+    I_WHEN_t:   [0.4,      0.9,       0.6,    0.3,         0.2]
+    I_WHO:      [0.2,      0.3,       0.4,    0.7,         0.9]
+    I_WHO_o:    [0.8,      0.7,       0.5,    0.6,         0.4]
+    I_WHAT_F:   [0.2,      0.5,       0.9,    0.4,         0.2]
+    I_HOW:      [0.3,      0.8,       0.7,    0.5,         0.3]
+
+# -----------------------------------------------------------------------------
+# SEGMENT-TYPE MULTIPLIER MATRIX (from Chapter 19)
+# -----------------------------------------------------------------------------
+
+segment_type_multiplier_matrix:
+  description: "Shows effectiveness multiplier σ for each segment-dimension combination"
+  interpretation: |
+    σ > 1.3: Very effective for this segment
+    σ 0.9-1.3: Normal effectiveness
+    σ 0.5-0.9: Reduced effectiveness
+    σ < 0.5: Not recommended
+    σ < 0: BACKFIRE RISK - include in warnings!
+  matrix:
+    #                present_biased  social_oriented  autonomy_seeking  loss_averse  sophisticates  naifs
+    I_AWARE:         [1.0,           1.0,             1.2,              1.0,         1.3,           0.8]
+    I_AWARE_k:       [1.4,           1.0,             1.1,              1.2,         1.1,           0.9]
+    I_WHEN:          [1.3,           0.9,             0.6,              1.1,         1.0,           1.2]
+    I_WHEN_t:        [1.5,           1.0,             0.8,              1.3,         0.9,           1.1]
+    I_WHO:           [0.7,           1.4,             1.0,              0.8,         1.1,           1.0]
+    I_WHO_o:         [0.9,           1.6,             0.5,              1.0,         0.8,           1.2]
+    I_WHAT_F:        [1.2,           0.7,             1.0,              1.4,         1.3,           1.0]
+    I_HOW:           [0.6,           1.1,             1.3,              0.9,         1.4,           0.7]
+
+# -----------------------------------------------------------------------------
+# COMPLEMENTARITY REFERENCE (from Chapter 20)
+# -----------------------------------------------------------------------------
+
+complementarity_reference:
+  description: "Known γ-values between 10C intervention dimensions"
+  note: "Interventions exist in continuous 10C space - see HHH, Axiom IT-2"
+  known_synergies:
+    - pair: ["I_AWARE", "I_WHEN"]
+      gamma: 0.4
+      mechanism: "Awareness makes contextual cues more effective"
+    - pair: ["I_AWARE_k", "I_WHEN"]
+      gamma: 0.3
+      mechanism: "Feedback reinforces contextual changes"
+    - pair: ["I_WHEN_t", "I_HOW"]
+      gamma: 0.4
+      mechanism: "Temporal urgency strengthens commitment"
+    - pair: ["I_WHO", "I_WHO_o"]
+      gamma: 0.3
+      mechanism: "Identity and social norms reinforce each other"
+
+  known_conflicts:
+    - pair: ["I_WHO_o", "I_WHAT_F"]
+      gamma: -0.2
+      mechanism: "Financial incentives crowd out social norms"
+      warning: "NEVER combine without explicit justification"
+    - pair: ["I_WHAT_F", "I_HOW"]
+      gamma: -0.3
+      mechanism: "External rewards undermine intrinsic commitment"
+      warning: "NEVER combine without explicit justification"
+
+# -----------------------------------------------------------------------------
+# APPLICATION DEPTHS
+# -----------------------------------------------------------------------------
+
+application_depths:
+  light:
+    description: "Rapid Screening, Initial Ideation"
+    time_minutes: 10
+    required_fields: ["F1_title", "F2_target_dimension", "F4_target_structure", "F5_fepsde_dimension", "F6_journey_phase"]
+    test: "If you can't complete Light mode in 10 minutes, you don't understand your intervention well enough"
+
+  hybrid:
+    description: "Standard Intervention Design, Steering Committee Presentation"
+    time_minutes: 30
+    required_fields: ["F1_title", "F2_target_dimension", "F4_target_structure", "F5_fepsde_dimension", "F6_journey_phase", "F7_framing", "F8_autonomy", "F9_target_segment", "F10_complementarity", "F11_side_effects", "F12_temporal_scope"]
+
+  profound:
+    description: "Research-Grade Documentation, High-Stakes Interventions"
+    time_minutes: 60
+    required_fields: ["F1_title", "F2_target_dimension", "F4_target_structure", "F5_fepsde_dimension", "F6_journey_phase", "F7_framing", "F8_autonomy", "F9_target_segment", "F10_complementarity", "F11_side_effects", "F12_temporal_scope", "F13_evaluation", "F14_path_function", "F15_repetition", "F16_responsibility", "F17_evidence", "F18_system", "F19_description", "F20_status"]
+
+# -----------------------------------------------------------------------------
+# COHERENCE CRITERIA (from Chapter 20 - for Portfolio Design)
+# -----------------------------------------------------------------------------
+
+portfolio_coherence_criteria:
+  C1_non_interference:
+    description: "No negative complementarity in portfolio"
+    check: "γ_ij ≥ 0 for all i,j in portfolio"
+
+  C2_journey_coverage:
+    description: "All 5 phases covered by at least one intervention"
+    check: "∪ optimal_phases = {awareness, triggered, action, maintenance, stable}"
+
+  C3_segment_coverage:
+    description: "All target segments reached"
+    check: "∪ optimal_segments ⊇ target_population"
+
+  C4_context_consistency:
+    description: "Interventions share compatible context"
+    check: "Context(I_i) ∩ Context(I_j) ≠ ∅"
+
+---
+
+# SCHEMA DEFINITION COMPLETE
+#
+# This schema defines the authoritative structure for EBF-compliant interventions
+# based on the 20-Field Schema from Chapter 17.
+#
+# Version 1.0 | January 19, 2026

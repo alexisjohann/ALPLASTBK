@@ -1,0 +1,783 @@
+# =============================================================================
+# BDD PORTFOLIO: Behavioral Due Diligence (5 Module)
+# =============================================================================
+# Model: MOD-MA-001 (M&A Behavioral Deal Journey Model)
+# Phase: PH-3 (Due Diligence)
+# Product: PROD-MA-03 (Behavioral Due Diligence)
+# Session: EBF-S-2026-02-16-ORG-001
+# Schema: templates/intervention-schema.yaml (20-Field, v1.0)
+# =============================================================================
+
+portfolio:
+  id: PORT-BDD-001
+  name: "Behavioral Due Diligence Portfolio"
+  model_ref: MOD-MA-001
+  product_ref: PROD-MA-03
+  phase_ref: PH-3
+  session_ref: EBF-S-2026-02-16-ORG-001
+  created: "2026-02-16"
+  version: "1.0"
+
+  # Portfolio Coherence (Chapter 20)
+  coherence:
+    C1_non_interference: true   # No negative gamma within portfolio
+    C2_journey_coverage: true   # All 5 BCJ phases covered by modules
+    C3_segment_coverage: true   # All M&A stakeholder segments addressed
+    C4_context_consistency: true # All modules share M&A DD context
+
+  # Portfolio-level gamma matrix (between BDD modules)
+  inter_module_complementarity:
+    - pair: [BDD-1, BDD-2]
+      gamma: 0.35
+      mechanism: "Leadership assessment informs cultural fit interpretation"
+    - pair: [BDD-2, BDD-3]
+      gamma: 0.40
+      mechanism: "Cultural distance predicts organizational resilience requirements"
+    - pair: [BDD-3, BDD-4]
+      gamma: 0.30
+      mechanism: "Resilience capacity determines which complementarity risks are manageable"
+    - pair: [BDD-4, BDD-5]
+      gamma: 0.45
+      mechanism: "Complementarity risks directly feed stakeholder impact severity"
+    - pair: [BDD-1, BDD-5]
+      gamma: 0.25
+      mechanism: "Leadership profile shapes stakeholder reaction patterns"
+
+  # Aggregated scoring
+  scoring:
+    method: "Weighted average with gamma adjustments"
+    formula: |
+      BDD_Score = (w1*S1 + w2*S2 + w3*S3 + w4*S4 + w5*S5) / sum(w)
+                  + sum(gamma_ij * sqrt(Si * Sj))
+    weights:
+      BDD-1: 0.15  # Leadership
+      BDD-2: 0.25  # Cultural Compatibility (highest - 70% failure driver)
+      BDD-3: 0.20  # Organizational Resilience
+      BDD-4: 0.25  # Complementarity Risk
+      BDD-5: 0.15  # Stakeholder Impact
+    thresholds:
+      green: ">= 0.70"   # Proceed with standard PMI
+      amber: "0.45 - 0.69" # Proceed with enhanced integration measures
+      red: "< 0.45"       # Reconsider deal or require structural remedies
+
+# =============================================================================
+# BDD-1: Leadership Assessment
+# =============================================================================
+interventions:
+  - F1_title:
+      id: INT-MA-BDD-001
+      name: "Leadership Assessment (Behavioral Due Diligence Module 1)"
+
+    F2_target_dimension:
+      dimension_10c: "AWARE"
+      delta_target: "A(·)↑"
+      intervention_vector: "I_AWARE"
+      ma_specific: "Overconfidence-Screening und Risikoverhalten des Target-Managements"
+
+    F4_target_structure:
+      level: "COL"  # Collective (Management Team)
+      aggregation: "composed"
+      ma_unit: "Target Management Team (C-Level + Direct Reports)"
+
+    F5_fepsde_dimension:
+      primary: "D"   # Development (Leadership capability)
+      secondary: "S"  # Social (Team dynamics)
+      weights:
+        F: 0.10
+        E: 0.05
+        P: 0.00
+        S: 0.25
+        D: 0.50
+        X: 0.10
+
+    F6_journey_phase:
+      optimal_phases: ["awareness", "triggered"]
+      phase_affinity:
+        awareness: 0.90
+        triggered: 0.75
+        action: 0.40
+        maintenance: 0.20
+        stable: 0.10
+
+    F12_temporal_scope:
+      scope: "tactical"
+      duration_weeks: 4
+      persistence: "high"
+      decision_level: "L1+"
+      ma_timing: "During DD phase (Month -3 to -1)"
+
+    # -- Tier 2: Operational --
+    F7_framing:
+      frame_type: "neutral"
+      loss_gain_frame: "mixed"
+      message_template: "Objective assessment of management behavioral patterns to ensure post-deal alignment"
+
+    F8_autonomy:
+      level: "mandate"  # Required as part of DD
+      reactance_risk: "medium"
+      autonomy_cue_required: true
+      autonomy_cue: "Assessment is standard practice in best-in-class DD processes"
+
+    F11_side_effects:
+      risk_level: "medium"
+      positive_spillovers:
+        - "Early identification of retention-critical leaders"
+        - "Calibrated negotiation strategy (knowing seller behavioral profile)"
+      negative_spillovers:
+        - "Target management may feel 'tested' and become defensive"
+        - "Information asymmetry if assessment leaks pre-signing"
+      crowding_out_risk: []
+
+    F14_path_function:
+      primary: "door_opener"
+      ma_function: "Enables Phase PH-3→PH-4 transition with calibrated behavioral profiles"
+
+    F15_repetition:
+      pattern: "one_time"
+      frequency: null
+      decay_expected: false
+      ma_note: "Single assessment per deal, results feed all subsequent phases"
+
+    # -- Tier 3: Interface --
+    F9_target_segment:
+      optimal_segments: ["sophisticates"]
+      segment_multipliers:
+        present_biased: 0.80
+        social_oriented: 1.10
+        autonomy_seeking: 0.60
+        loss_averse: 1.30
+        sophisticates: 1.40
+        naifs: 0.70
+      warnings:
+        - "autonomy_seeking leaders may resist assessment (reactance σ=0.60)"
+      ma_segments:
+        - {name: "CEO/Founder", sigma: 1.50, note: "Highest overconfidence risk"}
+        - {name: "CFO/COO", sigma: 1.20, note: "More calibrated but anchoring risk"}
+        - {name: "Middle Management", sigma: 0.90, note: "Key for integration execution"}
+
+    F10_complementarity:
+      synergies:
+        - {type: "I_AWARE", gamma: 0.35, with_module: "BDD-2", note: "Leadership profiles inform cultural interpretation"}
+        - {type: "I_AWARE_k", gamma: 0.25, with_module: "BDD-5", note: "Leadership assessment calibrates stakeholder reaction forecast"}
+      conflicts: []
+      crowding_out_warnings: []
+
+    # -- Administrative --
+    F13_evaluation:
+      metric: "Overconfidence Score (0-1)"
+      baseline: null
+      target: "Score < 0.60 for green light"
+      measurement_method: "SBDMS-1.0 calibration + structured interviews"
+      measurement_timing: "Within DD phase"
+      sub_metrics:
+        - {name: "Overconfidence Index", scale: "[0,1]", threshold: 0.60, source: "SBDMS-1.0"}
+        - {name: "Risk Appetite Score", scale: "[0,1]", threshold: 0.75, source: "Decision pattern analysis"}
+        - {name: "Identity Congruence Score", scale: "[0,1]", threshold: 0.50, source: "CVA rapid match"}
+        - {name: "Decision Quality Index", scale: "[0,1]", threshold: 0.65, source: "Historical decision audit"}
+
+    F16_responsibility:
+      decision_maker: "Deal Lead / M&A Director"
+      implementer: "FehrAdvice Behavioral Due Diligence Team"
+      approval_required: ["Investment Committee"]
+
+    F17_evidence:
+      literature_sources:
+        - "malmendier2008whooverconfidence"
+        - "malmendier2005doesoverconfidence"
+        - "kahneman1979prospect"
+      effect_size_estimate: 0.65
+      confidence: "high"
+      epistemic_status: "EMP"
+      llmmc_validated: false
+      parameter_refs: [PAR-MA-003, PAR-MA-001]
+
+    F18_system:
+      external_id: null
+      integration_notes: "Feeds into BDD-2 (cultural), BDD-4 (complementarity), BDD-5 (stakeholder)"
+
+    F19_description:
+      mechanism: "Structured behavioral assessment of Target management using SBDMS-1.0 decision model calibration, historical decision audit, and CVA identity match. Detects overconfidence, hubris premium risk, and leadership-culture misalignment."
+      rationale: "Overconfident CEOs drive +65% acquisition propensity and -90bp announcement returns (Malmendier & Tate 2008). Leadership assessment is the highest-leverage single module in BDD."
+
+    F20_status:
+      current: "planned"
+      created: "2026-02-16"
+      updated: "2026-02-16"
+      author: "EBF Session EBF-S-2026-02-16-ORG-001"
+
+  # =============================================================================
+  # BDD-2: Cultural Compatibility
+  # =============================================================================
+  - F1_title:
+      id: INT-MA-BDD-002
+      name: "Cultural Compatibility Assessment (Behavioral Due Diligence Module 2)"
+
+    F2_target_dimension:
+      dimension_10c: "WHEN"
+      delta_target: "κ_KON→"
+      intervention_vector: "I_WHEN"
+      ma_specific: "Psi-Distanz Acquirer vs. Target auf 8 Dimensionen"
+
+    F4_target_structure:
+      level: "COL"
+      aggregation: "emergent"
+      ma_unit: "Full organizational culture (Acquirer + Target)"
+
+    F5_fepsde_dimension:
+      primary: "S"   # Social (cultural norms)
+      secondary: "X"  # Existential (organizational identity)
+      weights:
+        F: 0.05
+        E: 0.10
+        P: 0.05
+        S: 0.45
+        D: 0.15
+        X: 0.20
+
+    F6_journey_phase:
+      optimal_phases: ["awareness", "triggered"]
+      phase_affinity:
+        awareness: 0.85
+        triggered: 0.80
+        action: 0.50
+        maintenance: 0.60
+        stable: 0.40
+
+    F12_temporal_scope:
+      scope: "strategic"
+      duration_weeks: 6
+      persistence: "high"
+      decision_level: "L1+"
+      ma_timing: "During DD phase, informs PH-6 integration planning"
+
+    F7_framing:
+      frame_type: "neutral"
+      loss_gain_frame: "loss"
+      message_template: "Cultural incompatibility is the #1 cause of M&A failure (70%). Quantified assessment prevents value destruction."
+
+    F8_autonomy:
+      level: "mandate"
+      reactance_risk: "low"
+      autonomy_cue_required: false
+
+    F11_side_effects:
+      risk_level: "low"
+      positive_spillovers:
+        - "Cultural map serves as integration blueprint"
+        - "Psi-distance measurement enables convergence tracking in PH-6"
+      negative_spillovers:
+        - "May reveal deal-breaking incompatibility (feature, not bug)"
+      crowding_out_risk: []
+
+    F14_path_function:
+      primary: "door_opener"
+      ma_function: "Opens path to informed integration planning (PH-6)"
+
+    F15_repetition:
+      pattern: "cyclic"
+      frequency: "quarterly"
+      decay_expected: true
+      ma_note: "Initial full assessment in DD, then quarterly Psi-distance tracking in PMI"
+
+    F9_target_segment:
+      optimal_segments: ["social_oriented"]
+      segment_multipliers:
+        present_biased: 0.90
+        social_oriented: 1.50
+        autonomy_seeking: 0.80
+        loss_averse: 1.20
+        sophisticates: 1.10
+        naifs: 1.00
+      warnings: []
+      ma_segments:
+        - {name: "Acquirer HQ Culture", sigma: 1.30}
+        - {name: "Target HQ Culture", sigma: 1.30}
+        - {name: "Regional Subsidiaries", sigma: 0.90, note: "May differ from HQ"}
+        - {name: "SE Asia Operations", sigma: 1.60, note: "Maximum Psi-distance expected"}
+
+    F10_complementarity:
+      synergies:
+        - {type: "I_WHEN", gamma: 0.40, with_module: "BDD-3", note: "Cultural distance predicts resilience requirements"}
+        - {type: "I_WHEN", gamma: 0.35, with_module: "BDD-1", note: "Leadership informs cultural interpretation"}
+      conflicts: []
+      crowding_out_warnings: []
+
+    F13_evaluation:
+      metric: "Psi-Distance Score (0-1, 0=identical, 1=maximum distance)"
+      baseline: null
+      target: "Psi-distance < 0.50 for green, 0.50-0.75 amber, >0.75 red"
+      measurement_method: "CVA 30-factor rapid profile + 8-dimensional Psi-distance calculation"
+      measurement_timing: "During DD phase, repeated quarterly in PMI"
+      sub_metrics:
+        - {name: "Psi_I Distance (Institutional)", scale: "[0,1]", weight: 0.15}
+        - {name: "Psi_S Distance (Social)", scale: "[0,1]", weight: 0.20}
+        - {name: "Psi_K Distance (Cultural)", scale: "[0,1]", weight: 0.25}
+        - {name: "Psi_C Distance (Cognitive)", scale: "[0,1]", weight: 0.10}
+        - {name: "Psi_E Distance (Economic)", scale: "[0,1]", weight: 0.10}
+        - {name: "Psi_T Distance (Temporal)", scale: "[0,1]", weight: 0.05}
+        - {name: "Psi_M Distance (Mechanisms)", scale: "[0,1]", weight: 0.10}
+        - {name: "Psi_F Distance (Physical)", scale: "[0,1]", weight: 0.05}
+
+    F16_responsibility:
+      decision_maker: "Deal Lead / Integration Director"
+      implementer: "FehrAdvice CVA Team"
+      approval_required: ["Deal Steering Committee"]
+
+    F17_evidence:
+      literature_sources:
+        - "weber2003cultural"
+        - "chatterjee1992cultural"
+        - "hofstede2001cultures"
+      effect_size_estimate: 0.45
+      confidence: "high"
+      epistemic_status: "EMP"
+      llmmc_validated: false
+      parameter_refs: [PAR-MA-004]
+
+    F18_system:
+      external_id: null
+      integration_notes: "CVA SCHNELL (30 factors) for screening, CVA STANDARD (400 factors) for full DD"
+
+    F19_description:
+      mechanism: "Quantified 8-dimensional Psi-distance measurement between Acquirer and Target organizational cultures using CVA (Context Vector Architecture). Euclidean distance across Psi_I through Psi_F dimensions, weighted by M&A-specific relevance."
+      rationale: "70% of M&A failures are attributable to cultural incompatibility (Weber & Camerer 2003). Psi-distance is the single strongest predictor of integration difficulty. Especially critical for growth market acquisitions (SE Asia) where Psi_K distance is maximized."
+
+    F20_status:
+      current: "planned"
+      created: "2026-02-16"
+      updated: "2026-02-16"
+      author: "EBF Session EBF-S-2026-02-16-ORG-001"
+
+  # =============================================================================
+  # BDD-3: Organizational Resilience
+  # =============================================================================
+  - F1_title:
+      id: INT-MA-BDD-003
+      name: "Organizational Resilience Assessment (Behavioral Due Diligence Module 3)"
+
+    F2_target_dimension:
+      dimension_10c: "AWARE"
+      delta_target: "κ_AWX↑"
+      intervention_vector: "I_AWARE_k"
+      ma_specific: "Change Readiness and adaptive capacity of target organization"
+
+    F4_target_structure:
+      level: "COL"
+      aggregation: "emergent"
+      ma_unit: "Target organization (all levels)"
+
+    F5_fepsde_dimension:
+      primary: "D"   # Development (adaptability)
+      secondary: "E"  # Emotional (change anxiety)
+      weights:
+        F: 0.05
+        E: 0.25
+        P: 0.05
+        S: 0.20
+        D: 0.40
+        X: 0.05
+
+    F6_journey_phase:
+      optimal_phases: ["triggered", "action"]
+      phase_affinity:
+        awareness: 0.50
+        triggered: 0.85
+        action: 0.80
+        maintenance: 0.60
+        stable: 0.30
+
+    F12_temporal_scope:
+      scope: "strategic"
+      duration_weeks: 4
+      persistence: "medium"
+      decision_level: "L1+"
+      ma_timing: "During DD, outputs directly feed PH-5 (Day-1) and PH-6 (PMI) planning"
+
+    F7_framing:
+      frame_type: "positive"
+      loss_gain_frame: "gain"
+      message_template: "Understanding organizational resilience enables tailored integration that preserves value and accelerates synergies"
+
+    F8_autonomy:
+      level: "mandate"
+      reactance_risk: "medium"
+      autonomy_cue_required: true
+      autonomy_cue: "Assessment identifies organizational strengths, not just weaknesses"
+
+    F11_side_effects:
+      risk_level: "medium"
+      positive_spillovers:
+        - "BCJ phase mapping enables phased intervention calendar"
+        - "Resilience score predicts optimal integration speed"
+      negative_spillovers:
+        - "Low resilience score may trigger panic in deal team"
+        - "Employee surveys during DD may leak transaction intent"
+      crowding_out_risk: []
+
+    F14_path_function:
+      primary: "escalator"
+      ma_function: "Accelerates transition from DD findings to actionable integration plan"
+
+    F15_repetition:
+      pattern: "cyclic"
+      frequency: "quarterly"
+      decay_expected: true
+      ma_note: "Initial assessment in DD, then quarterly pulse checks during PMI"
+
+    F9_target_segment:
+      optimal_segments: ["social_oriented", "loss_averse"]
+      segment_multipliers:
+        present_biased: 1.00
+        social_oriented: 1.30
+        autonomy_seeking: 0.70
+        loss_averse: 1.40
+        sophisticates: 1.10
+        naifs: 0.90
+      warnings:
+        - "autonomy_seeking employees may resist change readiness assessment (σ=0.70)"
+      ma_segments:
+        - {name: "Target Senior Management", sigma: 0.80, note: "May present overly positive picture"}
+        - {name: "Target Middle Management", sigma: 1.40, note: "Most informative — execution layer"}
+        - {name: "Target Workforce", sigma: 1.20, note: "Change anxiety highest here"}
+
+    F10_complementarity:
+      synergies:
+        - {type: "I_AWARE_k", gamma: 0.40, with_module: "BDD-2", note: "Cultural distance predicts resilience needs"}
+        - {type: "I_AWARE_k", gamma: 0.30, with_module: "BDD-4", note: "Resilience determines manageable complementarity risks"}
+      conflicts: []
+      crowding_out_warnings: []
+
+    F13_evaluation:
+      metric: "Organizational Resilience Score (0-1)"
+      baseline: null
+      target: "Score >= 0.60 for green, 0.40-0.59 amber, < 0.40 red"
+      measurement_method: "BCJ Phase Assessment (5 phases) + Change Readiness Survey"
+      measurement_timing: "During DD, quarterly in PMI"
+      sub_metrics:
+        - {name: "BCJ Phase Distribution", scale: "5 phases", note: "Where is the organization on the change journey?"}
+        - {name: "Change History Score", scale: "[0,1]", threshold: 0.50, source: "Past restructuring success rate"}
+        - {name: "Leadership Stability", scale: "[0,1]", threshold: 0.60, source: "Tenure and turnover data"}
+        - {name: "Employee Engagement", scale: "[0,1]", threshold: 0.55, source: "Most recent survey or proxy"}
+        - {name: "Adaptive Capacity", scale: "[0,1]", threshold: 0.50, source: "Process flexibility assessment"}
+
+    F16_responsibility:
+      decision_maker: "Integration Director"
+      implementer: "FehrAdvice BCJ Assessment Team"
+      approval_required: ["Deal Lead"]
+
+    F17_evidence:
+      literature_sources:
+        - "kotter1996leading"
+        - "beer2000breaking"
+      effect_size_estimate: 0.40
+      confidence: "medium"
+      epistemic_status: "THR"
+      llmmc_validated: false
+      parameter_refs: [PAR-MA-008]
+
+    F18_system:
+      external_id: null
+      integration_notes: "BCJ 5-phase model from CORE-STAGE (Appendix AW)"
+
+    F19_description:
+      mechanism: "Maps target organization onto BCJ 5-phase model (Unaware→Aware→Willing→Acting→Maintaining). Combines quantitative indicators (turnover, engagement scores, process metrics) with qualitative assessment (change history, leadership stability) to produce composite resilience score."
+      rationale: "Organizations in early BCJ phases (Unaware/Aware) require fundamentally different integration approaches than those already in Acting/Maintaining. Mismatched integration speed is a primary cause of talent flight (PAR-MA-008: pi_flight = 0.33)."
+
+    F20_status:
+      current: "planned"
+      created: "2026-02-16"
+      updated: "2026-02-16"
+      author: "EBF Session EBF-S-2026-02-16-ORG-001"
+
+  # =============================================================================
+  # BDD-4: Complementarity Risk Map
+  # =============================================================================
+  - F1_title:
+      id: INT-MA-BDD-004
+      name: "Complementarity Risk Map (Behavioral Due Diligence Module 4)"
+
+    F2_target_dimension:
+      dimension_10c: "HOW"
+      delta_target: "γ_ij→"
+      intervention_vector: "I_HOW"
+      ma_specific: "Identification and quantification of negative gamma values (value destruction risks)"
+
+    F4_target_structure:
+      level: "COL"
+      aggregation: "composed"
+      ma_unit: "Combined entity (Acquirer + Target post-merger)"
+
+    F5_fepsde_dimension:
+      primary: "F"   # Financial (synergy value)
+      secondary: "D"  # Development (innovation capacity)
+      weights:
+        F: 0.40
+        E: 0.05
+        P: 0.05
+        S: 0.15
+        D: 0.30
+        X: 0.05
+
+    F6_journey_phase:
+      optimal_phases: ["triggered", "action"]
+      phase_affinity:
+        awareness: 0.40
+        triggered: 0.85
+        action: 0.90
+        maintenance: 0.60
+        stable: 0.30
+
+    F12_temporal_scope:
+      scope: "strategic"
+      duration_weeks: 4
+      persistence: "high"
+      decision_level: "L2"
+      ma_timing: "During DD; gamma matrix becomes key input for integration planning"
+
+    F7_framing:
+      frame_type: "negative"
+      loss_gain_frame: "loss"
+      message_template: "Every announced synergy has a behavioral counter-risk. The gamma matrix quantifies where value creation turns into value destruction."
+
+    F8_autonomy:
+      level: "mandate"
+      reactance_risk: "low"
+      autonomy_cue_required: false
+
+    F11_side_effects:
+      risk_level: "high"
+      positive_spillovers:
+        - "Synergy realism check prevents overpayment"
+        - "Gamma matrix guides sequencing of integration initiatives"
+        - "Identifies innovation cannibalization risk before it materializes"
+      negative_spillovers:
+        - "May reduce deal enthusiasm if many negative gammas found"
+        - "Complexity of gamma interactions may overwhelm non-behavioral audiences"
+      crowding_out_risk:
+        - "I_WHAT_F + I_WHO_o: Retention bonuses may crowd out team cohesion (gamma = -0.20)"
+
+    F14_path_function:
+      primary: "amplifier"
+      ma_function: "Amplifies decision quality by revealing hidden interaction effects"
+
+    F15_repetition:
+      pattern: "cyclic"
+      frequency: "semi-annually"
+      decay_expected: false
+      ma_note: "Initial gamma matrix in DD, updated semi-annually as integration progresses"
+
+    F9_target_segment:
+      optimal_segments: ["sophisticates", "loss_averse"]
+      segment_multipliers:
+        present_biased: 0.70
+        social_oriented: 0.90
+        autonomy_seeking: 1.10
+        loss_averse: 1.50
+        sophisticates: 1.60
+        naifs: 0.50
+      warnings:
+        - "naifs may not understand gamma matrix complexity (σ=0.50)"
+      ma_segments:
+        - {name: "Investment Committee", sigma: 1.60, note: "Key audience — risk-calibrated"}
+        - {name: "Strategy Team", sigma: 1.40, note: "Can translate into integration priorities"}
+        - {name: "Operations", sigma: 0.70, note: "Needs simplified version"}
+
+    F10_complementarity:
+      synergies:
+        - {type: "I_HOW", gamma: 0.45, with_module: "BDD-5", note: "Risk map directly feeds stakeholder impact severity"}
+        - {type: "I_HOW", gamma: 0.30, with_module: "BDD-3", note: "Resilience determines which risks are manageable"}
+      conflicts: []
+      crowding_out_warnings:
+        - "I_WHO_o + I_WHAT_F: γ=-0.20 (Social norms undermined by financial incentives — critical for retention programs)"
+        - "strategy_ma + strategy_innovation: γ=-0.22 (Acquisition focus cannibalizes innovation — ALPLA calibrated)"
+
+    F13_evaluation:
+      metric: "Net Complementarity Score"
+      baseline: null
+      target: "Net gamma > 0 (positive synergies outweigh negative)"
+      measurement_method: "SOCM-1.0 gamma-matrix computation"
+      measurement_timing: "During DD, updated in PMI"
+      sub_metrics:
+        - {name: "Positive Gamma Count", note: "Number of synergistic pairs"}
+        - {name: "Negative Gamma Count", note: "Number of destructive pairs"}
+        - {name: "Net Synergy Multiplier", scale: "[-1, +1]", threshold: 0.00}
+        - {name: "Innovation Cannibalization Risk", scale: "[0,1]", threshold: 0.30, ref: "PAR-MA-005"}
+        - {name: "Crowding-Out Risk Score", scale: "[0,1]", threshold: 0.40}
+
+    F16_responsibility:
+      decision_maker: "Investment Committee Chair"
+      implementer: "FehrAdvice SOCM Modeling Team"
+      approval_required: ["CFO", "Strategy Director"]
+
+    F17_evidence:
+      literature_sources:
+        - "fehr1999theory"
+        - "frey2001motivation"
+        - "malmendier2008whooverconfidence"
+      effect_size_estimate: 0.50
+      confidence: "medium"
+      epistemic_status: "THR"
+      llmmc_validated: false
+      parameter_refs: [PAR-MA-005, PAR-MA-006, PAR-MA-007, PAR-COMP-002]
+
+    F18_system:
+      external_id: null
+      integration_notes: "SOCM-1.0 calibrated on ALPLA strategic option data"
+
+    F19_description:
+      mechanism: "Systematic identification and quantification of all pairwise complementarity (gamma) values between acquirer and target strategic dimensions. Uses SOCM-1.0 gamma-matrix framework calibrated on ALPLA and PORR data. Distinguishes cost synergies (typically gamma > 0) from revenue synergies (often gamma < 0 due to cultural friction) and innovation effects (gamma = -0.22 from ALPLA)."
+      rationale: "Standard DD assesses synergies additively. Behavioral DD reveals interaction effects: retention bonuses may destroy team cohesion (gamma = -0.20), M&A focus may cannibalize innovation (gamma = -0.22), and cultural friction amplifies non-linearly with Psi-distance (gamma = -0.45). Without complementarity analysis, synergy projections are systematically overestimated."
+
+    F20_status:
+      current: "planned"
+      created: "2026-02-16"
+      updated: "2026-02-16"
+      author: "EBF Session EBF-S-2026-02-16-ORG-001"
+
+  # =============================================================================
+  # BDD-5: Stakeholder Impact Analysis
+  # =============================================================================
+  - F1_title:
+      id: INT-MA-BDD-005
+      name: "Stakeholder Impact Analysis (Behavioral Due Diligence Module 5)"
+
+    F2_target_dimension:
+      dimension_10c: "WHAT"
+      delta_target: "u_S↑"
+      intervention_vector: "I_WHO_o"
+      ma_specific: "Stakeholder reaction forecast and behavioral impact quantification"
+
+    F4_target_structure:
+      level: "COL"
+      aggregation: "composed"
+      ma_unit: "All deal stakeholders (employees, customers, suppliers, regulators, shareholders)"
+
+    F5_fepsde_dimension:
+      primary: "S"   # Social (stakeholder relations)
+      secondary: "F"  # Financial (value impact per stakeholder group)
+      weights:
+        F: 0.30
+        E: 0.15
+        P: 0.00
+        S: 0.35
+        D: 0.10
+        X: 0.10
+
+    F6_journey_phase:
+      optimal_phases: ["awareness", "triggered"]
+      phase_affinity:
+        awareness: 0.85
+        triggered: 0.80
+        action: 0.55
+        maintenance: 0.40
+        stable: 0.25
+
+    F12_temporal_scope:
+      scope: "tactical"
+      duration_weeks: 3
+      persistence: "medium"
+      decision_level: "L1+"
+      ma_timing: "During DD, directly feeds PH-5 (announcement framing) and PH-6 (stakeholder management)"
+
+    F7_framing:
+      frame_type: "social"
+      loss_gain_frame: "mixed"
+      message_template: "Anticipating stakeholder reactions enables proactive management and prevents value-destroying surprises"
+
+    F8_autonomy:
+      level: "mandate"
+      reactance_risk: "low"
+      autonomy_cue_required: false
+
+    F11_side_effects:
+      risk_level: "medium"
+      positive_spillovers:
+        - "Stakeholder map becomes communication strategy foundation"
+        - "Retention risk quantification enables targeted programs"
+        - "Regulatory reaction forecast reduces approval delays"
+      negative_spillovers:
+        - "May surface politically uncomfortable truths about employee impact"
+        - "Stakeholder simulation results may differ from deal team expectations"
+      crowding_out_risk:
+        - "I_WHO_o + I_WHAT_F: Financial retention incentives may crowd out social cohesion (gamma = -0.20)"
+
+    F14_path_function:
+      primary: "door_opener"
+      ma_function: "Opens informed path to PH-5 communication strategy and PH-6 stakeholder management"
+
+    F15_repetition:
+      pattern: "cyclic"
+      frequency: "monthly"
+      decay_expected: true
+      ma_note: "Initial simulation in DD, monthly pulse checks during PMI first 6 months"
+
+    F9_target_segment:
+      optimal_segments: ["social_oriented", "loss_averse"]
+      segment_multipliers:
+        present_biased: 0.90
+        social_oriented: 1.50
+        autonomy_seeking: 0.80
+        loss_averse: 1.40
+        sophisticates: 1.20
+        naifs: 1.10
+      warnings: []
+      ma_segments:
+        - {name: "Key Talent (Top 5%)", sigma: 1.60, note: "Highest flight risk, highest value"}
+        - {name: "Workforce (Acquirer)", sigma: 0.80, note: "Fear of dilution/competition"}
+        - {name: "Workforce (Target)", sigma: 1.50, note: "Fear of redundancy/culture loss"}
+        - {name: "Customers", sigma: 1.20, note: "Service continuity concerns"}
+        - {name: "Suppliers", sigma: 0.90, note: "Contract renegotiation risk"}
+        - {name: "Regulators", sigma: 1.00, note: "Compliance and competition concerns"}
+        - {name: "Shareholders", sigma: 1.10, note: "Value creation expectations"}
+
+    F10_complementarity:
+      synergies:
+        - {type: "I_WHO_o", gamma: 0.45, with_module: "BDD-4", note: "Complementarity risks feed stakeholder impact severity"}
+        - {type: "I_WHO_o", gamma: 0.25, with_module: "BDD-1", note: "Leadership profile shapes stakeholder reactions"}
+      conflicts:
+        - {type: "I_WHAT_F", gamma: -0.20, note: "Financial retention incentives crowd out social norms"}
+      crowding_out_warnings:
+        - "I_WHO_o + I_WHAT_F: γ=-0.20 (Social norms undermined by financial incentives)"
+
+    F13_evaluation:
+      metric: "Stakeholder Risk Index (0-1)"
+      baseline: null
+      target: "SRI < 0.40 for green, 0.40-0.65 amber, > 0.65 red"
+      measurement_method: "/simulate-stakeholder 7-persona simulation + quantitative impact model"
+      measurement_timing: "During DD, monthly in early PMI"
+      sub_metrics:
+        - {name: "Key Talent Flight Risk", scale: "[0,1]", threshold: 0.30, ref: "PAR-MA-008"}
+        - {name: "Customer Churn Risk", scale: "[0,1]", threshold: 0.15}
+        - {name: "Employee Engagement Risk", scale: "[0,1]", threshold: 0.40}
+        - {name: "Regulatory Delay Risk", scale: "[0,1]", threshold: 0.20}
+        - {name: "Supplier Disruption Risk", scale: "[0,1]", threshold: 0.25}
+
+    F16_responsibility:
+      decision_maker: "Deal Lead / HR Director"
+      implementer: "FehrAdvice Stakeholder Simulation Team"
+      approval_required: ["Deal Steering Committee"]
+
+    F17_evidence:
+      literature_sources:
+        - "fehr1999theory"
+        - "kahneman1979prospect"
+        - "kotter1996leading"
+      effect_size_estimate: 0.35
+      confidence: "medium"
+      epistemic_status: "THR"
+      llmmc_validated: false
+      parameter_refs: [PAR-MA-008, PAR-MA-001, PAR-MA-006]
+
+    F18_system:
+      external_id: null
+      integration_notes: "Uses /simulate-stakeholder skill for 7-persona behavioral simulation"
+
+    F19_description:
+      mechanism: "7-persona behavioral simulation using /simulate-stakeholder framework. Models reactions of key stakeholder groups (employees, customers, suppliers, regulators, shareholders) to deal announcement and integration scenarios. Quantifies flight risk (PAR-MA-008), engagement impact, and value at risk per stakeholder group. Uses loss aversion (PAR-MA-001) and fairness perception (PAR-MA-006) as key behavioral drivers."
+      rationale: "Stakeholder reactions are the primary execution risk in M&A. Key talent flight (33% base rate, 40% in SE Asia) destroys knowledge capital. Customer churn during transition destroys revenue synergies. Proactive stakeholder management based on behavioral simulation reduces these risks by 30-50%."
+
+    F20_status:
+      current: "planned"
+      created: "2026-02-16"
+      updated: "2026-02-16"
+      author: "EBF Session EBF-S-2026-02-16-ORG-001"

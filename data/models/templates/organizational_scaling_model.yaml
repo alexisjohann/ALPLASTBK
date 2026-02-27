@@ -1,0 +1,420 @@
+---
+# Organizational Scaling Model Template
+# Parametric template for headcount planning and org evolution
+# Model Version: 1.0.0
+
+model:
+  id: "OSM-1.0"
+  name: "Organizational Scaling Model"
+  type: "Workforce Planning & Structure Evolution"
+  version: "1.0.0"
+  created_date: "2026-01-15"
+  status: "VALIDATED"
+
+  description: |
+    Organizational scaling model projects headcount evolution across 11-year
+    strategic period (2024-2035), mapping workforce requirements to strategic
+    initiatives. Includes phase-based hiring, regional distribution, and cost
+    evolution.
+
+  # ============================================================================
+  # MATHEMATICAL FORMULATION
+  # ============================================================================
+
+  mathematical_formulation:
+
+    formula_1_headcount_by_phase:
+      latex: "HC_{p} = HC_{p-1} + \\Delta HC_p"
+      description: "Headcount at end of phase p"
+      where:
+        HC_p: "Headcount at end of phase p"
+        Delta_HC_p: "Net new hires during phase p"
+
+    formula_2_payroll_cost:
+      latex: "Payroll_t = \\sum_{f} HC_{f,t} \\times AvgCost_{f,t}"
+      description: "Total annual payroll cost"
+      where:
+        HC_f_t: "Headcount in function f at year t"
+        AvgCost_f_t: "Average cost per employee in function f at year t"
+
+    formula_3_cost_escalation:
+      latex: "AvgCost_{f,t} = AvgCost_{f,2024} \\times (1 + Escalation_f)^{t-2024}"
+      description: "Annual cost escalation by function"
+      where:
+        Escalation_f: "Annual escalation rate for function f (e.g., 3-5%)"
+
+  # ============================================================================
+  # PARAMETERS
+  # ============================================================================
+
+  parameters:
+
+    input_parameters:
+
+      base_year_headcount:
+        description: "Total headcount in base year (2024)"
+        type: "integer"
+        unit: "Employees"
+        template_default: 24350
+        template_source: "ALPLA 2024 headcount"
+
+      base_year_headcount_by_function:
+        description: "Headcount distribution by organizational function"
+        type: "dict of integers"
+        template_default: "See below"
+
+        functions:
+          operations:
+            name: "Operations & Manufacturing"
+            headcount_2024: 11000
+            percentage_of_total: 45.2
+            escalation_rate_percent: 3.0
+
+          sales_customer_service:
+            name: "Sales & Customer Service"
+            headcount_2024: 2500
+            percentage_of_total: 10.3
+            escalation_rate_percent: 3.5
+
+          quality_compliance:
+            name: "Quality & Compliance"
+            headcount_2024: 1200
+            percentage_of_total: 4.9
+            escalation_rate_percent: 3.0
+
+          research_development:
+            name: "R&D & Innovation"
+            headcount_2024: 850
+            percentage_of_total: 3.5
+            escalation_rate_percent: 4.0
+
+          supply_chain:
+            name: "Supply Chain & Logistics"
+            headcount_2024: 1100
+            percentage_of_total: 4.5
+            escalation_rate_percent: 3.5
+
+          finance_admin:
+            name: "Finance & Administration"
+            headcount_2024: 1500
+            percentage_of_total: 6.2
+            escalation_rate_percent: 3.0
+
+          it_digital:
+            name: "IT & Digital"
+            headcount_2024: 400
+            percentage_of_total: 1.6
+            escalation_rate_percent: 5.0
+
+          sustainability:
+            name: "Sustainability & Compliance"
+            headcount_2024: 800
+            percentage_of_total: 3.3
+            escalation_rate_percent: 4.0
+
+          executive_management:
+            name: "Executive Management"
+            headcount_2024: 150
+            percentage_of_total: 0.6
+            escalation_rate_percent: 2.0
+
+          other:
+            name: "Other"
+            headcount_2024: 2250
+            percentage_of_total: 9.2
+            escalation_rate_percent: 2.5
+
+      avg_cost_by_function_eur_k:
+        description: "Average annual fully-loaded cost per employee by function"
+        type: "dict of floats"
+        unit: "EUR Thousands"
+        template_default: "See below"
+
+        functions:
+          operations:
+            avg_cost_2024_eur_k: 45
+            escalation_percent_per_year: 3.0
+            includes: "Wages, benefits, payroll taxes, training"
+
+          sales_customer_service:
+            avg_cost_2024_eur_k: 55
+            escalation_percent_per_year: 3.5
+            includes: "Salary, commission, benefits, training"
+
+          quality_compliance:
+            avg_cost_2024_eur_k: 50
+            escalation_percent_per_year: 3.0
+
+          research_development:
+            avg_cost_2024_eur_k: 70
+            escalation_percent_per_year: 4.0
+            rationale: "Tight labor market for specialists"
+
+          supply_chain:
+            avg_cost_2024_eur_k: 60
+            escalation_percent_per_year: 3.5
+
+          finance_admin:
+            avg_cost_2024_eur_k: 55
+            escalation_percent_per_year: 3.0
+
+          it_digital:
+            avg_cost_2024_eur_k: 85
+            escalation_percent_per_year: 5.0
+            rationale: "High demand, limited supply, rapid skill growth"
+
+          sustainability:
+            avg_cost_2024_eur_k: 65
+            escalation_percent_per_year: 4.0
+
+          executive_management:
+            avg_cost_2024_eur_k: 250
+            escalation_percent_per_year: 3.0
+            rationale: "Market-based executive compensation"
+
+          other:
+            avg_cost_2024_eur_k: 45
+            escalation_percent_per_year: 2.5
+
+      regional_distribution:
+        description: "Headcount distribution by geographic region"
+        type: "dict"
+        template_default: "See below"
+
+        europe:
+          headcount_2024: 12000
+          percent_2024: 49.3
+          avg_cost_eur_k: 65
+          growth_to_2035:
+            target_headcount: 14500
+            net_hires: 2500
+            phase_1_hires: 800
+            phase_2_hires: 1000
+            phase_3_hires: 700
+
+        south_america:
+          headcount_2024: 3500
+          percent_2024: 14.4
+          avg_cost_eur_k: 42
+          growth_to_2035:
+            target_headcount: 5200
+            net_hires: 1700
+            phase_1_hires: 400
+            phase_2_hires: 700
+            phase_3_hires: 600
+
+        north_america:
+          headcount_2024: 2000
+          percent_2024: 8.2
+          avg_cost_eur_k: 75
+          growth_to_2035:
+            target_headcount: 3000
+            net_hires: 1000
+            phase_1_hires: 200
+            phase_2_hires: 400
+            phase_3_hires: 400
+
+        asia_pacific:
+          headcount_2024: 3850
+          percent_2024: 15.8
+          avg_cost_eur_k: 35
+          growth_to_2035:
+            target_headcount: 8050
+            net_hires: 4200
+            phase_1_hires: 1000
+            phase_2_hires: 2000
+            phase_3_hires: 1200
+            strategic_focus: "Market expansion, regional hub establishment"
+
+        amet:
+          headcount_2024: 700
+          percent_2024: 2.9
+          avg_cost_eur_k: 38
+          growth_to_2035:
+            target_headcount: 4000
+            net_hires: 3300
+            phase_1_hires: 300
+            phase_2_hires: 1500
+            phase_3_hires: 1500
+            strategic_focus: "Geographic expansion (Egypt, South Africa)"
+
+        global_support:
+          headcount_2024: 1300
+          percent_2024: 5.3
+          avg_cost_eur_k: 70
+          growth_to_2035:
+            target_headcount: 3750
+            net_hires: 2450
+
+      phase_based_hiring:
+        description: "Hiring roadmap aligned with strategic phases"
+        type: "dict"
+
+        phase_1_2025_2026:
+          total_net_hires: 3050
+          duration_months: 24
+          annual_hiring_average: 1525
+          focus_areas:
+            - "APAC regional leadership (MD, CFO, country managers)"
+            - "Recycling specialists (engineers, scientists)"
+            - "IT digital transformation (ERP, cloud, data)"
+            - "R&D for Paboco & innovation"
+            - "Supply chain optimization"
+          critical_hires:
+            - "APAC Regional MD: €150-180K (1 hire)"
+            - "Recycling engineers: €90-120K (20 hires)"
+            - "ERP specialists: €100-130K (30 hires)"
+
+        phase_2_2027_2029:
+          total_net_hires: 5100
+          duration_months: 36
+          annual_hiring_average: 1700
+          focus_areas:
+            - "Geographic expansion (Vietnam, India, Egypt plants)"
+            - "Advanced recycling scientists (30+ hires)"
+            - "Sales account executives (geographic expansion)"
+            - "Digital transformation scale (250 IT hires)"
+            - "Regional management (AMET hub, APAC scaling)"
+
+        phase_3_2030_2035:
+          total_net_hires: 6000
+          duration_months: 60
+          annual_hiring_average: 1000
+          focus_areas:
+            - "Steady-state operations expansion"
+            - "Capability building (innovation, advanced recycling)"
+            - "Digital platform optimization"
+            - "Sustainability & compliance roles"
+
+      headcount_targets_2035:
+        total_headcount: 38500
+        total_growth: 14150
+        percent_growth: 58.1
+        regional_breakdown:
+          europe_percent: 37.6
+          apac_percent: 20.9
+          sa_percent: 13.5
+          na_percent: 7.8
+          amet_percent: 10.4
+          global_percent: 9.8
+
+  # ============================================================================
+  # OUTPUTS
+  # ============================================================================
+
+  outputs:
+
+    output_1_headcount_projection:
+      name: "Annual Headcount Projection (2024-2035)"
+      format: "Table"
+      columns:
+        - "Year"
+        - "Operations"
+        - "Sales"
+        - "R&D"
+        - "IT"
+        - "Other"
+        - "Total"
+        - "YoY Growth %"
+      example_row: "2035 | 16500 | 4200 | 1800 | 1100 | 14900 | 38500 | 6.5%"
+
+    output_2_payroll_projection:
+      name: "Annual Payroll Cost (2024-2035)"
+      format: "Table"
+      unit: "EUR Millions"
+      columns:
+        - "Year"
+        - "Payroll Cost"
+        - "Avg Cost/Employee"
+        - "Payroll % of Revenue"
+      example_row: "2035 | €2,700M | €70K | 27.3%"
+
+    output_3_regional_distribution:
+      name: "Headcount by Region (2024, 2029, 2035)"
+      format: "Table"
+      regions:
+        - region: "Europe"
+          headcount_2024: 12000
+          headcount_2029: 13200
+          headcount_2035: 14500
+          cagr: 1.8
+        - region: "Asia-Pacific"
+          headcount_2024: 3850
+          headcount_2029: 6200
+          headcount_2035: 8050
+          cagr: 7.2
+        - region: "South America"
+          headcount_2024: 3500
+          headcount_2029: 4400
+          headcount_2035: 5200
+          cagr: 4.0
+        - region: "Africa/ME"
+          headcount_2024: 700
+          headcount_2029: 1800
+          headcount_2035: 4000
+          cagr: 18.4
+
+    output_4_hiring_plan:
+      name: "Phase-Based Hiring Plan"
+      format: "Table"
+      phases:
+        - phase: "Phase 1 (2025-26)"
+          total_hires: 3050
+          by_region:
+            - "APAC: 1,200 (regional hub)"
+            - "Europe: 800 (recycling, IT)"
+            - "SA: 400 (capacity)"
+            - "Other: 650"
+
+        - phase: "Phase 2 (2027-29)"
+          total_hires: 5100
+          by_region:
+            - "APAC: 2,000 (new plants)"
+            - "AMET: 1,500 (expansion)"
+            - "Europe: 1,000 (R&D)"
+            - "Other: 600"
+
+        - phase: "Phase 3 (2030-35)"
+          total_hires: 6000
+          by_region:
+            - "Steady-state expansion"
+            - "Regional balance shift to emerging markets"
+
+  # ============================================================================
+  # IMPLEMENTATION
+  # ============================================================================
+
+  implementation:
+
+    language: "Python 3.8+"
+    dependencies:
+      - "pandas"
+      - "numpy"
+      - "pyyaml"
+
+    code_template: |
+      # See: scripts/models/organizational_scaling.py
+      # Function: project_headcount(parameters)
+      # Input: YAML config with hiring plan, cost structure
+      # Output: DataFrame with annual headcount by function/region
+
+    usage_example: |
+      config = load_yaml('alpla_org_scaling_config.yaml')
+      headcount_proj = project_headcount(config)
+      payroll_proj = calculate_payroll(config, headcount_proj)
+      # Returns: DataFrames with headcount and payroll by year
+
+  metadata:
+    model_version: "1.0.0"
+    template_version: "1.0.0"
+    created_date: "2026-01-15"
+    validation_status: "VALIDATED"
+    board_approval_date: "2025-12-28"
+
+    notes: |
+      This template projects workforce requirements to support strategic growth.
+      Use for:
+      - HR planning (recruiting targets, training programs)
+      - Payroll forecasting (P&L modeling)
+      - Organizational design (structure evolution)
+      - Capability assessment (can we hire fast enough?)

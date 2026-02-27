@@ -1,0 +1,222 @@
+# European Central Bank (EZB/ECB) - Indicators
+# Version: 1.0
+# Quelle: ECB Statistical Data Warehouse
+# Letzte Aktualisierung: 2026-01-23
+# EBF-Relevanz: κ_INST (Institutioneller Kontext), κ_ARCH (Monetäre Architektur)
+
+metadata:
+  name: "Europäische Zentralbank (EZB) - Indikatoren"
+  code: "ECB"
+  version: "1.0"
+  last_updated: "2026-01-23"
+  source: "European Central Bank"
+  source_type: "Official Statistics"
+  url: "https://www.ecb.europa.eu"
+  sdw_portal: "https://sdw.ecb.europa.eu"
+  description: "Monetäre Statistiken, Zinssätze, Wechselkurse für Eurozone und Schweiz-Relevanz"
+
+  # API-Zugang
+  api:
+    type: "SDMX REST API"
+    base_url: "https://sdw-wsrest.ecb.europa.eu/service"
+    documentation: "https://sdw-wsrest.ecb.europa.eu/help/"
+    format: "JSON, XML, CSV"
+    example: "https://sdw-wsrest.ecb.europa.eu/service/data/EXR/D.CHF.EUR.SP00.A"
+    auth: "None required"
+
+  # Relevanz für Schweiz
+  swiss_relevance:
+    - "CHF/EUR Wechselkurs (direkte SNB-Kopplung bis 2015)"
+    - "EZB-Zinspolitik beeinflusst SNB-Entscheidungen"
+    - "Eurozone als wichtigster Handelspartner (60%+ Exporte)"
+    - "Finanzstabilität Eurozone → CH Bankensektor"
+
+  # BCM-Kopplung
+  bcm_coupling:
+    primary: "BCM2_04_KON"      # Kontextvektor (economic)
+    secondary: "BCM2_01_INU"    # Individueller Nutzen (Zinsen)
+
+# =============================================================================
+# VERFÜGBARE INDIKATOREN
+# =============================================================================
+indicators:
+
+  # ---------------------------------------------------------------------------
+  # WECHSELKURSE
+  # ---------------------------------------------------------------------------
+  exchange_rates:
+    - id: ECB-EXR-CHFEUR
+      name: "CHF/EUR Exchange Rate"
+      dataset: "EXR"
+      sdmx_key: "D.CHF.EUR.SP00.A"
+      unit: "CHF per EUR"
+      frequency: "daily"
+      time_range: "1999-present"
+      kon_mapping: "economic"
+      api_url: "https://sdw-wsrest.ecb.europa.eu/service/data/EXR/D.CHF.EUR.SP00.A"
+
+    - id: ECB-EXR-USDEUR
+      name: "USD/EUR Exchange Rate"
+      dataset: "EXR"
+      sdmx_key: "D.USD.EUR.SP00.A"
+      unit: "USD per EUR"
+      frequency: "daily"
+      time_range: "1999-present"
+      kon_mapping: "economic"
+
+  # ---------------------------------------------------------------------------
+  # ZINSSÄTZE
+  # ---------------------------------------------------------------------------
+  interest_rates:
+    - id: ECB-IR-MRO
+      name: "Main Refinancing Operations Rate"
+      dataset: "FM"
+      sdmx_key: "D.U2.EUR.4F.KR.MRR_FR.LEV"
+      unit: "% p.a."
+      frequency: "daily"
+      time_range: "1999-present"
+      kon_mapping: "economic"
+      note: "Leitzins der EZB"
+
+    - id: ECB-IR-DFR
+      name: "Deposit Facility Rate"
+      dataset: "FM"
+      sdmx_key: "D.U2.EUR.4F.KR.DFR.LEV"
+      unit: "% p.a."
+      frequency: "daily"
+      time_range: "1999-present"
+      kon_mapping: "economic"
+
+    - id: ECB-IR-MLF
+      name: "Marginal Lending Facility Rate"
+      dataset: "FM"
+      sdmx_key: "D.U2.EUR.4F.KR.MLFR.LEV"
+      unit: "% p.a."
+      frequency: "daily"
+      time_range: "1999-present"
+      kon_mapping: "economic"
+
+    - id: ECB-IR-ESTR
+      name: "Euro Short-Term Rate (€STR)"
+      dataset: "EST"
+      sdmx_key: "D.U2.EUR.WT.RA"
+      unit: "% p.a."
+      frequency: "daily"
+      time_range: "2019-present"
+      kon_mapping: "economic"
+      note: "Ersetzt EONIA"
+
+  # ---------------------------------------------------------------------------
+  # GELDMENGE & INFLATION
+  # ---------------------------------------------------------------------------
+  monetary:
+    - id: ECB-MON-M3
+      name: "M3 Money Supply (Eurozone)"
+      dataset: "BSI"
+      sdmx_key: "M.U2.Y.V.M30.X.I.U2.2300.Z01.A"
+      unit: "EUR billion"
+      frequency: "monthly"
+      time_range: "1997-present"
+      kon_mapping: "economic"
+
+    - id: ECB-HICP
+      name: "HICP Inflation (Eurozone)"
+      dataset: "ICP"
+      sdmx_key: "M.U2.N.000000.4.ANR"
+      unit: "% annual"
+      frequency: "monthly"
+      time_range: "1996-present"
+      kon_mapping: "economic"
+
+    - id: ECB-HICP-CH
+      name: "HICP Switzerland (for comparison)"
+      dataset: "ICP"
+      sdmx_key: "M.CH.N.000000.4.ANR"
+      unit: "% annual"
+      frequency: "monthly"
+      time_range: "1996-present"
+      kon_mapping: "economic"
+      note: "CH nicht in Eurozone, aber HICP verfügbar"
+
+  # ---------------------------------------------------------------------------
+  # FINANZSTABILITÄT
+  # ---------------------------------------------------------------------------
+  financial_stability:
+    - id: ECB-CISS
+      name: "Composite Indicator of Systemic Stress"
+      dataset: "CISS"
+      sdmx_key: "W.U2.Z0Z.4F.EC.SS_CIN.IDX"
+      unit: "Index (0-1)"
+      frequency: "weekly"
+      time_range: "1999-present"
+      kon_mapping: "economic"
+      note: "Systemisches Risiko Eurozone"
+
+    - id: ECB-YIELD-10Y
+      name: "10-Year Government Bond Yield (Germany)"
+      dataset: "YC"
+      sdmx_key: "B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y"
+      unit: "% p.a."
+      frequency: "daily"
+      time_range: "2004-present"
+      kon_mapping: "economic"
+      note: "Benchmark für EUR-Zinsen"
+
+  # ---------------------------------------------------------------------------
+  # BANKING STATISTICS
+  # ---------------------------------------------------------------------------
+  banking:
+    - id: ECB-BANK-LOANS
+      name: "Bank Loans to Non-Financial Corps (Eurozone)"
+      dataset: "BSI"
+      sdmx_key: "M.U2.Y.U.A20.A.I.U2.2240.Z01.E"
+      unit: "EUR billion"
+      frequency: "monthly"
+      time_range: "1997-present"
+      kon_mapping: "economic"
+
+    - id: ECB-BANK-NPL
+      name: "Non-Performing Loans Ratio"
+      dataset: "CBD2"
+      sdmx_key: "Q.U2.W0.11._Z.A.A.A.A0J0._Z.S.H._Z._Z._Z._T.EUR._Z._Z.PC"
+      unit: "% of total loans"
+      frequency: "quarterly"
+      time_range: "2014-present"
+      kon_mapping: "economic"
+
+# =============================================================================
+# PYTHON FETCH EXAMPLE
+# =============================================================================
+fetch_example: |
+  import requests
+  import pandas as pd
+
+  # ECB SDMX API - CHF/EUR exchange rate
+  url = "https://sdw-wsrest.ecb.europa.eu/service/data/EXR/D.CHF.EUR.SP00.A"
+  headers = {"Accept": "application/json"}
+
+  response = requests.get(url, headers=headers)
+  if response.status_code == 200:
+      data = response.json()
+      # Parse SDMX JSON structure
+      observations = data['dataSets'][0]['series']['0:0:0:0:0']['observations']
+      print(f"Latest CHF/EUR: {list(observations.values())[-1][0]}")
+
+  # Alternative: CSV format
+  url_csv = "https://sdw-wsrest.ecb.europa.eu/service/data/EXR/D.CHF.EUR.SP00.A?format=csv"
+  df = pd.read_csv(url_csv)
+  print(df.tail())
+
+# =============================================================================
+# STATISTIKEN
+# =============================================================================
+statistics:
+  total_indicators: 14
+  by_category:
+    exchange_rates: 2
+    interest_rates: 4
+    monetary: 3
+    financial_stability: 2
+    banking: 2
+  update_frequency: "daily to quarterly"
+  swiss_specific: 2

@@ -1,0 +1,1138 @@
+% =============================================================================
+% APPENDIX HF: PREDICT-HABIT: Habit Formation Mechanism Taxonomy
+% =============================================================================
+%
+% Category: PREDICT
+% Module: BCM2_PREDICT_HABIT
+% Version: 1.0 (January 2026)
+% Status: Draft
+% Language: english
+%
+% This appendix formalizes the taxonomy of habit formation mechanisms,
+% distinguishing between learning/experience-good, addiction/reinforcement,
+% and inertia/switching-cost models. Provides testable predictions and
+% empirical discriminants based on Jones, Molitor & Reif (2025).
+%
+% Dependencies: AW (CORE-STAGE), AU (CORE-AWARE), BBB (CORE-WHERE)
+% Dependents: HHH (METHOD-TOOLKIT), S (PREDICT-MASTER)
+%
+% =============================================================================
+
+% =============================================================================
+% CROSS-REFERENCE STRUCTURE
+% =============================================================================
+%
+% CHAPTER LINKAGE (Required):
+% - Primary Chapter: Chapter 13: The Behavioral Change Journey
+% - Secondary Chapters: Chapter 14: Health Interventions, Chapter 17: Policy Design
+%
+% This appendix provides foundation for:
+% - Intervention timing optimization (front-load vs. sustained)
+% - Mechanism-aware behavioral model design
+%
+% DEPENDENCIES (what this appendix REQUIRES):
+% - Appendix UNMAPPED_AW (CORE-STAGE): Behavioral Change Journey phases
+% - Appendix UNMAPPED_AU (CORE-AWARE): Awareness function and belief updating
+% - Appendix UNMAPPED_BBB (CORE-WHERE): Parameter values from empirical literature
+%
+% DEPENDENTS (what REQUIRES this appendix):
+% - Appendix TKT (METHOD-TOOLKIT): Intervention design specifications
+% - Appendix S (PREDICT-MASTER): Integration with core predictions
+%
+% =============================================================================
+
+% -----------------------------------------------------------------------------
+% HEADER BLOCK (for template compliance)
+% -----------------------------------------------------------------------------
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Appendix Metadata]
+\textbf{Appendix:} HF (PREDICT-HABIT) \\
+\textbf{Category:} PREDICT --- Testable Predictions \\
+\textbf{Version:} 1.0 (January 2026) \\
+\textbf{Status:} Draft \\
+\textbf{Dependencies:} AW (CORE-STAGE), AU (CORE-AWARE), BBB (CORE-WHERE) \\
+\textbf{Dependents:} HHH (METHOD-TOOLKIT), S (PREDICT-MASTER)
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black,
+    title=Chapter Linkage]
+
+\textbf{Primary Chapter:} Chapter 13: The Behavioral Change Journey
+\begin{itemize}[nosep]
+\item Section 13.3: Phase transitions $\leftrightarrow$ This Appendix Section \ref{sec:hf-theory}
+\item Section 13.5: Intervention timing $\leftrightarrow$ This Appendix Section \ref{sec:hf-practice}
+\end{itemize}
+
+\textbf{Secondary Chapters:}
+\begin{itemize}[nosep]
+\item Chapter 14: Health Interventions --- references mechanism selection
+\item Chapter 17: Policy Design --- references incentive timing
+\end{itemize}
+
+\textbf{Reading Guide:}
+\begin{itemize}[nosep]
+\item For conceptual overview: Read Chapter 13 first
+\item For formal details: This appendix provides complete specification
+\item For parameter values: See Appendix UNMAPPED_BBB (CORE-WHERE)
+\end{itemize}
+
+\end{tcolorbox}
+
+\chapter{PREDICT-HABIT: Habit Formation Mechanism Taxonomy}
+\label{app:predict-habit}
+
+\begin{abstract}
+How do behaviors become habits? This appendix formalizes three competing mechanisms:
+(1) learning/experience-good, (2) addiction/reinforcement, and (3) inertia/switching-costs.
+Each mechanism generates distinct testable predictions about the temporal pattern of
+behavior persistence. We document that Jones, Molitor \& Reif (2025) provides a clean
+falsification of addiction models in favor of experience-good learning for annual health
+screenings. The key insight: first exposure dominates subsequent exposures in driving
+habit formation, with implications for intervention design across domains.
+\end{abstract}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=Quick Reference: Habit Formation Mechanisms]
+
+\textbf{Core Question:} What mechanism drives habit formation---and how can we distinguish them empirically?
+
+\textbf{Key Formula:}
+\begin{equation}
+\Delta P(a_t | a_{t-1}, a_{t-2}) = \begin{cases}
+\beta_1 \cdot a_{t-1} + \beta_2 \cdot a_{t-2} & \text{(Addiction: } \beta_1 > \beta_2 \text{)} \\
+\beta_1 \cdot a_{t-1} + \beta_2 \cdot a_{t-2} & \text{(Learning: } \beta_1 \approx \beta_2 \text{)} \\
+\beta \cdot \mathbb{1}[\exists \tau < t: a_\tau = 1] & \text{(Inertia: any prior action)}
+\end{cases}
+\end{equation}
+
+\textbf{Key Concepts:}
+\begin{itemize}[nosep]
+\item \textbf{Experience-Good Learning}: First exposure updates beliefs; subsequent adds little
+\item \textbf{Addiction/Reinforcement}: Recent behavior matters more than distant behavior
+\item \textbf{Inertia/Switching Costs}: Any participation creates lock-in
+\end{itemize}
+
+\textbf{Cross-References:} CORE-STAGE (AW), CORE-AWARE (AU), CORE-WHERE (BBB), PREDICT-MASTER (S), LIT-LEARNING (XIX), METHOD-EVIDENCE (XX)
+\end{tcolorbox}
+
+% -----------------------------------------------------------------------------
+% APPENDIX SCOPE BOX
+% -----------------------------------------------------------------------------
+
+\begin{tcolorbox}[
+    colback=orange!5!white,
+    colframe=orange!75!black,
+    title={\textbf{Appendix Scope: Ziel / In-Scope / Out-of-Scope / Constraints}},
+    fonttitle=\bfseries
+]
+
+\textbf{Ziel (Objective):}
+\begin{itemize}[nosep]
+    \item Given that a behavior persists over time, which mechanism is responsible---and how can we tell?
+\end{itemize}
+
+\textbf{In-Scope:}
+\begin{itemize}[nosep]
+    \item The Fundamental Question
+    \item Core Theory: The Three Mechanisms
+    \item Axioms and Formal Definitions
+    \item Formal State-Space Model
+    \item Experimental Design and Identification
+\end{itemize}
+
+\textbf{Out-of-Scope (delegiert an andere Appendices):}
+\begin{itemize}[nosep]
+    \item CORE-STAGE $\rightarrow$ Appendix UNMAPPED_AW
+    \item CORE-AWARE $\rightarrow$ Appendix UNMAPPED_AU
+    \item CORE-WHERE $\rightarrow$ Appendix UNMAPPED_BBB
+    \item METHOD-TOOLKIT $\rightarrow$ Appendix TKT
+    \item PREDICT-MASTER $\rightarrow$ Appendix S
+\end{itemize}
+
+\textbf{Constraints (Anwendungsgrenzen):}
+\begin{itemize}[nosep]
+    \item [TODO: Define when this appendix does NOT apply]
+    \item [TODO: Define required prerequisites]
+    \item [TODO: Define known limitations]
+\end{itemize}
+
+\textbf{Lieferobjekte (Deliverables):}
+\begin{itemize}[nosep]
+    \item 9 Table(s)
+    \item 22 Equation(s)
+    \item 5 Axiom(s)
+    \item Worked Example(s)
+\end{itemize}
+
+\end{tcolorbox}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Fundamental Question}
+\label{sec:hf-fundamental}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Why This Matters}
+
+Habit formation is central to behavioral economics and intervention design. If we understand
+\textit{why} behaviors persist, we can design more effective interventions. The key question
+is not just whether habits form, but \textit{through which mechanism}---because different
+mechanisms imply radically different optimal intervention strategies.
+
+Consider three intervention philosophies:
+\begin{itemize}
+\item \textbf{Front-load}: Invest heavily in first-time experience quality and uptake
+\item \textbf{Sustain}: Provide ongoing reinforcement through repeated incentives
+\item \textbf{Remove friction}: Eliminate switching costs and barriers to re-engagement
+\end{itemize}
+
+The correct choice depends entirely on which mechanism drives habit formation in the target domain.
+
+\subsection{The Core Problem}
+
+Most habit research cannot distinguish between mechanisms because it lacks:
+\begin{enumerate}
+\item Multiple periods of observation
+\item Exogenous variation in behavior at each period
+\item Ability to separate effects of initial vs. recent past behavior
+\end{enumerate}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black,
+    title=The Fundamental Question]
+\textbf{Given that a behavior persists over time, which mechanism is responsible---and how can we tell?}
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Core Theory: The Three Mechanisms}
+\label{sec:hf-theory}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Mechanism 1: Experience-Good Learning}
+
+An \textbf{experience good} is a product or service whose value can only be assessed through
+consumption. Prior to first experience, agents have uncertain beliefs about costs and benefits.
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Definition: Experience-Good Learning]
+Let $\mu_0$ be prior belief about net benefit of action $a$, and $\sigma^2_0$ the prior variance.
+After first experience, beliefs update via:
+\begin{equation}
+\mu_1 = \frac{\sigma^2_0}{\sigma^2_0 + \sigma^2_\epsilon} \cdot x + \frac{\sigma^2_\epsilon}{\sigma^2_0 + \sigma^2_\epsilon} \cdot \mu_0
+\end{equation}
+where $x$ is realized benefit and $\sigma^2_\epsilon$ is experience noise.
+
+\textbf{Key property:} Second experience provides minimal additional information if $\sigma^2_1 \ll \sigma^2_0$.
+\end{tcolorbox}
+
+\textbf{Prediction:} First exposure has large effect on subsequent behavior; additional exposures add little.
+
+\textbf{EBF Connection:} Maps to CORE-AWARE (AU) via belief updating function $A(\cdot)$.
+The awareness level $A_i$ jumps discontinuously at first exposure.
+
+\subsection{Mechanism 2: Addiction/Reinforcement}
+
+In addiction models, past consumption directly increases the marginal utility of current
+consumption. The ``stock'' of past behavior creates physiological or psychological dependence.
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Definition: Addiction/Reinforcement]
+Let $S_t$ be the ``stock'' of past behavior, with accumulation:
+\begin{equation}
+S_t = \delta S_{t-1} + a_{t-1}, \quad \delta \in (0,1)
+\end{equation}
+Utility from action depends on stock:
+\begin{equation}
+U(a_t, S_t) = u(a_t) + \gamma \cdot S_t \cdot a_t
+\end{equation}
+
+\textbf{Key property:} More recent behavior has higher weight due to depreciation $\delta < 1$.
+\end{tcolorbox}
+
+\textbf{Prediction:} Recent past behavior matters more than distant past behavior.
+
+\textbf{EBF Connection:} Maps to CORE-HOW (B) via complementarity $\gamma$ between current
+action and accumulated stock.
+
+\subsection{Mechanism 3: Inertia/Switching Costs}
+
+Switching costs create path dependence: any prior participation reduces the cost of
+future participation, regardless of recency.
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Definition: Inertia/Switching Costs]
+Let $c(a_t | H_t)$ be the cost of action given history $H_t$:
+\begin{equation}
+c(a_t = 1 | H_t) = \begin{cases}
+c_0 & \text{if } a_\tau = 0 \text{ for all } \tau < t \\
+c_0 - \kappa & \text{if } \exists \tau < t: a_\tau = 1
+\end{cases}
+\end{equation}
+where $\kappa > 0$ is the switching cost reduction from any prior experience.
+
+\textbf{Key property:} Timing of prior experience is irrelevant; only existence matters.
+\end{tcolorbox}
+
+\textbf{Prediction:} Any prior participation increases future participation equally, regardless of when.
+
+\textbf{EBF Connection:} Maps to CORE-WHEN (V) via temporal context $\Psi_T$, but
+predicts context-independence within the experienced state.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Axioms and Formal Definitions}
+\label{sec:hf-axioms}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom HF-1: Mechanism Exclusivity (Local)]
+\textbf{Statement:} For a given behavior-domain pair $(a, D)$, exactly one primary mechanism
+governs habit formation:
+\begin{equation}
+\mathcal{M}(a, D) \in \{\text{LEARN}, \text{ADDICT}, \text{INERTIA}\}
+\end{equation}
+
+\textbf{Interpretation:} While multiple mechanisms may contribute, one dominates empirically.
+
+\textbf{Implication:} Optimal intervention strategy is determined by $\mathcal{M}(a, D)$.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom HF-2: Temporal Discriminant]
+\textbf{Statement:} The three mechanisms generate distinct signatures in the coefficients
+$(\beta_1, \beta_2)$ of the regression:
+\begin{equation}
+P(a_t = 1) = \alpha + \beta_1 \cdot a_{t-1} + \beta_2 \cdot a_{t-2} + \epsilon_t
+\end{equation}
+
+\textbf{Discriminant Rules:}
+\begin{align}
+\text{ADDICT:} & \quad \beta_1 > \beta_2 > 0 \\
+\text{LEARN:} & \quad \beta_1 \approx \beta_2 > 0 \text{ and } \beta_2 \text{ large from first exposure} \\
+\text{INERTIA:} & \quad \beta_1 + \beta_2 \approx \text{constant}
+\end{align}
+
+\textbf{Implication:} Multi-period experimental data can falsify mechanisms.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom HF-3: Front-Loading Principle]
+\textbf{Statement:} If $\mathcal{M}(a, D) = \text{LEARN}$, then:
+\begin{equation}
+\frac{\partial V}{\partial I_1} > \frac{\partial V}{\partial I_t} \quad \forall t > 1
+\end{equation}
+where $V$ is total long-run behavior and $I_t$ is incentive at time $t$.
+
+\textbf{Interpretation:} Investment in first-time uptake has higher ROI than later incentives.
+
+\textbf{Implication:} Ignoring habit formation undervalues initial interventions by $\approx 70\%$
+(Jones et al. 2025 estimate).
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom HF-4: Belief Asymmetry]
+\textbf{Statement:} For experience goods, expected uncertainty reduction is:
+\begin{equation}
+\mathbb{E}[\Delta \sigma^2 | \text{1st exposure}] \gg \mathbb{E}[\Delta \sigma^2 | \text{2nd exposure}]
+\end{equation}
+
+\textbf{Interpretation:} First exposure resolves most belief uncertainty.
+
+\textbf{Implication:} Mechanism LEARN predicts asymmetric effects between first and subsequent exposures.
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Formal State-Space Model}
+\label{sec:hf-statespace}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The following minimal model captures the essential dynamics of experience-good learning
+with an \textbf{absorbing state}---a parsimonious formalization that nests the key empirical
+predictions.
+
+\subsection{The Absorbing-State Model}
+
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black,
+    title=Definition: Minimal State-Space Model for Experience-Good Learning]
+
+\textbf{State Variable:}
+\begin{equation}
+H_{it} \in \{0, 1\} \quad \text{(binary: has individual } i \text{ ever participated?)}
+\end{equation}
+
+\textbf{State Transition (Absorbing):}
+\begin{equation}
+H_{i,t+1} = \max(H_{it}, S_{it})
+\end{equation}
+where $S_{it} \in \{0,1\}$ is the participation decision at time $t$.
+
+\textbf{Utility:}
+\begin{equation}
+U_{it} = u(H_{it}) - c + \varepsilon_{it}, \quad \text{with } u(1) > u(0)
+\end{equation}
+where $c$ is the participation cost and $\varepsilon_{it}$ is an i.i.d. preference shock.
+
+\textbf{Decision Rule:}
+\begin{equation}
+S_{it} = \mathbf{1}\{U_{it} + Z_{it} \geq 0\}
+\end{equation}
+where $Z_{it}$ is the (randomly assigned) financial incentive.
+
+\end{tcolorbox}
+
+\subsection{Key Model Properties}
+
+\begin{enumerate}
+\item \textbf{Non-additive dynamics:} The state $H$ does not accumulate---it switches once.
+
+\item \textbf{Absorbing state:} Once $H_{it} = 1$, the state remains $H_{i,t'} = 1$ for all $t' > t$.
+
+\item \textbf{No depreciation:} Unlike addiction models, there is no decay parameter $\delta$.
+
+\item \textbf{Stable long-run persistence:} The utility gain $u(1) - u(0)$ is permanent.
+\end{enumerate}
+
+\subsection{Contrast with Addiction Model}
+
+The standard myopic addiction model (Becker \& Murphy 1988) implies:
+\begin{equation}
+a_t = k + \alpha S_t + \pi p_t, \quad \text{with } S_{t+1} = (1-d) S_t + a_t
+\end{equation}
+
+For a three-period setting, this yields:
+\begin{equation}
+a_3 = \alpha \cdot a_2 + \alpha(1-d) \cdot a_1 + \ldots
+\end{equation}
+
+\textbf{Central prediction:} Effect of $a_2$ on $a_3$ \textbf{exceeds} effect of $a_1$ on $a_3$
+(recent consumption dominates).
+
+$\Rightarrow$ \textbf{Contradicted by data:} Jones et al. find $\theta_1 \gg \theta_2 \approx 0$.
+
+\subsection{Interpretation as Expectation Update}
+
+The absorbing-state model has an intuitive cognitive interpretation:
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=Cognitive Interpretation: One-Shot Belief Revision]
+
+\textbf{Prior beliefs (before first experience):}
+\begin{equation}
+\mathbb{E}_0[U] < U_{\text{true}} \quad \text{(systematic underestimation of net benefit)}
+\end{equation}
+
+\textbf{First experience triggers belief update:}
+\begin{equation}
+\mathbb{E}_1[U] = \mathbb{E}[U \mid \text{experience}] \approx U_{\text{true}}
+\end{equation}
+
+\textbf{Subsequent experiences add no information:}
+\begin{equation}
+\mathbb{E}_t[U] \approx \mathbb{E}_1[U] \quad \forall t \geq 2
+\end{equation}
+
+\textbf{Result:} Behavior is persistent but \textbf{not self-reinforcing}.
+The system reaches a new steady state after one transition.
+
+\end{tcolorbox}
+
+This interpretation explains why:
+\begin{itemize}
+\item First participation has a large, permanent effect ($\theta_1 \approx 0.35$)
+\item Second participation adds almost nothing ($\theta_2 \approx 0.03$, n.s.)
+\item Effects do not decay over time (no depreciation in beliefs)
+\end{itemize}
+
+\subsection{From Model to Intuition: ``The First Impression''}
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black,
+    title=Intuition Box: Why ``First Impressions Matter'' Is Right---But Not Why You Think]
+
+\textbf{The everyday intuition:}
+\begin{quote}
+\textit{``Der erste Eindruck ist der wichtigste.''} \\
+(``The first impression is the most important.'')
+\end{quote}
+
+\textbf{This is empirically correct}, but the mechanism is \textbf{not}:
+\begin{itemize}[nosep]
+\item[$\times$] \textbf{Primacy bias} (cognitive distortion) --- the paper measures rational learning
+\item[$\times$] \textbf{Emotional overwhelm} (``wow effect'') --- it's information updating, not affect
+\item[$\times$] \textbf{Diminishing marginal utility} --- there is no gradual decline, but a discrete jump
+\end{itemize}
+
+\textbf{The correct interpretation:}
+\begin{quote}
+\textit{``The first impression matters most---because it permanently changes the expectation state.''}
+\end{quote}
+
+\textbf{Formally:} Not $U_t = U_{t-1} + \delta$ (accumulation), but:
+\begin{equation}
+U_t = \begin{cases}
+u_0 & \text{if } H_t = 0 \text{ (never experienced)} \\
+u_1 & \text{if } H_t = 1 \text{ (experienced once)}
+\end{cases}
+\quad \text{with } u_1 > u_0
+\end{equation}
+
+$\Rightarrow$ A single jump, not an accumulation process.
+
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=Three Formulations for Different Audiences]
+
+\textbf{(A) Economic-strict} (for models, papers, policy memos):
+\begin{quote}
+\textit{``First contact determines the long-run behavioral state; subsequent contacts barely change it.''}
+\end{quote}
+
+\textbf{(B) Bridge formulation} (for management, ESG, strategy):
+\begin{quote}
+\textit{``The first impression is decisive because it permanently sets expectations.''}
+\end{quote}
+
+\textbf{(C) Pointed} (for executive summaries, talks):
+\begin{quote}
+\textit{``Habit is not created by repetition, but by the first experience.''}
+\end{quote}
+
+\end{tcolorbox}
+
+\subsection{Domain Applications of the First-Impression Principle}
+
+\begin{table}[htbp]
+\centering
+\caption{Applying the First-Impression Principle Across Domains}
+\label{tab:hf-first-impression}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}p{2.5cm}p{4cm}p{5.5cm}@{}}
+\toprule
+\textbf{Domain} & \textbf{Application} & \textbf{Implication} \\
+\midrule
+\textbf{Products / UX} & Onboarding, trial versions, first use & Design first-use experience, not retention loops \\
+\textbf{ESG / Sustainability} & CO$_2$ tracking, energy feedback, sustainable defaults & Subsidize entry, not repetition \\
+\textbf{Public Health} & Vaccinations, screenings, preventive care & One well-designed initial push dominates many small follow-ups \\
+\textbf{HR / Workplace} & Employee wellness programs, training & Invest in first participation quality \\
+\textbf{Finance} & Retirement enrollment, savings programs & Default into first contribution, not ongoing nudges \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key insight:} The first impression matters not because it is \textit{emotional}, but because it is \textit{informative}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Experimental Design and Identification}
+\label{sec:hf-identification}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{The Jones-Molitor-Reif Design}
+
+The experimental setting provides an ideal \textbf{identification laboratory}:
+
+\begin{table}[htbp]
+\centering
+\caption{Experimental Design Features}
+\label{tab:hf-design}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Feature} & \textbf{Specification} \\
+\midrule
+Sample & 4,799 employees (two cohorts) \\
+Duration & Up to 3 screening years \\
+Randomization & Individual-level, annual \\
+Key innovation & \textbf{Rerandomization} each year \\
+Incentive independence & $Z_{it} \perp Z_{i,t-1}, S_{i,t-1}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Two Levels of Analysis}
+
+The authors distinguish between:
+
+\textbf{(A) Reduced-Form Persistence:} Do past \textit{incentives} affect current behavior?
+\begin{equation}
+S_{it} = \alpha + \sum_{\tau < t} \beta_\tau Z_{i\tau} + \beta_t Z_{it} + \varepsilon_{it}
+\end{equation}
+
+\textbf{(B) Structural Habit Formation:} Does past \textit{behavior} causally affect current behavior?
+\begin{equation}
+S_{it} = \alpha + \sum_{\tau < t} \theta_\tau S_{i\tau} + \gamma Z_{it} + u_{it}
+\end{equation}
+
+The structural parameters $\theta_\tau$ are the habit formation effects of interest.
+
+\subsection{Instrumental Variables Strategy}
+
+\textbf{Problem:} $S_{i\tau}$ is endogenous (correlated with stable preferences, unobserved heterogeneity).
+
+\textbf{Solution:} Use randomly assigned incentives $Z_{i\tau}$ as instruments.
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=IV Identification]
+Under random assignment, the causal effects are identified as:
+\begin{align}
+\theta_1^{\text{causal}} &= \frac{\text{Cov}(S_3, Z_1)}{\text{Cov}(S_1, Z_1)} \cdot \frac{1}{P(S_2 = 1 | S_1 = 1)} \\[0.5em]
+\theta_2^{\text{causal}} &= \frac{\text{Cov}(S_3, Z_2 | S_1)}{\text{Cov}(S_2, Z_2 | S_1)}
+\end{align}
+
+\textbf{Key:} Rerandomization at $t=2$ provides variation in $S_2$ that is independent of $S_1$
+conditional on the randomization.
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Empirical Results}
+\label{sec:hf-results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{proposition}[Jones-Molitor-Reif Identification]
+In a three-period randomized experiment with rerandomized incentives, the causal effects
+of first ($\beta^{causal}_1$) and second ($\beta^{causal}_2$) exposure can be separately identified
+using instrumental variables.
+\end{proposition}
+
+\begin{proof}
+Let $Z_t$ be the incentive assignment at time $t$. Under random assignment:
+\begin{align}
+\beta^{causal}_1 &= \frac{\text{Cov}(a_3, Z_1)}{\text{Cov}(a_1, Z_1)} \cdot \frac{1}{P(a_2 = 1 | a_1 = 1)} \\
+\beta^{causal}_2 &= \frac{\text{Cov}(a_3, Z_2 | a_1)}{\text{Cov}(a_2, Z_2 | a_1)}
+\end{align}
+Rerandomization at $t=2$ provides independent variation conditional on $a_1$.
+\end{proof}
+
+\subsection{Jones et al. (2025) Findings}
+
+\begin{table}[htbp]
+\centering
+\caption{Habit Formation in Annual Health Screenings (Jones, Molitor \& Reif 2025)}
+\label{tab:hf-jmr-results}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}lccl@{}}
+\toprule
+\textbf{Effect} & \textbf{Estimate} & \textbf{95\% CI} & \textbf{Interpretation} \\
+\midrule
+First exposure $\rightarrow$ Year 2 & +32.4 pp & [28.1, 36.7] & Strong habit formation \\
+First exposure $\rightarrow$ Year 3 & +36.0 pp & [30.8, 41.2] & No decay over time \\
+Second exposure $\rightarrow$ Year 3 & +3.2 pp & [-2.4, 8.8] & Minimal additional effect \\
+\midrule
+Relative increase (Year 2) & 84\% & --- & vs. baseline 38.6\% \\
+Relative increase (Year 3) & 90\% & --- & vs. baseline 40.0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=Key Finding: Learning Mechanism Confirmed]
+
+\textbf{Pattern observed:}
+\begin{itemize}[nosep]
+\item First exposure: Large, persistent effect (32-36 pp)
+\item Second exposure: Small, statistically insignificant effect (3 pp)
+\item No decay: Year 3 effect $\geq$ Year 2 effect
+\end{itemize}
+
+\textbf{Mechanism verdict:}
+\begin{itemize}[nosep]
+\item[$\times$] \textbf{Addiction/Reinforcement}: REJECTED (recent $\not>$ distant)
+\item[$\checkmark$] \textbf{Experience-Good Learning}: SUPPORTED (first exposure dominates)
+\item[?] \textbf{Inertia}: Partially consistent, but does not explain asymmetry
+\end{itemize}
+
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Integration with Other Appendices}
+\label{sec:hf-integration}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Connection to CORE-STAGE (AW)}
+
+The Behavioral Change Journey (BCJ) framework identifies phases:
+Precontemplation $\rightarrow$ Contemplation $\rightarrow$ Preparation $\rightarrow$ Action $\rightarrow$ Maintenance.
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black,
+    title=Integration: PREDICT-HABIT $\leftrightarrow$ CORE-STAGE]
+\textbf{What this appendix provides:}
+\begin{itemize}[nosep]
+\item Mechanism for Action $\rightarrow$ Maintenance transition
+\item Asymmetric importance of first Action vs. subsequent Actions
+\end{itemize}
+
+\textbf{What it requires:}
+\begin{itemize}[nosep]
+\item BCJ phase classification $\varphi$
+\item Phase transition probabilities $P(\varphi_{t+1} | \varphi_t, a_t)$
+\end{itemize}
+
+\textbf{Key Insight:} For learning-amenable behaviors, the critical transition is
+Pre-Action $\rightarrow$ First Action, not subsequent maintenance.
+\end{tcolorbox}
+
+\subsection{Connection to CORE-AWARE (AU)}
+
+The Awareness function $A(\cdot)$ captures subjective perception of utility.
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black,
+    title=Integration: PREDICT-HABIT $\leftrightarrow$ CORE-AWARE]
+\textbf{What this appendix provides:}
+\begin{itemize}[nosep]
+\item Discontinuous jump in $A_i$ at first exposure
+\item Quantification: $\Delta A^{(1)} \gg \Delta A^{(k)}$ for $k > 1$
+\end{itemize}
+
+\textbf{What it requires:}
+\begin{itemize}[nosep]
+\item Prior belief structure $(\mu_0, \sigma^2_0)$
+\item Experience signal precision $\sigma^2_\epsilon$
+\end{itemize}
+
+\textbf{Mathematical Interface:}
+\begin{equation}
+A^{(k)}_i = A^{(0)}_i + \sum_{j=1}^{k} \Delta A^{(j)}_i, \quad \text{where } \Delta A^{(1)} \approx 0.3\text{--}0.4
+\end{equation}
+\end{tcolorbox}
+
+\subsection{Connection to CORE-WHERE (BBB)}
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black,
+    title=Integration: PREDICT-HABIT $\leftrightarrow$ CORE-WHERE]
+\textbf{Parameter contributions from this appendix:}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Value} & \textbf{Source} & \textbf{Domain} \\
+\midrule
+$\beta^{\text{LEARN}}_1$ (first exposure) & 0.32--0.36 & Jones et al. 2025 & Health screening \\
+$\beta^{\text{LEARN}}_2$ (second exposure) & 0.03 (n.s.) & Jones et al. 2025 & Health screening \\
+Decay rate (2 years) & $\approx 0$ & Jones et al. 2025 & Health screening \\
+Undervaluation factor & 70\% & Jones et al. 2025 & Cost-effectiveness \\
+\bottomrule
+\end{tabular}
+\end{table}
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Worked Example: Corporate Wellness Program}
+\label{sec:hf-example}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Scenario: Annual Health Screening Incentive Design}
+
+\paragraph{Setup.} A company wants to maximize long-term health screening participation.
+Budget: \$100 per employee over 3 years. Current baseline participation: 40\%.
+
+\paragraph{Strategy Comparison.}
+
+\begin{table}[htbp]
+\centering
+\caption{Three Incentive Strategies}
+\label{tab:hf-strategies}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lcccl@{}}
+\toprule
+\textbf{Strategy} & \textbf{Year 1} & \textbf{Year 2} & \textbf{Year 3} & \textbf{Mechanism Assumed} \\
+\midrule
+Uniform & \$33 & \$33 & \$33 & None (naive) \\
+Front-loaded & \$75 & \$25 & \$0 & Learning \\
+Back-loaded & \$0 & \$25 & \$75 & Addiction \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Application.} Using Jones et al. parameters ($\beta_1 = 0.35$, incentive elasticity = 0.15 per \$25):
+
+\textbf{Front-loaded Strategy:}
+\begin{align}
+P_1 &= 0.40 + 0.15 \times 3 = 0.85 \\
+P_2 &= 0.40 + 0.35 \times 0.85 + 0.15 \times 1 = 0.85 \\
+P_3 &= 0.40 + 0.35 \times 0.85 + 0.03 \times 0.85 = 0.72
+\end{align}
+
+\textbf{Uniform Strategy:}
+\begin{align}
+P_1 &= 0.40 + 0.15 \times 1.32 = 0.60 \\
+P_2 &= 0.40 + 0.35 \times 0.60 + 0.15 \times 1.32 = 0.81 \\
+P_3 &= 0.40 + 0.35 \times 0.60 + 0.03 \times 0.81 + 0.15 \times 1.32 = 0.83
+\end{align}
+
+\paragraph{Result.} Total screenings over 3 years:
+\begin{itemize}
+\item Front-loaded: $0.85 + 0.85 + 0.72 = 2.42$ per employee
+\item Uniform: $0.60 + 0.81 + 0.83 = 2.24$ per employee
+\end{itemize}
+
+\textbf{Front-loading outperforms by 8\% with same budget.}
+
+\paragraph{Discussion.} The key insight is that the learning mechanism creates a
+multiplier effect: high Year 1 participation generates ``free'' participation in
+subsequent years through habit formation. The naive uniform strategy underinvests
+in the most valuable period.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Implications for Practice}
+\label{sec:hf-practice}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=Practical Implications]
+\begin{enumerate}
+\item \textbf{Front-load incentives for learning-amenable behaviors:}
+   Initial uptake investment has 70\%+ higher long-run ROI than sustained incentives.
+
+\item \textbf{Diagnose the mechanism before designing interventions:}
+   Use multi-period data to test whether recent or distant past behavior matters more.
+
+\item \textbf{Optimize first-time experience quality:}
+   If learning mechanism dominates, experience quality affects permanent beliefs.
+
+\item \textbf{Do not expect compounding returns from repeated incentives:}
+   Unlike addiction, repeated ``doses'' do not generate increasing persistence.
+
+\item \textbf{Apply beyond health:}
+   Learning mechanism likely relevant for: vaccinations, preventive care, onboarding,
+   ESG behaviors, retirement planning---any low-frequency behavior with uncertain value.
+\end{enumerate}
+\end{tcolorbox}
+
+\subsection{Domain-Mechanism Mapping}
+
+\begin{table}[htbp]
+\centering
+\caption{Mechanism Discrimination: Formal Predictions vs. Empirical Evidence}
+\label{tab:hf-mechanism-discrimination}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}p{3cm}p{4.5cm}p{3cm}c@{}}
+\toprule
+\textbf{Mechanism} & \textbf{Formal Prediction} & \textbf{Jones et al. Data} & \textbf{Verdict} \\
+\midrule
+Addiction / Reinforcement & Recent $>$ distant: $\theta_1 > \theta_2 > 0$ & $\theta_1 \approx 0.35$, $\theta_2 \approx 0.03$ & $\times$ Rejected \\
+Experience-Good Learning & First dominates: $\theta_1 \gg \theta_2 \approx 0$ & Exactly observed & $\checkmark$ Supported \\
+Inertia / Switching Costs & Any prior sufficient: depends on $\exists$ not timing & Partial match & ? Inconclusive \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Hypothesized Dominant Mechanisms by Domain}
+\label{tab:hf-domain-mechanisms}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Domain} & \textbf{Behavior} & \textbf{Likely Mechanism} & \textbf{Evidence} \\
+\midrule
+Health & Annual screening & Learning & Jones et al. 2025 \\
+Health & Handwashing & Reinforcement & Hussam et al. 2022 \\
+Finance & Retirement enrollment & Inertia & Madrian \& Shea 2001 \\
+Exercise & Gym attendance & Mixed & Charness \& Gneezy 2009 \\
+Digital & App engagement & Addiction & Behavioral design lit. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Summary}
+\label{sec:hf-summary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=green!10!white, colframe=green!75!black,
+    title=\textbf{Appendix HF: Summary}]
+
+\textbf{Core Question:} What mechanism drives habit formation---and how can we distinguish them empirically?
+
+\textbf{Main Contribution:}
+\begin{itemize}[nosep]
+    \item Taxonomy of three habit formation mechanisms with testable predictions
+    \item Formal \textbf{absorbing-state model} for experience-good learning:
+    $H_{i,t+1} = \max(H_{it}, S_{it})$
+    \item Clean falsification: Addiction predicts $\theta_1 > \theta_2$; data show $\theta_1 \gg \theta_2 \approx 0$
+    \item Integration of Jones et al. (2025) with IV identification strategy
+\end{itemize}
+
+\textbf{Key Outputs:}
+\begin{itemize}[nosep]
+    \item Axioms HF-1 through HF-4 for mechanism identification
+    \item Structural parameters: $\theta_1 = 0.32$--$0.36$, $\theta_2 \approx 0.03$ (n.s.)
+    \item Cognitive interpretation: One-shot belief revision $\mathbb{E}_0[U] \to \mathbb{E}_1[U]$
+    \item Front-loading principle for learning-amenable behaviors (70\% ROI gain)
+\end{itemize}
+
+\textbf{Key Insight for Formal Models:}
+\begin{quote}
+\textit{Habit formation $\neq$ reinforcement. For experience goods, it is a discrete
+learning step with an absorbing state---not a gradual accumulation process.
+The state space is smaller than addiction models suggest: binary, not continuous.}
+\end{quote}
+
+\textbf{Integration:} Connects to CORE-STAGE (BCJ: discrete phase transition),
+CORE-AWARE (belief updating with $\Delta A^{(1)} \gg \Delta A^{(k)}$),
+and CORE-WHERE (empirical parameters from IV estimation).
+
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Glossary of Symbols}
+\label{sec:hf-glossary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{Central Reference:} For complete symbol definitions, see
+\textbf{Appendix G} (REF-GLOSSARY).
+
+This section lists only symbols introduced or specialized in this appendix.
+\end{tcolorbox}
+
+\vspace{0.5em}
+
+\begin{table}[htbp]
+\centering
+\caption{Symbols Introduced in Appendix HF}
+\label{tab:hf-symbols}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clp{5.5cm}c@{}}
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Definition} & \textbf{Also in G?} \\
+\midrule
+$\mathcal{M}(a,D)$ & Mechanism & Dominant habit formation mechanism for action $a$ in domain $D$ & NEW \\
+$H_{it}$ & Experience state & Binary: has individual $i$ ever participated? (absorbing) & NEW \\
+$\theta_1, \theta_2$ & Structural habit effects & Causal effect of past behavior on current (IV-estimated) & NEW \\
+$\beta_1, \beta_2$ & Reduced-form coefficients & Effect of past incentives on current behavior & NEW \\
+$S_t$ & Addiction stock & Accumulated past behavior with depreciation & NEW \\
+$Z_{it}$ & Incentive assignment & Randomly assigned financial incentive at time $t$ & NEW \\
+$\kappa$ & Switching cost reduction & Cost reduction from prior experience & NEW \\
+$\mu_0, \sigma^2_0$ & Prior beliefs & Mean and variance of value beliefs pre-experience & \checkmark \\
+$\mathbb{E}_t[U]$ & Expected utility & Beliefs about utility at time $t$ (after $t$ experiences) & NEW \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Critical Foundations and Objections}
+\label{sec:hf-foundations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Objection 1: External Validity}
+
+\textbf{Objection:} Jones et al. studies only health screenings at one employer.
+Results may not generalize to other behaviors or contexts.
+
+\textbf{Response:} The theoretical prediction (learning mechanism implies first exposure dominance)
+is general. Health screening is a particularly clean test case because it is:
+(a) annual and low-frequency, (b) has uncertain value to participants,
+(c) can be cleanly randomized. The mechanism taxonomy applies broadly;
+the specific parameters are domain-dependent.
+
+\subsection{Objection 2: Mechanism Mixtures}
+
+\textbf{Objection:} Real behaviors may involve multiple mechanisms simultaneously.
+The taxonomy is overly simplistic.
+
+\textbf{Response:} Axiom HF-1 acknowledges this by specifying ``primary'' mechanism.
+The value of the taxonomy is in providing testable predictions. Even if multiple
+mechanisms operate, the temporal pattern reveals which dominates. Mixed models
+can be estimated but require richer data.
+
+\subsection{Objection 3: Selection Effects}
+
+\textbf{Objection:} People who respond to first-period incentives may differ
+systematically from those who don't, confounding the habit effect.
+
+\textbf{Response:} This is why instrumental variables identification (using random
+incentive assignment) is essential. Jones et al. addresses this through
+rerandomization. The key is separating selection from true habit formation.
+
+\subsection{Identification Boundary: First Contact vs. Quality of First Contact}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black,
+    title=Critical Limitation: What the Study Does NOT Identify]
+
+\textbf{The study identifies:}
+\begin{itemize}[nosep]
+\item The causal effect of \textit{first participation vs. non-participation}
+\item Formally: $\theta_1 = \mathbb{E}[S_t \mid \text{first contact induced by incentive}]$
+\item This is an \textbf{extensive margin} effect
+\end{itemize}
+
+\textbf{The study does NOT identify:}
+\begin{itemize}[nosep]
+\item Differences in perceived quality of first experience
+\item Effect of positive vs. negative first experience
+\item Heterogeneity in experience outcomes
+\item Formally: $\mathbb{E}[S_t \mid \text{good experience}] - \mathbb{E}[S_t \mid \text{bad experience}]$
+\end{itemize}
+
+\textbf{Why not?} Quality of first contact is:
+\begin{itemize}[nosep]
+\item \textbf{Endogenous} (not randomly assigned)
+\item \textbf{Idiosyncratic} (varies by individual)
+\item \textbf{Potentially correlated with types} (unobserved heterogeneity)
+\item $\Rightarrow$ Not instrumentable with available data
+\end{itemize}
+
+\end{tcolorbox}
+
+\textbf{Implicit model assumption (not tested):}
+The paper implicitly assumes that first experience provides a sufficiently strong signal
+about utility, \textit{regardless of idiosyncratic quality differences}. This assumption is:
+\begin{itemize}[nosep]
+\item Plausible
+\item Consistent with experience-good models
+\item But not empirically tested
+\end{itemize}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=Correct Statements About Quality]
+
+\textbf{Incorrect:} ``Quality doesn't matter.''
+
+\textbf{Correct:} ``Regardless of (unobserved) quality, no additional learning effect emerges from subsequent experiences.''
+
+\textbf{Precise formulation:}
+\begin{quote}
+\textit{``The study permits statements about the effect of first contact as such,
+but not about the influence of the quality of that first experience.''}
+\end{quote}
+
+\textbf{Model-oriented:}
+\begin{quote}
+\textit{``The paper supports a discrete learning model at first contact,
+but abstracts from heterogeneity in signal quality.''}
+\end{quote}
+
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Open Issues and Research Agenda}
+\label{sec:hf-open}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[htbp]
+\centering
+\caption{Research Roadmap for Habit Formation Mechanisms}
+\label{tab:hf-roadmap}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clcl@{}}
+\toprule
+\textbf{\#} & \textbf{Issue} & \textbf{Priority} & \textbf{Status} \\
+\midrule
+1 & Cross-domain replication of mechanism tests & HIGH & Open \\
+2 & Interaction between mechanisms and heterogeneity & HIGH & Open \\
+3 & Optimal incentive timing with mechanism uncertainty & MEDIUM & Open \\
+4 & Long-run decay (beyond 3 years) & MEDIUM & Open \\
+5 & Mechanism-specific experience quality interventions & HIGH & Open \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Priority 1: Cross-Domain Replication}
+
+The Jones et al. design should be replicated in other domains:
+\begin{itemize}
+\item Vaccination uptake (likely learning)
+\item Exercise frequency (likely mixed)
+\item Digital engagement (likely addiction)
+\item Financial behaviors (likely inertia)
+\end{itemize}
+
+\subsection{Priority 5: Experience Quality Interventions}
+
+If learning mechanism dominates, first-experience quality becomes a key lever.
+Research needed on:
+\begin{itemize}
+\item What features of first experience affect permanent beliefs?
+\item Can negative first experiences be ``overwritten''?
+\item How does information provision interact with direct experience?
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{References}
+\label{sec:hf-references}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{Master Bibliography:} For complete reference details, see
+\texttt{bcm2\_master\_references.bib} in the repository.
+
+This section lists appendix-specific references and data sources.
+\end{tcolorbox}
+
+\vspace{0.5em}
+
+\subsection{Key References for This Appendix}
+
+The following works are particularly relevant for the content of this appendix:
+
+\begin{itemize}[nosep]
+    \item \textbf{Core Empirical:} Jones, Molitor \& Reif (2025)
+    \item \textbf{Addiction Models:} Becker \& Murphy (1988)
+    \item \textbf{Experience Goods:} Nelson (1970)
+    \item \textbf{Related Habit Studies:} Hussam, Rabbani, Rigol \& Roth (2022); Charness \& Gneezy (2009)
+\end{itemize}
+
+\subsection{Appendix-Specific References}
+
+\begin{thebibliography}{99}
+
+\bibitem{jonesmolitorreif2025} Jones, D., Molitor, D., \& Reif, J. (2025).
+How Do Habits Form? Experimental Evidence from Health Screenings.
+\textit{Working Paper}.
+
+\bibitem{beckermurphy1988} Becker, G. S., \& Murphy, K. M. (1988).
+A Theory of Rational Addiction. \textit{Journal of Political Economy}, 96(4), 675-700.
+
+\bibitem{nelson1970information} Nelson, P. (1970).
+Information and Consumer Behavior. \textit{Journal of Political Economy}, 78(2), 311-329.
+
+\bibitem{hussam2022} Hussam, R., Rabbani, A., Rigol, N., \& Roth, B. (2022).
+Habit Formation and Rational Addiction: A Field Experiment in Handwashing.
+\textit{Working Paper}.
+
+\bibitem{charnessgneezy2009} Charness, G., \& Gneezy, U. (2009).
+Incentives to Exercise. \textit{Econometrica}, 77(3), 909-931.
+
+\bibitem{madrianshea2001} Madrian, B. C., \& Shea, D. F. (2001).
+The Power of Suggestion: Inertia in 401(k) Participation and Savings Behavior.
+\textit{Quarterly Journal of Economics}, 116(4), 1149-1187.
+
+\end{thebibliography}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CROSS-REFERENCE FOOTER (Required)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\vspace{1em}
+\hrule
+\vspace{0.5em}
+
+\noindent\textit{Cross-references:}
+Appendix G (REF-GLOSSARY),
+Appendix UNMAPPED_AW (CORE-STAGE),
+Appendix UNMAPPED_AU (CORE-AWARE),
+Appendix UNMAPPED_BBB (CORE-WHERE),
+Appendix S (PREDICT-MASTER),
+Appendix XIX (LIT-LEARNING).
+
+\noindent\textit{Master Bibliography:} \texttt{bcm2\_master\_references.bib}
+
+
+% =============================================================================
+% END OF APPENDIX HF
+% =============================================================================

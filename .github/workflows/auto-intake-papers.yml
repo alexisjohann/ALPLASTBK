@@ -1,0 +1,95 @@
+name: Auto-Intake BEA Lab Papers
+
+on:
+  push:
+    paths:
+      - 'papers/evaluated/integrated/**'
+  workflow_dispatch:
+    inputs:
+      batch_size:
+        description: 'Number of papers to process (0 = all)'
+        required: false
+        default: '0'
+        type: string
+      file_type:
+        description: 'File type filter (txt, pdf, or empty for all)'
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  intake-papers:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Detect new files (push trigger)
+        if: github.event_name == 'push'
+        id: detect
+        run: |
+          # Find new files added in this push
+          NEW_FILES=$(git diff --name-only --diff-filter=A HEAD~1 HEAD -- 'papers/evaluated/integrated/' || true)
+          COUNT=$(echo "$NEW_FILES" | grep -c '.' || echo 0)
+          echo "new_files=$COUNT" >> $GITHUB_OUTPUT
+          echo "Found $COUNT new files in papers/evaluated/integrated/"
+          if [ "$COUNT" -gt 0 ]; then
+            echo "$NEW_FILES"
+          fi
+
+      - name: Run auto-intake (push trigger)
+        if: github.event_name == 'push' && steps.detect.outputs.new_files != '0'
+        run: |
+          python scripts/auto_intake_papers.py --all --type txt
+          python scripts/auto_intake_papers.py --all --type pdf
+
+      - name: Run auto-intake (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          BATCH="${{ inputs.batch_size }}"
+          TYPE="${{ inputs.file_type }}"
+
+          ARGS=""
+          if [ "$BATCH" = "0" ] || [ -z "$BATCH" ]; then
+            ARGS="--all"
+          else
+            ARGS="--batch $BATCH"
+          fi
+
+          if [ -n "$TYPE" ]; then
+            ARGS="$ARGS --type $TYPE"
+          fi
+
+          python scripts/auto_intake_papers.py $ARGS
+
+      - name: Show status
+        run: python scripts/auto_intake_papers.py --status
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add bibliography/bcm_master.bib \
+                data/paper-references/ \
+                data/auto-intake-manifest.yaml \
+                data/paper-integration-queue.yaml
+          git diff --staged --quiet || git commit -m "feat(auto-intake): Process BEA Lab paper uploads
+
+          Automated intake of papers from papers/evaluated/integrated/
+          - Extract metadata from TXT/PDF headers
+          - Create BibTeX stubs in bcm_master.bib
+          - Create Paper-YAMLs in data/paper-references/
+          - Add to paper-integration-queue.yaml"
+          git push

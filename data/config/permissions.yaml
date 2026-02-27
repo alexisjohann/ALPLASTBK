@@ -1,0 +1,339 @@
+# =============================================================================
+# BEATRIX PERMISSION POLICY - Single Source of Truth
+# =============================================================================
+# Architecture: Hierarchical RBAC + Resource-Level ReBAC + Attribute Rules
+#
+# Inspired by: Google Zanzibar, AWS Cedar, Open Policy Agent
+# Principles:
+#   1. Least Privilege: Minimum permissions by default
+#   2. Deny by Default: Everything not explicitly granted is denied
+#   3. Hierarchical Inheritance: Higher roles inherit lower role permissions
+#   4. Resource Ownership: Creators get owner role on their resources
+#   5. Attribute Rules: Domain-based (@fehradvice.com) auto-grants
+#   6. Audit Trail: Every permission-critical action is logged
+#
+# Version: 1.0.0
+# Created: 2026-02-11
+# =============================================================================
+
+metadata:
+  version: "1.0.0"
+  last_updated: "2026-02-11"
+  description: "BEATRIX Permission Policy"
+  model: "RBAC + ReBAC + ABAC Hybrid"
+
+# =============================================================================
+# 1. ROLE HIERARCHY (org-wide system roles)
+# =============================================================================
+# Higher roles inherit ALL permissions from lower roles
+# owner > partner > senior_consultant > consultant > researcher > guest
+#
+# Assignment rules:
+#   - guest: Default for new unverified users
+#   - researcher: Default for verified external users
+#   - consultant: @fehradvice.com verified users (auto-assigned)
+#   - senior_consultant: Explicit assignment by admin
+#   - partner: Explicit assignment by admin
+#   - owner: ADMIN_EMAILS only (env var)
+
+role_hierarchy:
+  - owner                 # Gerhard, Andrea - full control
+  - partner               # Partners (AJ, MR, MdL, MF, LA)
+  - senior_consultant     # Senior team members
+  - consultant            # FehrAdvice team (@fehradvice.com)
+  - researcher            # External verified users
+  - guest                 # Unverified / read-only
+
+# Auto-assignment rules (evaluated on login)
+auto_assign:
+  - condition: "email in ADMIN_EMAILS"
+    role: owner
+  - condition: "email.endswith('@fehradvice.com') and email_verified"
+    role: consultant
+  - condition: "email_verified"
+    role: researcher
+  - condition: "not email_verified"
+    role: guest
+
+# =============================================================================
+# 2. PERMISSIONS (capabilities)
+# =============================================================================
+# Format: domain.action
+# Domains: platform, project, lead, document, model, chat, crm, user
+
+permissions:
+
+  # ── Platform Administration ──
+  platform.admin_dashboard:
+    description: "Access admin dashboard"
+    min_role: owner
+  platform.manage_users:
+    description: "Create, deactivate, modify users"
+    min_role: owner
+  platform.manage_roles:
+    description: "Assign roles to users"
+    min_role: owner
+  platform.manage_settings:
+    description: "Change platform settings"
+    min_role: owner
+  platform.view_analytics:
+    description: "View usage analytics and statistics"
+    min_role: partner
+  platform.manage_permissions:
+    description: "Edit this permission policy"
+    min_role: owner
+
+  # ── Projects ──
+  project.create:
+    description: "Create new projects"
+    min_role: consultant
+    attributes:
+      - "email.endswith('@fehradvice.com')"
+  project.read:
+    description: "View project list and details"
+    min_role: researcher
+  project.read_own:
+    description: "View projects user is member/owner of"
+    min_role: researcher
+  project.update:
+    description: "Edit any project"
+    min_role: partner
+    resource_override: "project.contributor"
+  project.update_own:
+    description: "Edit projects user owns or is team member of"
+    min_role: consultant
+    resource_override: "project.contributor"
+  project.delete:
+    description: "Delete/archive projects"
+    min_role: owner
+  project.manage_team:
+    description: "Add/remove team members on projects"
+    min_role: partner
+    resource_override: "project.owner"
+  project.assign_code:
+    description: "Assign project codes (Projektkuerzel)"
+    min_role: consultant
+    attributes:
+      - "email.endswith('@fehradvice.com')"
+
+  # ── Leads / Sales Pipeline ──
+  lead.create:
+    description: "Create new leads"
+    min_role: consultant
+    attributes:
+      - "email.endswith('@fehradvice.com')"
+  lead.read:
+    description: "View all leads"
+    min_role: consultant
+    attributes:
+      - "email.endswith('@fehradvice.com')"
+  lead.read_own:
+    description: "View leads user owns"
+    min_role: consultant
+  lead.update:
+    description: "Edit any lead"
+    min_role: partner
+    resource_override: "lead.owner"
+  lead.update_own:
+    description: "Edit leads user owns"
+    min_role: consultant
+    resource_override: "lead.owner"
+  lead.delete:
+    description: "Delete leads"
+    min_role: owner
+  lead.manage_pipeline:
+    description: "Move leads through pipeline stages"
+    min_role: consultant
+    resource_override: "lead.owner"
+  lead.view_financials:
+    description: "See deal values and financial projections"
+    min_role: senior_consultant
+
+  # ── CRM / Customer Data ──
+  crm.read:
+    description: "View customer registry, contacts"
+    min_role: consultant
+    attributes:
+      - "email.endswith('@fehradvice.com')"
+  crm.write:
+    description: "Create/edit companies, contacts"
+    min_role: senior_consultant
+  crm.delete:
+    description: "Delete CRM records"
+    min_role: owner
+  crm.export:
+    description: "Export CRM data"
+    min_role: partner
+
+  # ── Documents / Knowledge Base ──
+  document.upload:
+    description: "Upload documents and papers"
+    min_role: researcher
+  document.read:
+    description: "View and search documents"
+    min_role: researcher
+  document.classify:
+    description: "Classify documents (EBF taxonomy)"
+    min_role: consultant
+  document.classify_bulk:
+    description: "Bulk classify all documents"
+    min_role: senior_consultant
+  document.delete:
+    description: "Delete documents"
+    min_role: partner
+    resource_override: "document.owner"
+  document.manage_embeddings:
+    description: "Rebuild embeddings, manage vector store"
+    min_role: owner
+
+  # ── Behavioral Models ──
+  model.create:
+    description: "Create BCM/Psi models"
+    min_role: consultant
+  model.read:
+    description: "View models"
+    min_role: researcher
+  model.update:
+    description: "Edit models"
+    min_role: consultant
+    resource_override: "model.contributor"
+  model.delete:
+    description: "Delete models"
+    min_role: partner
+
+  # ── Chat / RAG ──
+  chat.use:
+    description: "Use BEATRIX chat and RAG"
+    min_role: researcher
+  chat.intent:
+    description: "Use structured intent chat (projects, leads, models)"
+    min_role: consultant
+  chat.history:
+    description: "View own chat history"
+    min_role: researcher
+  chat.clear:
+    description: "Clear own chat history"
+    min_role: researcher
+
+  # ── User Management ──
+  user.read_own_profile:
+    description: "View and edit own profile"
+    min_role: guest
+  user.read_profiles:
+    description: "View other user profiles"
+    min_role: consultant
+  user.manage_others:
+    description: "Edit other user profiles and settings"
+    min_role: owner
+
+# =============================================================================
+# 3. RESOURCE ROLES (per-entity relationships)
+# =============================================================================
+# Assigned when users create or are added to resources
+# These OVERRIDE min_role for specific resources (resource_override above)
+
+resource_roles:
+  project:
+    owner:
+      description: "Project creator or assigned owner"
+      auto_assign: "creator"
+      permissions: ["project.update", "project.manage_team", "project.delete"]
+    contributor:
+      description: "Team member on the project"
+      permissions: ["project.update_own", "project.read"]
+    viewer:
+      description: "Can view project details"
+      permissions: ["project.read"]
+
+  lead:
+    owner:
+      description: "Lead creator or assigned fa_owner"
+      auto_assign: "creator_or_fa_owner"
+      permissions: ["lead.update", "lead.manage_pipeline", "lead.delete"]
+    contributor:
+      description: "Team member working the lead"
+      permissions: ["lead.update_own", "lead.read"]
+    viewer:
+      description: "Can view lead details"
+      permissions: ["lead.read"]
+
+  document:
+    owner:
+      description: "Document uploader"
+      auto_assign: "uploader"
+      permissions: ["document.delete", "document.classify"]
+    viewer:
+      description: "Can read the document"
+      permissions: ["document.read"]
+
+# =============================================================================
+# 4. ATTRIBUTE RULES (contextual policies)
+# =============================================================================
+# Additional conditions beyond role checks
+
+attribute_rules:
+  fehradvice_internal:
+    condition: "email.endswith('@fehradvice.com')"
+    grants:
+      - crm.read
+      - lead.read
+      - project.create
+    description: "All FehrAdvice employees get internal access"
+
+  verified_user:
+    condition: "email_verified == true"
+    grants:
+      - chat.use
+      - document.upload
+      - document.read
+    description: "Verified users get basic platform access"
+
+  unverified_restricted:
+    condition: "email_verified == false"
+    denies:
+      - document.upload
+      - chat.intent
+      - project.create
+    description: "Unverified users have restricted access"
+
+# =============================================================================
+# 5. AUDIT REQUIREMENTS
+# =============================================================================
+# Actions that MUST be logged with full context
+
+audit_required:
+  - project.create
+  - project.delete
+  - project.manage_team
+  - lead.create
+  - lead.delete
+  - lead.manage_pipeline
+  - crm.write
+  - crm.delete
+  - platform.manage_users
+  - platform.manage_roles
+  - document.delete
+  - document.manage_embeddings
+
+# =============================================================================
+# 6. RATE LIMITS (per role, per hour)
+# =============================================================================
+rate_limits:
+  guest:
+    chat.use: 10
+    document.upload: 0
+  researcher:
+    chat.use: 100
+    document.upload: 20
+  consultant:
+    chat.use: 500
+    document.upload: 100
+  senior_consultant:
+    chat.use: 1000
+    document.upload: 500
+  partner:
+    chat.use: -1  # unlimited
+    document.upload: -1
+  owner:
+    chat.use: -1
+    document.upload: -1

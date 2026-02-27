@@ -1,0 +1,2373 @@
+# ============================================================================
+# FA-SM-2.0: FehrAdvice Strategy Model
+# ============================================================================
+# Meta-model for behavioral organizational design
+# Evolution: FA-SM-1.1 → FA-SM-2.0 (major version: new capabilities)
+#
+# CAUSAL CHAIN:
+#   WERTSTEIGERUNG (Ziel) ↔ VERHALTEN (Hebel) ↔ KONTEXT-DESIGN (Instrument)
+#   V(t)                  ↔ B(t)              ↔ Ψ(t)
+#
+# KEY INNOVATIONS (1.1 → 2.0):
+#   I1: 6 value dimensions (+ Relational Capital, Adaptive Capacity)
+#   I2: 4-tier context (14 dimensions + emergence + dΨ/dt)
+#   I3: Layered γ (5 types: ΨΨ, BΨ, VV, cross-level, structural γ₅)
+#   I4: Multi-scale ODE (micro/meso/macro timescales)
+#   I5: Tipping points + regime-switching
+#   I6: Network effects (actor interaction topology)
+#   I7: Bayesian hierarchical parameter estimation
+#   I8: 12 falsifiable predictions with cascading falsification
+#   I9: Design gates (CEO-Test, Berater-Test, Falsifiability)
+#   I10: S×U×K Configuration Gate (model structure adapts to org context)
+#   I11: Functional Decomposition (Index f on existing layers V, B, Ψ, γ)
+#
+# SUB-MODELS:
+#   - SDM-1.0: Strategy Design Model (process layer)
+#   - SOCM-1.0: Strategy Option Comparison Model (option comparison)
+#
+# THEORETICAL FOUNDATIONS:
+#   - Van den Steen (2017): Formal Theory of Strategy
+#   - Brynjolfsson & Milgrom (2010): Complementarities in Organizations
+#   - Ichniowski et al. (1997): HRM Practice Clusters (+6.7%)
+#   - Bloom, Sadun & Van Reenen (2012): Management Practices
+#   - Oberholzer-Gee (2021): Better, Simpler Strategy (WTP-WTS)
+#   - Bandiera et al. (2020): CEO Behavior and Firm Performance
+#   - Heckman (2007): Dynamic Complementarity ("skills beget skills")
+#
+# Created: 2026-02-24
+# Version: 2.1
+# ============================================================================
+
+model:
+  id: "FA-SM-2.0"
+  name: "FehrAdvice Strategy Model"
+  category: "META-STRATEGY"
+  status: "EXPERIMENTAL"
+  version: "2.1"
+  created: "2026-02-24"
+  last_updated: "2026-02-25"
+  maintainer: "EBF Strategy Team"
+  supersedes: "FA-SM-1.1"
+
+  # ==========================================================================
+  # STEP 1: DESIGN GATES (NEW in 2.0, G0 added 2026-02-24)
+  # ==========================================================================
+  # Four validation gates. G0 configures model complexity BEFORE analysis.
+  # G1-G3 validate output quality AFTER analysis.
+  # Entry point: HYBRID (theory-driven AND practice-driven simultaneously).
+  design_gates:
+    entry_point: "HYBRID"
+    entry_point_rationale: |
+      Pure theory → not actionable for clients.
+      Pure practice → not falsifiable, not transferable.
+      HYBRID: Build from theory (Van den Steen, Ichniowski), validate via practice.
+
+    gates:
+      # ════════════════════════════════════════════════════════════════════
+      # G0: CONFIGURATION GATE — S×U×K (NEW Innovation I10)
+      # ════════════════════════════════════════════════════════════════════
+      # The model structure itself is context-dependent — not just parameters.
+      # Traditional: Model = fixed, θ = fixed
+      # EBF v1:     Model = fixed, θ = f(Ψ, 10C)
+      # FA-SM-2.0:  Model = f(S,U,K), θ = f(Ψ, 10C)
+      #
+      # Theoretical basis:
+      #   - Mintzberg (1979): 5 structural configurations depend on size + environment
+      #   - Snowden (Cynefin): Simple/Complicated/Complex/Chaotic determines method
+      #   - Galbraith (Star Model): Strategy determines structure
+      #   - Van den Steen P4: "Uncertainty makes strategy more valuable"
+      # ════════════════════════════════════════════════════════════════════
+      - gate_id: "G0-CONFIG"
+        name: "Configuration Gate"
+        new_in_v2: true
+        innovation_id: "I10"
+        question: "Welche FA-SM-2.0 Komponenten braucht diese Organisation?"
+        principle: |
+          Not every organization needs every component. A 50-person startup
+          does not need cross-level γ, Bayesian hierarchical estimation, or
+          regime-switching. Applying the full model would violate parsimony
+          (Occam's Razor) and fail G2-BERATER (not explainable in 15 min).
+          Conversely, a 50,000-person corporation NEEDS the full model because
+          omitting network effects or emergence would miss critical dynamics.
+
+        # ── THE THREE META-DIMENSIONS ──────────────────────────────────
+        meta_dimensions:
+          - dimension: "S"
+            name: "Size (Grösse)"
+            question: "How many people are in the organization?"
+            levels:
+              - level: "S1"
+                name: "Micro"
+                range: "1-50 employees"
+                archetype: "Startup, Handwerksbetrieb, Praxis"
+                mintzberg: "Simple Structure"
+              - level: "S2"
+                name: "Small"
+                range: "50-250 employees"
+                archetype: "KMU, Agentur, Familienbetrieb"
+                mintzberg: "Simple Structure / Machine Bureaucracy"
+              - level: "S3"
+                name: "Medium"
+                range: "250-1'000 employees"
+                archetype: "Mittelstand, Division"
+                mintzberg: "Divisional Form"
+              - level: "S4"
+                name: "Large"
+                range: "1'000+ employees"
+                archetype: "Konzern, multinational"
+                mintzberg: "Machine Bureaucracy / Adhocracy"
+
+          - dimension: "U"
+            name: "Uncertainty (Unsicherheit)"
+            question: "How predictable is the organization's environment?"
+            literature: "steen2017formal (P4: uncertainty makes strategy more valuable)"
+            levels:
+              - level: "U1"
+                name: "Stable"
+                description: "Predictable market, regulation, technology"
+                archetype: "Versorgungsunternehmen, Verwaltung"
+                cynefin: "Clear/Obvious"
+                planning_horizon: "3-5 years reliable"
+              - level: "U2"
+                name: "Moderate"
+                description: "Some competitive dynamics, moderate change"
+                archetype: "Traditionsbranche mit Digitalisierung"
+                cynefin: "Complicated"
+                planning_horizon: "1-3 years reliable"
+              - level: "U3"
+                name: "High"
+                description: "Fast-moving market, disruptive threats"
+                archetype: "Tech, Fintech, Startup-Ökosystem"
+                cynefin: "Complex"
+                planning_horizon: "6-12 months reliable"
+              - level: "U4"
+                name: "Chaotic"
+                description: "Crisis, M&A, fundamental disruption"
+                archetype: "Turnaround, Post-Merger, Pandemie"
+                cynefin: "Chaotic"
+                planning_horizon: "Weeks to months"
+
+          - dimension: "K"
+            name: "Complexity (Komplexität)"
+            question: "How many interacting parts does the organization have?"
+            levels:
+              - level: "K1"
+                name: "Simple"
+                description: "Few divisions, clear hierarchy, homogeneous workforce"
+                archetype: "Einprodukt-Firma, lokaler Betrieb"
+                interaction_density: "Low — few γ relevant"
+              - level: "K2"
+                name: "Moderate"
+                description: "Multiple functions, some cross-functional dependencies"
+                archetype: "Multi-Standort, funktionale Gliederung"
+                interaction_density: "Medium — intra-tier γ relevant"
+              - level: "K3"
+                name: "High"
+                description: "Matrix structure, multiple BUs, diverse stakeholders"
+                archetype: "Divisional, international"
+                interaction_density: "High — inter-tier γ relevant"
+              - level: "K4"
+                name: "Very High"
+                description: "Network organization, ecosystem, platform"
+                archetype: "Holding, Plattform, Ökosystem"
+                interaction_density: "Very high — cross-level γ and emergence"
+
+        # ── SCORING ALGORITHM ──────────────────────────────────────────
+        # Maps S×U×K → Configuration Profile (deterministic)
+        scoring_algorithm:
+          description: |
+            Composite score C = max(S_score, U_score, K_score).
+            The HIGHEST dimension determines the minimum complexity.
+            Rationale: A small firm (S1) in a chaotic environment (U4) needs
+            regime-switching — size alone would wrongly suggest LEAN.
+          mapping:
+            S1: 1
+            S2: 2
+            S3: 3
+            S4: 4
+            U1: 1
+            U2: 2
+            U3: 3
+            U4: 4
+            K1: 1
+            K2: 2
+            K3: 3
+            K4: 4
+          composite_rule: "C = max(S_score, U_score, K_score)"
+          override_rules:
+            - condition: "S1 AND U >= U3"
+              override: "AGILE (not LEAN)"
+              rationale: "Small firm in high uncertainty needs tipping points + fast dynamics"
+            - condition: "S4 AND U1 AND K <= K2"
+              override: "STRUCTURED (not ENTERPRISE)"
+              rationale: "Large stable simple firm doesn't need full complexity"
+
+        # ── CONFIGURATION PROFILES ─────────────────────────────────────
+        profiles:
+          - profile_id: "LEAN"
+            composite_score: 1
+            typical_suk: "S1/U1/K1"
+            description: "Minimum viable model. Few interactions, fast cycles."
+            archetype_example: "Handwerksbetrieb, Solo-Praxis"
+            active_components: 8
+            value_dimensions: ["V_WTP", "V_WTS"]
+            context_tiers: [1]
+            gamma_types: ["gamma_psi_psi"]
+            ode_scales: ["micro"]
+            tipping_points: false
+            network_effects: false
+            regime_switching: false
+            bayesian_hierarchical: false
+            sub_models: []
+            predictions_required: 4
+            typical_project_duration: "2-4 weeks"
+
+          - profile_id: "AGILE"
+            composite_score: "1 (with U >= 3 override)"
+            typical_suk: "S1/U3/K2"
+            description: "Small but uncertain. Needs fast dynamics + tipping awareness."
+            archetype_example: "Tech-Startup, Fintech"
+            active_components: 14
+            value_dimensions: ["V_WTP", "V_WTS", "V_IC"]
+            context_tiers: [1, 2]
+            gamma_types: ["gamma_psi_psi", "gamma_B_psi"]
+            ode_scales: ["micro", "meso"]
+            tipping_points: true
+            network_effects: false
+            regime_switching: false
+            bayesian_hierarchical: false
+            sub_models: []
+            predictions_required: 6
+            typical_project_duration: "3-6 weeks"
+
+          - profile_id: "STRUCTURED"
+            composite_score: 2
+            typical_suk: "S2/U2/K2"
+            description: "Balanced complexity. Most KMU and mid-size firms."
+            archetype_example: "Zindel United, LUKB, Familienbetrieb 250 MA"
+            active_components: 20
+            value_dimensions: ["V_WTP", "V_WTS", "V_OC", "V_IC"]
+            context_tiers: [1, 2]
+            gamma_types: ["gamma_psi_psi", "gamma_B_psi", "gamma_5_structural"]
+            ode_scales: ["micro", "meso"]
+            tipping_points: true
+            network_effects: false
+            regime_switching: false
+            bayesian_hierarchical: false
+            functional_decomposition: true
+            integration_effectiveness_eta: false
+            sub_models: ["SDM-1.0"]
+            predictions_required: 8
+            typical_project_duration: "6-12 weeks"
+
+          - profile_id: "DYNAMIC"
+            composite_score: 3
+            typical_suk: "S3/U3/K3"
+            description: "Full mid-tier. Network effects emerge, multiple timescales matter."
+            archetype_example: "ALPLA, PORR, Helsana"
+            active_components: 29
+            value_dimensions: ["V_WTP", "V_WTS", "V_OC", "V_IC", "V_RC", "V_AC"]
+            context_tiers: [1, 2, 3]
+            gamma_types: ["gamma_psi_psi", "gamma_B_psi", "gamma_V_V", "gamma_5_structural"]
+            ode_scales: ["micro", "meso", "macro"]
+            tipping_points: true
+            network_effects: true
+            regime_switching: true
+            bayesian_hierarchical: false
+            functional_decomposition: true
+            integration_effectiveness_eta: true
+            sub_models: ["SDM-1.0", "SOCM-1.0"]
+            predictions_required: 10
+            typical_project_duration: "3-6 months"
+
+          - profile_id: "ENTERPRISE"
+            composite_score: 4
+            typical_suk: "S4/U2/K4"
+            description: "Full model minus chaotic dynamics. Large stable enterprises."
+            archetype_example: "UBS, Migros Bank, ZKB"
+            active_components: 33
+            value_dimensions: ["V_WTP", "V_WTS", "V_OC", "V_IC", "V_RC", "V_AC"]
+            context_tiers: [1, 2, 3, 4]
+            gamma_types: ["gamma_psi_psi", "gamma_B_psi", "gamma_V_V", "gamma_cross", "gamma_5_structural"]
+            ode_scales: ["micro", "meso", "macro"]
+            tipping_points: true
+            network_effects: true
+            regime_switching: false
+            bayesian_hierarchical: true
+            functional_decomposition: true
+            integration_effectiveness_eta: true
+            sub_models: ["SDM-1.0", "SOCM-1.0"]
+            predictions_required: 12
+            typical_project_duration: "6-12 months"
+
+          - profile_id: "VUCA"
+            composite_score: 4
+            typical_suk: "S4/U4/K4"
+            description: "Maximum complexity. Crisis, M&A, fundamental disruption."
+            archetype_example: "Post-Merger Integration, Branchendisruption"
+            active_components: 37
+            value_dimensions: ["V_WTP", "V_WTS", "V_OC", "V_IC", "V_RC", "V_AC"]
+            context_tiers: [1, 2, 3, 4]
+            gamma_types: ["gamma_psi_psi", "gamma_B_psi", "gamma_V_V", "gamma_cross", "gamma_5_structural"]
+            ode_scales: ["micro", "meso", "macro"]
+            tipping_points: true
+            network_effects: true
+            regime_switching: true
+            bayesian_hierarchical: true
+            functional_decomposition: true
+            integration_effectiveness_eta: true
+            sub_models: ["SDM-1.0", "SOCM-1.0"]
+            predictions_required: 12
+            typical_project_duration: "6-18 months"
+
+        # ── ACTIVATION MATRIX (summary) ────────────────────────────────
+        activation_matrix:
+          description: |
+            Binary matrix: which components are active per profile.
+            Row = component, Column = profile. 1 = active, 0 = inactive.
+          components:
+            # VALUE DIMENSIONS
+            - component: "V_WTP"
+              LEAN: 1
+              AGILE: 1
+              STRUCTURED: 1
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            - component: "V_WTS"
+              LEAN: 1
+              AGILE: 1
+              STRUCTURED: 1
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            - component: "V_OC"
+              LEAN: 0
+              AGILE: 0
+              STRUCTURED: 1
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            - component: "V_IC"
+              LEAN: 0
+              AGILE: 1
+              STRUCTURED: 1
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            - component: "V_RC"
+              LEAN: 0
+              AGILE: 0
+              STRUCTURED: 0
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            - component: "V_AC"
+              LEAN: 0
+              AGILE: 0
+              STRUCTURED: 0
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            # CONTEXT TIERS
+            - component: "Context_Tier_1_canonical"
+              LEAN: 1
+              AGILE: 1
+              STRUCTURED: 1
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            - component: "Context_Tier_2_organizational"
+              LEAN: 0
+              AGILE: 1
+              STRUCTURED: 1
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            - component: "Context_Tier_3_market"
+              LEAN: 0
+              AGILE: 0
+              STRUCTURED: 0
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            - component: "Context_Tier_4_emergent"
+              LEAN: 0
+              AGILE: 0
+              STRUCTURED: 0
+              DYNAMIC: 0
+              ENTERPRISE: 1
+              VUCA: 1
+            # COMPLEMENTARITY TYPES
+            - component: "gamma_psi_psi"
+              LEAN: 1
+              AGILE: 1
+              STRUCTURED: 1
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            - component: "gamma_B_psi"
+              LEAN: 0
+              AGILE: 1
+              STRUCTURED: 1
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            - component: "gamma_V_V"
+              LEAN: 0
+              AGILE: 0
+              STRUCTURED: 0
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            - component: "gamma_cross"
+              LEAN: 0
+              AGILE: 0
+              STRUCTURED: 0
+              DYNAMIC: 0
+              ENTERPRISE: 1
+              VUCA: 1
+            - component: "gamma_5_structural"
+              LEAN: 0
+              AGILE: 0
+              STRUCTURED: 1
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            # FUNCTIONAL DECOMPOSITION (NEW in 2.1)
+            - component: "functional_decomposition"
+              LEAN: 0
+              AGILE: 0
+              STRUCTURED: 1
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            - component: "integration_effectiveness_eta"
+              LEAN: 0
+              AGILE: 0
+              STRUCTURED: 0
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            # ODE TIMESCALES
+            - component: "ODE_micro_days"
+              LEAN: 1
+              AGILE: 1
+              STRUCTURED: 1
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            - component: "ODE_meso_months"
+              LEAN: 0
+              AGILE: 1
+              STRUCTURED: 1
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            - component: "ODE_macro_years"
+              LEAN: 0
+              AGILE: 0
+              STRUCTURED: 0
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            # ADVANCED FEATURES
+            - component: "tipping_points"
+              LEAN: 0
+              AGILE: 1
+              STRUCTURED: 1
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            - component: "network_effects"
+              LEAN: 0
+              AGILE: 0
+              STRUCTURED: 0
+              DYNAMIC: 1
+              ENTERPRISE: 1
+              VUCA: 1
+            - component: "regime_switching"
+              LEAN: 0
+              AGILE: 0
+              STRUCTURED: 0
+              DYNAMIC: 1
+              ENTERPRISE: 0
+              VUCA: 1
+            - component: "bayesian_hierarchical"
+              LEAN: 0
+              AGILE: 0
+              STRUCTURED: 0
+              DYNAMIC: 0
+              ENTERPRISE: 1
+              VUCA: 1
+
+        # ── CLIENT MAPPING (known FehrAdvice clients) ──────────────────
+        client_mapping:
+          - client: "Zindel United"
+            suk: "S2/U2/K2"
+            profile: "STRUCTURED"
+            rationale: "~250 MA, moderate uncertainty (Bau/Familienbetrieb), moderate complexity"
+          - client: "ALPLA"
+            suk: "S4/U2/K3"
+            profile: "DYNAMIC"
+            rationale: "22'000 MA globally, but stable plastics market, divisional structure"
+          - client: "LUKB"
+            suk: "S3/U2/K2"
+            profile: "STRUCTURED"
+            rationale: "~1'000 MA, stable Swiss banking, moderate complexity"
+          - client: "UBS"
+            suk: "S4/U3/K4"
+            profile: "ENTERPRISE"
+            rationale: "70'000+ MA, regulatory + market uncertainty, matrix structure"
+          - client: "PORR"
+            suk: "S4/U2/K3"
+            profile: "DYNAMIC"
+            rationale: "20'000+ MA, cyclical construction, multi-country"
+          - client: "Neon"
+            suk: "S1/U3/K2"
+            profile: "AGILE"
+            rationale: "Fintech startup, high uncertainty, small team"
+
+        criteria:
+          - "S×U×K Dimensionen bestimmt"
+          - "Composite Score berechnet"
+          - "Profil zugewiesen (LEAN/AGILE/STRUCTURED/DYNAMIC/ENTERPRISE/VUCA)"
+          - "Aktivierungsmatrix zeigt welche Komponenten aktiv sind"
+          - "Override-Regeln geprüft"
+        failure_action: "Profil anpassen. Bei Grenzfällen: höheres Profil wählen (konservativ)."
+
+      - gate_id: "G1-CEO"
+        name: "CEO-Test"
+        question: "Kann ein CEO die Ergebnisse für strategische Entscheidungen nutzen?"
+        criteria:
+          - "Output enthält konkrete Handlungsempfehlungen (nicht nur Diagnose)"
+          - "Prioritäten sind klar (was zuerst, was kann warten)"
+          - "Trade-offs sind benannt (nicht «alles ist wichtig»)"
+          - "Zeithorizonte sind spezifiziert (nicht «langfristig»)"
+        failure_action: "Vereinfachen bis bestanden. Komplexität in Appendix verschieben."
+
+      - gate_id: "G2-BERATER"
+        name: "Berater-Test"
+        question: "Kann ein Berater die Methodik dem Kunden in 15 Minuten erklären?"
+        criteria:
+          - "Kausalkette V←B←Ψ in 3 Sätzen erklärbar"
+          - "Jeder γ-Parameter hat eine intuitive Erklärung"
+          - "Visualisierung existiert (kein reiner Formalismus)"
+          - "Analogie verfügbar (z.B. «wie beim Hausbau: Fundament vor Dach»)"
+        failure_action: "Intuition Box schreiben. Wenn nicht intuitiv → Modell überdenken."
+
+      - gate_id: "G3-FALSIFIABILITY"
+        name: "Falsifiability Gate"
+        question: "Kann das Modell an Daten scheitern?"
+        criteria:
+          - "Mindestens 4 Micro-Predictions mit messbaren Outcomes"
+          - "Prediction Cards mit ex-ante Konfidenzintervallen"
+          - "Cascading Falsification: Micro-Failure → Meso suspect"
+          - "Zeitpunkt der Auflösung ex-ante festgelegt"
+        failure_action: "Predictions schärfen bis falsifizierbar. Kein «das Modell passt immer»."
+
+  # ==========================================================================
+  # PHILOSOPHICAL FOUNDATION
+  # ==========================================================================
+  foundation:
+    paradigm: |
+      Strategy without behavior integration is not implementable.
+      Strategy oriented only at behavioral goals is purposeless.
+      The ultimate goal is VALUE CREATION (Wertsteigerung).
+      Behavior is the LEVER (Hebel), Context Design is the INSTRUMENT.
+
+    strategy_definition:
+      source: "steen2017formal"
+      definition: |
+        Strategy is "the smallest set of (core) choices to optimally guide
+        the other choices" (Van den Steen, Management Science 2017).
+      implication: |
+        A decision is strategic iff it has sufficient interactions (γ_kl)
+        with other decisions. Without interactions, there is no strategy
+        (Proposition 7). More interactions → more strategic (Proposition 8).
+        This formally justifies FA-SM's focus on complementarity γ.
+      key_propositions:
+        - "P7: A decision with no interactions is never strategic"
+        - "P8: More interactions → more strategic"
+        - "P1a: Persistence makes decisions more strategic"
+        - "P4: Uncertainty makes strategy more valuable"
+        - "P12: Choice-specific capabilities make decisions more strategic"
+
+    causal_chain:
+      direction: "bidirectional"
+      top_down:
+        description: "What value? → What behaviors? → What context?"
+        formula: "V*(t) → B*(t) → Ψ*(t)"
+        purpose: "Strategic goal-setting and requirement derivation"
+      bottom_up:
+        description: "Given context → what behavior emerges? → what value results?"
+        formula: "Ψ(t) → B(t) → V(t)"
+        purpose: "Realistic prediction and feasibility assessment"
+      feedback:
+        description: "Success changes context (momentum, legitimacy, resources)"
+        formula: "V(t) → ΔΨ(t+1)"
+        new_in_v2: true
+
+    three_layers:
+      - layer: 0
+        name: "Wertschöpfungsziel (Value Creation Target)"
+        symbol: "V(t)"
+        question: "What value must be created over what time horizon?"
+        role: "NORTH STAR — all other layers serve this"
+      - layer: 1
+        name: "Verhaltensübersetzung (Behavior Translation)"
+        symbol: "B(t)"
+        question: "Which behaviors of which actors must change to produce V(t)?"
+        role: "LEVER — the mechanism through which strategy becomes real"
+      - layer: 2
+        name: "Kontext-Design (Context Architecture)"
+        symbol: "Ψ(t)"
+        question: "What context conditions must be created to produce B(t)?"
+        role: "INSTRUMENT — the actionable design space"
+
+  # ==========================================================================
+  # STEP 2: SCOPE — COUPLED SYSTEM (NEW in 2.0)
+  # ==========================================================================
+  scope:
+    type: "COUPLED_SYSTEM"
+    description: |
+      FA-SM-2.0 models the organization as a coupled dynamical system
+      where Value, Behavior, and Context co-evolve on different timescales.
+      The coupling creates emergent properties not predictable from
+      individual components.
+
+    boundaries:
+      in_scope:
+        - id: "S1"
+          name: "Organizational value creation"
+          description: "6 value dimensions (WTP, WTS, OC, IC, RC, AC)"
+        - id: "S2"
+          name: "Actor behavior dynamics"
+          description: "4 actor groups with heterogeneous behavioral types"
+        - id: "S3"
+          name: "Context architecture"
+          description: "14 dimensions in 4 tiers (canonical, org, market, emergent)"
+        - id: "S4"
+          name: "Complementarity structure"
+          description: "5-type γ matrix (ΨΨ, BΨ, VV, cross-level, structural γ₅)"
+        - id: "S5"
+          name: "Multi-scale dynamics"
+          description: "Coupled ODEs on micro/meso/macro timescales"
+        - id: "S6"
+          name: "Tipping points and regime transitions"
+          description: "Threshold-driven state changes"
+        - id: "S7"
+          name: "Network topology"
+          description: "Actor interaction structure (adjacency matrix)"
+        - id: "S8"
+          name: "Feedback loops"
+          description: "V→Ψ success-context feedback"
+        - id: "S9"
+          name: "Sub-model integration"
+          description: "SDM-1.0 (process) and SOCM-1.0 (comparison)"
+        - id: "S10"
+          name: "Falsifiable predictions"
+          description: "12 predictions with cascading falsification"
+
+        - id: "S11"
+          name: "Functional decomposition"
+          description: "12 functions in 3 clusters with w_df, B_f, γ₅, η"
+          new_in_v2_1: true
+
+      out_of_scope:
+        - "Individual psychological profiling (→ use EBF INDIVIDUAL layer)"
+        - "Financial modeling / DCF valuation (→ use standard finance tools)"
+        - "Market entry / competitive response simulation"
+        - "Supply chain optimization"
+        - "Technology architecture decisions (beyond Ψ_M abstraction)"
+
+  # ==========================================================================
+  # VALUE DIMENSIONS — Layer 0 (Extended to 6 in v2.0)
+  # ==========================================================================
+  value_dimensions:
+    formula: |
+      V(t) = Σ_k w_k(Ψ) · V_k(t)    where Σ w_k = 1
+
+    dimensions:
+      - symbol: "V_WTP"
+        name: "Customer Value Created (WTP)"
+        description: |
+          Increase in willingness-to-pay through product, service, experience.
+          Oberholzer-Gee (2021): "The most fundamental driver of competitive
+          advantage is creating value for customers."
+        measurement: "ΔWTP (CHF), NPS, CLV, conversion rates"
+        default_weight: 0.25
+        weight_drivers: "Ψ_E (market competition), Ψ_T (growth phase)"
+        typical_horizon: "1-5 years"
+        fepsde_mapping: "F (financial returns), S (social trust)"
+        depreciation_rate: "δ_WTP ∈ [0.10, 0.20] per year"
+        literature: ["oberholzergee2021better", "bloom2012management"]
+
+      - symbol: "V_WTS"
+        name: "Talent & Supply Value (WTS reduction)"
+        description: |
+          Reduction in willingness-to-sell through better working conditions,
+          purpose, culture. Lower WTS = wider value wedge.
+        measurement: "Employee NPS, turnover %, supplier reliability"
+        default_weight: 0.20
+        weight_drivers: "Ψ_S (labor market), Ψ_K (cultural expectations)"
+        typical_horizon: "2-7 years"
+        fepsde_mapping: "E (employee wellbeing), S (belonging)"
+        depreciation_rate: "δ_WTS ∈ [0.05, 0.15] per year"
+        literature: ["oberholzergee2021better", "lazear2018personnel"]
+
+      - symbol: "V_OC"
+        name: "Organizational Capital"
+        description: |
+          Accumulated capability, culture, routines, tacit knowledge.
+          Bloom/Sadun/Van Reenen (2012): management practices explain ~30%
+          of cross-country productivity differences.
+        measurement: "Management practice scores (WMS), capability index"
+        default_weight: 0.20
+        weight_drivers: "Ψ_T (maturity), Ψ_I (regulatory stability)"
+        typical_horizon: "3-10 years"
+        fepsde_mapping: "P (practical capabilities), D (deliberative routines)"
+        depreciation_rate: "δ_OC ∈ [0.05, 0.15] per year"
+        literature: ["bloom2012management", "sadun2017are", "gibbons2015corporate"]
+
+      - symbol: "V_IC"
+        name: "Innovation Capital"
+        description: |
+          Future optionality from R&D, experimentation, new business models.
+          Depreciates fastest because competitive environment erodes advantage.
+        measurement: "Revenue from new products %, patent citations, option value"
+        default_weight: 0.15
+        weight_drivers: "Ψ_E (disruption intensity), Ψ_M (tech maturity)"
+        typical_horizon: "3-10 years"
+        fepsde_mapping: "F (financial optionality), D (deliberative exploration)"
+        depreciation_rate: "δ_IC ∈ [0.15, 0.30] per year"
+        literature: ["acemoglu2018innovation", "cassiman2006search"]
+
+      - symbol: "V_RC"
+        name: "Relational Capital"
+        new_in_v2: true
+        description: |
+          Trust, reputation, network value, stakeholder goodwill.
+          Critical in org-design: how much relational capital survives
+          a transformation? Granovetter (1985): economic action is
+          embedded in social relations.
+        measurement: "Stakeholder trust index, partner retention, reputation score"
+        default_weight: 0.10
+        weight_drivers: "Ψ_S (network density), Ψ_K (trust culture)"
+        typical_horizon: "5-15 years"
+        fepsde_mapping: "S (social capital), E (emotional bonds)"
+        depreciation_rate: "δ_RC ∈ [0.03, 0.10] per year (slow but fragile — shock events)"
+        literature: ["granovetter1985economic", "fehr2007economics"]
+        rationale: |
+          Org-design projects routinely underestimate relational capital destruction.
+          Example: Zindel reorganization risks destroying cross-unit trust built
+          over decades. V_RC makes this visible and measurable.
+
+      - symbol: "V_AC"
+        name: "Adaptive Capacity"
+        new_in_v2: true
+        description: |
+          Organizational ability to respond to unexpected change.
+          The «immune system» of the organization. Teece (2007):
+          dynamic capabilities = sensing + seizing + transforming.
+        measurement: "Response time to disruption, pivot success rate, resilience index"
+        default_weight: 0.10
+        weight_drivers: "Ψ_E (volatility), Ψ_M (flexibility of infrastructure)"
+        typical_horizon: "ongoing"
+        fepsde_mapping: "D (deliberative flexibility), P (practical adaptability)"
+        depreciation_rate: "δ_AC ∈ [0.10, 0.25] per year (requires constant exercise)"
+        literature: ["teece2007explicating"]
+        rationale: |
+          In VUCA environments, the capacity to adapt is itself a value dimension.
+          Without V_AC, models assume static steady-states that never arrive.
+
+  # ==========================================================================
+  # ACTOR GROUPS — Layer 1
+  # ==========================================================================
+  actor_groups:
+    formula: |
+      B_k(t) = Σ_j λ_j(Ψ) · B_jk(t)
+      B_jk(t) = adoption of behavior k by actor group j
+      λ_j(Ψ)  = context-dependent value-leverage of actor group j
+
+    groups:
+      - symbol: "B_L"
+        name: "Leadership"
+        description: "C-suite, board, senior management"
+        default_leverage: 0.35
+        leverage_drivers: "Ψ_I (governance), Ψ_S (legitimacy)"
+        heterogeneity:
+          source: "bandiera2020ceo"
+          types:
+            - "Strategic-Allocator (high meetings, broad span, +3.5% revenue)"
+            - "Operational-Manager (task-focused, narrow span, neutral)"
+            - "Political-Navigator (relationship-focused, context-dependent)"
+        typical_behaviors:
+          - "Strategic decision quality"
+          - "Resource allocation discipline"
+          - "Culture role-modeling"
+
+      - symbol: "B_M"
+        name: "Middle Management"
+        description: "Department heads, team leads, project managers"
+        default_leverage: 0.30
+        leverage_drivers: "Ψ_I (delegation), Ψ_C (information quality)"
+        heterogeneity:
+          source: "bloom2012management"
+          types:
+            - "Translator (strategy → operations, high cross-functional)"
+            - "Optimizer (process improvement, efficiency-focused)"
+            - "Bottleneck (information filter, can block or enable)"
+        typical_behaviors:
+          - "Strategy translation to operations"
+          - "Team motivation and coaching"
+          - "Cross-functional collaboration"
+
+      - symbol: "B_O"
+        name: "Operations"
+        description: "Frontline employees, specialists, craftspeople"
+        default_leverage: 0.20
+        leverage_drivers: "Ψ_M (tools), Ψ_E (resources)"
+        heterogeneity:
+          source: "lazear2018personnel"
+          types:
+            - "Engaged-Adopter (intrinsically motivated, early mover)"
+            - "Conditional-Cooperator (follows social norms, majority)"
+            - "Resistant-Skeptic (requires evidence, slow but thorough)"
+        typical_behaviors:
+          - "Process adoption"
+          - "Quality commitment"
+          - "Continuous improvement"
+
+      - symbol: "B_E"
+        name: "External Stakeholders"
+        description: "Customers, suppliers, partners, regulators"
+        default_leverage: 0.15
+        leverage_drivers: "Ψ_S (market norms), Ψ_I (contractual frameworks)"
+        heterogeneity:
+          source: "fehr2007economics"
+          types:
+            - "Value-Aligned (shared purpose, long-term)"
+            - "Transactional (price-sensitive, switching-ready)"
+            - "Regulatory (compliance-driven)"
+        typical_behaviors:
+          - "Adoption of new offerings"
+          - "Partnership commitment"
+          - "Beyond-compliance behavior"
+
+  # ==========================================================================
+  # STEP 3: CONTEXT DIMENSIONS — 4-Tier Architecture (NEW in 2.0)
+  # ==========================================================================
+  context_dimensions:
+    architecture: |
+      4-Tier hierarchy: Canonical → Organizational → Market → Emergent.
+      Tier 1 is immutable (EBF foundation).
+      Tiers 2-3 are derived via composition functions.
+      Tier 4 captures emergent properties from Tier 1-3 interactions.
+
+    # ---- Tier 1: EBF Canonical Ψ (immutable) ----
+    tier_1_canonical:
+      description: "The 8 EBF canonical Ψ-dimensions. Foundation for all derived dimensions."
+      dimensions:
+        - {symbol: "Ψ_I", name: "Institutional", question: "Which rules, defaults, regulations?"}
+        - {symbol: "Ψ_S", name: "Social", question: "Who is present? What social norms?"}
+        - {symbol: "Ψ_C", name: "Cognitive", question: "Cognitive load, attention, motivation?"}
+        - {symbol: "Ψ_K", name: "Cultural", question: "What values, traditions, identity?"}
+        - {symbol: "Ψ_E", name: "Economic", question: "Budget, resources, market conditions?"}
+        - {symbol: "Ψ_T", name: "Temporal", question: "Time pressure, lifecycle phase, horizon?"}
+        - {symbol: "Ψ_M", name: "Material/Technology", question: "Tools, infrastructure, digital?"}
+        - {symbol: "Ψ_F", name: "Physical/Spatial", question: "Location, physical environment?"}
+
+    # ---- Tier 2: Organizational Context (derived, designable) ----
+    tier_2_organizational:
+      composition_function: "Ψ^org_i = Σ_j w_ij · Ψ_j (weighted linear combination)"
+      dimensions:
+        - symbol: "Ψ^org_GOV"
+          name: "Governance & Decision Architecture"
+          designable: true
+          ebf_weights: {Ψ_I: 0.65, Ψ_S: 0.35}
+
+        - symbol: "Ψ^org_INC"
+          name: "Incentive Architecture"
+          designable: true
+          ebf_weights: {Ψ_I: 0.45, Ψ_E: 0.35, Ψ_S: 0.20}
+          crowding_out_risk:
+            parameter_ref: "PAR-COMP-002"
+            gamma: -0.68
+            source: "frey1997cost, gneezy2000pay"
+
+        - symbol: "Ψ^org_INF"
+          name: "Information Architecture"
+          designable: true
+          ebf_weights: {Ψ_M: 0.45, Ψ_C: 0.30, Ψ_I: 0.25}
+
+        - symbol: "Ψ^org_CUL"
+          name: "Cultural Architecture"
+          designable: "partially (slow, 2-5 years)"
+          ebf_weights: {Ψ_K: 0.60, Ψ_S: 0.40}
+          source: "steen2024dynamics, gibbons2015corporate"
+
+        - symbol: "Ψ^org_CAP"
+          name: "Capability Architecture"
+          designable: true
+          ebf_weights: {Ψ_M: 0.40, Ψ_C: 0.35, Ψ_E: 0.25}
+
+    # ---- Tier 3: Market Context (derived, exogenous) ----
+    tier_3_market:
+      dimensions:
+        - symbol: "Ψ^ext_MKT"
+          name: "Market Dynamics"
+          designable: false
+          ebf_mapping: "Ψ_E(market) + Ψ_T(cycle)"
+
+        - symbol: "Ψ^ext_REG"
+          name: "Regulatory Environment"
+          designable: false
+          ebf_mapping: "Ψ_I(external regulations)"
+
+        - symbol: "Ψ^ext_MAC"
+          name: "Macro Environment"
+          designable: false
+          ebf_mapping: "Ψ_E(macro) + Ψ_K(societal) + Ψ_T(secular trends)"
+
+    # ---- Tier 4: Emergent Properties (NEW in 2.0) ----
+    tier_4_emergent:
+      new_in_v2: true
+      description: |
+        Emergent properties arise from interactions between Tier 1-3
+        dimensions. They are NOT designable directly — they emerge
+        from the system configuration. Measured, not set.
+
+      dimensions:
+        - symbol: "Ψ^em_TRUST"
+          name: "Organizational Trust Level"
+          emerges_from: "Ψ^org_CUL × Ψ^org_GOV × Ψ^org_INF"
+          description: "Trust is not designable directly — it emerges from culture, governance transparency, and information quality."
+          measurement: "Trust survey scores, psychological safety index"
+
+        - symbol: "Ψ^em_AGILITY"
+          name: "Organizational Agility"
+          emerges_from: "Ψ^org_CAP × Ψ^org_INF × Ψ^org_GOV"
+          description: "Speed of adaptation — emerges from capabilities, information flow, and decision speed."
+          measurement: "Time-to-decision, pivot success rate"
+
+        - symbol: "Ψ^em_ALIGNMENT"
+          name: "Strategic Alignment"
+          emerges_from: "Ψ^org_CUL × Ψ^org_INC × Ψ^org_INF"
+          description: "Degree to which individual behavior serves collective goals."
+          measurement: "Goal cascade completion, cross-unit collaboration index"
+
+      emergence_alpha:
+        description: |
+          α_em measures the strength of emergence: how much the
+          emergent property exceeds the sum of its components.
+          α_em = 0: purely additive (no emergence)
+          α_em > 0: superadditive (genuine emergence)
+          α_em < 0: subadditive (interference)
+        formula: "Ψ^em_i = Σ_j w_j · Ψ_j + α_em · ∏_j Ψ_j^(1/n)"
+        calibration: "Measured empirically; α_em ∈ [-0.3, +0.5] typical range"
+
+    # ---- Context Dynamics (NEW in 2.0) ----
+    context_dynamics:
+      new_in_v2: true
+      description: |
+        Context itself evolves over time. dΨ/dt captures how
+        organizational and market context change endogenously
+        (from behavior) and exogenously (from external shocks).
+      equations:
+        organizational: |
+          dΨ^org_i/dt = f_design(I(t))          — intentional design interventions
+                      + f_behavior(B(t))         — behavioral side-effects
+                      - f_erosion(Ψ^org_i)      — natural erosion without maintenance
+                      + f_feedback(V(t))         — success/failure feedback
+        market: |
+          dΨ^ext_j/dt = exogenous(t)            — external shocks, trends
+      timescales:
+        fast: "Ψ^org_INF (weeks-months: information systems change quickly)"
+        medium: "Ψ^org_GOV, Ψ^org_INC, Ψ^org_CAP (months-years)"
+        slow: "Ψ^org_CUL (2-5 years: culture changes slowly)"
+
+  # ==========================================================================
+  # STEP 4: COMPLEMENTARITY PARAMETERS — 5-Type γ (NEW structure in 2.0, γ₅ added 2.1)
+  # ==========================================================================
+  complementarity_parameters:
+    theoretical_basis:
+      supermodularity: |
+        Topkis (1978), Milgrom/Roberts (1990): f is supermodular if
+        f(x∨y) + f(x∧y) ≥ f(x) + f(y).
+        Complementary practices should change TOGETHER.
+      empirical_anchor: |
+        Ichniowski et al. (1997, AER): HRM practice CLUSTERS → +6.7%.
+        Individual practice changes → near-zero effect.
+        This is the strongest empirical evidence for organizational complementarity.
+
+    # ---- Type 1: Context × Context (γ^ΨΨ) ----
+    type_1_context_context:
+      symbol: "γ^ΨΨ"
+      description: "How context dimensions interact with each other"
+      parameters:
+        - pair: "Ψ^org_INC × Ψ^org_CUL"
+          symbol: "γ^ΨΨ_INC_CUL"
+          value: -0.35
+          evidence_tier: 1
+          source: "frey1997cost, gneezy2000pay"
+          interpretation: "CROWDING-OUT: monetary incentives undermine cultural motivation"
+          design_rule: "Never increase INC without checking CUL impact"
+
+        - pair: "Ψ^org_GOV × Ψ^org_INF"
+          symbol: "γ^ΨΨ_GOV_INF"
+          value: 0.25
+          evidence_tier: 2
+          source: "bloom2012management"
+          interpretation: "COMPLEMENTARY: governance + information reinforce"
+
+        - pair: "Ψ^org_INF × Ψ^org_CAP"
+          symbol: "γ^ΨΨ_INF_CAP"
+          value: 0.30
+          evidence_tier: 1
+          source: "ichniowski1997effects"
+          interpretation: "STRONGEST complementarity: information + capabilities"
+
+        - pair: "Ψ^org_CAP × Ψ^org_CUL"
+          symbol: "γ^ΨΨ_CAP_CUL"
+          value: 0.20
+          evidence_tier: 2
+          source: "gibbons2015corporate, steen2024dynamics"
+          interpretation: "Capabilities embedded in culture persist longer"
+
+    # ---- Type 2: Behavior × Context (γ^BΨ) ----
+    type_2_behavior_context:
+      symbol: "γ^BΨ"
+      description: "How actor behavior interacts with context"
+      parameters:
+        - pair: "B_L × Ψ^org_GOV"
+          symbol: "γ^BΨ_L_GOV"
+          value: 0.25
+          evidence_tier: 2
+          source: "bandiera2020ceo, steen2018strategy"
+          interpretation: "Leadership effectiveness depends on governance"
+
+        - pair: "B_M × Ψ^org_INF"
+          symbol: "γ^BΨ_M_INF"
+          value: 0.20
+          evidence_tier: 2
+          source: "bloom2012management"
+          interpretation: "Middle management scales with information quality"
+
+        - pair: "B_O × Ψ^org_INC"
+          symbol: "γ^BΨ_O_INC"
+          value: 0.15
+          evidence_tier: 1
+          source: "lazear2018personnel, ichniowski1997effects"
+          interpretation: "Operations respond to incentives (but check crowding-out)"
+          warning: "Check γ^ΨΨ_INC_CUL before increasing INC"
+
+        - pair: "B_L × Ψ^org_CUL"
+          symbol: "γ^BΨ_L_CUL"
+          value: 0.15
+          evidence_tier: 2
+          source: "steen2024dynamics"
+          interpretation: "Leadership shapes culture — positive but SLOW (2-5 years)"
+
+    # ---- Type 3: Value × Value (γ^VV) ----
+    type_3_value_value:
+      symbol: "γ^VV"
+      description: "How value dimensions interact"
+      parameters:
+        - pair: "V_OC × V_IC"
+          symbol: "γ^VV_OC_IC"
+          value: 0.20
+          evidence_tier: 2
+          source: "cassiman2006search"
+          interpretation: "Organizational capital enables systematic innovation"
+
+        - pair: "V_WTP × V_WTS"
+          symbol: "γ^VV_WTP_WTS"
+          value: -0.10
+          evidence_tier: 3
+          source: "oberholzergee2021better"
+          interpretation: "Short-term resource tension between customer and talent investment"
+
+        - pair: "V_RC × V_OC"
+          symbol: "γ^VV_RC_OC"
+          value: 0.15
+          evidence_tier: 3
+          source: "granovetter1985economic"
+          interpretation: "Relational capital facilitates organizational learning"
+          new_in_v2: true
+
+        - pair: "V_AC × V_IC"
+          symbol: "γ^VV_AC_IC"
+          value: 0.25
+          evidence_tier: 3
+          source: "teece2007explicating"
+          interpretation: "Adaptive capacity and innovation are mutually reinforcing"
+          new_in_v2: true
+
+    # ---- Type 4: Cross-Level (γ^cross) — NEW in 2.0 ----
+    type_4_cross_level:
+      symbol: "γ^cross"
+      new_in_v2: true
+      description: |
+        Cross-level complementarities: how one layer moderates
+        interactions within another layer. This captures the insight
+        that the SAME behavior-context pair works differently
+        depending on the value environment, and vice versa.
+      parameters:
+        - triplet: "V_OC moderates B_M × Ψ^org_INF"
+          symbol: "γ^cross_OC_M_INF"
+          value: 0.10
+          evidence_tier: 3
+          interpretation: |
+            High organizational capital amplifies how well middle management
+            utilizes information. In low-OC orgs, better information helps less
+            because the routines to act on it are missing.
+          calibration_needed: true
+
+        - triplet: "V_RC moderates B_L × Ψ^org_CUL"
+          symbol: "γ^cross_RC_L_CUL"
+          value: 0.12
+          evidence_tier: 3
+          interpretation: |
+            High relational capital amplifies leadership's culture-shaping effect.
+            Leaders with trust (V_RC) can change culture faster.
+          calibration_needed: true
+
+  # ==========================================================================
+  # FUNCTIONAL DECOMPOSITION — Innovation I11 (NEW in 2.1)
+  # ==========================================================================
+  # Organizational functions as Index f on existing layers (V, B, Ψ, γ).
+  # NOT a new layer — functions are structured partitions of B, Ψ and γ
+  # within the organization.
+  #
+  # CRITICAL DISTINCTION:
+  #   Function ≠ Department (Abteilung).
+  #   A function is a "Wertlogik" (value logic), not an org box.
+  #   F_OPS manifests as "Produktion" in manufacturing, "Kreditabwicklung"
+  #   in banking, "Patientenversorgung" in healthcare — same Wertlogik,
+  #   different Abteilung.
+  #
+  # ARCHITECTURE:
+  #   V(t) = Σ_d w_d · (Σ_f w_df · v_df(B_f, Ψ_f, S_f))
+  #        + Σ_{f≠f'} γ₅(f,f') · v_f · v_f'
+  #
+  #   where:
+  #     d ∈ {WTP, WTS, OC, IC, RC, AC}     — value dimensions
+  #     f ∈ F_active                         — active functions
+  #     w_df                                 — value contribution weight
+  #     B_f                                  — behavioral clusters per function
+  #     γ₅(f,f')                             — cross-function complementarity
+  #
+  # THEORETICAL FOUNDATIONS:
+  #   - Milgrom & Roberts (1990, 1995): Supermodularity across practices
+  #   - Ichniowski et al. (1997): HRM clusters not individual practices
+  #   - Brynjolfsson & Milgrom (2013): IT complementarity with org design
+  #   - Bloom/Sadun/Van Reenen (2012): Management practices as system
+  #   - Porter (1996): Activity system mapping (fit across functions)
+  # =========================================================================
+  functional_decomposition:
+    innovation_id: "I11"
+    new_in_v2_1: true
+
+    # ── FUNCTION TAXONOMY ─────────────────────────────────────────────────
+    # 12 functions in 3 clusters. Every organization has all 12 Wertlogiken,
+    # but not all may be active (depends on S×U×K profile).
+    function_clusters:
+      wertschoepfung:
+        name: "Value Creation (Wertschöpfung)"
+        description: "Functions that directly create value for customers and markets"
+        functions:
+          - symbol: "F_OPS"
+            name: "Operations"
+            wertlogik: "Wert durch Ausführung — Herstellung, Lieferung, Dienstleistung"
+            manifestations:
+              manufacturing: "Produktion, Fertigung"
+              banking: "Kreditabwicklung, Zahlungsverkehr"
+              construction: "Bauausführung, Projektabwicklung"
+              healthcare: "Patientenversorgung"
+
+          - symbol: "F_MKT"
+            name: "Marketing"
+            wertlogik: "Wert durch Wahrnehmung — Positionierung, Marke, Nachfrage"
+            manifestations:
+              b2c: "Brand Marketing, Kampagnen"
+              b2b: "Thought Leadership, Case Studies"
+              platform: "Growth Marketing, Community"
+
+          - symbol: "F_SAL"
+            name: "Sales"
+            wertlogik: "Wert durch Konversion — Lead zu Kunde, Angebot zu Auftrag"
+            manifestations:
+              enterprise: "Key Account Management"
+              retail: "Filialvertrieb, Beratung"
+              digital: "Self-Service, E-Commerce"
+
+          - symbol: "F_SVC"
+            name: "Service/Support"
+            wertlogik: "Wert durch Erhaltung — After-Sales, Kundenbindung, Loyalität"
+            manifestations:
+              technical: "Wartung, Support"
+              relationship: "Customer Success"
+              operations: "Claims, Reklamationen"
+
+      befaehigung:
+        name: "Enablement (Befähigung)"
+        description: "Functions that create the conditions for value creation"
+        functions:
+          - symbol: "F_HR"
+            name: "Human Resources"
+            wertlogik: "Wert durch Menschen — Talent, Entwicklung, Kultur"
+            manifestations:
+              traditional: "Personalwesen, Administration"
+              strategic: "People & Culture, Talent Management"
+              lean: "Payroll + ein Generalist"
+
+          - symbol: "F_FIN"
+            name: "Finance & Controlling"
+            wertlogik: "Wert durch Steuerung — Transparenz, Allokation, Risiko"
+            manifestations:
+              corporate: "CFO-Office, Treasury"
+              operational: "Controlling, Budgetierung"
+              lean: "Buchhaltung + Treuhänder"
+
+          - symbol: "F_IT"
+            name: "IT & Digital"
+            wertlogik: "Wert durch Infrastruktur — Systeme, Daten, Automatisierung"
+            manifestations:
+              enterprise: "CIO-Office, ERP, Data Platform"
+              digital_native: "Engineering, DevOps, Product"
+              lean: "Cloud + 1 Admin"
+
+          - symbol: "F_RND"
+            name: "R&D / Innovation"
+            wertlogik: "Wert durch Neues — Forschung, Entwicklung, Optionalität"
+            manifestations:
+              corporate: "Forschungsabteilung, Labs"
+              product: "Produktentwicklung, Design"
+              process: "Prozessinnovation, Lean"
+
+          - symbol: "F_LEG"
+            name: "Legal & Compliance"
+            wertlogik: "Wert durch Schutz — Risikominimierung, Regelkonformität"
+            manifestations:
+              corporate: "Rechtsabteilung, Compliance"
+              regulated: "Regulatory Affairs, Audit"
+              lean: "Externe Kanzlei + 1 Intern"
+
+      integration:
+        name: "Integration (Steuerung)"
+        description: |
+          Meta-functions that steer cross-function complementarity γ₅.
+          They do NOT create direct value — they produce η (integration
+          effectiveness), which multiplies γ₅.
+        functions:
+          - symbol: "F_STR"
+            name: "Strategy"
+            wertlogik: "Wert durch Richtung — Kohärenz, Priorisierung, Allokation"
+            eta_contribution: "Highest — defines which γ₅ to activate"
+            manifestations:
+              corporate: "Strategieabteilung, Corp. Development"
+              embedded: "CEO + Leitungsteam (kein eigenes Team)"
+
+          - symbol: "F_PMO"
+            name: "PMO / Transformation"
+            wertlogik: "Wert durch Umsetzung — Koordination, Tracking, Skalierung"
+            eta_contribution: "Medium — ensures γ₅ activation is executed"
+            manifestations:
+              permanent: "Project Management Office"
+              temporary: "Transformation Office (befristet)"
+              lean: "Projektleiter als Rolle, kein Team"
+
+          - symbol: "F_COM"
+            name: "Communications"
+            wertlogik: "Wert durch Narrative — Alignment, Kultur, Reputation"
+            eta_contribution: "Supportive — amplifies γ₅ through shared understanding"
+            manifestations:
+              corporate: "Unternehmenskommunikation"
+              internal: "Internal Comms, Change Comms"
+              lean: "CEO + HR machen Komm. mit"
+
+    # ── FUNCTION ACTIVATION LOGIC ─────────────────────────────────────────
+    # Not all 12 functions are active in every organization.
+    # Activation depends on w_df contribution AND S×U×K profile.
+    activation_logic:
+      formula: |
+        f ∈ F_active ⟺ (Σ_d w_df > θ_sum) OR (max_d w_df > θ_max)
+      rationale: |
+        Hybrid logic: Recognizes both broad functions (high Σ, moderate per-d)
+        and specialist functions (low Σ but one dominant d).
+        Example: F_LEG has low Σ but max(w_df) is high for V_RC and V_AC
+        in regulated industries → correctly activated.
+      thresholds:
+        theta_sum:
+          base: 0.15
+          calibration: "From S×U×K — higher profiles activate more functions"
+        theta_max:
+          base: 0.20
+          calibration: "Specialist threshold — one dominant dimension suffices"
+      suk_profile_mapping:
+        LEAN: {expected_active: "4-6", always_active: ["F_OPS", "F_SAL", "F_FIN"]}
+        AGILE: {expected_active: "6-8", always_active: ["F_OPS", "F_MKT", "F_IT", "F_RND"]}
+        STRUCTURED: {expected_active: "8-10", always_active: ["F_OPS", "F_HR", "F_FIN", "F_STR"]}
+        DYNAMIC: {expected_active: "10-12", always_active: ["F_OPS", "F_HR", "F_FIN", "F_IT", "F_STR"]}
+        ENTERPRISE: {expected_active: 12, always_active: "all"}
+        VUCA: {expected_active: 12, always_active: "all"}
+
+    # ── FUNCTION-SPECIFIC CONTEXT Ψ_f (NEW in 2.1) ────────────────────────
+    # Each function operates in a SPECIFIC context that is a subset/filter
+    # of the organizational context Ψ^org. The value equation v_df(B_f, Ψ_f, S_f)
+    # requires defining what Ψ_f and S_f mean.
+    function_context:
+      psi_f:
+        definition: |
+          Ψ_f is the FUNCTION-RELEVANT SUBSET of organizational context Ψ^org.
+          Not all 14 context dimensions affect all functions equally.
+          Ψ_f = {Ψ^org_i · r_fi} where r_fi ∈ [0,1] is the relevance weight.
+        formula: "Ψ_f = Σ_i r_fi · Ψ^org_i"
+        examples:
+          F_HR:
+            high_relevance: "Ψ^org_CUL (r=0.95), Ψ^org_INC (r=0.90), Ψ^org_CAP (r=0.85)"
+            low_relevance: "Ψ^org_MKT (r=0.10), Ψ^org_REG_ext (r=0.15)"
+            interpretation: "HR is strongly shaped by internal culture and incentives, weakly by external market"
+          F_OPS:
+            high_relevance: "Ψ^org_CAP (r=0.90), Ψ^org_INF (r=0.85), Ψ^org_GOV (r=0.80)"
+            low_relevance: "Ψ^org_CUL (r=0.30)"
+            interpretation: "Operations depends on capabilities and information systems, less on culture (short-term)"
+          F_STR:
+            high_relevance: "All dimensions r ≥ 0.50"
+            interpretation: "Strategy must scan the ENTIRE context — no blind spots allowed"
+        calibration: |
+          Level 1: r_fi priors from function definition (above — Wertlogik implies relevant Ψ)
+          Level 2: Sector-adjusted (banking F_FIN has higher r for Ψ^org_REG)
+          Level 3: Firm-specific (measured via function-level surveys)
+        design_implication: |
+          When redesigning Ψ^org (e.g., improving information systems):
+          The IMPACT on each function differs because r_fi differs.
+          Ψ^org_INF improvement → big impact on F_OPS (r=0.85) but small on F_HR (r=0.30).
+          This creates PRIORITIZATION: invest in Ψ dimensions where Σ_f r_fi · w_df is highest.
+
+      s_f:
+        definition: |
+          S_f captures the STRUCTURAL POSITION of a function within the organization.
+          It is NOT context (Ψ) but rather the organizational architecture that
+          determines HOW the function operates.
+        components:
+          - name: "Centralization"
+            symbol: "S_f^cen"
+            description: "How centralized is the function? (0=fully decentral, 1=fully central)"
+            examples:
+              F_FIN: "Typically high (0.8-1.0) — central treasury, central controlling"
+              F_OPS: "Varies widely (0.3 in decentralized, 0.9 in centralized manufacturing)"
+              F_HR: "Depends on model (0.3 shared-service vs 0.9 centralized)"
+
+          - name: "Formalization"
+            symbol: "S_f^form"
+            description: "How formalized are processes? (0=informal, 1=fully specified)"
+            examples:
+              F_FIN: "High (0.8-0.9) — regulatory requirements"
+              F_MKT: "Low-medium (0.3-0.6) — creative work"
+              F_OPS: "High in manufacturing (0.9), lower in services (0.5)"
+
+          - name: "Integration Density"
+            symbol: "S_f^int"
+            description: "How many cross-function interfaces does f have? (0=isolated, 1=hub)"
+            examples:
+              F_STR: "Very high (0.9) — connects to everything"
+              F_LEG: "Low (0.2-0.4) — specialized, fewer interfaces"
+              F_IT: "High (0.7-0.8) — infrastructure for all functions"
+
+        formula: "S_f = [S_f^cen, S_f^form, S_f^int]  — 3D structural vector per function"
+        impact_on_value: |
+          S_f modulates HOW effectively B_f translates into v_df:
+          v_df = g(B_f, Ψ_f) · h(S_f)
+          where h(S_f) captures structural efficiency:
+          - High centralization (S^cen) → faster implementation but less local adaptation
+          - High formalization (S^form) → more consistent but less flexible
+          - High integration density (S^int) → more synergy potential (higher effective γ₅)
+        calibration: "Primarily from project data (interviews, org charts, process maps)"
+
+    # ── VALUE CONTRIBUTION MATRIX w_df ────────────────────────────────────
+    # How much does function f contribute to value dimension d?
+    # w_df(Firma) = w_df^base + δ_sector + δ_firm
+    #
+    # Three-level calibration:
+    #   Level 1: w_df^base (below) — universal, literature-informed
+    #   Level 2: δ_sector — sector-specific adjustments (from CVA)
+    #   Level 3: δ_firm — firm-specific adjustments (from project data)
+    #
+    # Interpretation: w_df is a "structural power topology" — it shows
+    # which functions have the most leverage on which value dimensions.
+    # This is NOT about budget or headcount. A function with w_df = 0.05
+    # can be critical if max_d w_df > θ_max (specialist activation).
+    value_contribution_matrix:
+      calibration:
+        approach: "PCT-based three-level"
+        formula: "w_df(Firma) = w_df^base + δ_sector(Ψ^org) + δ_firm"
+        level_1_source: "Literature meta-analysis + LLMMC prior"
+        level_2_source: "Sector CVA data (customers/*.yaml)"
+        level_3_source: "Firm-specific project calibration"
+        normalization: "Σ_f w_df = 1.0 for each d (columns sum to 1)"
+
+      # Base matrix (Level 1) — rows = functions, columns = value dimensions
+      # Validated and corrected 2026-02-25 (v2 with 4 corrections applied)
+      w_df_base:
+        #                    V_WTP  V_WTS  V_OC   V_IC   V_RC   V_AC
+        F_OPS:              [0.30,  0.10,  0.20,  0.05,  0.10,  0.05]
+        F_MKT:              [0.25,  0.00,  0.05,  0.10,  0.15,  0.05]
+        F_SAL:              [0.15,  0.00,  0.05,  0.05,  0.20,  0.00]
+        F_SVC:              [0.15,  0.05,  0.05,  0.00,  0.25,  0.05]
+        F_HR:               [0.00,  0.35,  0.25,  0.10,  0.05,  0.10]
+        F_FIN:              [0.05,  0.15,  0.15,  0.05,  0.05,  0.15]
+        F_IT:               [0.05,  0.10,  0.10,  0.30,  0.00,  0.20]
+        F_RND:              [0.05,  0.00,  0.05,  0.30,  0.00,  0.15]
+        F_LEG:              [0.00,  0.05,  0.05,  0.00,  0.10,  0.10]
+        F_STR:              [0.00,  0.10,  0.00,  0.05,  0.05,  0.10]
+        F_PMO:              [0.00,  0.05,  0.05,  0.00,  0.00,  0.05]
+        F_COM:              [0.00,  0.05,  0.00,  0.00,  0.05,  0.00]
+        # Column sums:      [1.00,  1.00,  1.00,  1.00,  1.00,  1.00]
+
+      corrections_applied:
+        - id: "C1-WTS-breadth"
+          description: |
+            V_WTS was originally HR-monopoly (0.40). Broadened to include
+            F_FIN (0.15), F_IT (0.10), F_STR (0.10), F_COM (0.05).
+            WTS is about ALL working conditions, not just HR programs.
+          source: "User feedback 2026-02-25"
+
+        - id: "C2-HR-to-IC"
+          description: |
+            Added F_HR contribution to V_IC (0.10). Innovation without
+            talent is impossible — HR enables innovation through hiring,
+            development, and creating the right cultural conditions.
+          source: "User feedback 2026-02-25"
+
+        - id: "C3-hybrid-activation"
+          description: |
+            Changed activation from pure Σ_d to hybrid (Σ > θ_sum OR max > θ_max).
+            Pure summation discriminated against specialist functions like F_LEG
+            that contribute heavily to one dimension but have low total.
+          source: "User feedback 2026-02-25"
+
+        - id: "C4-sector-delta"
+          description: |
+            Added δ_sector component to calibration formula.
+            Base matrix alone fails for sector-specific reality — e.g.,
+            in construction F_LEG is much more important than in software.
+          source: "User feedback 2026-02-25"
+
+      sector_delta_examples:
+        construction:
+          description: "Bau/Infrastruktur (Zindel, PORR)"
+          deltas:
+            F_OPS: {V_WTP: +0.05, V_AC: +0.05}
+            F_LEG: {V_RC: +0.10, V_AC: +0.05}
+            F_RND: {V_IC: -0.10}
+          rationale: "Operations-heavy, high regulation, low R&D intensity"
+
+        banking:
+          description: "Finanzdienstleistungen (LUKB, UBS)"
+          deltas:
+            F_FIN: {V_OC: +0.10, V_AC: +0.05}
+            F_IT: {V_WTP: +0.10, V_IC: +0.10}
+            F_LEG: {V_RC: +0.15, V_AC: +0.10}
+          rationale: "IT-driven WTP, heavy regulation, finance IS the product"
+
+        tech:
+          description: "Technologie/Digital (Neon, Startups)"
+          deltas:
+            F_RND: {V_IC: +0.15, V_WTP: +0.10}
+            F_IT: {V_WTP: +0.15, V_IC: +0.05}
+            F_MKT: {V_WTP: +0.05}
+            F_OPS: {V_WTP: -0.15}
+          rationale: "Product IS technology, R&D and IT are the core"
+
+    # ── BEHAVIORAL CLUSTERS B_f ───────────────────────────────────────────
+    # 3-5 behavioral clusters per function. Each cluster groups behaviors
+    # that are complementary WITHIN the function (intra-function γ).
+    # Total: 42 clusters across 12 functions.
+    #
+    # Structure per cluster:
+    #   - id: unique identifier
+    #   - name: descriptive name
+    #   - behaviors: list of concrete behaviors
+    #   - wirkungskette: causal chain B → V (how this creates value)
+    #   - gamma_intra: within-function complementarity (if literature exists)
+    behavioral_clusters:
+      F_OPS:
+        clusters:
+          - id: "B_OPS_1"
+            name: "Process Discipline"
+            behaviors: ["SOP adherence", "quality control", "waste reduction"]
+            wirkungskette: "Consistent execution → lower defects → V_WTP↑ + V_OC↑"
+
+          - id: "B_OPS_2"
+            name: "Continuous Improvement"
+            behaviors: ["Kaizen", "employee suggestions", "A3 problem-solving"]
+            wirkungskette: "Bottom-up innovation → efficiency gains → V_OC↑ + V_AC↑"
+            gamma_intra:
+              with: "B_OPS_1"
+              value: 0.12
+              source: "ichniowski1997effects (HRM bundles)"
+
+          - id: "B_OPS_3"
+            name: "Safety & Reliability"
+            behaviors: ["safety protocols", "maintenance discipline", "incident reporting"]
+            wirkungskette: "Zero harm → trust → V_WTS↑ + V_RC↑"
+
+      F_MKT:
+        clusters:
+          - id: "B_MKT_1"
+            name: "Customer Intelligence"
+            behaviors: ["market research", "customer segmentation", "need identification"]
+            wirkungskette: "Deep understanding → relevant offerings → V_WTP↑"
+
+          - id: "B_MKT_2"
+            name: "Brand Building"
+            behaviors: ["positioning", "consistent messaging", "reputation management"]
+            wirkungskette: "Brand equity → premium pricing + trust → V_WTP↑ + V_RC↑"
+
+          - id: "B_MKT_3"
+            name: "Demand Generation"
+            behaviors: ["campaign execution", "lead generation", "funnel management"]
+            wirkungskette: "Qualified pipeline → sales conversion → V_WTP↑"
+
+          - id: "B_MKT_4"
+            name: "Digital Engagement"
+            behaviors: ["content marketing", "community building", "platform presence"]
+            wirkungskette: "Digital reach → scalable acquisition → V_WTP↑ + V_IC↑"
+            gamma_intra:
+              with: "B_MKT_1"
+              value: 0.18
+              source: "herhausen2019firestorms (tie_strength effect)"
+
+      F_SAL:
+        clusters:
+          - id: "B_SAL_1"
+            name: "Relationship Selling"
+            behaviors: ["trust building", "consultative approach", "long-term partnership"]
+            wirkungskette: "Deep relationships → retention + cross-sell → V_RC↑ + V_WTP↑"
+
+          - id: "B_SAL_2"
+            name: "Pipeline Discipline"
+            behaviors: ["CRM usage", "forecast accuracy", "stage management"]
+            wirkungskette: "Predictable revenue → planning quality → V_OC↑"
+
+          - id: "B_SAL_3"
+            name: "Solution Design"
+            behaviors: ["need analysis", "proposal quality", "customization"]
+            wirkungskette: "Tailored solutions → higher WTP → V_WTP↑"
+
+      F_SVC:
+        clusters:
+          - id: "B_SVC_1"
+            name: "Service Excellence"
+            behaviors: ["response time", "first-contact resolution", "empathy"]
+            wirkungskette: "Fast, competent service → satisfaction → V_RC↑"
+
+          - id: "B_SVC_2"
+            name: "Proactive Care"
+            behaviors: ["early warning", "check-ins", "upsell identification"]
+            wirkungskette: "Anticipation → loyalty → V_RC↑ + V_WTP↑"
+
+          - id: "B_SVC_3"
+            name: "Feedback Integration"
+            behaviors: ["complaint analysis", "VOC programs", "improvement loops"]
+            wirkungskette: "Customer voice → product improvement → V_IC↑ + V_AC↑"
+
+      F_HR:
+        clusters:
+          - id: "B_HR_1"
+            name: "Talent Acquisition"
+            behaviors: ["employer branding", "structured hiring", "onboarding"]
+            wirkungskette: "Right talent → capability base → V_WTS↓ + V_OC↑"
+
+          - id: "B_HR_2"
+            name: "Development & Learning"
+            behaviors: ["training programs", "coaching", "career paths"]
+            wirkungskette: "Skill building → capability growth → V_OC↑ + V_IC↑"
+            gamma_intra:
+              with: "B_HR_1"
+              value: 0.18
+              source: "ichniowski1997effects (selection × training)"
+
+          - id: "B_HR_3"
+            name: "Culture Stewardship"
+            behaviors: ["values articulation", "ritual design", "norm reinforcement"]
+            wirkungskette: "Strong culture → alignment → V_OC↑ + V_RC↑"
+
+          - id: "B_HR_4"
+            name: "Performance Management"
+            behaviors: ["goal setting", "feedback cycles", "recognition"]
+            wirkungskette: "Clear expectations → motivation → V_WTS↓ + V_OC↑"
+            gamma_intra:
+              with: "B_HR_2"
+              value: 0.15
+              source: "ichniowski1997effects (pay × training)"
+
+      F_FIN:
+        clusters:
+          - id: "B_FIN_1"
+            name: "Financial Transparency"
+            behaviors: ["reporting quality", "dashboarding", "variance analysis"]
+            wirkungskette: "Information quality → better decisions → V_OC↑"
+
+          - id: "B_FIN_2"
+            name: "Resource Allocation"
+            behaviors: ["budgeting discipline", "investment prioritization", "ROI tracking"]
+            wirkungskette: "Smart allocation → efficiency → V_WTP↑ + V_IC↑"
+
+          - id: "B_FIN_3"
+            name: "Risk Management"
+            behaviors: ["risk identification", "hedging", "scenario planning"]
+            wirkungskette: "Risk control → stability → V_AC↑ + V_RC↑"
+
+      F_IT:
+        clusters:
+          - id: "B_IT_1"
+            name: "Infrastructure Reliability"
+            behaviors: ["uptime management", "security protocols", "backup/recovery"]
+            wirkungskette: "Stable systems → operational continuity → V_OC↑"
+
+          - id: "B_IT_2"
+            name: "Digital Enablement"
+            behaviors: ["tool provisioning", "automation", "self-service"]
+            wirkungskette: "Productivity tools → efficiency → V_WTS↓ + V_OC↑"
+            gamma_intra:
+              with: "B_IT_1"
+              value: 0.20
+              source: "brynjolfsson2013complementarity (IT × org design)"
+
+          - id: "B_IT_3"
+            name: "Data & Analytics"
+            behaviors: ["data quality", "BI/analytics", "insight generation"]
+            wirkungskette: "Data-driven decisions → innovation → V_IC↑ + V_AC↑"
+
+          - id: "B_IT_4"
+            name: "Innovation Platform"
+            behaviors: ["API strategy", "platform thinking", "rapid prototyping"]
+            wirkungskette: "Tech platform → new products → V_IC↑ + V_WTP↑"
+
+      F_RND:
+        clusters:
+          - id: "B_RND_1"
+            name: "Exploration"
+            behaviors: ["basic research", "technology scouting", "experimentation"]
+            wirkungskette: "New knowledge → future options → V_IC↑"
+
+          - id: "B_RND_2"
+            name: "Exploitation"
+            behaviors: ["product development", "process optimization", "scaling innovation"]
+            wirkungskette: "Applied innovation → market value → V_WTP↑ + V_IC↑"
+            gamma_intra:
+              with: "B_RND_1"
+              value: 0.15
+              source: "cassiman2006search (make × buy complementarity)"
+
+          - id: "B_RND_3"
+            name: "Knowledge Transfer"
+            behaviors: ["publication", "patent strategy", "internal dissemination"]
+            wirkungskette: "Knowledge flow → organizational learning → V_OC↑ + V_IC↑"
+
+      F_LEG:
+        clusters:
+          - id: "B_LEG_1"
+            name: "Compliance Assurance"
+            behaviors: ["regulatory monitoring", "policy updates", "audit readiness"]
+            wirkungskette: "Compliance → risk reduction → V_RC↑ + V_AC↑"
+
+          - id: "B_LEG_2"
+            name: "Contract Quality"
+            behaviors: ["contract design", "negotiation", "IP protection"]
+            wirkungskette: "Good contracts → protected value → V_WTP↑ + V_RC↑"
+
+          - id: "B_LEG_3"
+            name: "Proactive Risk Advisory"
+            behaviors: ["strategic legal counsel", "M&A due diligence", "regulatory strategy"]
+            wirkungskette: "Legal as enabler → strategic optionality → V_AC↑ + V_IC↑"
+
+      F_STR:
+        clusters:
+          - id: "B_STR_1"
+            name: "Strategic Clarity"
+            behaviors: ["vision articulation", "priority setting", "trade-off decisions"]
+            wirkungskette: "Clear direction → alignment → V_OC↑ + η↑"
+            literature: "steen2017formal (P7: interactions define strategy)"
+
+          - id: "B_STR_2"
+            name: "Portfolio Steering"
+            behaviors: ["resource allocation", "initiative management", "kill decisions"]
+            wirkungskette: "Focus → efficiency → V_IC↑ + V_WTP↑"
+
+          - id: "B_STR_3"
+            name: "External Positioning"
+            behaviors: ["competitive intelligence", "partnership strategy", "M&A logic"]
+            wirkungskette: "Market position → sustainable advantage → V_WTP↑ + V_AC↑"
+
+      F_PMO:
+        clusters:
+          - id: "B_PMO_1"
+            name: "Execution Discipline"
+            behaviors: ["milestone tracking", "dependency management", "escalation"]
+            wirkungskette: "On-time delivery → strategy realization → η↑"
+
+          - id: "B_PMO_2"
+            name: "Cross-Functional Coordination"
+            behaviors: ["stakeholder alignment", "resource conflict resolution", "communication"]
+            wirkungskette: "Reduced friction → faster change → η↑ + V_AC↑"
+
+          - id: "B_PMO_3"
+            name: "Change Enablement"
+            behaviors: ["change impact assessment", "readiness building", "adoption support"]
+            wirkungskette: "Smooth transitions → lower resistance R → η↑"
+
+      F_COM:
+        clusters:
+          - id: "B_COM_1"
+            name: "Narrative Coherence"
+            behaviors: ["storytelling", "message consistency", "framing"]
+            wirkungskette: "Shared understanding → alignment → η↑ + V_OC↑"
+
+          - id: "B_COM_2"
+            name: "Stakeholder Engagement"
+            behaviors: ["town halls", "feedback channels", "crisis communication"]
+            wirkungskette: "Voice & transparency → trust → V_RC↑ + V_WTS↓"
+
+          - id: "B_COM_3"
+            name: "Employer Brand"
+            behaviors: ["EVP communication", "social media presence", "award strategy"]
+            wirkungskette: "Attractive employer → talent pipeline → V_WTS↓"
+
+    # ── CROSS-FUNCTION COMPLEMENTARITY γ₅ (NEW TYPE) ─────────────────────
+    # 5th complementarity type alongside γ^ΨΨ, γ^BΨ, γ^VV, γ^cross.
+    # γ₅ captures how functions amplify or undermine each other.
+    #
+    # KEY INSIGHT: γ₅ is not directly designable. It is modulated by
+    # integration functions (F_STR, F_PMO, F_COM) through η.
+    #
+    # Formula: γ₅_effective(f,f') = γ₅_base(f,f') × η(F_STR, F_PMO, F_COM)
+    gamma_5_structural:
+      symbol: "γ₅"
+      name: "Structural Complementarity (cross-function)"
+      new_in_v2_1: true
+      type_position: "5th type alongside γ^ΨΨ, γ^BΨ, γ^VV, γ^cross"
+
+      formula: |
+        γ₅_effective(f,f') = γ₅_base(f,f') × η(F_STR, F_PMO, F_COM)
+
+        where η = Σ_g w_g · B_g_aggregate ∈ [0.3, 1.5]
+        g ∈ {F_STR, F_PMO, F_COM}
+        w_STR = 0.50 (highest — direction)
+        w_PMO = 0.30 (medium — execution)
+        w_COM = 0.20 (support — alignment)
+
+      interpretation: |
+        η < 0.7: Integration functions underperform → γ₅ is attenuated
+        η ≈ 1.0: Normal integration → γ₅ at base level
+        η > 1.2: Exceptional integration → γ₅ amplified (super-coordination)
+
+      # Known γ₅ base values (literature-informed)
+      known_pairs:
+        - pair: "F_HR × F_OPS"
+          gamma_5_base: 0.25
+          evidence_tier: 1
+          source: "ichniowski1997effects"
+          interpretation: "HRM bundles + operations = +6.7% productivity"
+
+        - pair: "F_IT × F_HR"
+          gamma_5_base: 0.20
+          evidence_tier: 1
+          source: "brynjolfsson2013complementarity"
+          interpretation: "IT investment without training = wasted; together = productivity"
+
+        - pair: "F_MKT × F_SAL"
+          gamma_5_base: 0.15
+          evidence_tier: 2
+          source: "LLMMC informed by marketing-sales alignment literature"
+          interpretation: "Aligned messaging + pipeline = conversion uplift"
+
+        - pair: "F_RND × F_MKT"
+          gamma_5_base: 0.15
+          evidence_tier: 2
+          source: "cassiman2006search"
+          interpretation: "Innovation + market insight = product-market fit"
+
+        - pair: "F_OPS × F_IT"
+          gamma_5_base: 0.20
+          evidence_tier: 1
+          source: "brynjolfsson2013complementarity"
+          interpretation: "Digitized operations = automation + quality"
+
+        - pair: "F_FIN × F_STR"
+          gamma_5_base: 0.15
+          evidence_tier: 2
+          source: "bloom2012management (management practices as system)"
+          interpretation: "Financial transparency enables strategic steering"
+
+        - pair: "F_HR × F_IT"
+          gamma_5_base: 0.18
+          evidence_tier: 1
+          source: "ichniowski1997effects, brynjolfsson2013complementarity"
+          interpretation: "Digital HR tools + talent = skill platform"
+
+      # ── DESTRUCTIVE COMPLEMENTARITIES (γ₅ < 0) ───────────────────────
+      # Not all cross-function interactions are positive. Some function
+      # pairs have STRUCTURAL TENSION that reduces value when both are
+      # strong without coordination.
+      known_negative_pairs:
+        - pair: "F_SAL × F_SVC"
+          gamma_5_base: -0.10
+          evidence_tier: 2
+          source: "LLMMC informed by sales-service conflict literature"
+          interpretation: |
+            TENSION: Sales optimizes for new customer acquisition (V_WTP, V_RC_new),
+            Service optimizes for retention (V_RC_existing). Without coordination,
+            Sales overpromises → Service underdelivers → V_RC erodes.
+          mitigation: "Shared KPIs (Net Revenue Retention), joint planning (η amplifies)"
+
+        - pair: "F_RND × F_OPS"
+          gamma_5_base: -0.12
+          evidence_tier: 2
+          source: "christensen1997innovator (exploration-exploitation tradeoff)"
+          interpretation: |
+            TENSION: R&D pushes for change, experimentation, new processes.
+            Operations pushes for stability, standardization, efficiency.
+            Classic exploration-exploitation conflict (March 1991).
+          mitigation: "Ambidextrous org design, separated units, temporal separation"
+
+        - pair: "F_MKT × F_FIN"
+          gamma_5_base: -0.08
+          evidence_tier: 3
+          source: "LLMMC prior (budget allocation tension)"
+          interpretation: |
+            TENSION: Marketing wants spend (brand investment = long-term V_WTP),
+            Finance wants savings (short-term V_WTS). Classic horizon mismatch.
+          mitigation: "Marketing ROI models, brand equity tracking as V_IC proxy"
+
+        - pair: "F_LEG × F_RND"
+          gamma_5_base: -0.05
+          evidence_tier: 3
+          source: "LLMMC prior (compliance vs. innovation speed)"
+          interpretation: |
+            TENSION: Legal wants compliance and risk mitigation,
+            R&D wants speed and experimentation. Mild in most firms,
+            strong in pharma/fintech where regulatory constraints bind.
+          mitigation: "Regulatory sandboxes, embedded legal in R&D teams"
+
+      # Design rule for negative γ₅:
+      # γ₅ < 0 does NOT mean the pair should be avoided.
+      # It means: without integration (η), these pairs DESTROY value.
+      # With high η (good coordination), the effective γ₅ can become positive:
+      #   γ₅_effective(f,f') = η · γ₅_base(f,f')
+      #   If η > 1.2 and γ₅_base = -0.10 → γ₅_eff = -0.12 (worse!)
+      #   But: η also changes the BASE through coordination mechanisms.
+      #   Better model: γ₅_eff = γ₅_base + α_coord · η  where α_coord > 0
+      #   for negative pairs (coordination shifts the interaction from destructive
+      #   to constructive).
+
+      calibration_approach:
+        level_1: "Literature values (above) — γ₅_base"
+        level_2: "Sector adjustment via PCT: γ₅_sector = γ₅_base × M(ΔΨ_sector)"
+        level_3: "Firm-specific from project measurement: actual cross-function outcomes"
+        method: "Same PCT pipeline as all EBF parameters (Tier 1-4 hierarchy)"
+        negative_pair_note: |
+          Negative γ₅ values are ESPECIALLY sensitive to η.
+          Firms with low η (silos) may see γ₅ < -0.20 for SAL×SVC.
+          Firms with high η (integrated) may have γ₅ ≈ 0 or slightly positive.
+          This is the CORE VALUE PROPOSITION of integration functions.
+
+    # ── INTEGRATION EFFECTIVENESS η ───────────────────────────────────────
+    # η is the multiplier that integration functions (STR, PMO, COM)
+    # apply to γ₅. It captures HOW WELL the organization coordinates
+    # across functions.
+    integration_effectiveness:
+      symbol: "η"
+      formula: "η = Σ_g w_g · B_g_aggregate"
+      domain: "[0.3, 1.5]"
+      weights:
+        F_STR: 0.50
+        F_PMO: 0.30
+        F_COM: 0.20
+
+      interpretation:
+        low: "η < 0.7 — Silos, poor coordination, γ₅ attenuated"
+        normal: "η ≈ 1.0 — Normal coordination, γ₅ at base"
+        high: "η > 1.2 — Exceptional integration, γ₅ amplified"
+
+      measurement:
+        proxy_1: "Cross-functional project success rate"
+        proxy_2: "Strategic alignment survey scores"
+        proxy_3: "Time from strategic decision to operational implementation"
+
+      dynamics: |
+        η is NOT static — it evolves via the meso ODE:
+        dη/dt = f(B_STR, B_PMO, B_COM) - ξ_η · η
+        where ξ_η captures erosion when integration functions underperform.
+        η has MEDIUM timescale (months to 1-2 years to change significantly).
+
+  # ==========================================================================
+  # STEP 5: FUNCTIONAL FORM — Multi-Scale ODE (NEW in 2.0)
+  # ==========================================================================
+  functional_form:
+
+    # ---- MICRO: Individual behavior adoption (days-weeks) ----
+    micro_ode:
+      timescale: "days to weeks"
+      equation: |
+        dB_jk/dt = β_jk · U_jk(Ψ, I) · B_jk · (1 - B_jk) · (1 - R_jk) · (1 + M_jk)
+      variables:
+        B_jk: "Adoption of behavior k by actor group j ∈ [0,1]"
+        U_jk: "Utility of behavior k for group j given context Ψ and intervention I"
+        R_jk: "Resistance of group j to behavior k ∈ [0,1]"
+        M_jk: "Momentum (social contagion + leadership) ∈ [-0.5, 2.0]"
+        beta_jk: "Adoption speed parameter"
+      network_extension: |
+        M_jk = σ · Σ_i A_ji · B_ik + ρ · B_Lk
+        where A_ji = adjacency matrix (who influences whom)
+              σ = peer influence strength
+              ρ = leadership influence strength
+      new_in_v2: true
+
+    # ---- MESO: Context evolution (months) ----
+    meso_ode:
+      timescale: "months"
+      new_in_v2: true
+      equation: |
+        dΨ^org_i/dt = μ_i · I_i(t)                              — design interventions
+                    + ν_i · B_aggregate(t)                       — behavioral side-effects
+                    - ξ_i · Ψ^org_i(t)                          — erosion without maintenance
+                    + φ_i · ΔV(t)                                — success feedback
+      variables:
+        mu_i: "Intervention effectiveness for context dimension i"
+        nu_i: "Behavioral spillover coefficient"
+        xi_i: "Natural erosion rate (Ψ^org_CUL: slow; Ψ^org_INF: fast)"
+        phi_i: "Feedback coefficient (success → context improvement)"
+      erosion_rates:
+        Psi_org_INF: "ξ ≈ 0.15-0.30/year (information systems need constant updating)"
+        Psi_org_GOV: "ξ ≈ 0.05-0.15/year (governance structures are moderately stable)"
+        Psi_org_CUL: "ξ ≈ 0.02-0.08/year (culture is persistent but can erode)"
+        Psi_org_INC: "ξ ≈ 0.10-0.20/year (incentive systems need recalibration)"
+        Psi_org_CAP: "ξ ≈ 0.10-0.25/year (capabilities depreciate with technology change)"
+
+    # ---- MACRO: Value accumulation (years) ----
+    macro_ode:
+      timescale: "years"
+      equation: |
+        dV_d/dt = Σ_f w_df · η_df · B_f(t) · [1 + Σ_j γ^VV_dj · B_j(t)]    — function-weighted learning
+                + Σ_{f≠f'} η · γ₅(f,f') · v_f(t) · v_f'(t)                   — cross-function synergy (NEW 2.1)
+                - δ_d · V_d(t)                                                 — depreciation
+                + ε_d(t)                                                        — market shocks
+      equation_simplified: |
+        Without functional decomposition (LEAN/AGILE profiles):
+        dV_k/dt = η_k · B_k(t) · [1 + Σ_j γ^VV_kj · B_j(t)] - δ_k · V_k(t) + ε_k(t)
+      variables:
+        w_df: "Value contribution weight of function f to dimension d (from w_df matrix)"
+        eta_df: "Function-specific learning rate for value dimension d"
+        gamma_5: "Structural complementarity between functions f and f' (NEW 2.1)"
+        eta: "Integration effectiveness multiplier (from F_STR, F_PMO, F_COM) (NEW 2.1)"
+        v_f: "Aggregate value contribution of function f"
+        delta_d: "Depreciation rate for value dimension d"
+        epsilon_d: "Exogenous shock to value dimension d"
+      steady_state: |
+        V_d* = (1/δ_d) · [Σ_f w_df · η_df · B_f* · (1 + Σ_j γ^VV_dj · B_j*) + Σ_{f≠f'} η · γ₅(f,f') · v_f* · v_f'*]
+        Higher complementarity (both γ^VV AND γ₅) → higher steady-state value.
+        Key insight: Cross-function synergy (γ₅ · η) is an ADDITIONAL value source.
+      learning_rates:
+        V_WTP: "η ∈ [0.10, 0.25]"
+        V_WTS: "η ∈ [0.05, 0.15]"
+        V_OC: "η ∈ [0.05, 0.20] (Thompson 2012: organizational learning)"
+        V_IC: "η ∈ [0.15, 0.30] (fast learning but fast depreciation)"
+        V_RC: "η ∈ [0.02, 0.08] (trust builds slowly)"
+        V_AC: "η ∈ [0.10, 0.20] (learning-by-adapting)"
+
+    # ---- Tipping Points (NEW in 2.0) ----
+    tipping_points:
+      new_in_v2: true
+      description: |
+        When aggregate behavior B(t) crosses threshold θ_tip,
+        the system transitions to a new regime with different dynamics.
+      mechanism: |
+        Pre-tipping:  dB/dt governed by individual utility U_jk
+        At tipping:   B(t) ≥ θ_tip triggers social norm shift
+        Post-tipping: dB/dt accelerated by new social norm (M_jk jumps)
+      typical_thresholds:
+        social_norm_shift: "θ_tip ∈ [0.50, 0.70] (majority adoption creates new norm)"
+        organizational_momentum: "θ_tip ∈ [0.30, 0.50] (critical mass for visibility)"
+        irreversibility: "θ_tip ∈ [0.80, 0.95] (point of no return)"
+      regime_switching: |
+        Regime 0 (pre-tipping): β_slow, M_low, R_high
+        Regime 1 (post-tipping): β_fast, M_high, R_low
+        Transition: smooth sigmoid centered at θ_tip with width σ_tip
+
+    # ---- Network Effects (NEW in 2.0) ----
+    network_effects:
+      new_in_v2: true
+      description: |
+        Actor interactions are not homogeneous — they follow a
+        network topology described by adjacency matrix A.
+      adjacency_matrix: |
+        A_ji ∈ [0,1]: influence of actor i on actor j
+        A is NOT symmetric: B_L → B_M is stronger than B_M → B_L
+      key_properties:
+        - "Hub actors (high out-degree) are leverage points"
+        - "Bridges between clusters enable cross-unit diffusion"
+        - "Isolated actors require direct intervention"
+      measurement: "Organizational Network Analysis (ONA) surveys"
+
+    # ---- Measurement Map (F1-F4) ----
+    measurement_map:
+      description: "Maps theoretical constructs to observable indicators"
+      principles:
+        F1: "Every variable has at least one observable proxy"
+        F2: "Proxies are validated against theoretical definition"
+        F3: "Measurement frequency matches timescale (micro=weekly, meso=monthly, macro=quarterly)"
+        F4: "Leading indicators preferred over lagging indicators"
+
+  # ==========================================================================
+  # STEP 6: PARAMETER ESTIMATION — Bayesian Hierarchical (NEW in 2.0)
+  # ==========================================================================
+  parameter_estimation:
+    approach: "Bayesian Hierarchical + PCT"
+    new_in_v2: true
+
+    bayesian_hierarchical:
+      description: |
+        Multi-level priors: Individual → Team → Organization → Industry.
+        Each level provides informative priors for the level below.
+      levels:
+        - level: "Industry"
+          source: "Literature meta-analyses (Ichniowski, Bloom)"
+          example: "γ^ΨΨ_INF_CAP ∈ [0.15, 0.45] from cross-industry studies"
+        - level: "Organization"
+          source: "Client CVA data (400+ factors)"
+          example: "Zindel-specific adjustment based on sector and size"
+        - level: "Team/Division"
+          source: "Internal surveys, ONA data"
+          example: "Division-level β and R parameters"
+        - level: "Individual"
+          source: "Behavioral typing (Bandiera clusters)"
+          example: "Leadership type → β_L prior"
+
+    pct_integration:
+      description: |
+        All parameters anchored in literature via PCT
+        (Parameter Context Transformation):
+        θ_target = θ_anchor × ∏_i M(ΔΨ_i)
+      example: |
+        γ^ΨΨ_INF_CAP = 0.30 (Ichniowski, steel manufacturing)
+        ΔΨ_E(sector): steel → consulting → M = 0.85
+        ΔΨ_F(size): large → mid-size → M = 1.10
+        γ^ΨΨ_INF_CAP(Zindel) = 0.30 × 0.85 × 1.10 = 0.28
+
+    sensitivity_protocol:
+      description: "Identify which parameters drive which outcomes"
+      method: "One-at-a-time + Morris screening + Sobol indices for key parameters"
+      output: "Parameter importance ranking per prediction"
+
+    cross_validation:
+      description: "Leave-one-out at team/division level"
+      method: |
+        For each division d:
+          1. Estimate parameters on all divisions except d
+          2. Predict B(t) and V(t) for division d
+          3. Compare predicted vs. actual
+      minimum_divisions: 3
+
+    regime_priors:
+      P1: "Pre-tipping and post-tipping regimes have different parameter priors"
+      P2: "Regime classification based on B(t) relative to θ_tip"
+      P3: "Transition width σ_tip estimated from historical regime changes"
+      P4: "Industry-specific θ_tip priors from literature"
+
+  # ==========================================================================
+  # STEP 7: PREDICTIONS — 12 Falsifiable (NEW in 2.0)
+  # ==========================================================================
+  predictions:
+    total: 12
+    new_in_v2: true
+
+    micro:
+      - id: "P1"
+        level: "Micro"
+        statement: "Leadership adopts new strategic behaviors with β_L ∈ [0.05, 0.15] per month"
+        observable: "Monthly leadership behavior survey scores"
+        horizon: "3-6 months"
+        falsification: "β_L < 0.03 for 3 consecutive months"
+
+      - id: "P2"
+        level: "Micro"
+        statement: "Monetary incentive increase without cultural support reduces B_O adoption"
+        observable: "B_O adoption rate before/after incentive change, controlling for CUL"
+        horizon: "6-12 months"
+        falsification: "B_O increases despite high INC × low CUL"
+        gamma_ref: "γ^ΨΨ_INC_CUL = -0.35"
+
+      - id: "P3"
+        level: "Micro"
+        statement: "Conditional cooperators (60% of B_O) follow early adopters via network"
+        observable: "Adoption timing correlated with network proximity to early adopters"
+        horizon: "3-9 months"
+        falsification: "No correlation between network position and adoption timing"
+
+      - id: "P4"
+        level: "Micro"
+        statement: "Resistance R decreases with information transparency Ψ^org_INF"
+        observable: "R scores (survey) vs. Ψ^org_INF scores (system metrics)"
+        horizon: "1-6 months"
+        falsification: "R stays constant or increases despite Ψ^org_INF improvement"
+
+    meso:
+      - id: "P5"
+        level: "Meso"
+        statement: "Tipping point at ~60% B adoption triggers acceleration"
+        observable: "dB/dt before vs. after 60% threshold"
+        horizon: "6-18 months"
+        falsification: "No acceleration after 60% threshold; linear adoption throughout"
+
+      - id: "P6"
+        level: "Meso"
+        statement: "Ψ^org_CUL changes 3-5x slower than Ψ^org_INF"
+        observable: "Rate of change in culture vs. information surveys"
+        horizon: "12-36 months"
+        falsification: "CUL changes at same speed or faster than INF"
+
+      - id: "P7"
+        level: "Meso"
+        statement: "Complementary practices adopted in clusters, not individually"
+        observable: "Correlation matrix of practice adoption across divisions"
+        horizon: "6-12 months"
+        falsification: "Practices adopted independently with zero correlation"
+        gamma_ref: "γ^ΨΨ_INF_CAP = 0.30 (Ichniowski cluster effect)"
+
+      - id: "P8"
+        level: "Meso"
+        statement: "Cross-level effect visible: V_OC amplifies B_M × Ψ^org_INF"
+        observable: "Interaction term V_OC × B_M × INF in regression on outcomes"
+        horizon: "12-24 months"
+        falsification: "Three-way interaction term not significant"
+        gamma_ref: "γ^cross_OC_M_INF = 0.10"
+
+    macro:
+      - id: "P9"
+        level: "Macro"
+        statement: "V_OC accumulates with η ∈ [0.05, 0.20] and depreciates with δ ∈ [0.05, 0.15]/year"
+        observable: "Management practice scores (WMS) over 2-5 year period"
+        horizon: "2-5 years"
+        falsification: "V_OC dynamics outside predicted η-δ range"
+
+      - id: "P10"
+        level: "Macro"
+        statement: "V_IC depreciates 2-3x faster than V_OC"
+        observable: "Innovation metric decay rate vs. organizational capability decay"
+        horizon: "1-3 years"
+        falsification: "δ_IC ≤ δ_OC over sustained period"
+
+      - id: "P11"
+        level: "Macro"
+        statement: "Higher γ organizations reach higher steady-state V*"
+        observable: "Cross-org comparison: complementarity index vs. long-run value"
+        horizon: "3-7 years"
+        falsification: "No correlation between γ and V* across comparable organizations"
+
+      - id: "P12"
+        level: "Macro"
+        statement: "V→Ψ feedback measurable: organizational success improves context"
+        observable: "Lagged correlation: ΔV(t) → ΔΨ(t+1)"
+        horizon: "2-5 years"
+        falsification: "No lagged correlation; context changes independently of value"
+
+    cascading_falsification:
+      description: |
+        Predictions are ordered: Micro → Meso → Macro.
+        If Micro predictions (P1-P4) fail, Meso predictions (P5-P8)
+        become suspect, and Macro predictions (P9-P12) are unreliable.
+      protocol:
+        - "If ≥2 of P1-P4 fail → review model assumptions before trusting P5-P8"
+        - "If ≥2 of P5-P8 fail → Macro predictions P9-P12 are invalidated"
+        - "If P1-P4 pass but P5-P8 fail → aggregation mechanism is wrong"
+        - "If all pass at each level → model is provisionally supported"
+
+    prediction_cards:
+      format: |
+        Each prediction gets a card with:
+        - Statement (what we predict)
+        - Observable (how we measure)
+        - Confidence interval (ex-ante)
+        - Resolution date (when we check)
+        - Falsification criterion (what would prove us wrong)
+      storage: "models/FA-SM-2-0-STRATEGY/predictions/"
+
+  # ==========================================================================
+  # SUB-MODEL INTEGRATION
+  # ==========================================================================
+  sub_models:
+    - model_id: "SDM-1.0"
+      role: "Process Layer (Layer 2 → Layer 1 translation)"
+      interface:
+        input: "ΔΨ (context gap)"
+        output: "B(t) trajectories via 4-phase BCJ"
+        shared_state: "Ψ(t)"
+
+    - model_id: "SOCM-1.0"
+      role: "Option Comparison (within Layer 0)"
+      interface:
+        input: "V_k targets, γ_kj matrix"
+        output: "Optimal portfolio weights, sequencing"
+        shared_state: "γ_kj"
+
+  # ==========================================================================
+  # BIDIRECTIONAL WORKFLOW
+  # ==========================================================================
+  workflow:
+    top_down:
+      name: "Auslegeordnung → Zielableitung"
+      steps:
+        - {step: 1, name: "Wertschöpfungsziel", output: "V*(t) with 6 dimensions + weights", layer: 0}
+        - {step: "1b", name: "Funktionale Dekomposition", output: "F_active, w_df calibrated, B_f clusters identified", layer: 0, new_in_v2_1: true, note: "Determines WHICH functions drive WHICH value dimensions. Skipped for LEAN/AGILE profiles."}
+        - {step: 2, name: "Verhaltensübersetzung", output: "B*(t) by actor group AND function (B_jk × B_f)", layer: 1}
+        - {step: 3, name: "Kontext-Diagnostik", output: "ΔΨ = Ψ* - Ψ(t₀) in 4-tier form, incl. Ψ_f per function", layer: 2}
+        - {step: 4, name: "Strategische Architektur", output: "Portfolio via SOCM-1.0 + γ₅ cross-function synergies", sub_model: "SOCM-1.0"}
+        - {step: 5, name: "Implementierungsdesign", output: "4-phase roadmap via SDM-1.0", sub_model: "SDM-1.0"}
+        - {step: 6, name: "Dynamisches Modell", output: "V(t), B(t), Ψ(t) trajectories from coupled ODE (with w_df, γ₅, η)"}
+
+    bottom_up:
+      name: "Realitätscheck → Machbarkeitsanalyse"
+      steps:
+        - {step: 1, name: "Kontext-Ist-Analyse", output: "Ψ(t₀) in 4-tier form, incl. Ψ_f per active function"}
+        - {step: "1b", name: "Funktions-Ist-Analyse", output: "Current B_f, η, cross-function coordination quality", new_in_v2_1: true}
+        - {step: 2, name: "Verhaltensvorhersage", output: "B_predicted(t) from micro ODE per function"}
+        - {step: 3, name: "Wertschöpfungs-Prognose", output: "V_predicted(t) from macro ODE with w_df, γ₅, η"}
+        - {step: 4, name: "Gap-Analyse", output: "V* - V_predicted → identify function-level gaps and cross-function bottlenecks"}
+
+  # ==========================================================================
+  # 10C MAPPING
+  # ==========================================================================
+  ten_c_mapping:
+    WHO: "Actor groups (B_L, B_M, B_O, B_E) with behavioral heterogeneity"
+    WHAT: "Value dimensions (V_WTP, V_WTS, V_OC, V_IC, V_RC, V_AC)"
+    HOW: "5-type complementarity γ (ΨΨ, BΨ, VV, cross-level, structural γ₅)"
+    WHEN: "BCJ phases + tipping points + regime-switching"
+    WHERE: "4-tier context (canonical, org, market, emergent)"
+    AWARE: "Information architecture Ψ^org_INF"
+    READY: "Capability architecture Ψ^org_CAP"
+    STAGE: "4-phase BCJ from SDM-1.0"
+    HIERARCHY: "Van den Steen endogenous hierarchy"
+    EIT: "Intervention vector I(t) ∈ [0,1]^9"
+
+  # ==========================================================================
+  # REFERENCES
+  # ==========================================================================
+  references:
+    core_theory:
+      - {key: "steen2017formal", contribution: "Formal strategy definition, interaction-based importance"}
+      - {key: "brynjolfsson2010complementarities", contribution: "Supermodularity of organizational practices"}
+      - {key: "milgrom1990economics", contribution: "Modern manufacturing as supermodular system"}
+    empirical_complementarity:
+      - {key: "ichniowski1997effects", contribution: "HRM clusters +6.7% productivity (Tier 1)"}
+      - {key: "bloom2012management", contribution: "Management practices explain 30% productivity variation"}
+      - {key: "sadun2017are", contribution: "Good management ≈ good technology"}
+    value_creation:
+      - {key: "oberholzergee2021better", contribution: "WTP-WTS value framework"}
+    behavioral:
+      - {key: "bandiera2020ceo", contribution: "CEO behavior types (+3.5% for strategic-allocator)"}
+      - {key: "lazear2018personnel", contribution: "Personnel economics, incentive design"}
+      - {key: "frey1997cost", contribution: "Crowding-out of intrinsic motivation"}
+      - {key: "gneezy2000pay", contribution: "Nonlinear incentive effects"}
+      - {key: "fehr2007economics", contribution: "Social preferences in contracts"}
+    organizational_culture:
+      - {key: "steen2024dynamics", contribution: "Dynamics of corporate culture"}
+      - {key: "gibbons2015corporate", contribution: "What is corporate culture?"}
+    dynamic_models:
+      - {key: "thompson2012learning", contribution: "Learning curves η ∈ [0.05, 0.25]"}
+      - {key: "heckman2007economics", contribution: "Dynamic complementarity"}
+      - {key: "teece2007explicating", contribution: "Dynamic capabilities"}
+    new_in_v2:
+      - {key: "granovetter1985economic", contribution: "Economic action embedded in social relations (V_RC)"}
+      - {key: "acemoglu2018innovation", contribution: "Innovation dynamics and depreciation (V_IC)"}
+      - {key: "cassiman2006search", contribution: "Complementarity of R&D strategies"}
+    new_in_v2_1:
+      - {key: "porter1996what", contribution: "Activity system mapping — fit across functions"}
+      - {key: "herhausen2019firestorms", contribution: "Marketing digital engagement γ (tie_strength=1.432)"}
+      - {key: "brynjolfsson2013complementarity", contribution: "IT × org design complementarity (+15-25%)"}
+
+  # ==========================================================================
+  # VALIDATION
+  # ==========================================================================
+  validation:
+    status: "EXPERIMENTAL"
+    first_application: "Zindel United (ZIN005) — organizational design"
+    accuracy: 0.00
+    data_points: 0
+    confidence: "LOW (framework-level; first calibration via Zindel)"
+    innovations_v2:
+      I1: "6 value dimensions (+ V_RC, V_AC)"
+      I2: "4-tier context with emergence and dΨ/dt"
+      I3: "5-type layered γ (ΨΨ, BΨ, VV, cross-level, structural γ₅)"
+      I4: "Multi-scale ODE (micro/meso/macro)"
+      I5: "Tipping points and regime-switching"
+      I6: "Network effects (adjacency matrix)"
+      I7: "Bayesian hierarchical estimation"
+      I8: "12 falsifiable predictions with cascading falsification"
+      I9: "Design gates (CEO, Berater, Falsifiability)"
+    innovations_v2_1:
+      I11: "Functional Decomposition (12 functions, 3 clusters, Index f, γ₅, η)"
+    remaining_gaps:
+      - "Empirical calibration of all parameters from Zindel project"
+      - "Cross-level γ^cross values need project data (currently Tier 3)"
+      - "Network topology measurement requires ONA survey at Zindel"
+      - "Tipping point θ_tip needs empirical confirmation"
+      - "Emergence α_em currently theoretical — measure at Zindel"
+      - "Cross-client validation needed (3-5 projects after Zindel)"
+      - "w_df sector-specific δ values need calibration from multiple clients"
+      - "γ₅ base values for all 66 function pairs (currently 7 known)"
+      - "η integration effectiveness needs empirical measurement protocol"
+
+  # ==========================================================================
+  # ROADMAP
+  # ==========================================================================
+  roadmap:
+    v1_1:
+      status: "SUPERSEDED by v2.0"
+      date: "2026-02-24"
+
+    v2_0:
+      status: "EXPERIMENTAL"
+      date: "2026-02-24"
+      deliverables:
+        - "10 innovations (I1-I10)"
+        - "I10: S×U×K Configuration Gate — model structure adapts to org context"
+        - "6 configuration profiles (LEAN/AGILE/STRUCTURED/DYNAMIC/ENTERPRISE/VUCA)"
+        - "12 falsifiable predictions with cascading falsification"
+        - "Design gates G0-G3 for practical validation"
+        - "First application: Zindel United (STRUCTURED profile)"
+
+    v2_1:
+      status: "EXPERIMENTAL"
+      date: "2026-02-25"
+      deliverables:
+        - "I11: Functional Decomposition — 12 functions, 3 clusters, Index f"
+        - "w_df base matrix with 3-level PCT calibration (base + δ_sector + δ_firm)"
+        - "42 behavioral clusters B_f (3-5 per function) with Wirkungsketten"
+        - "γ₅ structural complementarity (5th type) with 7 literature-informed pairs"
+        - "η integration effectiveness multiplier (F_STR, F_PMO, F_COM)"
+        - "Hybrid activation logic (Σ > θ_sum OR max > θ_max)"
+        - "Function ≠ Department distinction formalized"
+
+    v2_2_planned:
+      status: "PLANNED"
+      date: "2026-Q3"
+      deliverables:
+        - "Empirical calibration from Zindel project outcomes"
+        - "ONA-based network topology integration"
+        - "Tipping point θ_tip empirical estimation"
+        - "Cross-level γ^cross calibration"
+        - "w_df sector-specific calibration for construction/banking"
+        - "γ₅ empirical measurement from cross-function outcomes"
+
+    v3_0_planned:
+      status: "PLANNED"
+      date: "2027-Q1"
+      deliverables:
+        - "Cross-client validation (3-5 projects)"
+        - "Sector-specific parameter libraries"
+        - "Real-time dashboard integration"
+        - "LaTeX Appendix for EBF book (DOMAIN-STRATEGY)"
