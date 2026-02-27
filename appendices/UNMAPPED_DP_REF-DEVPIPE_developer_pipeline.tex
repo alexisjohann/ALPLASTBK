@@ -1,0 +1,985 @@
+% =============================================================================
+% APPENDIX DP: REF-DEVPIPE - Developer Pipeline & Computational Architecture
+% =============================================================================
+% Category: REF (Reference)
+% Language: English
+% Version: 1.0 (January 2026)
+% Status: Active
+%
+% Purpose: Comprehensive guide for developers showing how EBF components
+%          connect computationally, what constitutes a "result", and how
+%          to implement the framework in practice.
+%
+% Target Audience: Developers, Programmers, Data Scientists, Engineers
+%
+% Complements:
+%   - FM (REF-FORMALMAP): Where are the proofs?
+%   - MS (REF-MODELSPACE): Which theory matches?
+%   - G (REF-GLOSSARY): What do symbols mean?
+%
+% =============================================================================
+
+\chapter{REF-DEVPIPE: Developer Pipeline \& Computational Architecture}
+\label{app:ref-devpipe}
+
+% =============================================================================
+% ABSTRACT
+% =============================================================================
+\begin{abstract}
+This appendix provides a comprehensive guide for developers implementing the
+Evidence-Based Framework (EBF). It answers the fundamental questions: What is
+a ``result'' in EBF? How do the components connect computationally? What is
+the data flow from input to output? The appendix documents the complete
+computational pipeline, database architecture, script inventory, and provides
+concrete implementation workflows. While Appendix UNMAPPED_FM shows where proofs are,
+this appendix shows how to \textit{compute} results.
+\end{abstract}
+
+% =============================================================================
+% QUICK REFERENCE
+% =============================================================================
+\begin{tcolorbox}[colback=yellow!10!white, colframe=orange!75!black,
+    title=\textbf{Quick Reference: Developer Pipeline}]
+
+\textbf{What is a ``Result'' in EBF?}
+\begin{itemize}[nosep]
+    \item A \textbf{Prediction}: $P_{eff}$ for behavior change
+    \item An \textbf{Intervention Design}: Optimized portfolio
+    \item A \textbf{Model Output}: Calibrated 10C model
+    \item A \textbf{Validation}: Theory-data comparison
+\end{itemize}
+
+\textbf{Core Pipeline:}
+\begin{center}
+\fbox{Input (10C) $\rightarrow$ Model $\rightarrow$ Calibration $\rightarrow$ Prediction $\rightarrow$ Validation}
+\end{center}
+
+\textbf{Key Scripts:}
+\texttt{design-model}, \texttt{theory\_papers.py}, \texttt{theory\_learning.py}
+
+\end{tcolorbox}
+
+% =============================================================================
+% HEADER BLOCK
+% =============================================================================
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=\textbf{Appendix UNMAPPED_DP: REF-DEVPIPE}]
+
+\begin{tabular}{@{}ll@{}}
+\textbf{Appendix:} & DP (Developer Pipeline) \\
+\textbf{Category:} & REF (Reference) \\
+\textbf{Purpose:} & Show how EBF computes results \\
+\textbf{Audience:} & Developers, Programmers, Data Scientists \\
+\textbf{Version:} & 1.0 \\
+\textbf{Databases:} & 5 connected data stores \\
+\end{tabular}
+
+\tcblower
+
+\textbf{Core Contribution:} Provides the computational blueprint for
+implementing EBF, showing data flows, database connections, and concrete
+code examples.
+
+\textbf{Key Distinction:} FM shows \textit{where proofs are};
+DP shows \textit{how to compute results}.
+
+\end{tcolorbox}
+
+% =============================================================================
+% APPENDIX SCOPE BOX
+% =============================================================================
+\begin{tcolorbox}[
+    colback=orange!5!white,
+    colframe=orange!75!black,
+    title={\textbf{Appendix Scope: Ziel / In-Scope / Out-of-Scope / Constraints}},
+    fonttitle=\bfseries
+]
+
+\textbf{Ziel (Objective):}
+\begin{itemize}[nosep]
+    \item Define what constitutes a ``result'' in EBF
+    \item Document the computational pipeline end-to-end
+    \item Show how databases and scripts connect
+\end{itemize}
+
+\textbf{In-Scope:}
+\begin{itemize}[nosep]
+    \item 5 database architectures and their connections
+    \item Complete script inventory with usage examples
+    \item 4 result types and how to produce them
+    \item Developer workflows with code snippets
+\end{itemize}
+
+\textbf{Out-of-Scope (delegiert an andere Appendices):}
+\begin{itemize}[nosep]
+    \item Mathematical proofs $\rightarrow$ Appendix UNMAPPED_FM (REF-FORMALMAP)
+    \item Theory catalog $\rightarrow$ Appendix UNMAPPED_MS (REF-MODELSPACE)
+    \item Parameter values $\rightarrow$ Appendix UNMAPPED_BBB (CORE-WHERE)
+\end{itemize}
+
+\textbf{Lieferobjekte (Deliverables):}
+\begin{itemize}[nosep]
+    \item Database architecture diagram
+    \item Script reference table
+    \item 4 implementation workflows
+    \item Code examples for each result type
+\end{itemize}
+
+\end{tcolorbox}
+
+% =============================================================================
+% CROSS-REFERENCE MAP
+% =============================================================================
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=\textbf{Cross-Reference Map}]
+
+\textbf{Outgoing References:}
+\begin{itemize}[nosep]
+    \item \textbf{FM (REF-FORMALMAP):} Proof locations
+    \item \textbf{MS (REF-MODELSPACE):} Theory matching
+    \item \textbf{BBB (CORE-WHERE):} Parameter values
+    \item \textbf{EEE (METHOD-DESIGN):} Model design workflow
+\end{itemize}
+
+\textbf{Incoming References:}
+\begin{itemize}[nosep]
+    \item All developers implementing EBF
+    \item Data scientists building models
+    \item Engineers creating production systems
+\end{itemize}
+
+\end{tcolorbox}
+
+% =============================================================================
+% CHAPTER LINKAGE
+% =============================================================================
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black,
+    title=\textbf{Chapter Linkage}]
+
+\textbf{Primary Chapter:} Chapter 8 (Mathematical Foundations)
+
+\textbf{Secondary Chapters:}
+\begin{itemize}[nosep]
+    \item Chapter 16: Probability of Behavior Change (prediction output)
+    \item Chapter 17: Intervention Design (intervention output)
+\end{itemize}
+
+\end{tcolorbox}
+
+% =============================================================================
+% MOTIVATION
+% =============================================================================
+\section{Motivation: Why Do We Need This Appendix?}
+\label{sec:dp-motivation}
+
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black,
+    title=\textbf{Motivation: The Developer's Dilemma}]
+
+\textbf{The Problem:}
+
+A developer joins the EBF project and asks:
+\begin{quote}
+``I understand the theory, but how do I actually \textit{compute} something?
+What databases exist? What scripts should I use? What is even a `result'?''
+\end{quote}
+
+\textbf{The Gap:}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Appendix} & \textbf{Question Answered} & \textbf{Missing} \\
+\hline
+\hline
+FM & Where is the proof? & --- \\
+MS & Which theory matches? & --- \\
+G & What does symbol mean? & --- \\
+\textbf{???} & \textbf{How do I compute?} & \textbf{DP fills this gap} \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{What DP Provides:}
+\begin{itemize}[nosep]
+    \item Definition of ``result'' types
+    \item Database architecture and connections
+    \item Script inventory with examples
+    \item End-to-end implementation workflows
+\end{itemize}
+
+\end{tcolorbox}
+
+% =============================================================================
+% FUNDAMENTAL QUESTION
+% =============================================================================
+\section{The Fundamental Question}
+\label{sec:dp-fundamental}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black,
+    title=\textbf{The Fundamental Question}]
+
+\textbf{Question:} What is a ``result'' in EBF and how do I compute it?
+
+\textbf{Answer:} A result is a \textbf{validated output} from the computational pipeline:
+\begin{equation}
+\text{Input (10C Model)} \xrightarrow{\text{calibrate}} \text{Parameters} \xrightarrow{\text{compute}} \text{Output} \xrightarrow{\text{validate}} \textbf{Result}
+\end{equation}
+
+\end{tcolorbox}
+
+% =============================================================================
+% CORE THEORY: COMPUTATIONAL SEMANTICS
+% =============================================================================
+\section{Core Theory: Computational Semantics of EBF}
+\label{sec:dp-theory}
+
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!60!black,
+    title=\textbf{Theoretical Foundation: What Makes EBF Computable?}]
+
+\textbf{Theorem UNMAPPED_DP-1 (Computability):}
+Every EBF model with fully specified 10C dimensions yields a computable prediction.
+
+\textbf{Proof sketch:}
+\begin{enumerate}[nosep]
+    \item 10C dimensions are finite and enumerable
+    \item Each dimension maps to bounded parameters ($\Theta \in \mathbb{R}^n$)
+    \item Utility functions are continuous and bounded
+    \item $P_{eff}$ is a well-defined function of 10C $\Rightarrow$ computable
+\end{enumerate}
+
+\textbf{Theorem UNMAPPED_DP-2 (Validation Convergence):}
+With sufficient project results, theory parameters converge to true values.
+
+\textbf{Formal statement:}
+\begin{equation}
+\lim_{n \rightarrow \infty} \hat{\Theta}_n = \Theta^* \quad \text{(in probability)}
+\end{equation}
+where $\hat{\Theta}_n$ is the estimate after $n$ project results.
+
+\textbf{Theorem UNMAPPED_DP-3 (Pipeline Consistency):}
+The 6-stage pipeline preserves information:
+\begin{equation}
+\text{Input}(I) \xrightarrow{\text{Pipeline}} \text{Result}(R) \Rightarrow I \text{ recoverable from } R
+\end{equation}
+
+\end{tcolorbox}
+
+% =============================================================================
+% SECTION 1: WHAT IS A RESULT?
+% =============================================================================
+\section{What is a ``Result'' in EBF?}
+\label{sec:dp-results}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=\textbf{The Four Result Types}]
+
+\textbf{Type 1: PREDICTION}
+\begin{itemize}[nosep]
+    \item \textbf{Output:} $P_{eff}$ (probability of behavior change)
+    \item \textbf{Formula:} $P_{eff} = f(\text{AWARE}, \text{READY}, \text{STAGE}, \text{Segment}, \Psi)$
+    \item \textbf{Script:} \texttt{/r-score --demo}
+    \item \textbf{Validation:} Compare to observed behavior rates
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{Type 2: INTERVENTION DESIGN}
+\begin{itemize}[nosep]
+    \item \textbf{Output:} Optimized intervention portfolio
+    \item \textbf{Formula:} $\text{Portfolio}^* = \arg\min \sum_i \text{cost}_i$ s.t. $P \geq P_{target}$
+    \item \textbf{Script:} \texttt{/design-intervention}
+    \item \textbf{Validation:} A/B testing, pilot results
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{Type 3: MODEL OUTPUT}
+\begin{itemize}[nosep]
+    \item \textbf{Output:} Calibrated 10C model with parameters $\Theta$
+    \item \textbf{Formula:} All 10C dimensions specified with values
+    \item \textbf{Script:} \texttt{/design-model}
+    \item \textbf{Validation:} Theory match (MS), parameter bounds (BBB)
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{Type 4: VALIDATION}
+\begin{itemize}[nosep]
+    \item \textbf{Output:} Theory-data comparison with deviation analysis
+    \item \textbf{Formula:} $\Delta = |\text{predicted} - \text{observed}|$
+    \item \textbf{Script:} \texttt{theory\_learning.py --project-result}
+    \item \textbf{Validation:} Updates theory catalog if $\Delta > $ threshold
+\end{itemize}
+
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=\textbf{Result Quality Criteria}]
+
+A result is \textbf{valid} if it satisfies:
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Criterion} & \textbf{Check} & \textbf{Tool} \\
+\hline
+\hline
+Theory Grounded & Matches established theory & MS lookup \\
+Parameter Bounded & Within literature ranges & BBB check \\
+Internally Consistent & No contradictions in 10C & Model validation \\
+Externally Validated & Compared to data & Project results \\
+\hline
+\end{tabular}
+\end{center}
+
+\end{tcolorbox}
+
+% =============================================================================
+% SECTION 2: DATABASE ARCHITECTURE
+% =============================================================================
+\section{Database Architecture}
+\label{sec:dp-databases}
+
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!60!black,
+    title=\textbf{The 5 Connected Databases}]
+
+\begin{center}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{\#} & \textbf{Database} & \textbf{File} & \textbf{Content} \\
+\hline
+\hline
+1 & \textbf{Paper Database} & \texttt{bcm\_master.bib} & 1,922+ papers \\
+2 & \textbf{Theory Catalog} & \texttt{theory-catalog.yaml} & 134 models \\
+3 & \textbf{Case Registry} & \texttt{case-registry.yaml} & Historical cases \\
+4 & \textbf{Intervention Registry} & \texttt{intervention-registry.yaml} & Projects \\
+5 & \textbf{Concept Registry} & \texttt{concept-registry.yaml} & EIP tracking \\
+\hline
+\end{tabular}
+\end{center}
+
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=purple!3!white, colframe=purple!60!black,
+    title=\textbf{Database Connection Architecture}]
+
+\begin{verbatim}
+                    ┌─────────────────────┐
+                    │   bcm_master.bib    │
+                    │   (1,922+ papers)   │
+                    └──────────┬──────────┘
+                               │ theory_support
+                               ▼
+                    ┌─────────────────────┐
+                    │  theory-catalog.yaml │◄────────────────┐
+                    │   (134 models)      │                  │
+                    └──────────┬──────────┘                  │
+                               │ bib_keys                    │
+            ┌──────────────────┼──────────────────┐          │
+            ▼                  ▼                  ▼          │
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐  │
+│ case-registry   │ │ intervention-   │ │ concept-registry│  │
+│    .yaml        │ │ registry.yaml   │ │    .yaml        │  │
+│ (historical)    │ │ (projects)      │ │ (EIP tracking)  │──┘
+└─────────────────┘ └─────────────────┘ └─────────────────┘
+        │                   │                   │
+        └───────────────────┴───────────────────┘
+                            │
+                    ┌───────▼───────┐
+                    │  LEARNING LOOP │
+                    │ (auto-updates) │
+                    └───────────────┘
+\end{verbatim}
+
+\textbf{Data Flows:}
+\begin{enumerate}[nosep]
+    \item \textbf{Paper $\rightarrow$ Theory:} \texttt{theory\_support} field links papers to theories
+    \item \textbf{Theory $\rightarrow$ Paper:} \texttt{bib\_keys} field links theories to papers
+    \item \textbf{Project $\rightarrow$ Theory:} Results update theory parameters
+    \item \textbf{Concept $\rightarrow$ Theory:} New concepts add to catalog via EIP
+\end{enumerate}
+
+\end{tcolorbox}
+
+% =============================================================================
+% SECTION 3: SCRIPT INVENTORY
+% =============================================================================
+\section{Script Inventory}
+\label{sec:dp-scripts}
+
+\begin{tcolorbox}[colback=green!3!white, colframe=green!60!black,
+    title=\textbf{Complete Script Reference}]
+
+\small
+\begin{longtable}{|l|l|l|}
+\hline
+\textbf{Script} & \textbf{Purpose} & \textbf{Example} \\
+\hline
+\hline
+\endfirsthead
+\hline
+\textbf{Script} & \textbf{Purpose} & \textbf{Example} \\
+\hline
+\endhead
+\multicolumn{3}{|c|}{\textbf{Model Design}} \\
+\hline
+\texttt{/design-model} & Create 10C model & \texttt{/design-model --mode schnell} \\
+\texttt{/design-intervention} & Design intervention & \texttt{/design-intervention} \\
+\hline
+\multicolumn{3}{|c|}{\textbf{Calibration (LLMMC)}} \\
+\hline
+\texttt{/r-score} & LLM Monte Carlo estimation & \texttt{/r-score --demo} \\
+\texttt{/r-score --full} & Full LLMMC pipeline & \texttt{/r-score --full} \\
+\hline
+\multicolumn{3}{|c|}{\textbf{Theory \& Paper Lookup}} \\
+\hline
+\texttt{theory\_papers.py} & Theory $\leftrightarrow$ Paper & \texttt{--theory MS-RD-001} \\
+\texttt{search\_bibliography.py} & Search papers & \texttt{--author "Thaler"} \\
+\texttt{assign\_lit\_appendix.py} & Assign LIT category & \texttt{-a "Grant" -t "..."} \\
+\hline
+\multicolumn{3}{|c|}{\textbf{Output Generation (8D)}} \\
+\hline
+\texttt{generate\_paper.py} & Generate document & \texttt{--style fehr} \\
+\texttt{/board-presentation} & Board slides & \texttt{Company pdf} \\
+\hline
+\multicolumn{3}{|c|}{\textbf{Learning Loop}} \\
+\hline
+\texttt{theory\_learning.py} & Update theories & \texttt{--project-result} \\
+\texttt{sync\_bib\_to\_lit.py} & Sync BibTeX to LIT & \texttt{--update} \\
+\hline
+\multicolumn{3}{|c|}{\textbf{Validation}} \\
+\hline
+\texttt{check\_template\_compliance.py} & Appendix compliance & \texttt{appendices/*.tex} \\
+\texttt{check\_chapter\_compliance.py} & Chapter compliance & \texttt{chapters/*.tex} \\
+\texttt{validate\_core\_framework.py} & 10C validation & (no args) \\
+\hline
+\multicolumn{3}{|c|}{\textbf{Case \& Intervention}} \\
+\hline
+\texttt{/case} & Query cases & \texttt{/case --domain health} \\
+\texttt{/intervention} & Query interventions & \texttt{/intervention --learnings} \\
+\hline
+\end{longtable}
+
+\end{tcolorbox}
+
+% =============================================================================
+% SECTION 4: COMPUTATIONAL PIPELINE
+% =============================================================================
+\section{The Computational Pipeline}
+\label{sec:dp-pipeline}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=\textbf{End-to-End Pipeline: From Question to Result}]
+
+\begin{verbatim}
+┌─────────────────────────────────────────────────────────────────────┐
+│ STAGE 1: PROBLEM DEFINITION                                         │
+│ ─────────────────────────────────────────────────────────────────── │
+│ Input: Business question ("How to increase savings rate?")          │
+│ Output: 10C specification (WHO, WHAT, HOW, WHEN, WHERE, ...)        │
+│ Script: /design-model --mode geführt                                │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│ STAGE 2: THEORY MATCHING                                            │
+│ ─────────────────────────────────────────────────────────────────── │
+│ Input: 10C specification                                            │
+│ Output: Matched theories (e.g., MS-TD-002 Hyperbolic Discounting)   │
+│ Script: python theory_papers.py --match-10c "beta < 1"              │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│ STAGE 3: PARAMETER CALIBRATION                                      │
+│ ─────────────────────────────────────────────────────────────────── │
+│ Input: Matched theories                                             │
+│ Output: Parameter values Θ                                          │
+│ Methods:                                                            │
+│   (a) BBB Literature: python theory_papers.py --theory MS-TD-002 -v │
+│   (b) LLMMC: /r-score --demo (LLM Monte Carlo estimation)           │
+│   (c) Empirical: Custom data calibration                            │
+│ Check: Parameters within literature bounds (BBB)                    │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│ STAGE 4: PREDICTION / INTERVENTION DESIGN                           │
+│ ─────────────────────────────────────────────────────────────────── │
+│ Input: Calibrated model                                             │
+│ Output: P_eff prediction OR intervention portfolio                  │
+│ Script: /r-score OR /design-intervention                            │
+│ Reference: Ch 15-16 (Prediction), Ch 17-20 (Interventions)          │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│ STAGE 5: OUTPUT GENERATION (8D Document Framework)                  │
+│ ─────────────────────────────────────────────────────────────────── │
+│ Input: Results from Stage 4                                         │
+│ Output: Audience-appropriate document (Paper/Brief/Report/Slides)   │
+│ Method: 8D Coordinates → Structure → Style → Vocabulary             │
+│ Script: python scripts/generate_paper.py --style fehr               │
+│ Reference: Appendix DDD (Theory), Appendix CCC (Computation)        │
+│ Chapters: Ch 17 (§ Communication), Ch 22 (Policy Applications)      │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│ STAGE 6: VALIDATION & LEARNING                                      │
+│ ─────────────────────────────────────────────────────────────────── │
+│ Input: Prediction + Observed outcome                                │
+│ Output: Deviation analysis, theory updates                          │
+│ Script: python theory_learning.py --project-result                  │
+│ Loop: Results feed back to theory catalog                           │
+│ Reference: Ch 21-24 (Dynamic Evolution, Policy, Multi-Level, Life)  │
+└─────────────────────────────────────────────────────────────────────┘
+\end{verbatim}
+
+\end{tcolorbox}
+
+% =============================================================================
+% SECTION 4b: CALIBRATION METHODS
+% =============================================================================
+\subsection{The Three Calibration Methods}
+\label{sec:dp-calibration}
+
+\textbf{Navigation Hub:} For complete parameterization methodology including decision trees and parameter-type routing, see \textbf{Appendix UNMAPPED_PM (REF-PARAMETH)}.
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black,
+    title=\textbf{Stage 3 Deep Dive: Parameter Calibration Methods}]
+
+\textbf{Method A: Literature-Based (BBB)}
+\begin{itemize}[nosep]
+    \item \textbf{Source:} Appendix UNMAPPED_BBB (CORE-WHERE) parameter repository
+    \item \textbf{Script:} \texttt{python theory\_papers.py --theory MS-TD-002 -v}
+    \item \textbf{Output:} Literature-validated parameter ranges (e.g., $\beta \in [0.7, 0.95]$)
+    \item \textbf{When to use:} Standard cases with established literature
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{Method B: LLM Monte Carlo (LLMMC)}
+\begin{itemize}[nosep]
+    \item \textbf{Source:} LLM-based expert simulation
+    \item \textbf{Script:} \texttt{/r-score --demo} or \texttt{/r-score --full}
+    \item \textbf{Output:} R-Score with confidence intervals
+    \item \textbf{When to use:} Novel contexts, limited empirical data, rapid estimation
+    \item \textbf{Reference:} Appendix UNMAPPED_CAL (METHOD-LLMMC)
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{Method C: Empirical Calibration}
+\begin{itemize}[nosep]
+    \item \textbf{Source:} Project-specific data
+    \item \textbf{Script:} Custom analysis scripts
+    \item \textbf{Output:} Context-specific parameters
+    \item \textbf{When to use:} Sufficient local data available, high-stakes decisions
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{Decision Matrix:}
+
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Situation} & \textbf{BBB} & \textbf{LLMMC} & \textbf{Empirical} \\
+\hline
+\hline
+Standard domain & \checkmark & --- & --- \\
+Novel context & --- & \checkmark & --- \\
+High-stakes & \checkmark & \checkmark & \checkmark \\
+Rapid prototype & --- & \checkmark & --- \\
+Rich local data & --- & --- & \checkmark \\
+\hline
+\end{tabular}
+\end{center}
+
+\end{tcolorbox}
+
+% =============================================================================
+% SECTION 4c: OUTPUT GENERATION (8D)
+% =============================================================================
+\subsection{Stage 5: Output Generation (8D Framework)}
+\label{sec:dp-output}
+
+\textbf{Reference Appendices:} Appendix DDD (REF-DOCTYPE) for theory, Appendix CCC (METHOD-DOCTYPE) for computation.
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black,
+    title=\textbf{Stage 5 Deep Dive: 8D Document Framework}]
+
+\textbf{Core Principle:} Output format emerges from audience characteristics.
+
+\vspace{0.5em}
+\textbf{The 8 Dimensions:}
+
+\begin{center}
+\small
+\begin{tabular}{|c|l|l|l|}
+\hline
+\textbf{D} & \textbf{Dimension} & \textbf{Question} & \textbf{Scale} \\
+\hline
+\hline
+D$_1$ & Knowledge & How expert? & 0=Layperson $\rightarrow$ 1=Expert \\
+D$_2$ & Proximity & How close to field? & 0=Distant $\rightarrow$ 1=Same field \\
+D$_3$ & Scope & Personal or societal? & 0=Personal $\rightarrow$ 1=Societal \\
+D$_4$ & Time & Reading time available? & 0=Little $\rightarrow$ 1=Much \\
+D$_5$ & Goal & Communication goal? & G$_1$-G$_7$ (see below) \\
+D$_6$ & Context & Internal or external? & 0=Internal $\rightarrow$ 1=Public \\
+D$_7$ & Emotion & Factual or emotional? & 0=Factual $\rightarrow$ 1=Emotional \\
+D$_8$ & Persistence & Ephemeral or archived? & 0=Ephemeral $\rightarrow$ 1=Archive \\
+\hline
+\end{tabular}
+\end{center}
+
+\vspace{0.5em}
+\textbf{D$_5$ Goal Categories:}
+G$_1$=Inform, G$_2$=Act, G$_3$=Convince, G$_4$=Entertain, G$_5$=Experience, G$_6$=Connect, G$_7$=Express
+
+\vspace{0.5em}
+\textbf{Output Emergence Rules:}
+
+\begin{center}
+\small
+\begin{tabular}{|l|l|}
+\hline
+\textbf{8D Profile} & \textbf{Emergent Output} \\
+\hline
+\hline
+D$_1$>0.7, D$_8$>0.8, D$_5$=G$_1$ & \textbf{Journal Paper} (LaTeX, hedging, citations) \\
+D$_1$<0.5, D$_4$<0.3, D$_5$=G$_2$ & \textbf{Policy Brief} (Executive Summary, CTA) \\
+D$_6$<0.3, D$_4$<0.2, D$_5$=G$_1$ & \textbf{Internal Memo} (Bullet points, plain) \\
+D$_1$>0.6, D$_4$<0.4, D$_5$=G$_3$ & \textbf{Board Slides} (Key metrics, visuals) \\
+\hline
+\end{tabular}
+\end{center}
+
+\vspace{0.5em}
+\textbf{Script Usage:}
+\begin{verbatim}
+# Generate paper in Fehr style
+python scripts/generate_paper.py appendices/input.tex --style fehr
+
+# Available styles: fehr, thaler, kahneman, sunstein
+\end{verbatim}
+
+\vspace{0.5em}
+\textbf{Chapter References:}
+\begin{itemize}[nosep]
+    \item Ch 17 (Intervention Foundations): Communication of intervention design
+    \item Ch 22 (Policy Applications): Policy-oriented output formatting
+\end{itemize}
+
+\end{tcolorbox}
+
+% =============================================================================
+% SECTION 5: WORKED EXAMPLE
+% =============================================================================
+\section{Worked Example: Computing a Prediction}
+\label{sec:dp-example}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=\textbf{Worked Example: Retirement Savings Intervention}]
+
+\textbf{Business Question:} ``How likely are employees to increase retirement savings
+if we implement automatic enrollment?''
+
+\textbf{Stage 1: Define 10C Model}
+\begin{verbatim}
+/design-model --mode schnell
+> WHO: Employees (L1)
+> WHAT: Financial utility (FEPSDE: F)
+> HOW: γ(present, future) < 0 (present bias)
+\end{verbatim}
+
+\textbf{Stage 2: Match Theory}
+\begin{verbatim}
+python scripts/theory_papers.py --match-10c "beta < 1, psi_default"
+> MS-TD-002: Quasi-Hyperbolic Discounting
+> MS-NU-002: Default Effects
+\end{verbatim}
+
+\textbf{Stage 3: Get Parameters}
+\begin{verbatim}
+python scripts/theory_papers.py --theory MS-TD-002 -v
+> β = 0.7 (Laibson 1997)
+> Papers: laibson1997golden, PAP-odonoghue1999doingdoing
+\end{verbatim}
+
+\textbf{Stage 4: Compute Prediction}
+\begin{verbatim}
+# Using defaults with β = 0.7
+P_eff(no_default) = 0.35
+P_eff(with_default) = 0.85
+Δ = +50 percentage points
+\end{verbatim}
+
+\textbf{Stage 5: Generate Output (8D)}
+\begin{verbatim}
+# Audience: HR leadership (D1=0.4, D4=0.3, D5=G2, D6=0.2)
+# Emergent format: Internal memo with action items
+python scripts/generate_paper.py results.tex --style memo
+> Output: recommendation_memo.pdf
+> Structure: Executive summary + 3 bullet points + CTA
+\end{verbatim}
+
+\textbf{Stage 6: Validate}
+\begin{verbatim}
+# After implementation
+python scripts/theory_learning.py --project-result \
+  --theory MS-NU-002 \
+  --predicted 0.85 \
+  --observed 0.82 \
+  --deviation 3.5%
+> Status: CONFIRMED (< 10% deviation)
+\end{verbatim}
+
+\textbf{Result:} Validated prediction with 3.5\% deviation feeds back to theory catalog.
+
+\end{tcolorbox}
+
+% =============================================================================
+% SECTION 6: KEY RESULTS
+% =============================================================================
+\section{Key Results}
+\label{sec:dp-results-section}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=\textbf{Key Results of This Appendix}]
+
+\textbf{Result 1: Result Types Defined}
+\begin{quote}
+EBF produces four types of results: Predictions ($P_{eff}$), Intervention Designs,
+Model Outputs, and Validations.
+\end{quote}
+
+\textbf{Result 2: Database Architecture Documented}
+\begin{quote}
+Five databases connect bidirectionally: Papers $\leftrightarrow$ Theories $\leftrightarrow$
+Cases/Interventions/Concepts, with automatic learning loop.
+\end{quote}
+
+\textbf{Result 3: Pipeline Formalized}
+\begin{quote}
+Six-stage pipeline: Problem Definition $\rightarrow$ Theory Matching $\rightarrow$
+Calibration $\rightarrow$ Prediction/Intervention $\rightarrow$ Output Generation $\rightarrow$ Validation.
+\end{quote}
+
+\textbf{Result 4: Script Inventory Complete}
+\begin{quote}
+All scripts documented with purpose and usage examples for developers.
+\end{quote}
+
+\end{tcolorbox}
+
+% =============================================================================
+% SECTION 6b: COMPLETE CHAPTER-PIPELINE MAPPING
+% =============================================================================
+\subsection{Complete Chapter-Pipeline Mapping}
+\label{sec:dp-chapter-mapping}
+
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!60!black,
+    title=\textbf{All 24 Chapters Mapped to 6-Stage Pipeline}]
+
+The 6-stage pipeline covers \textbf{all 24 chapters} of the EBF book:
+
+\begin{center}
+\small
+\begin{longtable}{|c|p{4.5cm}|p{4cm}|p{3cm}|}
+\hline
+\textbf{Stage} & \textbf{Description} & \textbf{Chapters} & \textbf{Key Appendices} \\
+\hline
+\hline
+\endfirsthead
+\hline
+\textbf{Stage} & \textbf{Description} & \textbf{Chapters} & \textbf{Key Appendices} \\
+\hline
+\endhead
+\textbf{1} & \textbf{Problem Definition} \newline 10C Specification & Ch 5 (Complementarity) \newline Ch 9 (Context) \newline Ch 10 (FEPSDE) \newline Ch 11 (Awareness) \newline Ch 12 (Willingness) \newline Ch 13 (BCJ) \newline Ch 14 (Segments) & AAA-HI (10 CORE) \\
+\hline
+\textbf{2} & \textbf{Theory Matching} \newline MS Lookup & Ch 3 (Limits) \newline Ch 6 (Reference) \newline Ch 7 (Fit/Non-Concavity) & MS (Theory Catalog) \\
+\hline
+\textbf{3} & \textbf{Parameter Calibration} \newline PM Navigation & Ch 4 (Empirical) \newline Ch 4x (Calibration) & PM, BBB, CAL \\
+\hline
+\textbf{4} & \textbf{Prediction / Intervention} \newline $P_{eff}$ or Portfolio & Ch 15 (WEC Synthesis) \newline Ch 16 (Probability) \newline Ch 17 (Intervention) \newline Ch 18 (Journey-Int.) \newline Ch 19 (Segment-Int.) \newline Ch 20 (Portfolios) & S, BC, HHH, QQ \\
+\hline
+\textbf{5} & \textbf{Output Generation} \newline 8D Framework & Ch 17 (§Communication) \newline Ch 22 (Policy) & DDD, CCC \\
+\hline
+\textbf{6} & \textbf{Validation \& Learning} \newline Feedback Loop & Ch 21 (Dynamic) \newline Ch 22 (Policy) \newline Ch 23 (Multi-Level) \newline Ch 24 (Life Journeys) & Case Registry \newline Intervention Registry \\
+\hline
+\end{longtable}
+\end{center}
+
+\vspace{0.5em}
+\textbf{Meta-Chapters (Framework Overview):}
+\begin{itemize}[nosep]
+    \item \textbf{Ch 1 (Introduction):} Framework motivation and overview
+    \item \textbf{Ch 2 (Rationality as Stability):} Philosophical foundation
+    \item \textbf{Ch 8 (Mathematical Foundations):} Cross-cutting formal basis
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{Coverage Statistics:}
+\begin{center}
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Metric} & \textbf{Value} \\
+\hline
+\hline
+Chapters in Pipeline & 22 / 24 (92\%) \\
+Meta-Chapters & 2 (Ch 1, 2) \\
+Cross-Cutting & 1 (Ch 8) \\
+Total Coverage & \textbf{100\%} \\
+\hline
+\end{tabular}
+\end{center}
+
+\end{tcolorbox}
+
+% =============================================================================
+% SECTION 7: INTEGRATION WITH OTHER APPENDICES
+% =============================================================================
+\section{Integration with Other Appendices}
+\label{sec:dp-integration}
+
+\begin{tcolorbox}[colback=purple!3!white, colframe=purple!60!black,
+    title=\textbf{DP in the REF Appendix Family}]
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Appendix} & \textbf{Question} & \textbf{Developer Use} \\
+\hline
+\hline
+\textbf{DP (This)} & How to compute? & Implementation guide \\
+FM & Where is proof? & Verify formulas \\
+MS & Which theory? & Match 10C to literature \\
+G & What means symbol? & Understand code variables \\
+BBB & What parameter value? & Calibrate models \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Typical Developer Workflow:}
+\begin{enumerate}[nosep]
+    \item \textbf{DP:} Understand pipeline and result types
+    \item \textbf{MS:} Find matching theory for 10C model
+    \item \textbf{FM:} Verify mathematical foundation
+    \item \textbf{BBB:} Get parameter bounds
+    \item \textbf{DP:} Execute pipeline, validate results
+\end{enumerate}
+
+\end{tcolorbox}
+
+% =============================================================================
+% SUMMARY
+% =============================================================================
+\section{Summary}
+\label{sec:dp-summary}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=\textbf{Appendix UNMAPPED_DP Summary}]
+
+\textbf{Core Contribution:}
+\begin{itemize}[nosep]
+    \item Defined 4 result types (Prediction, Intervention, Model, Validation)
+    \item Documented 5-database architecture with connections
+    \item Formalized 5-stage computational pipeline
+    \item Provided complete script inventory
+\end{itemize}
+
+\textbf{Key Insight:}
+\begin{quote}
+A ``result'' in EBF is not just an output---it is a \textit{validated} output
+that feeds back into the learning loop, improving future predictions.
+\end{quote}
+
+\textbf{Usage:} Developers start here to understand how to implement EBF.
+
+\end{tcolorbox}
+
+% =============================================================================
+% GLOSSARY
+% =============================================================================
+\section{Glossary of Key Terms}
+\label{sec:dp-glossary}
+
+\begin{itemize}[nosep]
+    \item \textbf{Result:} Validated output from computational pipeline
+    \item \textbf{Pipeline:} 5-stage process from question to validated result
+    \item \textbf{Learning Loop:} Automatic update of theories from project results
+    \item \textbf{Calibration:} Setting parameter values from literature or data
+\end{itemize}
+
+\medskip
+\textbf{Complete glossary:} See Appendix G (REF-GLOSSARY) for all EBF terminology.
+
+% =============================================================================
+% OPEN ISSUES
+% =============================================================================
+\section{Open Issues and Research Agenda}
+\label{sec:dp-open-issues}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black,
+    title=\textbf{Open Issues}]
+
+\textbf{Issue 1: Automation Level}
+\begin{itemize}[nosep]
+    \item Current: Semi-automated (human in loop)
+    \item Future: Fully automated prediction pipelines
+\end{itemize}
+
+\textbf{Issue 2: API Development}
+\begin{itemize}[nosep]
+    \item Current: CLI scripts only
+    \item Future: REST API for external integration
+\end{itemize}
+
+\textbf{Issue 3: Real-time Validation}
+\begin{itemize}[nosep]
+    \item Current: Post-hoc validation
+    \item Future: Streaming validation with live data
+\end{itemize}
+
+\end{tcolorbox}
+
+\textbf{Research Agenda:}
+\begin{enumerate}[nosep]
+    \item Develop REST API for EBF predictions
+    \item Implement streaming validation
+    \item Create visual pipeline editor
+    \item Build automated testing suite
+\end{enumerate}
+
+% =============================================================================
+% REFERENCES
+% =============================================================================
+\section{References}
+\label{sec:dp-references}
+
+This appendix references the master bibliography containing 1,922+ papers.
+
+\nocite{bcm_master}
+
+\textbf{Key implementation references:}
+\begin{itemize}[nosep]
+    \item All scripts in \texttt{scripts/} directory
+    \item Database schemas in \texttt{data/} directory
+    \item Workflow documentation in \texttt{.claude/commands/}
+\end{itemize}
+
+% =============================================================================
+% CROSS-REFERENCE FOOTER
+% =============================================================================
+\vfill
+\begin{tcolorbox}[colback=gray!10!white, colframe=gray!50!black]
+\small
+\textbf{Cross-References:}
+FM (Proofs) $\bullet$
+MS (Theories) $\bullet$
+G (Glossary) $\bullet$
+BBB (Parameters) $\bullet$
+EEE (Model Design) $\bullet$
+DR (Data Requirements)
+
+\medskip
+\textbf{Navigation:} Question $\xrightarrow{\text{10C}}$ Model $\xrightarrow{\text{calibrate}}$ Prediction $\xrightarrow{\text{validate}}$ \textbf{Result}
+\end{tcolorbox}
+
+\end{chapter}

@@ -1,0 +1,62 @@
+name: Validate 10C CORE Framework
+
+on:
+  push:
+    branches:
+      - main
+      - claude/**
+    paths:
+      - 'docs/frameworks/core-framework-definition.yaml'
+      - 'README.md'
+      - 'CLAUDE.md'
+      - 'appendices/**'
+      - 'chapters/**'
+      - 'docs/**'
+  pull_request:
+    paths:
+      - 'docs/frameworks/core-framework-definition.yaml'
+      - 'README.md'
+      - 'CLAUDE.md'
+      - 'appendices/**'
+      - 'chapters/**'
+      - 'docs/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: Validate CORE Framework Consistency
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pyyaml
+
+      - name: Run CORE Framework Validation
+        run: |
+          python scripts/validate_core_framework.py --verbose
+
+      - name: Check validation result
+        if: failure()
+        run: |
+          echo "❌ CORE Framework validation failed!"
+          echo ""
+          echo "The 10C CORE Framework has inconsistencies."
+          echo ""
+          echo "To fix:"
+          echo "1. Update docs/frameworks/core-framework-definition.yaml (SSOT)"
+          echo "2. Run: python scripts/validate_core_framework.py --verbose"
+          echo "3. Fix all reported issues"
+          echo "4. See: docs/frameworks/core-framework-extension-guide.md"
+          exit 1

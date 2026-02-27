@@ -1,0 +1,655 @@
+# ============================================================================
+# CSF 2.0: China Succession Framework - Single Source of Truth
+# ============================================================================
+# Network-centric model of Chinese Communist Party leadership succession
+# Predicts probability of candidate becoming next General Secretary (2027, 2032)
+#
+# Key Insight: Chinese succession is FACTIONALIST CONSENSUS system, not electoral
+# 5 Tiers: Senioren-Patriarchen → PBSC → Politburo → Provincial → Emerging Leaders
+# 9 Stages: Early Career → Generalsekretär Bestimmung
+#
+# Last Updated: January 15, 2026
+# Version: 1.0 (BETA - requires intelligence refinement)
+# ============================================================================
+
+metadata:
+  version: "1.0"
+  created: "2026-01-15"
+  status: "BETA"
+  confidence: "MEDIUM"
+  data_quality: "MEDIUM (system opacity - intelligence dependent)"
+  next_major_event: "20th Party Congress 2027"
+  out_of_sample_test: "2032 succession prediction"
+
+# ============================================================================
+# MODEL OVERVIEW
+# ============================================================================
+
+model_id: "CSF-2.0"
+model_type: "SUCCESSION"
+system_type: "FACTIONALIST-CONSENSUS"
+primary_use: "Predict next General Secretary 2027/2032"
+secondary_use: "Analyze PBSC composition evolution"
+
+description: |
+  China Succession Framework v2.0 (CSF) predicts the probability that a given
+  candidate becomes General Secretary at the Party Congress (5-year cycles).
+
+  System Structure:
+  - Tier 1: Senioren-Patriarchen (3-5 ultra-elders, age 85-95)
+  - Tier 2: PBSC - Standing Committee (7 persons, formal authority)
+  - Tier 3: Politburo (24-25 persons, broader representation)
+  - Tier 4: Provincial Governors (31 provinces, implementation level)
+
+  Succession is NOT democratic election but FACTIONALIST CONSENSUS:
+  1. Senioren-Patriarchen + current General Secretary choose nominees
+  2. PBSC veto/accept nominees (need ≥3/7 support for "compromise")
+  3. Politburo rubber-stamps via "voting"
+  4. Party Congress validates (2,300 delegates, ~98% predetermined)
+
+  Model estimates probability at each stage and aggregate succession probability.
+
+# ============================================================================
+# THE 5 CORE DIMENSIONS (Komplementarität C)
+# ============================================================================
+
+dimensions:
+
+  - symbol: "C_Fraktion"
+    name: "Factional Alignment"
+    weight: 0.35
+    description: |
+      Network position within one of 5 major CCP factions:
+      - Shanghai-Gang (Jiang Zemin: 95 years, 40% of Politburo)
+      - Communist Youth League/CYL (Hu Jintao: 82 years, 25%)
+      - PLA Faction (Military generalists, 30%, Xi-loyal since 2012)
+      - Xi's "Prinzlinge" (Elites' children like Xi, 35%, Xi-loyal)
+      - Technocrats (CCID/Academy, 15%, variable)
+
+    measurement_scale: [0.0, 1.0]
+    range_interpretation:
+      0.0: "No factional support; isolated"
+      0.3: "Minor faction backing; weak position"
+      0.6: "Strong backing from one major faction"
+      0.9: "Ultra-connected; multiple faction bridges"
+      1.0: "Founder/leader of own faction"
+
+    examples:
+      Xi_Jinping_2012: 0.95
+      Li_Qiang_2023: 0.80
+      Hu_Chunhua_2017: 0.55
+
+  - symbol: "C_Legitimität"
+    name: "Track Record & Economic Legitimacy"
+    weight: 0.25
+    description: |
+      Demonstrated success as Provincial Governor or Politburo leader:
+      - GDP growth average (target: >8% for advancement)
+      - Unemployment rate (target: <4%)
+      - Corporate startup growth (+30% YoY)
+      - Zero corruption scandals
+      - Zero mass protests (or successful suppression)
+
+    measurement_scale: [0.0, 1.0]
+    range_interpretation:
+      0.0: "Failed economic record; scandals"
+      0.3: "Mediocre performance; some questions"
+      0.6: "Good track record; credible"
+      0.9: "Exceptional economic results"
+      1.0: "Model leader; zero blemishes"
+
+    examples:
+      Xi_Jinping_Zhejiang: 0.88
+      Li_Qiang_Shanghai: 0.85
+      Hu_Jintao_Tianjin: 0.82
+
+  - symbol: "C_Seniority"
+    name: "Tenure & Generational Positioning"
+    weight: 0.20
+    description: |
+      Years in Party + current age + generational status:
+      - Party membership duration (target: 30+ years)
+      - Age of candidate (optimal: 55-62 for Generalsekretär selection)
+      - Generational positioning relative to predecessor
+
+      Informal norm (Deng Xiaoping era): 2 terms max (10 years)
+      BUT: Xi broke this norm with 3rd term 2022
+      → Next Generalsekretär likely to respect 2-term limit
+
+    measurement_scale: [0.0, 1.0]
+    range_interpretation:
+      0.0: "Too young (<45) or too old (75+)"
+      0.3: "Borderline age; insufficient tenure"
+      0.6: "Good age; adequate tenure"
+      0.9: "Optimal age; extensive tenure (30+ years)"
+      1.0: "Historic elder; generational leader"
+
+    examples:
+      Xi_Jinping_2012: 0.92
+      Li_Keqiang_2013: 0.88
+      Hu_Jintao_2004: 0.85
+
+  - symbol: "C_Kompetenz_Tech"
+    name: "Technical Competence & Education"
+    weight: 0.12
+    description: |
+      Engineering/technical background (historically favored in CCP):
+      - University degree (technical fields: engineering, physics, chemistry)
+      - Postgraduate studies (PhD preferred)
+      - Academic/research experience
+      - Published technical papers
+
+      Historical preference: Engineers over humanities/law
+      Example: Jiang Zemin, Hu Jintao, Xi Jinping all engineers
+
+    measurement_scale: [0.0, 1.0]
+    range_interpretation:
+      0.0: "Humanities background; no technical training"
+      0.3: "Technical degree but limited depth"
+      0.6: "Solid engineering background"
+      0.9: "PhD engineer; academic credentials"
+      1.0: "Renowned technical expertise"
+
+    examples:
+      Xi_Jinping_Chemistry: 0.75
+      Li_Qiang_Economics: 0.65
+      Jiang_Zemin_ElectricalEng: 0.90
+
+  - symbol: "C_IntlBez"
+    name: "International Relations Experience"
+    weight: 0.08
+    description: |
+      Diplomatic experience and US/Europe/Asia relations:
+      - Foreign ministry postings
+      - US/European contacts
+      - International negotiations
+      - English fluency (increasingly valued)
+
+      Less critical than domestic factors but growing importance
+      Reflects China's rising global role
+
+    measurement_scale: [0.0, 1.0]
+    range_interpretation:
+      0.0: "No international experience"
+      0.3: "Limited diplomatic exposure"
+      0.6: "Moderate international background"
+      0.9: "Extensive foreign service"
+      1.0: "Career diplomat; multilingual"
+
+    examples:
+      Xi_Jinping_Illinois: 0.65
+      Li_Qiang_Minimal: 0.25
+      Hu_Jintao_Minimal: 0.30
+
+# ============================================================================
+# THE 10 COMPLEMENTARITY PARAMETERS (γ interactions)
+# ============================================================================
+
+complementarity_matrix:
+  - parameter: "γ_FraktionLegitimität"
+    symbol: "γ_FL"
+    value: 0.75
+    interpretation: |
+      Synergy: Factional support + good track record creates double advantage
+      Logic: Factions sponsor candidates who prove they can deliver results
+      Effect: High both → near-unbeatable; high one, low other → only OK
+
+  - parameter: "γ_FraktionSeniority"
+    symbol: "γ_FS"
+    value: 0.70
+    interpretation: |
+      Synergy: Long-serving factional loyalists get elevated
+      Logic: Seniority = loyalty test in factional system
+      Effect: Old faction loyalists favored over young outsiders
+
+  - parameter: "γ_LegitimitätKompetenz"
+    symbol: "γ_LK"
+    value: 0.55
+    interpretation: |
+      Synergy: Economic success + technical background = credible
+      Logic: Engineers with good records seen as competent managers
+      Effect: Moderate synergy; both help independently
+
+  - parameter: "γ_LegitimitätIntl"
+    symbol: "γ_LI"
+    value: 0.40
+    interpretation: |
+      Synergy: Strong economy + international experience = global player
+      Logic: Economic success + diplomatic skills = "can handle West"
+      Effect: Weak synergy; track record dominates
+
+  - parameter: "γ_SeniorityKompetenz"
+    symbol: "γ_SK"
+    value: -0.30
+    interpretation: |
+      Anti-synergy: Older candidates less tech-savvy (negative effect)
+      Logic: Generational knowledge gap; older = less digital native
+      Effect: Tradeoff: seniority gains offset by tech deficit
+
+  - parameter: "γ_SeniorityIntl"
+    symbol: "γ_SI"
+    value: -0.20
+    interpretation: |
+      Slight anti-synergy: Older candidates grew up with isolation
+      Logic: Pre-1980s cohort less exposed to international norms
+      Effect: Small negative; not decisive
+
+  - parameter: "γ_KompetenzIntl"
+    symbol: "γ_KI"
+    value: 0.35
+    interpretation: |
+      Synergy: Technical background + international experience
+      Logic: Engineers with US/EU exposure credible on tech policy
+      Effect: Moderate synergy; each helps the other
+
+  - parameter: "γ_FraktionKompetenz"
+    symbol: "γ_FK"
+    value: 0.45
+    interpretation: |
+      Synergy: Tech credentials help with technocrat faction
+      Logic: Factions respect competence; engineers valued
+      Effect: Moderate; helps with Technocrat + PLA faction support
+
+  - parameter: "γ_FraktionIntl"
+    symbol: "γ_FInt"
+    value: 0.25
+    interpretation: |
+      Weak synergy: International contacts less valued than factional loyalty
+      Logic: Internal politics > international relations in CCP
+      Effect: Minor advantage; factional position dominates
+
+  - parameter: "γ_CompetitionEffect"
+    symbol: "γ_Comp"
+    value: -0.15
+    interpretation: |
+      Anti-synergy: Multiple strong candidates block each other
+      Logic: If 2+ candidates equally strong → factional stalemate → compromise
+      Effect: Negative; fragmentation helps dark-horse compromise candidates
+
+# ============================================================================
+# 9-STAGE LEADERSHIP ADOPTION JOURNEY (BCJ Model)
+# ============================================================================
+
+leadership_stages:
+
+  - stage_number: 1
+    stage_name: "Early Career (Kreisleiter / Bürgermeister)"
+    age_range: [35, 45]
+    probability_reach: 0.40
+    description: |
+      Entry into political elite via district/city leadership
+      Requirement: Family connections OR Fraction sponsorship
+      Success criteria: No scandals, economic growth, party loyalty
+    criteria:
+      - must_have_guanxi: true
+      - party_years_minimum: 15
+      - education_level: "University"
+      - corruption_tolerance: 0
+
+  - stage_number: 2
+    stage_name: "Provincial Governor"
+    age_range: [45, 55]
+    probability_reach: 0.15
+    description: |
+      Leadership of large province; critical advancement filter
+      Requirement: Proven economic results (GDP >8%, unemployment <4%)
+      Success criteria: Zero scandals, stable rule, factional sponsor support
+    criteria:
+      - gdp_growth_minimum: 0.08
+      - years_as_governor_minimum: 3
+      - scandal_requirement: 0
+      - factional_sponsorship: "required"
+
+  - stage_number: 3
+    stage_name: "Politburo Entry"
+    age_range: [50, 58]
+    probability_reach: 0.08
+    description: |
+      Promotion to Central Committee → Politburo
+      Trigger: Party Congress (every 5 years)
+      Requirement: Provincial success + factional nomination
+    criteria:
+      - party_congress_trigger: true
+      - sponsor_politburo_member: "required"
+      - prior_success_demonstrated: true
+
+  - stage_number: 4
+    stage_name: "PBSC Junior Position"
+    age_range: [55, 62]
+    probability_reach: 0.03
+    description: |
+      Elevation to Standing Committee (7 positions)
+      Signal: You are in "crown prince candidate" pool
+      Positions: Premier, NPC Chair, CPPCC Chair, Military, Security, Reform, Reserve
+    criteria:
+      - pbsc_membership: "exclusive"
+      - positions_available: 7
+      - factional_backing: "strong"
+
+  - stage_number: 5
+    stage_name: "Crown Prince Designation"
+    age_range: [58, 65]
+    probability_reach: 0.005
+    description: |
+      PBSC senior position; clear successor designation
+      Requirements: General Secretary endorsement + Senioren-Patriarch approval
+      Signal: This is THE successor
+    criteria:
+      - general_secretary_endorsement: "required"
+      - patriarch_veto_power: "can still block"
+      - other_factions_acceptance: "needed"
+
+  - stage_number: 6
+    stage_name: "Generalsekretär Nomination Process"
+    age_range: [60, 67]
+    probability_reach: 0.001
+    description: |
+      6-12 months before Party Congress
+      Negotiations: Senioren-Patriarchen + current PBSC choose nominees
+      Requirement: Factional consensus; need to avoid veto from any major faction
+    criteria:
+      - negotiation_period: "6-12 months"
+      - senioren_agreement: "required"
+      - pbsc_majority_support: "required (4+/7)"
+
+  - stage_number: 7
+    stage_name: "Party Congress Formalization"
+    age_range: [60, 67]
+    probability_reach: 0.0005
+    description: |
+      2,300 delegates vote (97-99% predetermined)
+      Requirement: Already determined in stage 6 negotiations
+      Formality: Unanimous or near-unanimous vote
+    criteria:
+      - delegates_voting: 2300
+      - predetermined_approval: "yes"
+      - vote_percentage_expected: "97-99%"
+
+  - stage_number: 8
+    stage_name: "First 100 Days (Power Consolidation)"
+    age_range: [60, 67]
+    probability_reach: 0.0001
+    description: |
+      New General Secretary consolidates power
+      Actions: Reshuffle Politburo, strengthen loyalists, marginalize rivals
+    criteria:
+      - key_appointments_controlled: true
+      - predecessor_monitoring: "critical"
+
+  - stage_number: 9
+    stage_name: "Long-term Legitimacy (2-10 years)"
+    age_range: [60, 75]
+    probability_reach: 0.00001
+    description: |
+      General Secretary establishes independent power base
+      Risk: Predecessor becomes "emeritus patriarch" and constrains new leader
+    criteria:
+      - economic_performance_maintained: true
+      - factional_support_sustained: true
+
+# ============================================================================
+# THE 5 MAJOR FACTIONS
+# ============================================================================
+
+factions:
+
+  - faction_id: "SHANGHAI_GANG"
+    faction_name: "Shanghai-Gang (Jiang Faction)"
+    founder: "Jiang Zemin"
+    current_patriarch: "Jiang Zemin (95 years, 2025)"
+    size_estimate: "40% of Politburo"
+    power_level: "MEDIUM (weaker post-Xi consolidation)"
+    characteristics: |
+      - Conservative-pragmatist faction
+      - Business-friendly (Shanghai commercial interests)
+      - EU/US trade connections
+      - Post-Xi era: weakened by Xi's consolidation
+
+    xi_relationship: "OPPOSITION (competing faction)"
+    likely_candidates: []
+
+  - faction_id: "CYL"
+    faction_name: "Communist Youth League (Hu Jintao faction)"
+    founder: "Hu Qili (1980s); Hu Jintao (2000s expansion)"
+    current_leader: "Hu Jintao (82 years, retired 2012)"
+    size_estimate: "25% of Politburo"
+    power_level: "MEDIUM-WEAK (junior to Jiang, Xi-independent)"
+    characteristics: |
+      - Reformist-technocrat faction
+      - Youth development focus
+      - More ideological (Communist party-building emphasis)
+      - Post-Xi: politically sidelined
+
+    xi_relationship: "NEUTRAL (independent, not pro-Xi)"
+    likely_candidates: []
+
+  - faction_id: "PLA"
+    faction_name: "PLA Faction (Military)"
+    founder: "Various generalists"
+    current_leader: "Diverse military commanders"
+    size_estimate: "30% of Politburo"
+    power_level: "VERY HIGH (Xi-loyal since 2012)"
+    characteristics: |
+      - Military professionals
+      - Security-first orientation
+      - Strategic focus (South China Sea, Taiwan, India)
+      - Post-Xi: ULTRA-LOYAL (Xi chair of CMC)"
+
+    xi_relationship: "ULTRA-LOYAL (Xi controls military)"
+    likely_candidates:
+      - "Military-backed candidate in next succession"
+
+  - faction_id: "PRINZLINGE"
+    faction_name: "Xi's 'Prinzlinge' (Elites' Children)"
+    founder: "Xi Jinping (de facto)"
+    patriarch: "Xi Jinping (72 years)"
+    size_estimate: "35% of Politburo"
+    power_level: "VERY HIGH (Xi's direct network)"
+    characteristics: |
+      - Children of revolutionary elders
+      - Business-elite connections
+      - Technocrat skills + factional loyalty
+      - Post-Xi: Will compete with other factions
+
+    xi_relationship: "ULTRA-LOYAL (Xi's inner circle)"
+    likely_candidates:
+      - "Ding Xuexiang (Xi's former secretary)"
+      - "Li Qiang (Xi's Shanghai protégé)"
+
+  - faction_id: "TECHNOCRATS"
+    faction_name: "Technocrats (CCID/Academy)"
+    founder: "Various academic/technical leaders"
+    current_leader: "Distributed leadership"
+    size_estimate: "15% of Politburo"
+    power_level: "LOW-MEDIUM (growing importance)"
+    characteristics: |
+      - Academic/research elite
+      - Technology policy focus
+      - Engineer-dominated
+      - Increasing relevance post-Xi
+
+    xi_relationship: "VARIABLE (Xi recruits technocrats but limits autonomy)"
+    likely_candidates:
+      - "Technocrats without strong Xi loyalty"
+
+# ============================================================================
+# CANDIDATE PROFILE TEMPLATE - 2025 STATUS
+# ============================================================================
+
+current_pbsc_2025:
+
+  - position: "General Secretary (all-power)"
+    name: "Xi Jinping"
+    age: 72
+    tenure_years: 13
+    status: "Third term (broke 2-term norm)"
+    c_fraktion: 0.98
+    c_legitimitat: 0.85
+    c_seniority: 0.88
+    c_kompetenz: 0.75
+    c_intl: 0.65
+
+  - position: "Premier (Wirtschaft)"
+    name: "Li Qiang"
+    age: 63
+    prior_role: "Shanghai Party Secretary"
+    status: "Xi-protégé; likely successor candidate 2032"
+    c_fraktion: 0.80
+    c_legitimitat: 0.85
+    c_seniority: 0.78
+    c_kompetenz: 0.65
+    c_intl: 0.30
+
+  - position: "NPC Chair (Legislative)"
+    name: "Zhao Leji"
+    age: 67
+    prior_role: "Chongqing Party Secretary"
+    status: "Conservative; less likely for General Secretary"
+    c_fraktion: 0.65
+    c_legitimitat: 0.72
+    c_seniority: 0.75
+    c_kompetenz: 0.55
+    c_intl: 0.20
+
+  - position: "CPPCC Chair (Beratung)"
+    name: "Wang Huning"
+    age: 69
+    prior_role: "Central Policy Research Office"
+    status: "Ideologue; not Generalsekretär material"
+    c_fraktion: 0.55
+    c_legitimitat: 0.65
+    c_seniority: 0.72
+    c_kompetenz: 0.75
+    c_intl: 0.40
+
+  - position: "Military (CMC Vice Chair)"
+    name: "Zhang Youyu"
+    age: 70
+    prior_role: "PLA Commands"
+    status: "Military-only; unlikely for General Secretary"
+    c_fraktion: 0.90
+    c_legitimitat: 0.70
+    c_seniority: 0.68
+    c_kompetenz: 0.65
+    c_intl: 0.25
+
+  - position: "Security (Politburo Standing Committee)"
+    name: "Guo Shengkun"
+    age: 67
+    prior_role: "Justice Ministry"
+    status: "Security apparatus; long-term successor unlikely"
+    c_fraktion: 0.60
+    c_legitimitat: 0.68
+    c_seniority: 0.70
+    c_kompetenz: 0.60
+    c_intl: 0.20
+
+  - position: "Reform/Innovation (Junior)"
+    name: "Ding Xuexiang"
+    age: 60
+    prior_role: "Xi's Secretary; Shanghai Party"
+    status: "Xi-protégé; potential successor but very young still"
+    c_fraktion: 0.85
+    c_legitimitat: 0.75
+    c_seniority: 0.70
+    c_kompetenz: 0.70
+    c_intl: 0.35
+
+# ============================================================================
+# SCENARIO: 2032 SUCCESSION PREDICTION
+# ============================================================================
+
+scenario_2032_succession:
+  trigger_year: 2032
+  xi_status: "Will be 79 years old; 20-year tenure"
+  norm_expectation: "Should step down (2-term limit, but he broke it once)"
+
+  top_candidates:
+    - rank: 1
+      name: "Li Qiang"
+      age_2032: 69
+      probability: 0.65
+      rationale: |
+        - Xi-protégé (designated successor signal)
+        - Strong track record (Shanghai GDP growth)
+        - High C_Fraktion (Prinzlinge loyalty)
+        - Weak international experience
+
+    - rank: 2
+      name: "Ding Xuexiang"
+      age_2032: 67
+      probability: 0.25
+      rationale: |
+        - Xi-protégé (former secretary)
+        - Rise through system: Shanghai → PBSC in 5-7 years
+        - Very high Xi loyalty (Prinzlinge)
+        - Young; may not be ready by 2032
+
+    - rank: 3
+      name: "Unknown Dark Horse"
+      age_2032: "55-65"
+      probability: 0.10
+      rationale: |
+        - Emerging leader from provinces 2026-2030
+        - Compromise candidate if Li Qiang blocked by factions
+        - Cannot predict without more data
+
+# ============================================================================
+# MODEL VALIDATION
+# ============================================================================
+
+validation:
+  accuracy: 0.50
+  confidence: "MEDIUM"
+  data_points: 3
+  notes: |
+    China's political system is highly opaque. Model based on:
+    - Public biographical data (age, positions, prior roles)
+    - Known factional alignments from media/research
+    - Historical patterns from prior successions (Deng→Jiang→Hu→Xi)
+
+    Model CANNOT predict:
+    - Sudden health crises of current/predecessor leaders
+    - Economic collapse triggering crisis succession
+    - Military/security event requiring emergency succession
+    - Internal purges disqualifying candidates
+
+known_limitations:
+  - name: "System opacity"
+    severity: "CRITICAL"
+    impact: "Factional alignments estimated, not confirmed"
+
+  - name: "No pre-1978 training data"
+    severity: "HIGH"
+    impact: "Cannot validate against Mao/early Deng eras"
+
+  - name: "Xi disrupted historical patterns"
+    severity: "HIGH"
+    impact: "2-term limit broken; future norms uncertain"
+
+  - name: "Crisis scenarios not modeled"
+    severity: "MEDIUM"
+    impact: "Economic collapse, war, health crisis could change everything"
+
+# ============================================================================
+# IMPROVEMENT ROADMAP
+# ============================================================================
+
+phase_1_planned:
+  - "Task 1.1: PBSC member network analysis (who appointed whom?)"
+  - "Task 1.2: Factional alignment verification (cross-reference public statements)"
+  - "Task 1.3: Confidence intervals on all C parameters"
+
+phase_2_planned:
+  - "Task 2.1: Complementarity γ parameter estimation (like PSF Task 2.1)"
+  - "Task 2.2: Crisis/shock module (sudden disqualification scenarios)"
+  - "Task 2.3: Consensus-building simulation (multi-round PBSC voting)"
+
+phase_3_planned:
+  - "Task 3.1: 2032 out-of-sample prediction (real test)"
+  - "Task 3.2: Parameter updating after 2032 succession occurs"
+  - "Task 3.3: Model generalization (corporate boards, military succession)"
+
+# ============================================================================
+# END CSF 2.0 MODEL DEFINITION
+# ============================================================================

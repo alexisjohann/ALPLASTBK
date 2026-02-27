@@ -1,0 +1,105 @@
+name: RIS Legal Data Fetch
+
+on:
+  workflow_dispatch:
+    inputs:
+      search_query:
+        description: 'Search query (e.g. "Sorgfaltspflicht Lieferkette")'
+        required: false
+        default: ''
+      database:
+        description: 'Database to search'
+        required: true
+        default: 'bundesrecht'
+        type: choice
+        options:
+          - bundesrecht
+          - landesrecht
+          - judikatur-vfgh
+          - judikatur-vwgh
+          - judikatur-justiz
+          - judikatur-bvwg
+      mode:
+        description: 'Operation mode'
+        required: true
+        default: 'search'
+        type: choice
+        options:
+          - search
+          - bulk
+          - status
+      extract_thresholds:
+        description: 'Extract thresholds/deadlines/sanctions'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  fetch-legal-data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests pyyaml
+
+      - name: Prepare output directory
+        run: |
+          mkdir -p data/legal/at
+
+      - name: Check API Status
+        if: inputs.mode == 'status'
+        run: |
+          python scripts/legal/ris_ogd_connector.py --status
+
+      - name: Search Legal Database
+        if: inputs.mode == 'search' && inputs.search_query != ''
+        run: |
+          echo "=== Search: '${{ inputs.search_query }}' in ${{ inputs.database }} ==="
+          python scripts/legal/ris_ogd_connector.py \
+            --search "${{ inputs.search_query }}" \
+            --db ${{ inputs.database }} \
+            ${{ inputs.extract_thresholds && '--extract-thresholds' || '' }} \
+            --export-yaml "data/legal/at/search_results.yaml" \
+            --json > data/legal/at/debug_raw_response.json 2>&1 || true
+          echo "=== Also run with text output ==="
+          python scripts/legal/ris_ogd_connector.py \
+            --search "${{ inputs.search_query }}" \
+            --db ${{ inputs.database }} \
+            ${{ inputs.extract_thresholds && '--extract-thresholds' || '' }} \
+            --export-yaml "data/legal/at/search_results.yaml"
+          echo "=== Output files ==="
+          ls -la data/legal/at/ || echo "No output directory"
+          echo "=== YAML content (first 100 lines) ==="
+          head -100 data/legal/at/search_results.yaml 2>/dev/null || echo "No YAML output"
+
+      - name: Bulk Download
+        if: inputs.mode == 'bulk'
+        run: |
+          python scripts/legal/ris_ogd_connector.py \
+            --bulk ${{ inputs.database }} \
+            --output "data/legal/at/${{ inputs.database }}/"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ris-legal-data
+          path: data/legal/at/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Commit results (if search with YAML export)
+        if: inputs.mode == 'search' && inputs.search_query != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/legal/at/ || true
+          git diff --staged --quiet || git commit -m "feat(legal): RIS fetch '${{ inputs.search_query }}' from ${{ inputs.database }}"
+          git push || true

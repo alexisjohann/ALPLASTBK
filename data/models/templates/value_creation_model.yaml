@@ -1,0 +1,111 @@
+# =============================================================================
+# VALUE CREATION MODEL (VCM-1.0) - CONFIGURATION TEMPLATE
+# =============================================================================
+# Model: Economic Value Added, ROIC, and Shareholder Value
+# Version: 1.0.0
+# Status: GENERIC (no hardcoded defaults)
+#
+# Purpose: Calculate value creation metrics (EVA, ROIC, DCF valuation).
+#
+# Usage:
+#   python scripts/models/value_creation.py <config.yaml> [pnl.csv] [cf.csv]
+#
+# Integration:
+#   - Input: P&L from PLM-1.0, Cash Flow from CFM-1.0
+#   - Output: EVA, ROIC, Value Spread, DCF Valuation
+# =============================================================================
+
+value_creation_model:
+  # Time horizon
+  base_year: 2024
+  projection_years: 11
+  currency: "EUR"
+
+  # -----------------------------------------------------------------------------
+  # WACC Components
+  # Weighted Average Cost of Capital calculation
+  # -----------------------------------------------------------------------------
+  wacc:
+    # Cost of Equity (CAPM)
+    risk_free_rate_percent: 3.0        # 10-year government bond yield
+    equity_risk_premium_percent: 5.0   # Market risk premium
+    beta: 1.1                          # Company beta (1.0 = market)
+
+    # Cost of Debt
+    cost_of_debt_percent: 4.5          # Pre-tax cost of debt
+    tax_rate_percent: 25               # Corporate tax rate
+
+    # Capital Structure
+    target_debt_ratio_percent: 30      # Target D/(D+E) ratio
+
+  # -----------------------------------------------------------------------------
+  # Capital Structure
+  # Used to estimate Invested Capital if not calculated from balance sheet
+  # -----------------------------------------------------------------------------
+  capital_structure:
+    # Option 1: Specify equity and debt
+    total_equity_m: 2000               # Total shareholders' equity
+    total_debt_m: 1500                 # Total interest-bearing debt
+
+    # Option 2: Specify invested capital directly
+    # invested_capital_m: 3500
+
+  # -----------------------------------------------------------------------------
+  # Valuation Parameters
+  # For DCF and multiples-based valuation
+  # -----------------------------------------------------------------------------
+  valuation:
+    # DCF Parameters
+    terminal_growth_rate_percent: 2.0  # Long-term growth rate
+    dcf_discount_rate_percent: 8.5     # Alternative to WACC if specified
+
+    # Multiples
+    ev_ebitda_multiple: 8.0            # EV/EBITDA multiple for comparison
+
+  # -----------------------------------------------------------------------------
+  # Value Drivers (Optional)
+  # For value driver analysis
+  # -----------------------------------------------------------------------------
+  value_drivers:
+    - name: "Revenue Growth"
+      description: "Top-line expansion"
+      weight: 0.25
+    - name: "Margin Expansion"
+      description: "Profitability improvement"
+      weight: 0.25
+    - name: "Capital Efficiency"
+      description: "Asset utilization"
+      weight: 0.25
+    - name: "WACC Optimization"
+      description: "Cost of capital reduction"
+      weight: 0.25
+
+# =============================================================================
+# OUTPUT SPECIFICATION
+# =============================================================================
+# Running this model produces:
+#
+# 1. value_metrics.csv
+#    Columns:
+#    - Year
+#    - Revenue, EBITDA, EBIT
+#    - Invested_Capital
+#    - NOPAT
+#    - Capital_Charge
+#    - EVA
+#    - ROIC_%
+#    - Value_Spread_%
+#    - Cumulative_EVA
+#
+# 2. value_creation_summary.yaml
+#    - WACC breakdown (CoE, CoD, weights)
+#    - Total EVA over projection
+#    - Average ROIC and Value Spread
+#    - DCF Enterprise Value
+#    - EV/EBITDA implied value
+#
+# Key Metrics Explained:
+#   - EVA = NOPAT - (Invested Capital × WACC)
+#   - ROIC = NOPAT / Invested Capital
+#   - Value Spread = ROIC - WACC (positive = value creation)
+# =============================================================================

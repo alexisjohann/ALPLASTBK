@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>$title$ - FehrAdvice Report</title>
+    <style>
+        /* =========================================
+           FEHRADVICE CORPORATE DESIGN VARIABLES
+           ========================================= */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+        :root {
+            --trustblue: rgb(2, 64, 121);       /* #024079 - Hauptfarbe */
+            --trustbluelight: rgb(212, 228, 244); /* #D4E4F4 - Helle Akzentfarbe */
+            --fehrgray: rgb(37, 33, 42);        /* #25212A - Text Dunkel */
+            --fehrlightgray: rgb(245, 245, 245); /* #F5F5F5 - Hintergrund Grau */
+            --white: #ffffff;
+            --black: #000000;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #555; /* Dunkler Hintergrund für Bildschirmansicht */
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* =========================================
+           PAPIER-SETUP (A4)
+           ========================================= */
+        .page {
+            width: 210mm;
+            height: 297mm;
+            margin: 10mm auto;
+            background: white;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden; /* Verhindert Überlauf */
+            page-break-after: always;
+            box-sizing: border-box;
+        }
+
+        /* =========================================
+           TYPOGRAFIE & ELEMENTE
+           ========================================= */
+
+        /* Überschriften */
+        h1 { color: var(--trustblue); font-size: 24pt; margin-top: 0; margin-bottom: 20pt; font-weight: bold; }
+        h2 { color: var(--trustblue); font-size: 16pt; margin-top: 25pt; margin-bottom: 10pt; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        h3 { color: var(--trustblue); font-size: 13pt; margin-top: 20pt; margin-bottom: 5pt; font-weight: bold; }
+
+        /* Fließtext */
+        p { font-size: 10pt; line-height: 1.5; color: var(--fehrgray); margin-bottom: 10pt; }
+
+        /* Listen */
+        ul, ol { margin-top: 5px; margin-bottom: 15px; padding-left: 20px; font-size: 10pt; line-height: 1.5; color: var(--fehrgray); }
+        li { margin-bottom: 5px; }
+
+        /* Tabellen */
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 10pt; }
+        th { background-color: var(--trustblue); color: white; padding: 10px; text-align: left; }
+        td { border-bottom: 1px solid #ddd; padding: 10px; vertical-align: top; color: var(--fehrgray); }
+        tr:nth-child(even) { background-color: var(--fehrlightgray); }
+
+        /* Highlight Box (Recommendation Box) */
+        .rec-box, blockquote {
+            background-color: #E8F4FD;
+            border-left: 5px solid var(--trustblue);
+            padding: 15px 20px;
+            margin: 25px 0;
+            font-size: 10pt;
+            color: var(--fehrgray);
+        }
+
+        /* Code blocks */
+        pre, code {
+            background-color: var(--fehrlightgray);
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 9pt;
+        }
+        pre {
+            padding: 15px;
+            overflow-x: auto;
+            border-radius: 4px;
+        }
+
+        /* =========================================
+           HEADER & FOOTER (Interne Seiten)
+           ========================================= */
+        .internal-header {
+            position: absolute; top: 10mm; left: 25mm; right: 25mm;
+            border-bottom: 1px solid #ccc; font-size: 9pt; color: #888;
+            display: flex; justify-content: space-between; padding-bottom: 5px;
+        }
+        .internal-footer {
+            position: absolute; bottom: 10mm; left: 25mm; right: 25mm;
+            border-top: 1px solid #ccc; font-size: 9pt; color: #888;
+            display: flex; justify-content: space-between; padding-top: 5px; text-align: center;
+        }
+
+        /* Content area for internal pages */
+        .content-area {
+            padding: 30mm 25mm 25mm 25mm;
+        }
+
+        /* =========================================
+           COVER PAGE STYLES
+           ========================================= */
+        .cover-page { text-align: center; }
+        .cover-top-bar { position: absolute; top: 0; left: 0; width: 100%; height: 30mm; background-color: var(--trustblue); }
+        .cover-bottom-bar { position: absolute; bottom: 0; left: 0; width: 100%; height: 20mm; background-color: var(--trustblue); display: flex; align-items: center; justify-content: center; color: white; font-size: 10pt; letter-spacing: 1px;}
+        .cover-content { padding-top: 50mm; padding-left: 20mm; padding-right: 20mm; width: 100%; box-sizing: border-box; }
+
+        .logo-box { margin-bottom: 25mm; }
+        .logo-image { width: 50mm; height: auto; } /* Logo Größe */
+
+        .doc-type { color: var(--trustblue); font-size: 14pt; margin-bottom: 10mm; text-transform: uppercase; letter-spacing: 2px; }
+        .main-title { color: var(--trustblue); font-size: 32pt; font-weight: bold; line-height: 1.1; margin-bottom: 10mm; }
+        .subtitle { color: var(--trustblue); font-size: 18pt; margin-bottom: 5mm; font-weight: 300; }
+
+        .client-section { margin-top: 40mm; }
+        .client-label { color: var(--trustblue); font-size: 12pt; margin-bottom: 2mm; }
+        .client-name { color: var(--black); font-size: 18pt; font-weight: bold; margin-bottom: 5mm; }
+        .client-detail { color: var(--fehrgray); font-size: 12pt; margin-bottom: 10mm; }
+        .date-version { color: #888; font-size: 11pt; margin-top: 20mm;}
+
+        /* =========================================
+           BACK PAGE STYLES
+           ========================================= */
+        .back-page { background-color: var(--fehrlightgray); text-align: center; }
+        .back-top-bar { position: absolute; top: 0; left: 0; width: 100%; height: 10mm; background-color: var(--trustblue); }
+        .back-bottom-bar { position: absolute; bottom: 0; left: 0; width: 100%; height: 40mm; background-color: var(--trustblue); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .back-content { padding-top: 60mm; padding-left: 20mm; padding-right: 20mm; }
+
+        .back-company { color: var(--trustblue); font-size: 22pt; font-weight: bold; margin-bottom: 5mm; margin-top: 5mm; }
+        .back-tagline { color: var(--fehrgray); font-size: 14pt; margin-bottom: 20mm; font-weight: 300; }
+
+        .contact-block { margin-bottom: 15mm; }
+        .contact-header { color: var(--trustblue); font-weight: bold; font-size: 12pt; margin-bottom: 5px; text-transform: uppercase;}
+        .contact-text { color: var(--black); font-size: 12pt; line-height: 1.6; }
+        .contact-text a { color: var(--trustblue); text-decoration: none; }
+
+        .disclaimer-box { width: 85%; margin: 20mm auto 0; color: #777; font-size: 8pt; line-height: 1.4; text-align: center; border-top: 1px solid #ddd; padding-top: 15px;}
+
+        /* =========================================
+           PRINT SETTINGS (PDF EXPORT)
+           ========================================= */
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { background: none; margin: 0; }
+            .page { margin: 0; box-shadow: none; page-break-after: always; width: 210mm; height: 297mm; }
+        }
+    </style>
+</head>
+<body>
+$body$
+</body>
+</html>

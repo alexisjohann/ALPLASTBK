@@ -1,0 +1,475 @@
+# ============================================================================
+# PAPER: Causality and Econometrics
+# AUTHORS: James J. Heckman, Rodrigo Pinto
+# YEAR: 2022
+# SOURCE: NBER Working Paper 29787
+# DOI: 10.3386/w29787
+# ============================================================================
+# INTEGRATION STATUS: Level 4 - THEORY (Full Analysis)
+# INTEGRATION DATE: 2026-01-30
+# PIP ID: PIP-2026-01-30-005
+# ============================================================================
+
+================================================================================
+ABSTRACT
+================================================================================
+
+This paper provides a comprehensive comparison of three major approaches to
+causal inference:
+
+1. THE ECONOMETRIC TRADITION (Frisch-Haavelmo-Cowles)
+   - Based on thought experiments and structural equations
+   - Can handle simultaneous equations
+   - Answers all four policy questions (P1-P4)
+
+2. THE NEYMAN-RUBIN FRAMEWORK (Potential Outcomes)
+   - Based on switching treatment regimes
+   - Clear identification in experiments
+   - Limited to P1, P2 without additional structure
+
+3. PEARL'S DO-CALCULUS (Graphical Models)
+   - Based on Directed Acyclic Graphs
+   - Algorithmic identification criteria
+   - Cannot handle simultaneity (acyclic by definition)
+
+The central argument: Only the econometric approach can handle simultaneous
+equations and answer all four fundamental policy questions, making it essential
+for structural behavioral economics.
+
+================================================================================
+I. THE THREE CAUSAL FRAMEWORKS
+================================================================================
+
+ECONOMETRIC TRADITION:
+
+Origins:
+- Ragnar Frisch (1926, 1933): Defined "autonomy" of structural relations
+- Trygve Haavelmo (1943, 1944): Probability approach to econometrics
+- Cowles Commission (1940s-1950s): Simultaneous equations estimation
+
+Key Features:
+- Structural equations represent autonomous mechanisms
+- Parameters are "policy-invariant" (stable under intervention)
+- Thought experiments: "What if we SET variable X to value x?"
+- Error terms capture unobserved heterogeneity
+
+Capability:
+- Can handle simultaneous equations (feedback loops)
+- Distinguishes structural from reduced-form parameters
+- Answers P1 (TT), P2 (TUT), P3 (Forecast), P4 (New Policy)
+
+--------------------------------------------------------------------------------
+
+NEYMAN-RUBIN FRAMEWORK:
+
+Origins:
+- Jerzy Neyman (1923): Potential outcomes for randomized experiments
+- Donald Rubin (1974, 1978): Extended to observational studies
+- Paul Holland (1986): "Statistics and Causal Inference"
+
+Key Features:
+- Potential outcomes Y(0), Y(1) for each unit
+- SUTVA: Stable Unit Treatment Value Assumption
+- Identification through randomization or unconfoundedness
+- No manipulation, no causation (only well-defined interventions)
+
+Capability:
+- Clear identification in RCTs
+- Minimal assumptions for internal validity
+- Limited for P3, P4 without additional structure
+
+Limitations:
+- Cannot handle simultaneous determination
+- SUTVA often violated (spillovers, general equilibrium)
+- LATE depends on instrument, not policy-relevant
+
+--------------------------------------------------------------------------------
+
+PEARL'S DO-CALCULUS:
+
+Origins:
+- Judea Pearl (1995, 2000, 2009): "Causality" framework
+- Spirtes, Glymour, Scheines (1993): PC algorithm
+
+Key Features:
+- Directed Acyclic Graphs (DAGs) represent causal structure
+- do(X=x) operator: "Set X to x"
+- Back-door criterion: Block all confounding paths
+- Front-door criterion: Mediation-based identification
+
+Capability:
+- Visual representation of causal assumptions
+- Algorithmic identification criteria
+- Nonparametric (minimal functional form assumptions)
+
+Limitations:
+- DAGs are ACYCLIC - cannot represent simultaneity
+- Nonparametric: Cannot extrapolate to new contexts
+- Limited for P3 (forecast) and P4 (new policy)
+
+================================================================================
+II. FIXING VS CONDITIONING - THE FUNDAMENTAL DISTINCTION
+================================================================================
+
+FIXING (Intervention):
+
+Definition:
+  Fixing(A=a) = Modify the mechanism M_A that generates A so that it
+  produces constant value a regardless of its inputs.
+
+Graphically:
+  - Remove all arrows pointing INTO variable A
+  - Set A = a (constant)
+
+Probabilistically:
+  P(Y | Fixing(A=a)) represents the distribution of Y under intervention
+
+Example:
+  "What would blood pressure be if we SET exercise to 30 min/day?"
+  → This changes the data generating process
+
+--------------------------------------------------------------------------------
+
+CONDITIONING (Observation):
+
+Definition:
+  Conditioning on A=a = Restrict analysis to the subpopulation where
+  variable A happens to equal value a.
+
+Graphically:
+  - No change to graph structure
+  - Subset data where A = a
+
+Probabilistically:
+  P(Y | A=a) = P(Y ∩ A=a) / P(A=a)
+
+Example:
+  "What is blood pressure among those who CHOOSE to exercise 30 min/day?"
+  → This selects from existing distribution
+
+--------------------------------------------------------------------------------
+
+WHY THIS MATTERS:
+
+In general: P(Y | Fixing(A=a)) ≠ P(Y | A=a)
+
+The difference arises from CONFOUNDING:
+- If U affects both A and Y (confounder)
+- Conditioning on A selects based on U
+- Fixing A removes this selection
+
+Example (Confounding):
+- U = Health consciousness
+- A = Exercise
+- Y = Blood pressure
+
+Conditioning: E[Y | A = 30min] reflects health-conscious people
+Fixing:      E[Y | Fixing(A = 30min)] reflects everyone forced to exercise
+
+The econometric approach explicitly models the selection mechanism.
+The Neyman-Rubin approach assumes away selection (via randomization).
+Pearl's approach provides graphical criteria for when Fixing = Conditioning.
+
+================================================================================
+III. THE SIMULTANEITY PROBLEM
+================================================================================
+
+EXAMPLE: Supply and Demand
+
+Demand: Q = α_D + β_D · P + γ_D · Y + U_D    (β_D < 0)
+Supply: Q = α_S + β_S · P + U_S              (β_S > 0)
+
+Market Equilibrium:
+  P and Q are jointly determined
+  No temporal or causal ordering between P and Q
+
+--------------------------------------------------------------------------------
+
+WHY DAGs CANNOT HANDLE THIS:
+
+DAGs are Directed ACYCLIC Graphs:
+  - Cannot have cycles: A → B → A is forbidden
+  - Simultaneity requires cycles: P ↔ Q
+
+Pearl's Solution Attempt:
+  - "Structural equation models can be acyclic"
+  - But supply-demand IS genuinely simultaneous
+
+The Reality:
+  - Price and quantity are equilibrium outcomes
+  - Neither "causes" the other in a sequential sense
+  - Both result from the intersection of supply and demand curves
+
+--------------------------------------------------------------------------------
+
+ECONOMETRIC SOLUTION:
+
+Identification through exclusion restrictions:
+  - Demand shifters (income Y) identify supply curve
+  - Supply shifters (cost shocks) identify demand curve
+
+Instrumental Variables:
+  - Use exogenous shifters as instruments
+  - 2SLS, 3SLS estimation
+
+Key Insight:
+  - Structural parameters (β_D, β_S) are identified
+  - These are policy-invariant under most interventions
+  - Can forecast effects of taxes, subsidies, etc.
+
+================================================================================
+IV. THE GENERALIZED ROY MODEL
+================================================================================
+
+FUNDAMENTAL SELECTION MODEL:
+
+Outcome Equation:
+  Y = D · Y₁ + (1-D) · Y₀
+
+Where:
+  - Y = Observed outcome
+  - D ∈ {0,1} = Treatment indicator
+  - Y₁ = Outcome if treated
+  - Y₀ = Outcome if untreated
+
+Potential Outcomes:
+  Y₁ = μ₁(X) + U₁
+  Y₀ = μ₀(X) + U₀
+
+Selection Rule:
+  D = 1[S > 0]
+  S = μ_D(Z) - V
+
+Where:
+  - S = Net benefit (surplus) from treatment
+  - Z = Observed determinants of selection
+  - V = Unobserved cost/disutility of treatment
+
+--------------------------------------------------------------------------------
+
+TREATMENT EFFECT PARAMETERS:
+
+Average Treatment Effect (ATE):
+  ATE = E[Y₁ - Y₀]
+      = E[μ₁(X) - μ₀(X)]
+
+Treatment on Treated (TT):
+  TT = E[Y₁ - Y₀ | D = 1]
+     = ATE + E[U₁ - U₀ | S > 0]
+
+Treatment on Untreated (TUT):
+  TUT = E[Y₁ - Y₀ | D = 0]
+      = ATE + E[U₁ - U₀ | S ≤ 0]
+
+Marginal Treatment Effect (MTE):
+  MTE(v) = E[Y₁ - Y₀ | V = v]
+
+--------------------------------------------------------------------------------
+
+SELECTION ON GAINS:
+
+Key Result:
+  When Cov(U₁ - U₀, V) ≠ 0:
+    TT ≠ ATE ≠ TUT
+
+Interpretation:
+  - People select treatment based on their expected gains
+  - Those who benefit most are most likely to select in
+  - TT overestimates ATE if high-benefit types select treatment
+  - TUT may be negative even if ATE is positive
+
+Implication for Policy:
+  - Expanding treatment reaches different population
+  - Effect for new participants ≠ effect for current participants
+  - Need structural model to predict expansion effects (P3, P4)
+
+================================================================================
+V. THE LATE CRITIQUE
+================================================================================
+
+WHAT IS LATE?
+
+Local Average Treatment Effect:
+  LATE = E[Y₁ - Y₀ | Compliers]
+
+Compliers:
+  - Those induced to take treatment by the instrument
+  - D(Z=1) = 1 but D(Z=0) = 0
+
+Identification:
+  LATE = [E(Y | Z=1) - E(Y | Z=0)] / [E(D | Z=1) - E(D | Z=0)]
+
+--------------------------------------------------------------------------------
+
+PROBLEMS WITH LATE:
+
+1. INSTRUMENT-DEPENDENT:
+   Different instruments identify different LATE populations
+   LATE(Z₁) identifies effect for Z₁-compliers
+   LATE(Z₂) identifies effect for Z₂-compliers
+   These populations generally differ
+
+2. NON-COMPARABLE:
+   Cannot compare LATE estimates across studies
+   "Apples and oranges" - different populations
+
+3. NOT POLICY-RELEVANT:
+   Policy changes alter the complier population
+   LATE for current policy ≠ LATE for expanded policy
+
+4. REQUIRES MONOTONICITY:
+   No "defiers" assumption: D(Z=1) ≥ D(Z=0) for all
+   Often unrealistic
+
+--------------------------------------------------------------------------------
+
+POLICY QUESTION:
+
+LATE answers:
+  "What is the effect for those induced to participate by THIS instrument?"
+
+LATE does NOT answer:
+  "What would happen if we expanded the program?" (P3)
+  "What would a different intervention achieve?" (P4)
+
+For P3, P4: Need structural parameters, not local effects.
+
+================================================================================
+VI. IMPLICATIONS FOR EBF
+================================================================================
+
+1. STRUCTURAL PARAMETERS:
+
+EBF behavioral parameters should be STRUCTURAL:
+  - λ (loss aversion): Deep preference parameter
+  - β (discount factor): Time preference parameter
+  - γ (complementarity): Interaction parameter
+
+Why structural?
+  - Policy-invariant under Lucas Critique
+  - Allow P3 (forecast to new context)
+  - Allow P4 (design new interventions)
+
+Treatment effects (ATE, LATE) are insufficient:
+  - Context-dependent
+  - May not extrapolate
+  - Cannot design new policies
+
+--------------------------------------------------------------------------------
+
+2. CONTEXT AS MECHANISM FIXING:
+
+EBF context dimensions (Ψ) correspond to which mechanisms are held fixed:
+
+  Ψ_I (Institutional): Rules, defaults, legal framework
+  Ψ_S (Social): Norms, peer effects, reference groups
+  Ψ_C (Cognitive): Attention, processing, mental state
+  Ψ_K (Cultural): Values, beliefs, traditions
+  Ψ_E (Economic): Resources, constraints, prices
+  Ψ_T (Temporal): Timing, deadlines, life stage
+  Ψ_M (Material): Tools, technology, infrastructure
+  Ψ_F (Physical): Location, environment, space
+
+Different interventions FIX different mechanisms:
+  - Nudge fixes Ψ_I (changes default)
+  - Social norm intervention fixes Ψ_S (changes reference)
+  - Timing intervention fixes Ψ_T (changes when)
+
+--------------------------------------------------------------------------------
+
+3. P1-P4 FRAMEWORK FOR INTERVENTIONS:
+
+P1 (Treatment on Treated):
+  "Did the nudge work for those who received it?"
+  → Measured by field experiment
+
+P2 (Treatment on Untreated):
+  "Would it work for non-participants?"
+  → Requires selection model
+
+P3 (Policy Forecast):
+  "Will it work in a new context?"
+  → Requires structural parameters + context mapping
+
+P4 (New Policy Effects):
+  "Can we design better interventions?"
+  → Requires full structural model (10C + Ψ)
+
+EBF aims to answer all four questions through:
+  - Structural parameters (λ, β, γ)
+  - Context specification (Ψ)
+  - Mechanism understanding (10C)
+
+--------------------------------------------------------------------------------
+
+4. SIMULTANEITY IN BEHAVIORAL ECONOMICS:
+
+Examples where DAGs are insufficient:
+  - Present bias ↔ Saving ↔ Wealth ↔ Future self-control
+  - Social norms ↔ Behavior ↔ Peer behavior ↔ Norms
+  - Attention ↔ Choice ↔ Learning ↔ Attention
+
+EBF handles these through:
+  - Structural equations (not just DAGs)
+  - Equilibrium concepts (feedback loops)
+  - Dynamic models (intertemporal)
+
+================================================================================
+VII. SUMMARY
+================================================================================
+
+1. THREE FRAMEWORKS:
+   - Econometric: Structural equations, handles simultaneity, P1-P4
+   - Neyman-Rubin: Potential outcomes, P1-P2, clear in RCTs
+   - Pearl: DAGs, graphical identification, no simultaneity
+
+2. FIXING ≠ CONDITIONING:
+   - Fixing changes the DGP (intervention)
+   - Conditioning selects from distribution (observation)
+   - Conflating these → confounding bias
+
+3. SIMULTANEITY:
+   - DAGs cannot represent feedback loops
+   - Econometric models essential for supply/demand, etc.
+
+4. ROY MODEL:
+   - Selection on gains → TT ≠ ATE ≠ TUT
+   - Structural model needed for expansion effects
+
+5. LATE LIMITATIONS:
+   - Instrument-dependent
+   - Not policy-relevant for P3, P4
+
+6. EBF IMPLICATIONS:
+   - Use structural parameters (λ, β, γ)
+   - Context (Ψ) = mechanism fixing
+   - P1-P4 framework for intervention evaluation
+   - Structural models required for policy design
+
+================================================================================
+REFERENCES (Selected)
+================================================================================
+
+Frisch, R. (1933). Propagation problems and impulse problems in dynamic
+    economics. Economic Essays in Honor of Gustav Cassel.
+
+Haavelmo, T. (1944). The probability approach in econometrics. Econometrica.
+
+Heckman, J.J. (1979). Sample selection bias as a specification error.
+    Econometrica.
+
+Heckman, J.J. and R. Pinto (2024). Econometric causality: The central role
+    of thought experiments. Journal of Econometrics.
+
+Neyman, J. (1923/1990). On the application of probability theory to
+    agricultural experiments. Statistical Science.
+
+Pearl, J. (2009). Causality: Models, Reasoning, and Inference. 2nd ed.
+    Cambridge University Press.
+
+Rubin, D.B. (1974). Estimating causal effects of treatments in randomized
+    and nonrandomized studies. Journal of Educational Psychology.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

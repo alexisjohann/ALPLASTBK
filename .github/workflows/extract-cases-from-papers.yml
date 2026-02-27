@@ -1,0 +1,100 @@
+name: Extract Cases from Papers (Weekly)
+
+on:
+  schedule:
+    # Every Monday at 01:00 UTC (after Random Case Generation)
+    - cron: '0 1 ? * MON'
+
+  # Allow manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      paper_id:
+        description: 'Specific paper ID to process (optional)'
+        required: false
+      dry_run:
+        description: 'Dry run (preview only)'
+        required: false
+        default: 'false'
+
+jobs:
+  extract_cases:
+    name: Extract Cases from Behavioral Economics Papers
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml requests
+
+      - name: Configure git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action - Paper Extractor"
+
+      - name: Extract cases from papers
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd ${{ github.workspace }}
+          ARGS=""
+          if [ ! -z "${{ github.event.inputs.paper_id }}" ]; then
+            ARGS="--paper ${{ github.event.inputs.paper_id }}"
+          fi
+          if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          python scripts/extract_cases_from_papers.py $ARGS
+
+      - name: Check for changes
+        id: verify
+        run: |
+          if git diff-index --quiet HEAD --; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit extracted cases
+        if: steps.verify.outputs.has_changes == 'true'
+        run: |
+          git add data/case-registry.yaml outputs/paper-to-cases-reports/ -f 2>/dev/null || true
+          git commit -m "feat(case): Extract cases from behavioral economics papers
+
+- Automated 10C extraction from paper findings
+- Rule-based dimensional inference (domain, stage, FEPSDE, Ψ)
+- All cases linked to source papers and literature
+- Report available in outputs/paper-to-cases-reports/
+" || echo "Nothing to commit"
+
+      - name: Push changes
+        if: steps.verify.outputs.has_changes == 'true'
+        run: |
+          git push origin HEAD:${{ github.ref }}
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: paper-extraction-report
+          path: outputs/paper-to-cases-reports/
+          retention-days: 30
+
+      - name: Workflow summary
+        run: |
+          echo "## 📚 Paper-to-Cases Extraction Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Paper extraction completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 Check the artifact for the detailed report" >> $GITHUB_STEP_SUMMARY

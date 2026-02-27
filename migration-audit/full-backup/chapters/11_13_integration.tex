@@ -1,0 +1,227 @@
+\subsection{Integration with EBF Architecture}
+\label{subsec:11-11-integration}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SECTION 11.11: Integration with EBF
+% Content: Module position, interfaces, governance
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This section specifies how the Awareness function integrates with the
+broader EBF architecture.
+
+%------------------------------------------------------------------------------
+\subsubsection{Module Position in the EBF Flow}
+%------------------------------------------------------------------------------
+
+\begin{equation}
+\boxed{\Psi \rightarrow U_{pot} \rightarrow \mathbf{A} \rightarrow U_{eff} \rightarrow WTC \rightarrow Behavior}
+\end{equation}
+
+\begin{table}[htbp]
+\centering
+\caption{Awareness in the EBF Flow}
+\label{tab:bcm-flow}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Stage} & \textbf{Module} & \textbf{Function} \\
+\midrule
+$\Psi$ & 8904\_KON & Context determines what's possible \\
+$U_{pot}$ & 7234-7236 & Potential utility across INU/KNU/IDN \\
+$\mathbf{A}$ & \textbf{7240\_AWX} & \textbf{Filters potential to effective} \\
+$U_{eff}$ & Output of AWX & What actually guides decision \\
+WTC & 7243\_WAX & Willingness to change \\
+Behavior & Output & Observable action \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Interpretation.}
+Awareness sits \emph{between} potential utility and willingness. It determines
+which of the 144 potential utility components actually enter the decision
+at the Moment of Truth.
+
+%------------------------------------------------------------------------------
+\subsubsection{Upstream Interfaces}
+%------------------------------------------------------------------------------
+
+\begin{table}[htbp]
+\centering
+\caption{Awareness Upstream Modules}
+\label{tab:upstream}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Module} & \textbf{Code} & \textbf{What It Provides to AWX} \\
+\midrule
+Individual Utility & 7234\_INU & $U^{self}_{pot,INU}$ \\
+Collective Utility & 7235\_KNU & $U^{self}_{pot,KNU}$, $U^{comm}_{pot,KNU}$ \\
+Identity Utility & 7236\_IDN & $U^{self}_{pot,IDN}$, $U^{comm}_{pot,IDN}$ \\
+Context & 8904\_KON & $\Psi$-dimensions, context configuration \\
+Complexity & 9492\_KOM & Complexity level affecting $A$ \\
+Uncertainty (Env) & 9485\_UNS\_ENV & Environmental uncertainty \\
+Uncertainty (Inst) & 9493\_UNS\_INS & Institutional uncertainty \\
+Uncertainty (Epi) & 9494\_UNS\_EPI & Epistemic uncertainty \\
+Uncertainty (Int) & 9495\_UNS\_IPN & Interpersonal uncertainty \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%------------------------------------------------------------------------------
+\subsubsection{Downstream Interfaces}
+%------------------------------------------------------------------------------
+
+\begin{table}[htbp]
+\centering
+\caption{Awareness Downstream Modules}
+\label{tab:downstream}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Module} & \textbf{Code} & \textbf{What AWX Provides} \\
+\midrule
+Willingness & 7243\_WAX & $U_{eff}$ for willingness calculation \\
+Probability & 7259\_PRB & Awareness-adjusted decision probability \\
+Journey & 7256\_JNY & Phase-specific awareness patterns \\
+Segments & 7257\_SEG & Segment-specific $A$ profiles \\
+Life Phases & 7457\_LCP & Life-phase awareness modulation \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%------------------------------------------------------------------------------
+\subsubsection{The Bias Block Coupling}
+%------------------------------------------------------------------------------
+
+Awareness is coupled with a Bias Block that captures systematic distortions:
+
+\begin{equation}
+Bias_{total} = Bias_{conf} + Bias_{surv} + Bias_{fail} + \kappa(Bias_{conf} \times Bias_{surv} \times Bias_{fail})
+\end{equation}
+
+\begin{table}[htbp]
+\centering
+\caption{Bias Block Components}
+\label{tab:bias-block}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Component} & \textbf{Symbol} & \textbf{Effect on Awareness} \\
+\midrule
+Overconfidence & $Bias_{conf}$ & Inflates $A$ for success, deflates for failure \\
+Survivorship & $Bias_{surv}$ & $A_{success} >> A_{failure}$ \\
+Failure Gap & $Bias_{fail}$ & $\Delta A_F$ from visibility costs \\
+Interaction & $\kappa$ & Amplification when multiple biases present \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Effective Awareness with Bias.}
+\begin{equation}
+A_{eff}(t^*) = A_{base}(t^*) \times (1 - Bias_{total})
+\end{equation}
+
+%------------------------------------------------------------------------------
+\subsubsection{Governance and Watchdog}
+%------------------------------------------------------------------------------
+
+The Awareness module connects to EBF governance:
+
+\begin{table}[htbp]
+\centering
+\caption{Governance Interfaces}
+\label{tab:governance}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Module} & \textbf{Code} & \textbf{Function} \\
+\midrule
+Watchdog & 9251\_WATCHDOG & Monitors $A$ thresholds, triggers alerts \\
+Statistics & 9477\_STAT & Logs $A$ patterns, validates metrics \\
+Intervention & 9250\_INT & Uses $A$ diagnosis for intervention design \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Watchdog Trigger Conditions.}
+\begin{itemize}
+\item $\Delta A_F > 0.25$: Failure Gap Alert
+\item $\kappa > 0.10$: Bias Coupling Anomaly
+\item $Bias_{total} > \theta_{Bias}$: Meta Threshold Breach
+\item $\Delta I_t > 0.8$: Mirror Gap Overload
+\end{itemize}
+
+%------------------------------------------------------------------------------
+\subsubsection{Meta-Constraints}
+%------------------------------------------------------------------------------
+
+Four meta-constraints govern awareness validity:
+
+\begin{enumerate}
+\item[\textbf{C1:}] Awareness is only valid when relevant context ($C_{rel}$) is present
+\item[\textbf{C2:}] Awareness cannot be simultaneously maximal in SYS 0 and SYS 2 (Hyper-Dissonance)
+\item[\textbf{C3:}] KNU is always awareness-mandatory; instant KNU is impossible
+\item[\textbf{C4:}] Awareness drops when complexity or uncertainty exceeds threshold
+\end{enumerate}
+
+\paragraph{Validation Rule.}
+\begin{equation}
+\sum |\Delta A_{SYS_i}| \leq \theta_{meta} \wedge C1-C4 \text{ fulfilled} \Rightarrow \text{Awareness} = \text{VALID}
+\end{equation}
+
+%------------------------------------------------------------------------------
+\subsubsection{Meta-Axiom References}
+%------------------------------------------------------------------------------
+
+\begin{table}[htbp]
+\centering
+\caption{Awareness Meta-Axiom Links}
+\label{tab:meta-axioms}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Meta-Axiom} & \textbf{Content} \\
+\midrule
+MA\_0.00l & Awareness as transformation condition $U_{pot} \to U_{eff}$ \\
+MA\_0.00m & 0-1 continuum: 0 = habit, 1 = full transformation \\
+MA\_0.00n & Process over system levels 0-2 \\
+MA\_0.00o & Visceral foundation (Loewenstein) \\
+MA\_0.00p & Dynamic SYS 0-2 interaction \\
+MA\_0.00q & Cultural modulation of awareness thresholds \\
+MA\_0.00r & Compliance and honesty as SYS 2 awareness \\
+MA\_0.00za & Meta-coherence maintenance \\
+MA\_0.00zb & Boundary conditions \\
+MA\_0.00zc & Feedback-based learning \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%------------------------------------------------------------------------------
+\subsubsection{BEATRIX Module Summary}
+%------------------------------------------------------------------------------
+
+\begin{table}[htbp]
+\centering
+\caption{Awareness Module: Complete BEATRIX Reference}
+\label{tab:beatrix-summary}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Attribute} & \textbf{Value} \\
+\midrule
+Module ID & 7240 \\
+Module Code & BCM2\_05\_AWX \\
+Version & v5.3 \\
+Status & META\_VALIDATED \\
+Axiom Count & 80 (AWX-A1 to AWX-A80) \\
+Upstream & 7234, 7235, 7236, 8904, 9492-9495 \\
+Downstream & 7243, 7259, 7256, 7257, 7457 \\
+Governance & 9251, 9477, 9250 \\
+Compliance & BCM2\_00\_STD\_9232\_v3.4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% END OF SECTION 11.11
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

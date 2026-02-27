@@ -1,0 +1,462 @@
+# =============================================================================
+# PCUM FINANCIAL IMPACT ESTIMATION
+# =============================================================================
+# Session: EBF-S-2026-02-06-ORG-001
+# Version: 1.0
+# Erstellt: 2026-02-08
+# Basis: PCUM v3.0, Sensitivity Analysis v3.0, RMS Profile v2.0
+# Methode: Behavioral-Informed Revenue Mapping
+# CAVEAT: Schaetzungen basieren auf oeffentlichen Daten + LLMMC Priors.
+#         Exakte Zahlen erfordern RMS-interne Revenue-Daten.
+# =============================================================================
+
+metadata:
+  deliverable_id: "DEL-RMS-006"
+  title: "Financial Impact Estimation — PCUM Szenarien"
+  session: "EBF-S-2026-02-06-ORG-001"
+  created: "2026-02-08"
+  version: "1.0"
+  status: "draft"
+  caveat: |
+    WICHTIG: RMS veroeffentlicht keine Revenue-Zahlen.
+    Diese Schaetzungen basieren auf:
+    - Branchenbenchmarks (Schweizer Medienmarkt)
+    - Oeffentlichen Datenpunkten (Abo-Preise, Session-Zahlen, Branchen-CPMs)
+    - LLMMC Priors fuer nicht-oeffentliche Parameter
+    Fuer belastbare Zahlen: RMS-interne P&L pro Marke anfordern.
+
+# =============================================================================
+# REVENUE-SCHAETZUNG BASELINE (Stand 2025/26)
+# =============================================================================
+
+revenue_baseline:
+  method: "Bottom-Up Schaetzung aus oeffentlichen Datenpunkten"
+
+  digital_advertising:
+    description: "Werbeerloese ueber Ringier Advertising + AdUnit"
+    estimation_basis: |
+      - RMS-Portfolio: ~1.1 Mrd Sessions p.a.
+      - Schweizer Display-CPM: CHF 8-15 (Premium-Publisher)
+      - Programmatic-Anteil ~60% (tieferer CPM), Direct-Sales ~40%
+      - Blended CPM geschaetzt: CHF 6-10
+      - Fill Rate geschaetzt: 70-80%
+      - Pageviews/Session: ~2.5 (Branchendurchschnitt CH-News)
+    range_chf_mio:
+      low: 40
+      mid: 55
+      high: 70
+    confidence: "LOW — Revenue-Split nicht oeffentlich"
+    note: |
+      L3 (Werbevermarktung) ist BEREITS KONSOLIDIERT via Ringier Advertising.
+      One-Platform-Szenarien betreffen primaer Data-Synergien (G3),
+      nicht die Vermarktungsstruktur selbst.
+
+  subscriptions:
+    blickplus:
+      subscribers: 30000  # Quelle: RMS/Patrick Rademacher, Feb 2026
+      price_monthly_chf: 9.90
+      annual_revenue_chf_mio: 3.6  # 30k × 9.90 × 12
+      note: "Aktuell ~10% der Artikel hinter Paywall"
+    beobachter:
+      subscribers_total: 120000  # Quelle: RMS-Kommunikation
+      subscribers_digital: 6000
+      avg_annual_price_chf: 250  # Geschaetzt (Print+Digital)
+      annual_revenue_chf_mio: 30.0  # 120k × 250
+      note: "Primaer Print-Abos. Digital-Anteil waechst."
+    bilanz:
+      subscribers_total: null  # Nicht oeffentlich
+      note: "Print-Abo via Ringier-Verlag, Preis ~CHF 290/Jahr"
+      annual_revenue_chf_mio_estimate: 5.0  # LLMMC Prior, LOW confidence
+    total_subscriptions_chf_mio:
+      low: 35
+      mid: 40
+      high: 50
+    confidence: "MEDIUM — Blick+ und Beobachter-Zahlen bekannt, Rest geschaetzt"
+
+  print_and_other:
+    description: "Print-Werbung, Events, Lizenzen, Sonderpublikationen"
+    note: "Ausserhalb PCUM-Scope (Print ist nicht entscheidungsrelevant fuer One-Platform)"
+    excluded_from_analysis: true
+
+  total_digital_revenue_baseline:
+    range_chf_mio:
+      low: 75
+      mid: 95
+      high: 120
+    note: "Digital Advertising + Subscriptions, ohne Print"
+
+# =============================================================================
+# SCENARIO IMPACT TRANSLATION
+# =============================================================================
+# Methodik: U_netto-Werte werden in relative Revenue-Veraenderungen uebersetzt.
+# U_netto = 0.10 entspricht etwa +5-10% Revenue-Uplift auf den betroffenen
+# Bereich. Die Relation ist NICHT linear — groessere U-Aenderungen haben
+# abnehmende marginale Revenue-Effekte (konkav).
+#
+# Translation: Delta_Rev ≈ k × ln(1 + U_netto/alpha)
+# Mit k = Baseline Revenue, alpha = Skalierungsparameter (~0.3)
+# =============================================================================
+
+scenario_impacts:
+
+  S1_backend_only:
+    u_netto: 0.136
+    description: "Nur Backend/CMS-Konsolidierung"
+
+    cost_savings:
+      description: "Reduktion CMS/Tech-Stack von 3-5 Systeme auf 1"
+      categories:
+        cms_consolidation:
+          description: "Ein CMS statt mehrere (Arc XP, WordPress, Eigenentwicklungen)"
+          annual_saving_chf_mio: {low: 2.0, mid: 3.5, high: 5.0}
+        hosting_infrastructure:
+          description: "Konsolidierte Cloud-Infrastruktur"
+          annual_saving_chf_mio: {low: 0.5, mid: 1.0, high: 1.5}
+        development_team:
+          description: "Weniger parallele Tech-Teams noetig"
+          annual_saving_chf_mio: {low: 1.0, mid: 2.0, high: 3.0}
+      total_annual_saving_chf_mio: {low: 3.5, mid: 6.5, high: 9.5}
+
+    revenue_uplift:
+      description: "Minimaler Revenue-Uplift — primaer Cost Play"
+      g2_cross_discovery_baseline:
+        description: "Existierende Cross-Discovery (Bilanz 40% Referral) wird formalisiert"
+        annual_uplift_chf_mio: {low: 0.5, mid: 1.0, high: 2.0}
+      g3_data_synergy:
+        description: "Bessere Daten durch gemeinsamen Tech-Stack"
+        annual_uplift_chf_mio: {low: 0.3, mid: 0.7, high: 1.5}
+      total_annual_uplift_chf_mio: {low: 0.8, mid: 1.7, high: 3.5}
+
+    implementation_cost:
+      description: "CMS-Migration (18-24 Monate)"
+      one_time_chf_mio: {low: 5.0, mid: 8.0, high: 12.0}
+      note: "Schibsted-Referenz: 2 Jahre, ~EUR 10M fuer vergleichbare Migration"
+
+    net_annual_impact_chf_mio:
+      year_1: {low: -4.2, mid: -6.3, high: -8.5}  # Investitionsphase
+      year_2: {low: 1.0, mid: 3.0, high: 5.0}  # Einsparungen starten
+      year_3_ff: {low: 4.3, mid: 8.2, high: 13.0}  # Volle Wirkung
+    payback_years: {low: 1.5, mid: 2.0, high: 3.0}
+    confidence: "MEDIUM — Tech-Einsparungen gut schaetzbar"
+
+  S2_backend_plus_abo:
+    u_netto: 0.215
+    description: "Backend + Abo-Buendelung (Blick+ Super-Bundle)"
+
+    cost_savings:
+      description: "S1-Einsparungen + Abo-Operations-Synergien"
+      s1_savings_chf_mio: {low: 3.5, mid: 6.5, high: 9.5}  # Wie oben
+      abo_operations:
+        description: "Ein Abo-System statt 3 (Blick+, Beobachter, Bilanz)"
+        annual_saving_chf_mio: {low: 0.5, mid: 1.0, high: 2.0}
+      total_annual_saving_chf_mio: {low: 4.0, mid: 7.5, high: 11.5}
+
+    revenue_uplift:
+      blickplus_bundle_growth:
+        description: |
+          Blick+ Super-Bundle (CHF 14.90-19.90) statt CHF 9.90
+          Target: 30k → 50-80k Subscriber in 18 Monaten
+          Treiber: Beobachter + Bilanz Content im Bundle
+        current_arr_chf_mio: 3.6  # 30k × 9.90 × 12
+        target_arr_chf_mio:
+          conservative: 7.2   # 50k × CHF 12/Mo (Blended)
+          expected: 11.5      # 65k × CHF 14.75/Mo
+          optimistic: 16.0    # 80k × CHF 16.70/Mo
+        annual_uplift_chf_mio: {low: 3.6, mid: 7.9, high: 12.4}
+
+      cross_discovery_uplift:
+        description: "Abo-Bundle treibt Cross-Brand-Exploration"
+        annual_uplift_chf_mio: {low: 1.0, mid: 2.5, high: 4.0}
+
+      advertising_premium:
+        description: "Hoehere Ad-Preise durch bessere Nutzerdaten (One-ID)"
+        cpm_uplift_pct: {low: 5, mid: 10, high: 15}
+        annual_uplift_chf_mio: {low: 2.0, mid: 5.5, high: 10.5}
+
+      total_annual_uplift_chf_mio: {low: 6.6, mid: 15.9, high: 26.9}
+
+    implementation_cost:
+      s1_cost_chf_mio: {low: 5.0, mid: 8.0, high: 12.0}
+      bundle_development:
+        description: "Abo-Plattform, Bundle-Packaging, Marketing"
+        one_time_chf_mio: {low: 2.0, mid: 3.5, high: 5.0}
+      total_one_time_chf_mio: {low: 7.0, mid: 11.5, high: 17.0}
+
+    net_annual_impact_chf_mio:
+      year_1: {low: -3.4, mid: -4.1, high: -5.5}  # Investition + erste Uplifts
+      year_2: {low: 5.0, mid: 12.0, high: 20.0}
+      year_3_ff: {low: 10.6, mid: 23.4, high: 38.4}  # Volle Wirkung
+    payback_years: {low: 1.0, mid: 1.5, high: 2.0}
+    confidence: "MEDIUM — Bundle-Uptake ist Hauptunsicherheit"
+
+  S3_house_of_brands:
+    u_netto: 0.098
+    description: "Volle Konsolidierung mit House of Brands (L4b)"
+    prerequisite: "DREIFACH-BEDINGUNG muss erfuellt sein (G2+50%, V3-50%, V1-30%)"
+
+    cost_savings:
+      description: "S2-Einsparungen + Frontend-Konsolidierung"
+      s2_savings_chf_mio: {low: 4.0, mid: 7.5, high: 11.5}
+      frontend_consolidation:
+        description: "Ein Frontend statt 5 separate Destinations"
+        annual_saving_chf_mio: {low: 1.5, mid: 3.0, high: 5.0}
+      total_annual_saving_chf_mio: {low: 5.5, mid: 10.5, high: 16.5}
+
+    revenue_uplift:
+      cross_discovery_max:
+        description: "Maximale Cross-Discovery auf einer Plattform"
+        annual_uplift_chf_mio: {low: 3.0, mid: 6.0, high: 10.0}
+      advertising_premium_max:
+        description: "Maximale Datensynergien + Premium-Inventar"
+        annual_uplift_chf_mio: {low: 3.0, mid: 7.0, high: 12.0}
+      beobachter_survival:
+        description: |
+          Beobachter-Survival bei Google AI Disruption.
+          Ohne Integration: 53% SEO-Traffic at risk → potentieller Verlust CHF 3-5M p.a.
+          Mit Integration: Blick-Plattform-Traffic federt SEO-Verlust ab.
+        avoided_loss_chf_mio: {low: 1.0, mid: 3.0, high: 5.0}
+      bundle_growth_additional:
+        description: "Steigerung ueber S2 hinaus durch Plattform-Erlebnis"
+        annual_uplift_chf_mio: {low: 1.0, mid: 2.5, high: 4.0}
+      total_annual_uplift_chf_mio: {low: 8.0, mid: 18.5, high: 31.0}
+
+    revenue_risk:
+      editorial_resistance_cost:
+        description: |
+          V3 = groesster Einzelverlust. Ohne Management:
+          - Talentabwanderung (Bilanz → NZZ/Tagesanzeiger)
+          - Qualitaetsverlust → Subscriber Churn
+          - Reputationsrisiko
+        potential_loss_chf_mio: {low: 2.0, mid: 5.0, high: 10.0}
+      identity_confusion:
+        description: "User-Verwirrung waehrend Transition → Session-Verlust"
+        potential_loss_chf_mio: {low: 1.0, mid: 3.0, high: 6.0}
+      total_risk_chf_mio: {low: 3.0, mid: 8.0, high: 16.0}
+
+    implementation_cost:
+      s2_cost_chf_mio: {low: 7.0, mid: 11.5, high: 17.0}
+      platform_redesign:
+        description: "House of Brands Plattform-Entwicklung"
+        one_time_chf_mio: {low: 3.0, mid: 5.0, high: 8.0}
+      change_management:
+        description: "Editorial Resistance Intervention (INT-RMS-002)"
+        one_time_chf_mio: {low: 0.5, mid: 1.0, high: 2.0}
+      total_one_time_chf_mio: {low: 10.5, mid: 17.5, high: 27.0}
+
+    net_annual_impact_chf_mio:
+      year_1: {low: -8.0, mid: -12.0, high: -18.0}  # Schwere Investitionsphase
+      year_2: {low: 0.0, mid: 5.0, high: 12.0}  # Unsicher
+      year_3_ff: {low: 10.5, mid: 21.0, high: 31.5}  # NUR mit Dreifach-Bedingung
+    payback_years: {low: 2.0, mid: 2.5, high: 4.0}
+    confidence: "LOW — Dreifach-Bedingung ist hohe Huerde"
+
+  S4_monobrand:
+    u_netto: -0.118
+    description: "Alles unter Blick — andere Marken verschwinden"
+    recommendation: "NICHT EMPFOHLEN"
+
+    value_destruction:
+      subscriber_loss:
+        description: |
+          Beobachter 120k Subscriber werden "Blick Ratgeber"-Subscriber.
+          Erwarteter Churn: 30-50% (Identity Economics, Status Loss)
+        churn_rate: {low: 0.30, mid: 0.40, high: 0.50}
+        lost_revenue_chf_mio: {low: 9.0, mid: 12.0, high: 15.0}
+      bilanz_premium_loss:
+        description: "Premium-Werbekunden verlieren Bilanz-Umfeld"
+        lost_revenue_chf_mio: {low: 1.0, mid: 2.5, high: 4.0}
+      talent_flight:
+        description: "Abwanderung Schluesselredakteur:innen zu NZZ, Tagesanzeiger"
+        replacement_cost_chf_mio: {low: 1.0, mid: 2.0, high: 3.5}
+      total_value_destruction_chf_mio: {low: 11.0, mid: 16.5, high: 22.5}
+
+    net_annual_impact_chf_mio:
+      note: "Negativer Netto-Nutzen — wird nicht weiter quantifiziert"
+      year_1_ff: "NEGATIV (zweistelliger Millionenverlust)"
+    confidence: "HIGH — Negative Richtung ist sicher, nur Magnitude unsicher"
+
+# =============================================================================
+# POLARIS HABIT-FIX: SOFORT-IMPACT
+# =============================================================================
+
+polaris_immediate_impact:
+  description: |
+    PRIO 0: Der Polaris True-Direct-Decline kostet RMS JETZT Geld.
+    74M verlorene Sessions p.a. = direkte Werbeerlos-Verluste.
+
+  lost_revenue_from_decline:
+    sessions_lost: 74000000  # -7% von 966M
+    # Aber: Nicht alle Sessions = gleich viel Wert
+    # True Direct Sessions haben hoehere Engagement-Metriken
+    true_direct_sessions_lost: 92000000  # -19% von 485M Direct/Agg
+    effective_revenue_loss:
+      description: "Direct Sessions haben ~1.5x hoehere Monetarisierung als SEO-Sessions"
+      blended_cpm_direct: 12  # CHF
+      blended_cpm_seo: 8  # CHF
+      pageviews_per_session: 2.5
+      estimated_annual_loss_chf_mio: {low: 1.5, mid: 2.8, high: 4.0}
+
+  recovery_potential:
+    description: "Polaris Habit-Fix Intervention (INT-RMS-001)"
+    target_recovery_pct: {low: 0.30, mid: 0.50, high: 0.70}
+    recovered_revenue_chf_mio: {low: 0.5, mid: 1.4, high: 2.8}
+    timeline: "12 Wochen (3 Waves)"
+    roi: |
+      Investment: ~CHF 200-500k (Product + Analytics Team, 3 Monate)
+      Erwarteter Return: CHF 1-3M p.a. an wiederhergestellten Werbeerlösen
+      ROI: 3-6x im ersten Jahr
+      → HOECHSTER ROI aller empfohlenen Massnahmen
+
+# =============================================================================
+# BEOBACHTER SURVIVAL: GOOGLE AI THREAT
+# =============================================================================
+
+beobachter_survival_impact:
+  description: "Beobachter hat 53% SEO-Abhaengigkeit → Google AI Overviews Risiko"
+
+  scenario_standalone:
+    description: "Beobachter bleibt standalone, Google AI Overviews eskalieren"
+    seo_traffic_loss_range: {low: 0.15, mid: 0.30, high: 0.50}
+    session_impact:
+      current_seo_sessions: 5136000  # 53% von 9.7M
+      lost_sessions: {low: 770000, mid: 1541000, high: 2568000}
+    revenue_at_risk_chf_mio: {low: 0.5, mid: 1.5, high: 3.0}
+    subscriber_churn_risk: |
+      Weniger SEO-Sichtbarkeit → weniger Neukunden-Akquise
+      Beobachter-Abo-Modell abhaengig von "Problem → Google → Beobachter → Abo"
+      Bei 30%+ SEO-Verlust: Neukunden-Pipeline bricht ein
+
+  scenario_integrated:
+    description: "Beobachter auf Blick-Plattform (S2 oder S3)"
+    benefit: |
+      - Blick-Plattform-Traffic ersetzt verlorenen SEO-Traffic
+      - Cross-Discovery: Blick-News-User entdecken Beobachter-Content
+      - SEO-Resilienz: Blick-Domain hat staerkere Google-Autoritaet
+    avoided_loss_chf_mio: {low: 0.5, mid: 1.5, high: 3.0}
+    note: |
+      Task Force Recovery Q4 2025 zeigt: Intervention WIRKT!
+      SEO +48%, Brand Search 2→6%, Direct/Agg +78%.
+      Aber: Dies sind kurzfristige Erfolge. Langfristiger Google-AI-Trend ist unklar.
+
+# =============================================================================
+# ZUSAMMENFASSUNG: 5-JAHRES-SZENARIO-VERGLEICH (CHF Mio.)
+# =============================================================================
+
+five_year_comparison:
+  note: |
+    Kumulative Netto-Effekte (Revenue Uplift + Cost Savings - Implementation Cost - Risks)
+    Alle Zahlen in CHF Mio., MID-Szenario
+
+  scenarios:
+    S1:
+      year_1: -6.3
+      year_2: 3.0
+      year_3: 8.2
+      year_4: 8.2
+      year_5: 8.2
+      cumulative_5y: 21.3
+      note: "Sicherer Pfad, moderater Return"
+
+    S2:
+      year_1: -4.1
+      year_2: 12.0
+      year_3: 23.4
+      year_4: 23.4
+      year_5: 23.4
+      cumulative_5y: 78.1
+      note: "HOECHSTER kumulativer Wert"
+
+    S3:
+      year_1: -12.0
+      year_2: 5.0
+      year_3: 21.0
+      year_4: 21.0
+      year_5: 21.0
+      cumulative_5y: 56.0
+      note: "NUR mit Dreifach-Bedingung. Sonst deutlich tiefer."
+
+    S4:
+      year_1: -16.5
+      year_2: -16.5
+      year_3: -16.5
+      year_4: -16.5
+      year_5: -16.5
+      cumulative_5y: -82.5
+      note: "WERTVERNICHTEND — zweistellige Verluste pro Jahr"
+
+  polaris_fix:
+    year_1: 0.9  # Recovered Revenue minus Investment
+    year_2: 1.4
+    year_3: 1.4
+    year_4: 1.4
+    year_5: 1.4
+    cumulative_5y: 6.5
+    note: "SOFORT umsetzbar, unabhaengig von S1-S4-Entscheidung"
+
+  ranking_5y_cumulative: |
+    1. S2 (Backend + Abo):     CHF +78.1M  ← EMPFOHLEN
+    2. S3 (House of Brands):   CHF +56.0M  (nur mit Dreifach-Bedingung!)
+    3. S1 (Nur Backend):       CHF +21.3M
+    4. S4 (Monobrand):         CHF -82.5M  ← NICHT EMPFOHLEN
+
+    Zusaetzlich: Polaris Fix = CHF +6.5M (PRIO 0, sofort)
+
+# =============================================================================
+# OPEN DATA REQUESTS (fuer praezisere Schaetzungen)
+# =============================================================================
+
+data_requests_for_refinement:
+  critical:
+    - id: "FIN-DR-01"
+      data: "Revenue-Split Digital: Advertising vs. Subscriptions vs. Other"
+      impact: "Erlaubt praezise Monetarisierung der Session-Impacts"
+      priority: "HOCH"
+
+    - id: "FIN-DR-02"
+      data: "CPM-Daten nach Kanal (Direct vs. SEO vs. Social)"
+      impact: "Quantifiziert den Wert der Polaris-Erholung praeziser"
+      priority: "HOCH"
+
+    - id: "FIN-DR-03"
+      data: "Blick+ Conversion Funnel (Free → Trial → Paid → Retained)"
+      impact: "Kalibriert Bundle-Uptake Prognose fuer S2"
+      priority: "HOCH"
+
+  nice_to_have:
+    - id: "FIN-DR-04"
+      data: "ARPU pro Segment (News, Wirtschaft, Service)"
+      impact: "Segment-spezifische Revenue-Impacts"
+
+    - id: "FIN-DR-05"
+      data: "Beobachter Neukunden-Akquise-Kosten und -Kanaele"
+      impact: "Quantifiziert Google-AI-Survival-Wert praeziser"
+
+    - id: "FIN-DR-06"
+      data: "Tech-Stack Kosten pro Marke (CMS, Hosting, Dev-Team)"
+      impact: "Praezisiert S1 Cost Savings"
+
+# =============================================================================
+# KERNAUSSAGEN FUER CSIO
+# =============================================================================
+
+key_messages:
+  message_1: |
+    S2 generiert ueber 5 Jahre ~CHF 78M kumulativen Wert — DREIMAL so viel wie S1 (CHF 21M).
+    Der Haupttreiber ist Blick+ Bundle-Wachstum (30k → 65k Subscriber).
+
+  message_2: |
+    S3 generiert ~CHF 56M — aber NUR wenn die Dreifach-Bedingung erfuellt wird.
+    Ohne Editorial Resistance Management sinkt S3 auf CHF 20-30M (unter S1-Niveau!).
+
+  message_3: |
+    Polaris Habit-Fix hat den hoechsten ROI aller Massnahmen (3-6x im ersten Jahr).
+    Bei geschaetzten CHF 300k Investment → CHF 1-3M p.a. wiederhergestellte Werbeerlöse.
+
+  message_4: |
+    S4 (Monobrand) vernichtet ~CHF 82M in 5 Jahren. Allein der Beobachter-Subscriber-Churn
+    kostet CHF 9-15M. S4 ist unter KEINEM Szenario empfehlenswert.
+
+  message_5: |
+    Die groesste Einzelunsicherheit ist Blick+ Bundle-Uptake.
+    Bei 50k Subscribern (statt 65k) sinkt S2 um ~CHF 15M.
+    → A/B-Test der Bundle-Bereitschaft ist hoechste Forschungsprioritaet.

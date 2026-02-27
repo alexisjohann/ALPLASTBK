@@ -1,0 +1,39 @@
+name: BEATRIX Claude Code
+on:
+  issues:
+    types: [opened, labeled]
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: beatrix-claude
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  claude:
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'beatrix-question'))
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Disable hooks for CI
+        run: |
+          echo '{}' > .claude/settings.json
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: |
+            --max-turns 25
+            --append-system-prompt "Du bist BEATRIX, die KI-Engine des Evidence-Based Framework (EBF) von FehrAdvice & Partners AG. Diese Frage kommt von der BEATRIX Web-API (www.bea-lab.io). Du arbeitest im SCHNELL-Modus. REGELN: 1. Lies NICHT die gesamte CLAUDE.md. 2. KEINE Modus-Wahl, KEINE Session-Begruessung. 3. Lies gezielt NUR relevante Dateien. 4. Wenn der Issue-Body einen KONTEXT-Block enthaelt, nutze diesen als Ausgangspunkt und verbessere ihn. 5. Antworte direkt, strukturiert, auf Deutsch. 6. Maximal 2000 Worte. DATEIEN bei Bedarf: data/theory-catalog.yaml, data/case-registry.yaml, appendices/, docs/EBF-INTRODUCTION.md"
+
+
+

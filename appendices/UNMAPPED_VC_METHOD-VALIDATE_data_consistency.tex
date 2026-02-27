@@ -1,0 +1,661 @@
+% =============================================================================
+% APPENDIX VC: DATA CONSISTENCY VALIDATION FRAMEWORK
+% =============================================================================
+% Category: METHOD-VALIDATE
+% Version: 1.0
+% Date: January 2026
+% Language: English
+% Dependencies: Appendix UNMAPPED_BBB (CORE-WHERE), Appendix UNMAPPED_V (CORE-WHEN),
+%               Appendix UNMAPPED_FRM (METHOD-FORMULA)
+% =============================================================================
+
+\chapter{VC METHOD-VALIDATE: Data Consistency Validation Framework}
+\label{app:VC}
+
+% -----------------------------------------------------------------------------
+% HEADER BLOCK
+% -----------------------------------------------------------------------------
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black, title=Appendix Header]
+\begin{tabular}{ll}
+\textbf{Code:} & VC \\
+\textbf{Category:} & METHOD (Methodology - Messung \& Validierung) \\
+\textbf{Name:} & VALIDATE \\
+\textbf{Version:} & 1.0 \\
+\textbf{Date:} & January 2026 \\
+\textbf{Language:} & English \\
+\textbf{Dependencies:} & BBB (CORE-WHERE), V (CORE-WHEN), FRM (METHOD-FORMULA) \\
+\textbf{Status:} & Active \\
+\end{tabular}
+\end{tcolorbox}
+
+% -----------------------------------------------------------------------------
+% SCOPE BOX
+% -----------------------------------------------------------------------------
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black, title=Appendix Scope:]
+
+\textbf{Ziel:} Formalisierung der Datenkonsistenz-Validierung für das EBF-Ökosystem.
+
+\vspace{0.3em}
+\textbf{Erfolgskriterien:}
+\begin{enumerate}[label=\textbf{Z\arabic*}:, leftmargin=2cm]
+    \item Referential Integrity Score $\geq 85\%$ bei jedem Commit
+    \item Parameter-Deviation $< 20\%$ ohne dokumentierte Begründung
+    \item Vollständige MACRO $\to$ MESO $\to$ MICRO Hierarchie in allen Analysen
+    \item Automatisierte Validierung via Pre-Commit Hook
+\end{enumerate}
+
+\vspace{0.3em}
+\textbf{In-Scope:}
+\begin{enumerate}[label=\textbf{IS\arabic*}:, leftmargin=2cm]
+    \item \textbf{Referentielle Integrität} --- Cross-Database-Verweise (DCV-1, DCV-2)
+    \item \textbf{Parameter-Konsistenz} --- Verhaltensökonomische Parameter $\lambda, \beta, \gamma, \alpha, \delta, \tau, \sigma, \alpha_{FS}$ (DCV-3, DCV-4)
+    \item \textbf{Kontext-Konsistenz} --- $\Psi$-Dimensionen, Hierarchie-Validierung (DCV-5, DCV-6)
+    \item \textbf{Automatisierung} --- Pre-Commit Hooks, CI/CD Integration
+\end{enumerate}
+
+\vspace{0.3em}
+\textbf{Out-of-Scope:}
+\begin{enumerate}[label=\textbf{OS\arabic*}:, leftmargin=2cm]
+    \item \textbf{Semantische Validierung} --- Inhaltliche Korrektheit $\to$ Peer Review
+    \item \textbf{Statistische Validierung} --- Empirische Ergebnisse $\to$ Appendix UNMAPPED_LLM (METHOD-LLMMC)
+    \item \textbf{Infrastruktur} --- Git-Operationen, Deployment $\to$ DevOps
+    \item \textbf{Datenerfassung} --- Primärdatensammlung $\to$ BCM2 Prozesse
+\end{enumerate}
+
+\vspace{0.3em}
+\textbf{Lieferobjekte:}
+\begin{enumerate}[label=\textbf{L\arabic*}:, leftmargin=2cm]
+    \item \textbf{Axiome DCV-1 bis DCV-6} --- Formale Grundlagen (\S\ref{sec:vc-theory})
+    \item \textbf{Parameter-Spezifikationstabelle} --- 8 kanonische Parameter mit Bounds (\S\ref{sec:vc-results}, Table~\ref{tab:parameter-specs})
+    \item \textbf{$\Psi$-Dimensionen-Taxonomie} --- 8 Kontextdimensionen (\S\ref{sec:vc-results}, Table~\ref{tab:psi-dimensions})
+    \item \textbf{Validierungsskripte} --- 3 Python-Skripte (\S\ref{sec:vc-worked-example})
+    \item \textbf{Pre-Commit Integration} --- Automatisierter Workflow (\S\ref{sec:vc-integration})
+\end{enumerate}
+
+\end{tcolorbox}
+
+% -----------------------------------------------------------------------------
+% CROSS-REFERENCE MAP
+% -----------------------------------------------------------------------------
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=Cross-Reference Map]
+\textbf{This appendix connects to:}
+\begin{itemize}
+    \item \textbf{Appendix UNMAPPED_BBB} (CORE-WHERE): Parameter sources and validation
+    \item \textbf{Appendix UNMAPPED_V} (CORE-WHEN): Context dimensions ($\Psi$)
+    \item \textbf{Appendix UNMAPPED_FRM} (METHOD-FORMULA): Exclusion Principle (EXC-1 to EXC-6)
+    \item \textbf{Appendix UNMAPPED_LLM} (METHOD-LLMMC): Parameter estimation
+    \item \textbf{Chapter 9}: Context Framework
+    \item \textbf{Chapter 10}: Complementarity
+\end{itemize}
+\end{tcolorbox}
+
+% -----------------------------------------------------------------------------
+% CHAPTER LINKAGE
+% -----------------------------------------------------------------------------
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black, title=Chapter Linkage]
+\textbf{Primary Chapter:} Chapter 9 (Context Framework) \\
+\textbf{Secondary Chapters:} Chapters 10, 17, 24 \\
+\textbf{Related Appendices:} BBB, V, FRM, AN
+\end{tcolorbox}
+
+% -----------------------------------------------------------------------------
+% ABSTRACT
+% -----------------------------------------------------------------------------
+\begin{abstract}
+The Data Consistency Validation Framework (DCV) ensures integrity, consistency, and coherence across all EBF databases. With multiple interconnected data sources---model registries, theory catalogs, case studies, context factors, and bibliographic references---silent inconsistencies can accumulate and compromise analysis quality. This appendix formalizes six axioms (DCV-1 to DCV-6) that govern data validation, specifies canonical parameter ranges from behavioral economics literature, and defines the eight $\Psi$-dimension taxonomy for context validation. The framework is implemented through three automated validators that run on every commit, catching referential integrity violations, parameter drift, and context contradictions before they propagate through the system.
+\end{abstract}
+
+% -----------------------------------------------------------------------------
+% QUICK REFERENCE BOX
+% -----------------------------------------------------------------------------
+\begin{tcolorbox}[colback=yellow!10!white, colframe=orange!75!black, title=Quick Reference]
+\begin{tabular}{ll}
+\textbf{Axioms:} & DCV-1 to DCV-6 \\
+\textbf{Validators:} & 3 (Referential, Parameter, Context) \\
+\textbf{Parameters Tracked:} & 8 ($\lambda$, $\beta$, $\delta$, $\alpha$, $\gamma$, $\tau$, $\sigma$, $\alpha_{FS}$) \\
+\textbf{$\Psi$ Dimensions:} & 8 ($\Psi_I$, $\Psi_S$, $\Psi_K$, $\Psi_C$, $\Psi_E$, $\Psi_T$, $\Psi_M$, $\Psi_F$) \\
+\textbf{Threshold:} & $\geq 85\%$ for commits \\
+\textbf{Scripts:} & \texttt{validate\_referential\_integrity.py} \\
+                  & \texttt{validate\_parameter\_consistency.py} \\
+                  & \texttt{validate\_context\_consistency.py} \\
+\end{tabular}
+\end{tcolorbox}
+
+% -----------------------------------------------------------------------------
+% FUNDAMENTAL QUESTION
+% -----------------------------------------------------------------------------
+\section{Fundamental Question}
+\label{sec:vc-question}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black, title=Central Question]
+\textbf{How do we ensure that data across multiple EBF databases remains consistent, valid, and free of contradictions as the system evolves?}
+\end{tcolorbox}
+
+The EBF Framework relies on interconnected databases:
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Database} & \textbf{Purpose} & \textbf{Key Fields} \\
+\midrule
+\texttt{model-registry.yaml} & EBF-built models & 10C mapping, sessions \\
+\texttt{theory-catalog.yaml} & 134 scientific theories & EBF restrictions, bib\_keys \\
+\texttt{case-registry.yaml} & Real-world cases & 10C dimensions, formulas \\
+\texttt{intervention-registry.yaml} & Project tracking & Predictions, results \\
+\texttt{parameter-registry.yaml} & Canonical parameters & Ranges, sources \\
+\texttt{concept-registry.yaml} & EIP-validated concepts & Evidence, decisions \\
+\texttt{bcm\_master.bib} & 2200+ papers & Citations, theory support \\
+\texttt{BCM2 context files} & 400+ factors & Values, APIs, timestamps \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Without systematic validation, errors propagate silently:
+\begin{itemize}
+    \item A model references a session that was never created
+    \item A case uses $\lambda = 5.2$ while the theory specifies $\lambda \in [1.5, 3.0]$
+    \item Swiss context factors are used in a German analysis
+    \item A paper key is misspelled, breaking the citation chain
+\end{itemize}
+
+% =============================================================================
+% SECTION 1: AXIOMS
+% =============================================================================
+\section{The Six DCV Axioms}
+\label{sec:vc-axioms}
+
+\subsection{Axiom DCV-1: Referential Integrity}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{DCV-1 (Referential Integrity):} Every cross-database reference must resolve to an existing entity.
+
+\begin{equation}
+\forall r \in \text{References}: \exists e \in \text{Entities} \text{ such that } r \mapsto e
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Validated Reference Types:}
+
+\begin{enumerate}
+    \item \texttt{model-registry} $\to$ \texttt{model-building-session} (session\_id)
+    \item \texttt{model-registry} $\to$ \texttt{theory-catalog} (theory\_id)
+    \item \texttt{model-registry} $\to$ \texttt{bcm\_master.bib} (bib\_key)
+    \item \texttt{case-registry} $\to$ \texttt{appendices/} (appendix\_code)
+    \item \texttt{case-registry} $\to$ \texttt{chapters/} (chapter\_number)
+    \item \texttt{case-registry} $\to$ \texttt{bcm\_master.bib} (literature)
+    \item \texttt{theory-catalog} $\to$ \texttt{bcm\_master.bib} (bib\_keys)
+    \item \texttt{intervention-registry} $\to$ \texttt{model-registry} (model\_used)
+    \item \texttt{concept-registry} $\to$ \texttt{bcm\_master.bib} (paper\_key)
+\end{enumerate}
+
+\textbf{Enforcement:} Score $\geq 85\%$ required; violations block commits.
+
+\subsection{Axiom DCV-2: Parameter Range Validity}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{DCV-2 (Range Validity):} Every behavioral economics parameter must fall within its theoretically justified bounds.
+
+\begin{equation}
+\forall p \in \text{Parameters}: p_{\min}^{\text{hard}} \leq p \leq p_{\max}^{\text{hard}}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Canonical Parameter Specifications:}
+
+\begin{center}
+\begin{tabular}{llccl}
+\toprule
+\textbf{Parameter} & \textbf{Symbol} & \textbf{Typical Range} & \textbf{Hard Bounds} & \textbf{Source} \\
+\midrule
+Loss Aversion & $\lambda$ & $[2.0, 2.5]$ & $[1.0, 5.0]$ & Tversky \& Kahneman (1992) \\
+Present Bias & $\beta$ & $[0.7, 1.0]$ & $[0.3, 1.0]$ & Laibson (1997) \\
+Time Discount & $\delta$ & $[0.9, 1.0]$ & $[0.5, 1.0]$ & Frederick et al. (2002) \\
+Risk Aversion & $\alpha$ & $[0.5, 2.0]$ & $[0.0, 5.0]$ & Mehra \& Prescott (1985) \\
+Complementarity & $\gamma$ & $[-0.5, 0.7]$ & $[-1.0, 1.0]$ & EBF Chapter 10 \\
+Trust & $\tau$ & $[0.3, 0.8]$ & $[0.0, 1.0]$ & Berg et al. (1995) \\
+Social Weight & $\sigma$ & $[0.0, 0.5]$ & $[0.0, 1.0]$ & Charness \& Rabin (2002) \\
+Inequity Aversion & $\alpha_{FS}$ & $[0.5, 4.0]$ & $[0.0, 10.0]$ & Fehr \& Schmidt (1999) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Axiom DCV-3: Cross-Database Consistency}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{DCV-3 (Cross-Database Consistency):} The same parameter must have consistent values across all databases, within acceptable deviation bounds.
+
+\begin{equation}
+\forall p: \frac{|p_i - \bar{p}|}{\bar{p}} \leq \theta_{\text{deviation}}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Deviation Thresholds:}
+
+\begin{center}
+\begin{tabular}{lcl}
+\toprule
+\textbf{Deviation} & \textbf{Threshold} & \textbf{Action} \\
+\midrule
+$\leq 10\%$ & $\theta_{\text{warning}}$ & Logged, no action \\
+$10\% - 20\%$ & $\theta_{\text{review}}$ & Review recommended \\
+$> 50\%$ & $\theta_{\text{critical}}$ & Critical error, blocks commit \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Axiom DCV-4: Theory-Model Alignment}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{DCV-4 (Theory-Model Alignment):} If a model references a theory, its parameters must respect that theory's EBF restrictions.
+
+\begin{equation}
+\text{Model } M \text{ references Theory } T \implies \forall p \in M: p \text{ satisfies } T.\text{restrictions}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Example:} If a model references Prospect Theory (MS-RD-001) which specifies $\lambda > 1$, the model cannot use $\lambda = 0.8$.
+
+\subsection{Axiom DCV-5: Context Hierarchy}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{DCV-5 (Context Hierarchy):} Context must be defined in hierarchical order: MACRO before MESO before MICRO.
+
+\begin{equation}
+\text{MACRO} \to \text{MESO} \to \text{MICRO} \to \text{INDIVIDUAL} \to \text{META}
+\end{equation}
+\end{tcolorbox}
+
+\textbf{Hierarchy Levels:}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Level} & \textbf{Scope} & \textbf{Data Source} \\
+\midrule
+MACRO & Country/Market & \texttt{BCM2\_04\_KON\_*.yaml} (404 factors) \\
+MESO & Industry/Client & \texttt{clients/}, \texttt{customers/} \\
+MICRO & Situation & \texttt{context-dimensions.yaml} \\
+INDIVIDUAL & Person & \texttt{BCM2\_05\_IND\_individual.yaml} \\
+META & Decision & \texttt{BCM2\_06\_META\_decision.yaml} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Axiom DCV-6: $\Psi$-Dimension Coverage}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{DCV-6 ($\Psi$-Coverage):} Behavioral analyses should consider all relevant $\Psi$-dimensions; missing dimensions must be justified.
+
+\begin{equation}
+|\{\Psi_i : \Psi_i \text{ relevant to } A\}| \geq 4 \text{ for any behavioral analysis } A
+\end{equation}
+\end{tcolorbox}
+
+% =============================================================================
+% SECTION 2: PSI-DIMENSION TAXONOMY
+% =============================================================================
+\section{The Eight $\Psi$-Dimensions}
+\label{sec:vc-psi}
+
+\begin{center}
+\begin{tabular}{clll}
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Description} & \textbf{Typical Factors} \\
+\midrule
+$\Psi_I$ & Institutional & Rules, defaults, regulations & default\_type, compliance\_norm \\
+$\Psi_S$ & Social & Norms, peers, identity & peer\_presence, social\_norm \\
+$\Psi_K$ & Cultural & Values, traditions & individualism, uncertainty\_avoidance \\
+$\Psi_C$ & Cognitive & State, attention, fatigue & cognitive\_load, stress\_level \\
+$\Psi_E$ & Economic & Resources, constraints & budget, income, stakes \\
+$\Psi_T$ & Temporal & Timing, lifecycle & time\_pressure, lifecycle\_phase \\
+$\Psi_M$ & Material & Technology, tools & digital\_access, interface\_type \\
+$\Psi_F$ & Physical & Location, environment & location\_type, privacy \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Why Same Action, Different Outcome?}
+
+The same person makes the same decision \textbf{differently} when:
+\begin{itemize}
+    \item Different \textbf{rules} apply ($\Psi_I$): Opt-in vs. opt-out
+    \item Different \textbf{people} are present ($\Psi_S$): Alone vs. observed
+    \item Different \textbf{state} ($\Psi_C$): Rested vs. exhausted
+    \item Different \textbf{culture} ($\Psi_K$): Switzerland vs. Germany
+    \item Different \textbf{resources} ($\Psi_E$): Rich vs. constrained
+    \item Different \textbf{timing} ($\Psi_T$): Monday morning vs. Friday evening
+    \item Different \textbf{tools} ($\Psi_M$): Paper vs. app
+    \item Different \textbf{location} ($\Psi_F$): Home vs. office
+\end{itemize}
+
+% =============================================================================
+% SECTION 3: IMPLEMENTATION
+% =============================================================================
+\section{Implementation}
+\label{sec:vc-implementation}
+
+\subsection{Three Validation Scripts}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Script} & \textbf{Checks} & \textbf{Enforcement} \\
+\midrule
+\texttt{validate\_referential\_integrity.py} & DCV-1 & Blocks if $< 85\%$ \\
+\texttt{validate\_parameter\_consistency.py} & DCV-2, DCV-3, DCV-4 & Warning \\
+\texttt{validate\_context\_consistency.py} & DCV-5, DCV-6 & Warning \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Pre-Commit Automation}
+
+When registry files are modified and committed:
+
+\begin{verbatim}
+=== EBF PreCommit: Data Consistency Validation ===
+Checking referential integrity...
+✅ REFERENTIAL INTEGRITY: Score 97.5% (0 critical errors)
+Checking parameter consistency...
+✅ PARAMETER CONSISTENCY: Score 92.3%
+Checking context consistency...
+✅ CONTEXT CONSISTENCY: Score 88.7%
+\end{verbatim}
+
+\textbf{Trigger Files:}
+\begin{itemize}
+    \item \texttt{data/model-registry.yaml}
+    \item \texttt{data/theory-catalog.yaml}
+    \item \texttt{data/case-registry.yaml}
+    \item \texttt{data/intervention-registry.yaml}
+    \item \texttt{data/concept-registry.yaml}
+    \item \texttt{data/parameter-registry.yaml}
+\end{itemize}
+
+\subsection{Score Calculation}
+
+\begin{equation}
+\text{Score} = \frac{\text{Checks Passed}}{\text{Checks Passed} + \text{Checks Failed}} \times 100
+\end{equation}
+
+\textbf{Penalty Weights:}
+\begin{itemize}
+    \item Critical error: $-10$ points
+    \item Warning: $-2$ points
+\end{itemize}
+
+% =============================================================================
+% SECTION 4: WORKED EXAMPLES
+% =============================================================================
+\section{Worked Examples}
+\label{sec:vc-examples}
+
+\subsection{Example 1: Referential Integrity Violation}
+
+\textbf{Scenario:} Model EBF-MOD-001 references session \texttt{EBF-S-2026-01-25-REL-001}.
+
+\textbf{Check:} Does \texttt{model-building-session.yaml} contain this session?
+
+\begin{verbatim}
+# model-registry.yaml
+- id: EBF-MOD-001
+  created_in_session: "EBF-S-2026-01-25-REL-001"  # <-- Reference
+
+# model-building-session.yaml
+sessions:
+  - session_id: "EBF-S-2026-01-20-FIN-001"  # Different session!
+\end{verbatim}
+
+\textbf{Result:}
+\begin{verbatim}
+❌ Model EBF-MOD-001 references non-existent session:
+   EBF-S-2026-01-25-REL-001
+\end{verbatim}
+
+\textbf{Fix:} Add the session to \texttt{model-building-session.yaml} or correct the reference.
+
+\subsection{Example 2: Parameter Range Violation}
+
+\textbf{Scenario:} Case CASE-042 specifies $\lambda = 5.2$.
+
+\textbf{Check:} Is $\lambda \in [1.0, 5.0]$ (hard bounds)?
+
+\begin{verbatim}
+# case-registry.yaml
+CASE-042:
+  10C:
+    WHAT:
+      lambda: 5.2  # <-- Outside hard bounds!
+\end{verbatim}
+
+\textbf{Result:}
+\begin{verbatim}
+❌ CRITICAL: Parameter lambda=5.2 outside hard bounds [1.0, 5.0]
+   Source: case-registry.yaml:CASE-042
+\end{verbatim}
+
+\textbf{Fix:} Review the source; if valid extreme value, document justification.
+
+\subsection{Example 3: Cross-Database Drift}
+
+\textbf{Scenario:} $\lambda$ used in multiple places with varying values.
+
+\begin{verbatim}
+theory-catalog.yaml:  lambda = 2.25 (canonical)
+model-registry.yaml:  lambda = 2.1  (deviation: 6.7%)
+case-registry.yaml:   lambda = 3.5  (deviation: 55.6%)
+\end{verbatim}
+
+\textbf{Result:}
+\begin{verbatim}
+❌ CRITICAL: Parameter lambda varies 55.6% across databases
+   Mean: 2.62, Max deviation in case-registry.yaml
+\end{verbatim}
+
+\textbf{Fix:} Investigate if the case-specific $\lambda = 3.5$ is contextually justified or an error.
+
+\subsection{Example 4: Incomplete Context Hierarchy}
+
+\textbf{Scenario:} Model specifies MICRO context without MACRO.
+
+\begin{verbatim}
+# model-registry.yaml
+- id: EBF-MOD-REF-001
+  data_sources:
+    - source: "context-dimensions.yaml"  # MICRO only
+      type: "context_database"
+\end{verbatim}
+
+\textbf{Result:}
+\begin{verbatim}
+⚠️ WARNING: Model EBF-MOD-REF-001 missing hierarchy levels: {MACRO, MESO}
+   Behavioral analyses should define MACRO → MESO → MICRO
+\end{verbatim}
+
+\textbf{Fix:} Add MACRO (\texttt{BCM2\_04\_KON\_*.yaml}) and MESO sources.
+
+% =============================================================================
+% SECTION 5: INTEGRATION WITH EBF WORKFLOW
+% =============================================================================
+\section{Integration with EBF Workflow}
+\label{sec:vc-integration}
+
+\subsection{Step 7: Save Results}
+
+When saving results in Step 7, ensure:
+\begin{itemize}
+    \item Session ID is recorded and valid
+    \item Model references exist in \texttt{theory-catalog.yaml}
+    \item All paper keys exist in \texttt{bcm\_master.bib}
+\end{itemize}
+
+\subsection{Step 8: Quality Check}
+
+Step 8 explicitly validates data consistency:
+
+\begin{center}
+\begin{tabular}{lcl}
+\toprule
+\textbf{Check} & \textbf{Status} & \textbf{Action} \\
+\midrule
+Model in model-registry? & $\checkmark$ / $\times$ & Add if missing \\
+Papers in bcm\_master.bib? & $\checkmark$ / $\times$ & Add citations \\
+Session documented? & $\checkmark$ / $\times$ & Document session \\
+References valid? & $\checkmark$ / $\times$ & Fix broken links \\
+Parameters consistent? & $\checkmark$ / $\times$ & Review drift \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% =============================================================================
+% SECTION 6: RELATIONSHIP TO OTHER FRAMEWORKS
+% =============================================================================
+\section{Relationship to Other Frameworks}
+\label{sec:vc-relationship}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Framework} & \textbf{Focus} & \textbf{Relationship to DCV} \\
+\midrule
+EXC (Exclusion Principle) & Formula structure & DCV validates parameter values in formulas \\
+EIP (Evidence Integration) & New concept validation & DCV ensures EIP concepts are properly linked \\
+10C (CORE Framework) & Analysis structure & DCV validates 10C dimension references \\
+LLMMC (Monte Carlo) & Parameter estimation & DCV tracks estimated parameters \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% =============================================================================
+% IMPLICATIONS
+% =============================================================================
+\section{Implications}
+\label{sec:vc-implications}
+
+The Data Consistency Validation Framework has several important implications for EBF practice:
+
+\subsection{For Model Builders}
+
+\begin{enumerate}
+    \item \textbf{Immediate Feedback}: Validation runs on every commit, catching errors before they propagate. Model builders receive instant feedback on referential integrity violations.
+
+    \item \textbf{Parameter Discipline}: The canonical ranges (Table~\ref{tab:parameter-specs}) provide guardrails. Deviations require explicit justification with literature support.
+
+    \item \textbf{Context Completeness}: The MACRO $\to$ MESO $\to$ MICRO hierarchy (DCV-5) ensures that context is not arbitrarily skipped, improving analysis robustness.
+\end{enumerate}
+
+\subsection{For System Maintainers}
+
+\begin{enumerate}
+    \item \textbf{Quality Assurance}: The 85\% threshold for referential integrity provides a quantitative quality gate. Drift below this threshold triggers review.
+
+    \item \textbf{Audit Trail}: All parameter sources are documented, enabling traceability from analysis outputs back to original literature.
+
+    \item \textbf{Scalability}: As the database grows (currently 400+ context factors, 2200+ papers), automated validation prevents accumulation of silent inconsistencies.
+\end{enumerate}
+
+\subsection{For Research}
+
+\begin{enumerate}
+    \item \textbf{Reproducibility}: Consistent parameter usage across analyses enables meaningful cross-study comparisons.
+
+    \item \textbf{Theory-Practice Alignment}: DCV-6 (Theory-Model Coherence) ensures that models respect their theoretical foundations.
+
+    \item \textbf{Living Database}: External API integration (BCM2) with freshness tracking keeps contextual data current.
+\end{enumerate}
+
+% =============================================================================
+% SUMMARY
+% =============================================================================
+\section{Summary}
+\label{sec:vc-summary}
+
+The Data Consistency Validation Framework ensures:
+
+\begin{enumerate}
+    \item \textbf{Referential Integrity} (DCV-1): All cross-database references resolve
+    \item \textbf{Parameter Validity} (DCV-2): Values within theoretical bounds
+    \item \textbf{Cross-Database Consistency} (DCV-3): Same parameter, same value
+    \item \textbf{Theory-Model Alignment} (DCV-4): Models respect theory restrictions
+    \item \textbf{Context Hierarchy} (DCV-5): MACRO $\to$ MESO $\to$ MICRO
+    \item \textbf{$\Psi$-Coverage} (DCV-6): All relevant dimensions considered
+\end{enumerate}
+
+\textbf{Key Insight:} Without systematic validation, errors propagate silently. DCV catches inconsistencies at commit time, before they affect analyses.
+
+% =============================================================================
+% GLOSSARY
+% =============================================================================
+\section{Glossary}
+\label{sec:vc-glossary}
+
+For comprehensive terminology, see \textbf{Appendix G} (Glossary).
+
+\begin{description}
+    \item[Referential Integrity] Property where every reference points to an existing entity
+    \item[Parameter Drift] Gradual deviation of parameter values from canonical values
+    \item[$\Psi$-Dimension] One of eight context dimensions affecting behavior
+    \item[Context Hierarchy] Ordered levels: MACRO $\to$ MESO $\to$ MICRO
+    \item[Hard Bounds] Absolute limits that must not be violated
+    \item[Soft Bounds] Typical range; violations trigger warnings, not errors
+\end{description}
+
+% =============================================================================
+% CRITICAL FOUNDATIONS
+% =============================================================================
+\section{Critical Foundations}
+\label{sec:vc-foundations}
+
+\begin{enumerate}
+    \item \textbf{Database Architecture:} The EBF uses a 5-database architecture with superkey linking (see Section~\ref{sec:vc-question})
+
+    \item \textbf{Parameter Specifications:} Behavioral economics parameters have well-established ranges from decades of research (see Section~\ref{sec:vc-axioms})
+
+    \item \textbf{Context Taxonomy:} The eight $\Psi$-dimensions provide complete coverage of situational factors (see Section~\ref{sec:vc-psi})
+
+    \item \textbf{Automated Validation:} Pre-commit hooks ensure consistency is checked on every change (see Section~\ref{sec:vc-implementation})
+\end{enumerate}
+
+% =============================================================================
+% OPEN ISSUES
+% =============================================================================
+\section{Open Issues}
+\label{sec:vc-open}
+
+\begin{enumerate}
+    \item \textbf{Parameter Learning:} How should canonical values update when new evidence emerges? Currently manual; consider automated Bayesian updating.
+
+    \item \textbf{Context Freshness:} External API data may become stale. Implement automated freshness monitoring with alerts.
+
+    \item \textbf{Cross-Customer Consistency:} Different customers may have different parameter specifications. Need unified schema.
+
+    \item \textbf{Version Control:} Parameters may legitimately change over time. Need versioned parameter tracking.
+\end{enumerate}
+
+% =============================================================================
+% REFERENCES
+% =============================================================================
+\section{References}
+\label{sec:vc-references}
+
+\nocite{bcm_master}
+
+Key references for parameter specifications:
+
+\begin{itemize}
+    \item Tversky, A., \& Kahneman, D. (1992). Advances in prospect theory: Cumulative representation of uncertainty. \textit{Journal of Risk and Uncertainty}, 5(4), 297-323.
+
+    \item Laibson, D. (1997). Golden eggs and hyperbolic discounting. \textit{Quarterly Journal of Economics}, 112(2), 443-478.
+
+    \item Frederick, S., Loewenstein, G., \& O'Donoghue, T. (2002). Time discounting and time preference: A critical review. \textit{Journal of Economic Literature}, 40(2), 351-401.
+
+    \item Fehr, E., \& Schmidt, K. M. (1999). A theory of fairness, competition, and cooperation. \textit{Quarterly Journal of Economics}, 114(3), 817-868.
+
+    \item Berg, J., Dickhaut, J., \& McCabe, K. (1995). Trust, reciprocity, and social history. \textit{Games and Economic Behavior}, 10(1), 122-142.
+
+    \item Charness, G., \& Rabin, M. (2002). Understanding social preferences with simple tests. \textit{Quarterly Journal of Economics}, 117(3), 817-869.
+\end{itemize}
+
+% =============================================================================
+% END OF APPENDIX
+% =============================================================================

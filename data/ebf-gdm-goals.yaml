@@ -1,0 +1,506 @@
+# EBF Goal Decomposition Method - Zielarchitektur
+# SSOT: data/ebf-gdm-goals.yaml
+# Methodik: docs/frameworks/ebf-gdm-methodology.md
+# Version: 1.0
+# Datum: 2026-02-09
+# Basis: KAOS (van Lamsweerde 2001) + E1-E7
+
+---
+
+mission:
+  id: MISSION
+  statement: |
+    EBF soll die Grundlage, der Source Code sein, um Verhalten und die
+    Konsequenzen von Entscheidungen auf das Verhalten so genau wie möglich
+    prognostizieren zu können.
+  prediction_types:
+    - type: 1
+      name: "Prognose"
+      question: "Was wird passieren?"
+      inputs: ["Kontext Ψ", "Menschen"]
+    - type: 2
+      name: "Intervention"
+      question: "Was passiert, WENN wir intervenieren?"
+      inputs: ["Kontext Ψ", "Menschen", "Intervention I"]
+
+# ============================================================================
+# INHALTSZIELE (HZ1-HZ6)
+# ============================================================================
+
+inhaltsziele:
+
+  - id: HZ-1
+    name: "Menschen verstehen"
+    description: "Wer sind die Akteure, was treibt sie, wie unterscheiden sie sich?"
+    role: "Input 1"
+    ebf_cores: ["WHO (AAA)", "WHAT (C)", "AWARE (AU)", "READY (AV)", "STAGE (AW)"]
+    unterziele:
+
+      - id: UZ-1-1
+        name: "Psychologische Typen & Heterogenität"
+        description: "Vollständiges 48-Parameter-Profil mit Literatur-Verankerung für Entscheider-Typen"
+        ist: "12 Typen in BCM2_05_IND, überwiegend LLMMC-basiert"
+        soll: "48-Parameter-Profil mit Tier 1/2 Literaturquellen"
+        gap: "36 Parameter fehlen oder haben nur LLMMC-Prior"
+        status: "teilweise"  # ⚠️
+        key_results:
+          - kr: "≥48 Individual-Parameter mit PAR-IND-* Referenz"
+            metric: "count(PAR-IND-*)"
+            current: 12
+            target: 48
+          - kr: "≥80% der Parameter mit Tier 1/2 Quelle"
+            metric: "ratio(tier_1_2 / total)"
+            current: 0.25
+            target: 0.80
+
+      - id: UZ-1-2
+        name: "Segmentierung & Journey"
+        description: "Behavioral Segmente und Customer Journey Phasen"
+        ist: "Basis-Segmentierung in Chapter 19, Journey-Konzept in AW"
+        soll: "Empirisch validierte Segment-Definitionen mit Journey-Phase-Zuordnung"
+        gap: "Segmente nicht systematisch mit Journey-Phasen verknüpft"
+        status: "teilweise"  # ⚠️
+        key_results:
+          - kr: "Segment-Journey-Matrix vollständig dokumentiert"
+            metric: "completeness(segment_journey_matrix)"
+            current: 0.40
+            target: 1.00
+
+      - id: UZ-1-3
+        name: "Kognitive Architektur"
+        description: "Dual-System, Bounded Rationality, Heuristiken formal modelliert"
+        ist: "Konzeptuelle Beschreibung in Chapters 5-8"
+        soll: "Formales Modell mit parametrisierbarer kognitiver Architektur"
+        gap: "Keine formale Verbindung zwischen System 1/2 und Modell-Parametern"
+        status: "offen"  # 🔴
+        key_results:
+          - kr: "Cognitive Architecture Appendix mit Axiomen"
+            metric: "exists(appendix_cognitive_architecture)"
+            current: false
+            target: true
+
+      - id: UZ-1-4
+        name: "Identität & Selbstkonzept"
+        description: "Identity Economics (Akerlof/Kranton) vollständig in EBF integriert"
+        ist: "U_IDN in WHAT (C), aber nicht systematisch über alle COREs"
+        soll: "Identity als Querschnittsdimension über WHO, WHAT, AWARE, READY"
+        gap: "Identität nur in WHAT, fehlt in WHO-Segmentierung und AWARE"
+        status: "offen"  # 🔴
+        key_results:
+          - kr: "Identity-Integration in ≥4 CORE Appendices"
+            metric: "count(core_with_identity)"
+            current: 1
+            target: 4
+
+  - id: HZ-2
+    name: "Kontext modellieren"
+    description: "Wie wirkt die Umgebung auf Verhalten? 8 Ψ-Dimensionen systematisch erfasst"
+    role: "Input 2"
+    ebf_cores: ["WHEN (V)", "WHERE (BBB)"]
+    unterziele:
+
+      - id: UZ-2-1
+        name: "Ψ-Dimensionen vollständig"
+        description: "Alle 8 Ψ-Dimensionen mit Literatur-Verankerung und Multiplikatoren"
+        ist: "8 Dimensionen definiert, 404 CH-Faktoren in BCM2"
+        soll: "Multiplikatoren M(ΔΨ) für alle Dimensionen literaturbasiert"
+        gap: "Multiplikatoren überwiegend LLMMC-basiert, nicht literaturverankert"
+        status: "teilweise"  # ⚠️
+        key_results:
+          - kr: "≥80% der Ψ-Multiplikatoren mit Tier 1/2 Quelle"
+            metric: "ratio(psi_multipliers_validated / total)"
+            current: 0.30
+            target: 0.80
+
+      - id: UZ-2-2
+        name: "Kontext-Datenbank (BCM2)"
+        description: "Kontextfaktoren für CH/AT/DE vollständig und aktuell"
+        ist: "404 CH-Faktoren, AT und DE begonnen"
+        soll: "≥400 Faktoren pro Land, jährlich aktualisiert"
+        gap: "AT und DE unvollständig; keine Aktualisierungsroutine"
+        status: "erreicht_ch"  # ✅ für CH
+        key_results:
+          - kr: "CH ≥400 Faktoren"
+            metric: "count(BCM2_CH)"
+            current: 404
+            target: 400
+          - kr: "AT ≥200 Faktoren"
+            metric: "count(BCM2_AT)"
+            current: 45
+            target: 200
+
+      - id: UZ-2-3
+        name: "Parameter Context Transformation (PCT)"
+        description: "θ_B = θ_A × ∏ M(ΔΨ) vollständig implementiert und validiert"
+        ist: "PCT-Gleichung definiert, aber wenige empirische Validierungen"
+        soll: "PCT für ≥10 Parameter empirisch validiert (Anchor→Target korrekt)"
+        gap: "Keine systematische PCT-Validierung durchgeführt"
+        status: "teilweise"  # ⚠️
+        key_results:
+          - kr: "≥10 PCT-Validierungen dokumentiert"
+            metric: "count(pct_validations)"
+            current: 2
+            target: 10
+
+      - id: UZ-2-4
+        name: "Kulturelle Dimensionen"
+        description: "Cross-cultural Validierung (WEIRD-Erweiterung)"
+        ist: "BJ (METHOD-DOMAINVAL) mit 35+ Papers zu Cross-Cultural"
+        soll: "Systematische Korrekturfaktoren für ≥5 Kulturkreise"
+        gap: "Korrekturfaktoren nicht formal parametrisiert"
+        status: "offen"  # 🔴
+        key_results:
+          - kr: "Korrekturfaktoren für ≥5 Kulturkreise"
+            metric: "count(cultural_correction_factors)"
+            current: 0
+            target: 5
+
+  - id: HZ-3
+    name: "Modell & Evidenz"
+    description: "Theorien, Modelle, Parameter wissenschaftlich fundiert und konsistent"
+    role: "Verarbeitungsschicht"
+    ebf_cores: ["HOW (B)", "WHERE (BBB)", "HIERARCHY (HI)"]
+    unterziele:
+
+      - id: UZ-3-1
+        name: "Theorie-Katalog vollständig"
+        description: "Alle relevanten Verhaltenstheorien mit EBF-Restriktionen dokumentiert"
+        ist: "186 Theorien in 26 Kategorien"
+        soll: "≥200 Theorien, alle mit ebf_restrictions und validity"
+        gap: "14 Theorien fehlen, einige ohne ebf_restrictions"
+        status: "teilweise"  # ⚠️
+        key_results:
+          - kr: "≥200 Theorien im Katalog"
+            metric: "count(MS-*)"
+            current: 186
+            target: 200
+          - kr: "100% der Theorien mit ebf_restrictions"
+            metric: "ratio(with_restrictions / total)"
+            current: 0.85
+            target: 1.00
+
+      - id: UZ-3-2
+        name: "Parameter-Registry vollständig"
+        description: "Alle verhaltensökonomischen Parameter mit Literaturquellen"
+        ist: "94 Parameter in parameter-registry.yaml"
+        soll: "≥150 Parameter, alle mit Tier 1/2 Quelle"
+        gap: "56 Parameter fehlen; einige nur LLMMC"
+        status: "teilweise"  # ⚠️
+        key_results:
+          - kr: "≥150 Parameter"
+            metric: "count(PAR-*)"
+            current: 94
+            target: 150
+
+      - id: UZ-3-3
+        name: "Komplementarität (γ) empirisch verankert"
+        description: "Alle γ-Werte mit Paper-Quellen (PAR-COMP-*)"
+        ist: "8 γ-Parameter mit Paper-Quellen"
+        soll: "≥20 γ-Parameter, alle aus Tier 1/2 Quellen"
+        gap: "12 potenzielle Komplementaritäten noch nicht parametrisiert"
+        status: "erreicht_basis"  # ✅ Basis
+        key_results:
+          - kr: "≥20 PAR-COMP-* Parameter"
+            metric: "count(PAR-COMP-*)"
+            current: 8
+            target: 20
+
+      - id: UZ-3-4
+        name: "Paper-Datenbank & Integration"
+        description: "Papers vollständig klassifiziert und integriert"
+        ist: "2,322 Paper-YAMLs, 2,514 BibTeX-Einträge"
+        soll: "≥2,500 Paper-YAMLs, 100% mit I≥1, ≥50 mit I4/I5"
+        gap: "Integration Levels I3-I5 unterrepräsentiert"
+        status: "offen"  # 🔴
+        key_results:
+          - kr: "≥50 Papers mit I4 oder I5"
+            metric: "count(papers_I4_I5)"
+            current: 343
+            target: 400
+
+  - id: HZ-4
+    name: "Prognose"
+    description: "Testbare, kalibrierte Vorhersagen für Verhalten und Interventionseffekte"
+    role: "Kernoutput"
+    ebf_cores: ["STAGE (AW)", "HIERARCHY (HI)"]
+    unterziele:
+
+      - id: UZ-4-1
+        name: "Prognose-Infrastruktur"
+        description: "Formales System für Prognose-Erstellung, -Tracking und -Auflösung"
+        ist: "forecast-registry.yaml existiert mit einigen Prognosen"
+        soll: "Automatisierter Workflow: Erstellung → Tracking → Resolution → Kalibrierung"
+        gap: "Kein automatisierter Kalibrierungs-Workflow"
+        status: "teilweise"  # ⚠️
+        key_results:
+          - kr: "Automatisierter Forecast-Resolution-Workflow"
+            metric: "exists(auto_forecast_resolution)"
+            current: false
+            target: true
+
+      - id: UZ-4-2
+        name: "Kalibrierung (Brier Score)"
+        description: "Systematische Kalibrierung aller EBF-Prognosen"
+        ist: "Brier Score als Konzept definiert, wenige Anwendungen"
+        soll: "≥20 aufgelöste Prognosen mit Brier Score"
+        gap: "Zu wenige aufgelöste Prognosen für statistische Aussage"
+        status: "offen"  # 🔴
+        key_results:
+          - kr: "≥20 aufgelöste Prognosen"
+            metric: "count(forecasts_resolved)"
+            current: 3
+            target: 20
+          - kr: "Brier Score ≤ 0.15 (aggregiert)"
+            metric: "mean(brier_scores)"
+            current: null
+            target: 0.15
+
+      - id: UZ-4-3
+        name: "Domänen-Prognosen"
+        description: "Validierte Prognosen in ≥5 Domänen (POL, FIN, BEH, ORG, HLT)"
+        ist: "Prognosen überwiegend in POL-Domäne"
+        soll: "≥5 Domänen mit je ≥3 aufgelösten Prognosen"
+        gap: "4 Domänen ohne Prognosen"
+        status: "offen"  # 🔴
+        key_results:
+          - kr: "≥5 Domänen mit ≥3 Prognosen"
+            metric: "count(domains_with_forecasts >= 3)"
+            current: 1
+            target: 5
+
+      - id: UZ-4-4
+        name: "PREDICT Appendices"
+        description: "Methodologie-Appendices für Prognose"
+        ist: "0/8 PREDICT-Appendices existieren"
+        soll: "≥4 PREDICT-Appendices (Methodik, Kalibrierung, Domänen, Vergleich)"
+        gap: "Kompletter PREDICT-Block fehlt"
+        status: "offen"  # 🔴
+        key_results:
+          - kr: "≥4 PREDICT-Appendices"
+            metric: "count(PREDICT-*)"
+            current: 0
+            target: 4
+
+  - id: HZ-5
+    name: "Validierung & Lernen"
+    description: "Systematische Prüfung und 3-Level-Feedback"
+    role: "Qualitätssicherung"
+    ebf_cores: ["EIT (IE)"]
+    unterziele:
+
+      - id: UZ-5-1
+        name: "Validierungs-Infrastruktur"
+        description: "Automatisierte Validierung aller EBF-Komponenten"
+        ist: "15+ Validierungsskripte, Pre-Commit-Hooks"
+        soll: "100% der Registries automatisch validiert, CI/CD-integriert"
+        gap: "Einige Validierungen nur manuell; keine Gesamtintegration"
+        status: "erreicht_basis"  # ✅ Basis
+        key_results:
+          - kr: "100% Registry-Validierung in CI/CD"
+            metric: "ratio(registries_in_ci / total)"
+            current: 0.70
+            target: 1.00
+
+      - id: UZ-5-2
+        name: "3-Level-Feedback implementiert"
+        description: "L1 (Parameter), L2 (Modell), L3 (Theorie) als formaler Prozess"
+        ist: "L1 konzeptionell (Bayesian Update), L2/L3 nicht formalisiert"
+        soll: "Trigger-Regeln für L1/L2/L3 definiert und automatisiert"
+        gap: "L2 und L3 Feedback-Trigger nicht definiert"
+        status: "teilweise"  # ⚠️
+        key_results:
+          - kr: "Formale Trigger-Regeln für L1/L2/L3"
+            metric: "exists(feedback_trigger_rules)"
+            current: false
+            target: true
+
+      - id: UZ-5-3
+        name: "Evidenz-Integration (EIP)"
+        description: "Systematische Integration neuer Evidenz in Framework"
+        ist: "EIP-Workflow definiert, concept-registry.yaml aktiv"
+        soll: "≥50 EIP-Durchläufe dokumentiert"
+        gap: "Wenige dokumentierte EIP-Durchläufe"
+        status: "offen"  # 🔴
+        key_results:
+          - kr: "≥50 EIP-Durchläufe in concept-registry"
+            metric: "count(eip_runs)"
+            current: 12
+            target: 50
+
+  - id: HZ-6
+    name: "Intervention & Rückkopplung"
+    description: "Interventionen designen, implementieren und Rückwirkungen auf Inputs modellieren"
+    role: "Anwendung + Feedback auf Inputs"
+    ebf_cores: ["EIT (IE)", "WHEN (V)", "AWARE (AU)"]
+    unterziele:
+
+      - id: UZ-6-1
+        name: "Interventions-Toolkit"
+        description: "20-Field Schema vollständig implementiert und validiert"
+        ist: "20-Field Schema definiert, /design-intervention Skill aktiv"
+        soll: "≥30 Interventionen im 20-Field Format mit Validierung"
+        gap: "Wenige Interventionen im Vollformat dokumentiert"
+        status: "erreicht_basis"  # ✅ Schema existiert
+        key_results:
+          - kr: "≥30 Interventionen im 20-Field Format"
+            metric: "count(interventions_20field)"
+            current: 8
+            target: 30
+
+      - id: UZ-6-2
+        name: "Interventions-Wirksamkeit"
+        description: "Predicted vs. Actual für implementierte Interventionen"
+        ist: "Intervention-Registry mit einigen Projekten"
+        soll: "≥10 Projekte mit Predicted vs. Actual + Deviation Analysis"
+        gap: "Wenige Projekte mit vollständiger Deviation Analysis"
+        status: "teilweise"  # ⚠️
+        key_results:
+          - kr: "≥10 Projekte mit Deviation Analysis"
+            metric: "count(projects_with_deviation)"
+            current: 3
+            target: 10
+
+      - id: UZ-6-3
+        name: "Rückkopplung auf Kontext (ΔΨ)"
+        description: "Interventionen verändern Kontext - diese Veränderung modellieren"
+        ist: "Konzeptionell beschrieben (E6), nicht formalisiert"
+        soll: "ΔΨ-Modell: Intervention → Kontextveränderung → Neue Prognose"
+        gap: "Kein formales ΔΨ-Modell"
+        status: "offen"  # 🔴
+        key_results:
+          - kr: "Formales ΔΨ-Modell dokumentiert"
+            metric: "exists(delta_psi_model)"
+            current: false
+            target: true
+
+      - id: UZ-6-4
+        name: "Rückkopplung auf Menschen (ΔMensch)"
+        description: "Interventionen verändern Menschen - Adaptation, Habituation, Identitätsshift"
+        ist: "Konzeptionell beschrieben, nicht formalisiert"
+        soll: "ΔMensch-Modell: Intervention → Menschenveränderung → Neue Prognose"
+        gap: "Kein formales ΔMensch-Modell"
+        status: "offen"  # 🔴
+        key_results:
+          - kr: "Formales ΔMensch-Modell dokumentiert"
+            metric: "exists(delta_mensch_model)"
+            current: false
+            target: true
+
+# ============================================================================
+# SYSTEMZIELE (SZ1-SZ7)
+# ============================================================================
+
+systemziele:
+
+  - id: SZ-1
+    name: "Modularität"
+    description: "Jede Komponente (Appendix, Modell, Parameter) ist unabhängig testbar"
+    pruefkriterium: "Kein Modul hat zirkuläre Abhängigkeiten; jedes Modul hat eigenen Test"
+    applies_to: "alle AP"
+
+  - id: SZ-2
+    name: "Formale Konsistenz"
+    description: "Keine Widersprüche zwischen Axiomen, Modellen und Parametern"
+    pruefkriterium: "validate_referential_integrity.py: Score ≥ 95%"
+    applies_to: "alle AP"
+
+  - id: SZ-3
+    name: "Empirische Verankerung"
+    description: "Jeder Parameter hat PAR-*-* Referenz mit Tier 1/2 Quelle"
+    pruefkriterium: "≥80% der Parameter mit Tier 1 oder 2 evidence_tier"
+    applies_to: "alle AP mit Parametern"
+
+  - id: SZ-4
+    name: "Ausführbarkeit"
+    description: "Jedes Modell ist als Python-Script lauffähig"
+    pruefkriterium: "python scripts/run_model.py MOD-* → Ergebnis ohne Fehler"
+    applies_to: "alle AP mit Modellen"
+
+  - id: SZ-5
+    name: "Lernfähigkeit"
+    description: "3-Level-Feedback implementiert (L1 Parameter, L2 Modell, L3 Theorie)"
+    pruefkriterium: "Feedback-Trigger definiert; ≥1 dokumentierter L2-Feedback-Fall"
+    applies_to: "HZ-4, HZ-5, HZ-6"
+
+  - id: SZ-6
+    name: "Skalierbarkeit"
+    description: "Neue Domänen, Kontexte und Menschentypen hinzufügbar ohne Refactoring"
+    pruefkriterium: "Neuer Kontext in <1h hinzufügbar; Neue Domäne in <1 Tag"
+    applies_to: "alle AP"
+
+  - id: SZ-7
+    name: "Nutzbarkeit"
+    description: "Consultant kann Modell in <30 min anwenden"
+    pruefkriterium: "Time-to-first-result ≤ 30 min für Standard-Modell"
+    applies_to: "HZ-4, HZ-6"
+
+# ============================================================================
+# METHODIK-REFERENZ
+# ============================================================================
+
+methodik:
+  basis: "KAOS (van Lamsweerde 2001)"
+  erweiterungen:
+    - id: E1
+      name: "GQM/OKR-Metriken"
+      quellen: ["basili1994gqm", "kaplan1992bsc", "doerr2018okr"]
+    - id: E2
+      name: "Ansoff-Gap-Analyse"
+      quellen: ["ansoff1965strategy", "mintzberg1994planning"]
+    - id: E3
+      name: "PRINCE2-Lieferobjekte"
+      quellen: ["ogc2017prince2", "haugan2002wbs", "pmi2021pmbok"]
+    - id: E4
+      name: "Argyris/Bateson 3-Level-Feedback"
+      quellen: ["argyris1977doubleloop", "bateson1972ecology"]
+    - id: E5
+      name: "AOP-Querschnittsanforderungen"
+      quellen: ["kiczales1997aop"]
+    - id: E6
+      name: "Meadows/Sterman Input-Rückkopplung"
+      quellen: ["meadows2008systems", "sterman2000dynamics"]
+    - id: E7
+      name: "Tetlock/Brier Empirische Validierung"
+      quellen: ["tetlock2015superforecasting", "brier1950verification"]
+  regeln:
+    - id: R1
+      name: "Traceability"
+      quellen: ["gotel1994traceability", "ramesh2001traceability"]
+    - id: R2
+      name: "Meilenstein-Regel"
+      quelle: "PRINCE2"
+    - id: R3
+      name: "Gap-Regel"
+      quelle: "E2 (Ansoff)"
+    - id: R4
+      name: "Arbeitspaket-Regel"
+      quelle: "PMI/PRINCE2"
+    - id: R5
+      name: "Lieferobjekt-Regel"
+      quelle: "E3 (PRINCE2)"
+    - id: R6
+      name: "Vollständigkeits-Regel"
+      quellen: ["incose2015se", "nasa2017se"]
+    - id: R7
+      name: "Querschnitt-Regel"
+      quelle: "E5 (AOP)"
+
+# ============================================================================
+# STATUS-ZUSAMMENFASSUNG
+# ============================================================================
+
+status_summary:
+  total_hz: 6
+  total_uz: 23
+  total_sz: 7
+  uz_status:
+    erreicht: 4     # ✅
+    teilweise: 8    # ⚠️
+    offen: 11       # 🔴
+  naechste_schritte:
+    - "E1: Key Results für alle 23 UZ definieren"
+    - "E2: Empirischen IST-Status erheben"
+    - "R4: Gaps zu Arbeitspaketen bündeln"
+    - "R5: Lieferobjekte mit Akzeptanzkriterien"
+    - "R7: SZ-Querschnittsprüfung"
+    - "R6: Vollständigkeitsprüfung"

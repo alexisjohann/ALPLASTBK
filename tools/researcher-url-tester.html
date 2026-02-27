@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EBF Paper Pipeline — Researcher URL Tester</title>
+<style>
+:root {
+  --trustblue: rgb(2, 64, 121);
+  --trustbluelight: rgb(212, 228, 244);
+  --fehrgray: rgb(37, 33, 42);
+  --fehrlightgray: rgb(245, 245, 245);
+  --fa-mint: #7EBDAC;
+  --fa-ocher: #DECB3F;
+  --fa-error: #C94C4C;
+  --fa-lilac: #A1A0C6;
+  --fa-orange: #DE9D3E;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: var(--fehrgray);
+  background: #fff;
+  font-size: 14px;
+  line-height: 1.5;
+}
+header {
+  background: var(--trustblue);
+  color: #fff;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+header h1 { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+header .subtitle { font-size: 12px; opacity: 0.8; }
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--fehrlightgray);
+  border-bottom: 1px solid #ddd;
+  padding: 10px 24px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+button {
+  background: var(--trustblue);
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+}
+button:hover { opacity: 0.85; }
+button.secondary {
+  background: #fff;
+  color: var(--trustblue);
+  border: 1px solid var(--trustblue);
+}
+button.secondary:hover { background: var(--trustbluelight); }
+button.danger { background: var(--fa-error); }
+.stats-bar {
+  background: #fff;
+  padding: 8px 24px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  gap: 24px;
+  font-size: 13px;
+  color: #666;
+}
+.stats-bar .stat { display: flex; align-items: center; gap: 4px; }
+.stats-bar .stat-value { font-weight: 700; color: var(--fehrgray); }
+.filter-bar {
+  padding: 8px 24px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 13px;
+}
+.filter-bar input[type="text"] {
+  padding: 4px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  width: 200px;
+}
+.filter-bar select {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+thead {
+  background: var(--trustblue);
+  color: #fff;
+  position: sticky;
+  top: 48px;
+  z-index: 50;
+}
+th {
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+th:hover { background: rgba(255,255,255,0.15); }
+th .sort-icon { font-size: 10px; margin-left: 3px; opacity: 0.6; }
+th.sorted .sort-icon { opacity: 1; }
+td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+tr:nth-child(even) { background: var(--fehrlightgray); }
+tr:hover { background: var(--trustbluelight); }
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge-pending { background: #eee; color: #888; }
+.badge-testing { background: var(--fa-ocher); color: #333; }
+.badge-reachable { background: var(--fa-mint); color: #1a4a3a; }
+.badge-unreachable { background: var(--fa-error); color: #fff; }
+.badge-dept { background: var(--trustbluelight); color: var(--trustblue); }
+.badge-personal { background: #f0e6ff; color: #6b3fa0; }
+.url-link {
+  color: var(--trustblue);
+  text-decoration: none;
+  font-size: 12px;
+  word-break: break-all;
+}
+.url-link:hover { text-decoration: underline; }
+td input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--trustblue);
+  cursor: pointer;
+}
+td input[type="text"] {
+  width: 100%;
+  min-width: 80px;
+  padding: 2px 6px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-size: 12px;
+}
+.papers-count {
+  font-weight: 700;
+  color: var(--trustblue);
+  cursor: help;
+}
+.progress-bar {
+  display: none;
+  padding: 8px 24px;
+  background: var(--trustbluelight);
+  font-size: 13px;
+}
+.progress-bar .bar {
+  height: 4px;
+  background: #ddd;
+  border-radius: 2px;
+  margin-top: 4px;
+}
+.progress-bar .bar-fill {
+  height: 100%;
+  background: var(--trustblue);
+  border-radius: 2px;
+  transition: width 0.2s;
+}
+.info-box {
+  margin: 16px 24px;
+  padding: 12px 16px;
+  background: var(--trustbluelight);
+  border-left: 4px solid var(--trustblue);
+  border-radius: 0 4px 4px 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+footer {
+  padding: 16px 24px;
+  color: #999;
+  font-size: 12px;
+  border-top: 1px solid #eee;
+  margin-top: 24px;
+}
+.check-col { text-align: center; width: 40px; }
+@media (max-width: 1200px) {
+  .toolbar { padding: 8px 12px; }
+  td, th { padding: 4px 6px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>EBF Paper Pipeline — Researcher URL Tester</h1>
+    <div class="subtitle">FehrAdvice &amp; Partners AG | Test researcher homepage URLs for PDF availability</div>
+  </div>
+  <div style="font-size:12px;opacity:0.7;">34 URLs | 97 Papers</div>
+</header>
+
+<div class="toolbar">
+  <button onclick="testAll()" id="btn-test">Test All URLs</button>
+  <button class="secondary" onclick="openAllReachable()">Open Reachable</button>
+  <button class="secondary" onclick="exportResults()">Export JSON</button>
+  <button class="secondary" onclick="clearResults()" class="danger">Clear Results</button>
+  <span style="flex:1"></span>
+  <label style="font-size:12px;color:#666;">
+    <input type="file" id="file-loader" accept=".json" style="display:none" onchange="loadJsonFile(event)">
+    <button class="secondary" onclick="document.getElementById('file-loader').click()">Load JSON</button>
+  </label>
+</div>
+
+<div class="stats-bar" id="stats-bar">
+  <div class="stat">Total: <span class="stat-value" id="stat-total">34</span></div>
+  <div class="stat">Reachable: <span class="stat-value" style="color:var(--fa-mint)" id="stat-reachable">0</span></div>
+  <div class="stat">Unreachable: <span class="stat-value" style="color:var(--fa-error)" id="stat-unreachable">0</span></div>
+  <div class="stat">Untested: <span class="stat-value" id="stat-untested">34</span></div>
+  <div class="stat">Verified: <span class="stat-value" style="color:var(--trustblue)" id="stat-verified">0</span></div>
+  <div class="stat">Papers covered: <span class="stat-value" id="stat-papers">97</span></div>
+</div>
+
+<div class="filter-bar">
+  <label>Search: <input type="text" id="filter-search" placeholder="Name, institution..." oninput="applyFilters()"></label>
+  <label>Type:
+    <select id="filter-type" onchange="applyFilters()">
+      <option value="">All</option>
+      <option value="DEPT">Department</option>
+      <option value="PERSONAL">Personal</option>
+    </select>
+  </label>
+  <label>Status:
+    <select id="filter-status" onchange="applyFilters()">
+      <option value="">All</option>
+      <option value="untested">Untested</option>
+      <option value="reachable">Reachable</option>
+      <option value="unreachable">Unreachable</option>
+    </select>
+  </label>
+</div>
+
+<div class="progress-bar" id="progress-bar">
+  <span id="progress-text">Testing 0/34...</span>
+  <div class="bar"><div class="bar-fill" id="progress-fill" style="width:0%"></div></div>
+</div>
+
+<div class="info-box">
+  <strong>How this works:</strong>
+  "Test All" sends a <code>no-cors</code> fetch to each URL. This only detects if the server responds at all — it cannot read page content due to browser CORS restrictions.
+  <strong>Click the URL link</strong> to open each page in a new tab, then manually check the boxes.
+  Results are <strong>saved in localStorage</strong> automatically.
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th data-sort="id" class="sorted"># <span class="sort-icon">&#9650;</span></th>
+      <th data-sort="researcher">Researcher <span class="sort-icon">&#9650;</span></th>
+      <th data-sort="institution">Institution <span class="sort-icon">&#9650;</span></th>
+      <th data-sort="type">Type <span class="sort-icon">&#9650;</span></th>
+      <th data-sort="paperCount">Papers <span class="sort-icon">&#9650;</span></th>
+      <th data-sort="reachability">Status <span class="sort-icon">&#9650;</span></th>
+      <th>URL</th>
+      <th class="check-col">Loads</th>
+      <th class="check-col">Pubs</th>
+      <th class="check-col">PDFs</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody id="url-table-body"></tbody>
+</table>
+
+<footer>
+  EBF Researcher URL Tester v1.0 | Generated 2026-02-12 | Data: paper-upload-priority-top100.json (v3.0)
+</footer>
+
+<script>
+// ============================================================
+// DATA (generated by scripts/generate_url_tester_data.py)
+// ============================================================
+const URL_DATA = [
+  {"researcher":"Thomas Zellweger","institution":"University of St. Gallen","type":"DEPT","sitePattern":"unisg.ch","url":"https://www.unisg.ch/en/personenverzeichnis/thomas-zellweger","searchHint":"Entrepreneurs as Scientists filetype:pdf site:unisg.ch","papers":["zellweger2023entrepreneurs"],"id":1,"paperCount":1},
+  {"researcher":"James Heckman","institution":"University of Chicago","type":"DEPT","sitePattern":"uchicago.edu","url":"https://www.chicagobooth.edu/faculty/directory/h/james-j-heckman","searchHint":"Econometric Causality filetype:pdf site:uchicago.edu","papers":["heckman2024causality","heckman2023virtue","hai2025cigarette"],"id":2,"paperCount":3},
+  {"researcher":"James Heckman","institution":"","type":"PERSONAL","sitePattern":"heckmanequation.org","url":"https://heckmanequation.org/resource-library/","searchHint":"Econometric Causality filetype:pdf site:heckmanequation.org","papers":["heckman2024causality","heckman2023virtue","hai2025cigarette"],"id":3,"paperCount":3},
+  {"researcher":"Brigitte Madrian","institution":"Harvard Kennedy School","type":"DEPT","sitePattern":"harvard.edu","url":"https://scholar.harvard.edu/madrian/publications","searchHint":"Power of Suggestion filetype:pdf site:harvard.edu","papers":["madrian2001power"],"id":4,"paperCount":1},
+  {"researcher":"Maya Rossin-Slater","institution":"Stanford University","type":"DEPT","sitePattern":"stanford.edu","url":"https://profiles.stanford.edu/maya-rossin-slater","searchHint":"Impact of Preschool Entry Age filetype:pdf site:stanford.edu","papers":["rossinslater2026preschool"],"id":5,"paperCount":1},
+  {"researcher":"Roland B\u00e9nabou","institution":"Princeton University","type":"DEPT","sitePattern":"princeton.edu","url":"https://www.princeton.edu/~rbenabou/papers.html","searchHint":"Narratives Imperatives Moral filetype:pdf site:princeton.edu","papers":["benabou2018narratives","benabou2024ends","benabou2025identity","benabou2022hurts"],"id":6,"paperCount":4},
+  {"researcher":"Daniel Kahneman","institution":"Princeton University","type":"DEPT","sitePattern":"princeton.edu","url":"https://scholar.princeton.edu/kahneman/publications","searchHint":"Luck in Success filetype:pdf site:princeton.edu","papers":["kahneman2006luck","kahneman1986loss","kahneman2012new","kahneman2002well","kahneman1988mental","kahneman2003maps","kahneman2008future","kahneman1985ambiguity","kahneman2001robust","kahneman1988frame","kahneman1999intuitive","kahneman1999illusion"],"id":7,"paperCount":12},
+  {"researcher":"Ernst Fehr","institution":"University of Zurich","type":"DEPT","sitePattern":"econ.uzh.ch","url":"https://www.econ.uzh.ch/en/people/faculty/fehr/publications.html","searchHint":"Do Workers Work More filetype:pdf site:econ.uzh.ch","papers":["fehr2001minimum","fehr1995evolution","fehr2013implicit","fehr2009time","fehr2010bonus","fehr2003when","fehr2013behavioral","fehr1994punishment","fehr2010perspective","fehr2008implementation","fehr2004social","fehr2014evolution","fehr2004dilemma","fehr2011overview","fehr2013review","fehr2008effort","fehr1996voluntary","fehr2011punishment","fehr1993reciprocity","fehr2007motivation","fehr2006moral","fehr2007reciprocity","fehr1993early"],"id":8,"paperCount":23},
+  {"researcher":"Joseph Henrich","institution":"Harvard University","type":"DEPT","sitePattern":"harvard.edu","url":"https://henrich.fas.harvard.edu/publications","searchHint":"Homo Economicus 15 Societies filetype:pdf site:harvard.edu","papers":["henrich2001search"],"id":9,"paperCount":1},
+  {"researcher":"Leda Cosmides","institution":"UC Santa Barbara","type":"DEPT","sitePattern":"ucsb.edu","url":"https://www.psych.ucsb.edu/people/faculty/cosmides","searchHint":"Evolutionary Psychology filetype:pdf site:ucsb.edu","papers":["cosmides1994cognitive"],"id":10,"paperCount":1},
+  {"researcher":"Richard Thaler","institution":"Chicago Booth","type":"DEPT","sitePattern":"chicagobooth.edu","url":"https://faculty.chicagobooth.edu/richard-thaler/research","searchHint":"Mental Accounting Equity Premium filetype:pdf site:chicagobooth.edu","papers":["thaler2000atus","thaler1985mental","thaler2003choice","thaler1980toward","thaler2011mental"],"id":11,"paperCount":5},
+  {"researcher":"Stefano Puntoni","institution":"Wharton, UPenn","type":"DEPT","sitePattern":"upenn.edu","url":"https://www.wharton.upenn.edu/faculty/platform/profile/stefano-puntoni/","searchHint":"Consumers AI Experiential filetype:pdf site:upenn.edu","papers":["puntoni2021consumers"],"id":12,"paperCount":1},
+  {"researcher":"Gary Becker","institution":"Chicago Booth (archive)","type":"DEPT","sitePattern":"chicagobooth.edu","url":"https://www.chicagobooth.edu/faculty/directory/b/gary-s-becker","searchHint":"Theory Allocation of Time filetype:pdf site:chicagobooth.edu","papers":["becker1965theory"],"id":13,"paperCount":1},
+  {"researcher":"Gary Bolton","institution":"UT Austin","type":"DEPT","sitePattern":"utexas.edu","url":"https://www.mccombs.utexas.edu/faculty/gary-bolton","searchHint":"Equity Reciprocity Competition filetype:pdf site:utexas.edu","papers":["bolton1997reciprocal"],"id":14,"paperCount":1},
+  {"researcher":"Amos Tversky","institution":"Stanford University (archive)","type":"DEPT","sitePattern":"stanford.edu","url":"https://psychology.stanford.edu/","searchHint":"Framing Decisions Psychology filetype:pdf site:stanford.edu","papers":["tversky1981framing","tversky1974judgment"],"id":15,"paperCount":2},
+  {"researcher":"Stefano DellaVigna","institution":"UC Berkeley","type":"DEPT","sitePattern":"berkeley.edu","url":"https://eml.berkeley.edu/~sdellavi/research.html","searchHint":"Paying Not to Go to Gym filetype:pdf site:berkeley.edu","papers":["dellavigna2006paying"],"id":16,"paperCount":1},
+  {"researcher":"Drazen Prelec","institution":"MIT Sloan","type":"DEPT","sitePattern":"mit.edu","url":"https://mitsloan.mit.edu/faculty/directory/drazen-prelec","searchHint":"Decision Making Time Uncertainty filetype:pdf site:mit.edu","papers":["prelec1991puzzles"],"id":17,"paperCount":1},
+  {"researcher":"Herbert Simon","institution":"Carnegie Mellon (archive)","type":"DEPT","sitePattern":"cmu.edu","url":"https://www.cs.cmu.edu/~simon/","searchHint":"Behavioral Model Rational Choice filetype:pdf site:cmu.edu","papers":["simon1955behavioral"],"id":18,"paperCount":1},
+  {"researcher":"Colin Camerer","institution":"Caltech","type":"DEPT","sitePattern":"caltech.edu","url":"https://www.hss.caltech.edu/content/colin-f-camerer","searchHint":"Strategic Thinking Markets filetype:pdf site:caltech.edu","papers":["camerer2009strategic","camerer2004neuroeconomics","camerer2016risk","camerer2015ultimatum","camerer2013social","camerer1989empirical"],"id":19,"paperCount":6},
+  {"researcher":"Dan Ariely","institution":"Duke University","type":"DEPT","sitePattern":"duke.edu","url":"https://faculty.fuqua.duke.edu/~dandan/","searchHint":"Predictably Irrational filetype:pdf site:duke.edu","papers":["ariely2008predictably","ariely2009honestly","ariely2007expensive"],"id":20,"paperCount":3},
+  {"researcher":"Dan Ariely","institution":"","type":"PERSONAL","sitePattern":"danariely.com","url":"https://danariely.com/resources/academic-papers/","searchHint":"Predictably Irrational filetype:pdf site:danariely.com","papers":["ariely2008predictably","ariely2009honestly","ariely2007expensive"],"id":21,"paperCount":3},
+  {"researcher":"Ulrike Malmendier","institution":"UC Berkeley","type":"DEPT","sitePattern":"berkeley.edu","url":"https://eml.berkeley.edu/~ulrike/research.html","searchHint":"Rational Expectations Market filetype:pdf site:berkeley.edu","papers":["malmendier2009experiment","malmendier2010prices","malmendier2016stock","malmendier2018behavioral"],"id":22,"paperCount":4},
+  {"researcher":"Matthew Rabin","institution":"Harvard University","type":"DEPT","sitePattern":"harvard.edu","url":"https://scholar.harvard.edu/rabin/publications","searchHint":"Fairness Game Theory filetype:pdf site:harvard.edu","papers":["rabin1993incorporating"],"id":23,"paperCount":1},
+  {"researcher":"Alvin Roth","institution":"Stanford University","type":"DEPT","sitePattern":"stanford.edu","url":"https://web.stanford.edu/~alroth/papers.html","searchHint":"Market Design filetype:pdf site:stanford.edu","papers":["roth2008market"],"id":24,"paperCount":1},
+  {"researcher":"George Loewenstein","institution":"Carnegie Mellon","type":"DEPT","sitePattern":"cmu.edu","url":"https://www.cmu.edu/dietrich/sds/people/faculty/george-loewenstein.html","searchHint":"Visceral States Behavior filetype:pdf site:cmu.edu","papers":["loewenstein2013visceral","chater2022iframe","loewenstein2009present","acquisti2020secrets"],"id":25,"paperCount":4},
+  {"researcher":"Hunt Allcott","institution":"Microsoft Research","type":"DEPT","sitePattern":"microsoft.com","url":"https://www.microsoft.com/en-us/research/people/hallcott/","searchHint":"Social Norms Energy filetype:pdf site:microsoft.com","papers":["allcott2011social"],"id":26,"paperCount":1},
+  {"researcher":"Hunt Allcott","institution":"","type":"PERSONAL","sitePattern":"huntallcott.com","url":"https://huntallcott.com/research/","searchHint":"Social Norms Energy filetype:pdf site:huntallcott.com","papers":["allcott2011social"],"id":27,"paperCount":1},
+  {"researcher":"P. Wesley Schultz","institution":"Claremont Graduate University","type":"DEPT","sitePattern":"claremont.edu","url":"https://schultzlab.sites.claremont.edu/publications/","searchHint":"Social Norms Power filetype:pdf site:claremont.edu","papers":["schultz2007normative"],"id":28,"paperCount":1},
+  {"researcher":"Matthias Sutter","institution":"Max Planck Institute Bonn","type":"DEPT","sitePattern":"mpg.de","url":"https://www.coll.mpg.de/matthias-sutter","searchHint":"Carrot or Stick filetype:pdf site:mpg.de","papers":["sutter2010carrot","sutter2016genderpolicy","sutter2015gender"],"id":29,"paperCount":3},
+  {"researcher":"Loukas Balafoutas","institution":"University of Innsbruck","type":"DEPT","sitePattern":"uibk.ac.at","url":"https://www.uibk.ac.at/economics/personal/balafoutas/","searchHint":"Gender Gap Competitiveness filetype:pdf site:uibk.ac.at","papers":["balafoutas2018gendergap","balafoutas2012affirmative"],"id":30,"paperCount":2},
+  {"researcher":"Luca Braghieri","institution":"Bocconi University","type":"DEPT","sitePattern":"bocconi.eu","url":"https://www.bocconi.eu/","searchHint":"Social Media Mental Health filetype:pdf site:bocconi.eu","papers":["braghieri2022socialmedia"],"id":31,"paperCount":1},
+  {"researcher":"Luca Braghieri","institution":"","type":"PERSONAL","sitePattern":"lucabraghieri.com","url":"https://www.lucabraghieri.com/research","searchHint":"Social Media Mental Health filetype:pdf site:lucabraghieri.com","papers":["braghieri2022socialmedia"],"id":32,"paperCount":1},
+  {"researcher":"Stephanie Mertens","institution":"University of Zurich","type":"DEPT","sitePattern":"uzh.ch","url":"https://www.econ.uzh.ch/","searchHint":"Nudging Meta-Analysis filetype:pdf site:uzh.ch","papers":["mertens2022nudging"],"id":33,"paperCount":1},
+  {"researcher":"Stephanie Mertens","institution":"","type":"PERSONAL","sitePattern":"stephaniemertens.com","url":"https://www.stephaniemertens.com/research","searchHint":"Nudging Meta-Analysis filetype:pdf site:stephaniemertens.com","papers":["mertens2022nudging"],"id":34,"paperCount":1}
+];
+
+// ============================================================
+// STATE
+// ============================================================
+const STORAGE_KEY = 'ebf-researcher-url-results';
+let results = {};
+let sortKey = 'id';
+let sortDir = 'asc';
+let filteredData = [...URL_DATA];
+
+function initResults() {
+  URL_DATA.forEach(d => {
+    if (!results[d.id]) {
+      results[d.id] = {
+        reachability: 'untested',
+        responseMs: null,
+        pageLoads: false,
+        hasPubList: false,
+        hasPdfLinks: false,
+        notes: ''
+      };
+    }
+  });
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(results)); } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) results = JSON.parse(saved);
+  } catch(e) {}
+}
+
+// ============================================================
+// RENDERING
+// ============================================================
+function renderTable() {
+  const tbody = document.getElementById('url-table-body');
+  tbody.innerHTML = '';
+
+  filteredData.forEach(d => {
+    const r = results[d.id] || {};
+    const tr = document.createElement('tr');
+    tr.dataset.id = d.id;
+
+    const badgeClass = {
+      'untested': 'badge-pending',
+      'testing': 'badge-testing',
+      'reachable': 'badge-reachable',
+      'unreachable': 'badge-unreachable'
+    }[r.reachability] || 'badge-pending';
+
+    const badgeText = {
+      'untested': 'Untested',
+      'testing': 'Testing...',
+      'reachable': 'Responds',
+      'unreachable': 'Unreachable'
+    }[r.reachability] || 'Untested';
+
+    const msText = r.responseMs != null ? ` (${r.responseMs}ms)` : '';
+    const typeClass = d.type === 'DEPT' ? 'badge-dept' : 'badge-personal';
+    const urlShort = d.url.replace(/^https?:\/\/(www\.)?/, '').substring(0, 45);
+    const papersTitle = d.papers.join('\n');
+
+    tr.innerHTML = `
+      <td style="text-align:right;font-weight:600;color:#999">${d.id}</td>
+      <td><strong>${esc(d.researcher)}</strong></td>
+      <td>${esc(d.institution || d.sitePattern)}</td>
+      <td><span class="badge ${typeClass}">${d.type}</span></td>
+      <td><span class="papers-count" title="${esc(papersTitle)}">${d.paperCount}</span></td>
+      <td>
+        <span class="badge ${badgeClass}" onclick="testOne(${d.id})" style="cursor:pointer" title="Click to re-test${msText}">
+          ${badgeText}
+        </span>
+      </td>
+      <td><a class="url-link" href="${esc(d.url)}" target="_blank" rel="noopener" title="${esc(d.url)}">${esc(urlShort)}</a></td>
+      <td class="check-col"><input type="checkbox" data-id="${d.id}" data-field="pageLoads" ${r.pageLoads ? 'checked' : ''}></td>
+      <td class="check-col"><input type="checkbox" data-id="${d.id}" data-field="hasPubList" ${r.hasPubList ? 'checked' : ''}></td>
+      <td class="check-col"><input type="checkbox" data-id="${d.id}" data-field="hasPdfLinks" ${r.hasPdfLinks ? 'checked' : ''}></td>
+      <td><input type="text" data-id="${d.id}" data-field="notes" value="${esc(r.notes || '')}" placeholder="..."></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  updateStats();
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function updateStats() {
+  const vals = Object.values(results);
+  document.getElementById('stat-total').textContent = URL_DATA.length;
+  document.getElementById('stat-reachable').textContent = vals.filter(r => r.reachability === 'reachable').length;
+  document.getElementById('stat-unreachable').textContent = vals.filter(r => r.reachability === 'unreachable').length;
+  document.getElementById('stat-untested').textContent = vals.filter(r => r.reachability === 'untested').length;
+  document.getElementById('stat-verified').textContent = vals.filter(r => r.pageLoads || r.hasPubList || r.hasPdfLinks).length;
+  document.getElementById('stat-papers').textContent = URL_DATA.reduce((s, d) => s + d.paperCount, 0);
+}
+
+// ============================================================
+// SORTING
+// ============================================================
+document.querySelectorAll('th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.sort;
+    if (sortKey === key) {
+      sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortKey = key;
+      sortDir = 'asc';
+    }
+    document.querySelectorAll('th').forEach(t => t.classList.remove('sorted'));
+    th.classList.add('sorted');
+    th.querySelector('.sort-icon').innerHTML = sortDir === 'asc' ? '&#9650;' : '&#9660;';
+    applySort();
+    renderTable();
+  });
+});
+
+function applySort() {
+  filteredData.sort((a, b) => {
+    let va, vb;
+    if (sortKey === 'reachability') {
+      const order = { 'unreachable': 0, 'untested': 1, 'testing': 2, 'reachable': 3 };
+      va = order[(results[a.id] || {}).reachability] || 1;
+      vb = order[(results[b.id] || {}).reachability] || 1;
+    } else {
+      va = a[sortKey];
+      vb = b[sortKey];
+    }
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    if (va < vb) return sortDir === 'asc' ? -1 : 1;
+    if (va > vb) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+}
+
+// ============================================================
+// FILTERING
+// ============================================================
+function applyFilters() {
+  const search = document.getElementById('filter-search').value.toLowerCase();
+  const type = document.getElementById('filter-type').value;
+  const status = document.getElementById('filter-status').value;
+
+  filteredData = URL_DATA.filter(d => {
+    if (search && !d.researcher.toLowerCase().includes(search) &&
+        !d.institution.toLowerCase().includes(search) &&
+        !d.sitePattern.toLowerCase().includes(search)) return false;
+    if (type && d.type !== type) return false;
+    if (status && (results[d.id] || {}).reachability !== status) return false;
+    return true;
+  });
+  applySort();
+  renderTable();
+}
+
+// ============================================================
+// URL TESTING (no-cors)
+// ============================================================
+async function testUrl(id) {
+  const entry = URL_DATA.find(d => d.id === id);
+  if (!entry) return;
+  results[id].reachability = 'testing';
+  renderTable();
+
+  const start = Date.now();
+  try {
+    await fetch(entry.url, { mode: 'no-cors', cache: 'no-store' });
+    results[id].reachability = 'reachable';
+    results[id].responseMs = Date.now() - start;
+  } catch (e) {
+    results[id].reachability = 'unreachable';
+    results[id].responseMs = Date.now() - start;
+  }
+  saveState();
+}
+
+async function testOne(id) {
+  await testUrl(id);
+  renderTable();
+}
+
+async function testAll() {
+  const btn = document.getElementById('btn-test');
+  const bar = document.getElementById('progress-bar');
+  const fill = document.getElementById('progress-fill');
+  const text = document.getElementById('progress-text');
+
+  btn.disabled = true;
+  btn.textContent = 'Testing...';
+  bar.style.display = 'block';
+
+  for (let i = 0; i < URL_DATA.length; i++) {
+    text.textContent = `Testing ${i + 1}/${URL_DATA.length}... (${URL_DATA[i].researcher})`;
+    fill.style.width = `${((i + 1) / URL_DATA.length * 100).toFixed(0)}%`;
+    await testUrl(URL_DATA[i].id);
+    renderTable();
+    await new Promise(r => setTimeout(r, 80));
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Test All URLs';
+  bar.style.display = 'none';
+}
+
+function openAllReachable() {
+  const reachable = URL_DATA.filter(d => (results[d.id] || {}).reachability === 'reachable');
+  if (reachable.length === 0) {
+    alert('No reachable URLs yet. Run "Test All" first.');
+    return;
+  }
+  if (reachable.length > 10 && !confirm(`Open ${reachable.length} tabs?`)) return;
+  reachable.forEach(d => window.open(d.url, '_blank'));
+}
+
+// ============================================================
+// EVENT DELEGATION (checkboxes + text inputs)
+// ============================================================
+document.getElementById('url-table-body').addEventListener('change', e => {
+  const el = e.target;
+  const id = parseInt(el.dataset.id);
+  const field = el.dataset.field;
+  if (!id || !field) return;
+
+  if (el.type === 'checkbox') {
+    results[id][field] = el.checked;
+  } else {
+    results[id][field] = el.value;
+  }
+  saveState();
+  updateStats();
+});
+
+document.getElementById('url-table-body').addEventListener('input', e => {
+  const el = e.target;
+  if (el.type !== 'text') return;
+  const id = parseInt(el.dataset.id);
+  const field = el.dataset.field;
+  if (!id || !field) return;
+  results[id][field] = el.value;
+  saveState();
+});
+
+// ============================================================
+// EXPORT
+// ============================================================
+function exportResults() {
+  const output = {
+    generated: new Date().toISOString(),
+    tool: 'researcher-url-tester.html',
+    version: '1.0',
+    summary: {
+      total: URL_DATA.length,
+      reachable: Object.values(results).filter(r => r.reachability === 'reachable').length,
+      unreachable: Object.values(results).filter(r => r.reachability === 'unreachable').length,
+      verified: Object.values(results).filter(r => r.pageLoads || r.hasPubList || r.hasPdfLinks).length,
+      with_pdfs: Object.values(results).filter(r => r.hasPdfLinks).length,
+    },
+    results: URL_DATA.map(d => ({ ...d, ...results[d.id] })),
+  };
+  const blob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `researcher-url-results-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ============================================================
+// CLEAR
+// ============================================================
+function clearResults() {
+  if (!confirm('Clear all test results and manual verifications?')) return;
+  results = {};
+  initResults();
+  saveState();
+  renderTable();
+}
+
+// ============================================================
+// LOAD JSON FILE (fallback)
+// ============================================================
+function loadJsonFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.results) {
+        // Loading previously exported results
+        data.results.forEach(r => {
+          if (r.id && results[r.id]) {
+            results[r.id].reachability = r.reachability || 'untested';
+            results[r.id].responseMs = r.responseMs || null;
+            results[r.id].pageLoads = r.pageLoads || false;
+            results[r.id].hasPubList = r.hasPubList || false;
+            results[r.id].hasPdfLinks = r.hasPdfLinks || false;
+            results[r.id].notes = r.notes || '';
+          }
+        });
+        saveState();
+        renderTable();
+        alert(`Loaded results for ${data.results.length} URLs.`);
+      } else {
+        alert('Unknown JSON format. Expected exported results file.');
+      }
+    } catch (err) {
+      alert('Error parsing JSON: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadState();
+initResults();
+applySort();
+renderTable();
+</script>
+</body>
+</html>

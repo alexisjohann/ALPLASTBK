@@ -1,0 +1,775 @@
+# ============================================================================
+# STRATEGIE: FRAGEBOGEN-ADAPTION NACH INTERVISTA-FEEDBACK
+# ============================================================================
+# Projekt:  BFE-019 ECHfP "Erneuerbar Heizen"
+# Kontext:  intervista-Feedback auf v4 + ECH-Email-Inputs
+# Ziel:     v5.1 die BEIDE Anforderungen erfüllt:
+#           (A) Methodisch saubere Ist-Zustand-Erhebung (intervista/ECH)
+#           (B) Verhaltensmodell-Parametrisierung (FehrAdvice/EBF)
+# Datum:    2026-02-13
+# Status:   ENTWURF - zur Diskussion mit Lucas/Oliver
+# ============================================================================
+
+# ============================================================================
+# TEIL 1: STRATEGISCHE EINORDNUNG
+# ============================================================================
+
+strategische_einordnung:
+
+  kernthese: |
+    intervista und EBF verfolgen das GLEICHE Ziel: saubere Messung des
+    Ist-Zustands. Der Unterschied liegt nicht im WAS, sondern im WIE TIEF.
+
+    intervista will:  Reliable, valide, neutrale Messung
+    EBF will:         Reliable, valide, neutrale Messung + Parametrisierung
+
+    Die intervista-Kritik betrifft v.a. die EINLEITUNGSTEXTE und FRAMING
+    des bestehenden v4-Fragebogens — NICHT die Art der Fragen, die EBF
+    hinzufügen will. Unsere verhaltensökonomischen Items sind per Design
+    neutral formulierte Ist-Zustand-Erhebungen.
+
+  wichtigste_erkenntnis: |
+    ECH betont explizit (Email):
+    «Die Befragung dient zur Erhebung des Ist-Zustandes und NICHT als
+    Intervention, da wir ansonsten die Daten nicht zur Erarbeitung der
+    Kampagne nutzen können und auch nicht als Referenzpunkt.»
+
+    Das ist GENAU unser Argument: Wir brauchen saubere Baseline-Daten
+    FÜR die Kampagnenentwicklung. Verhaltensparameter zu messen IST
+    Ist-Zustand-Erhebung — wir messen, WO die Menschen heute stehen
+    (BCJ-Phase, Barrieren-Stärke, Normen-Exposition), nicht wohin
+    wir sie bewegen wollen.
+
+  drei_saeulen_der_strategie:
+    - id: "S1"
+      name: "AKZEPTIEREN & VERBESSERN"
+      beschreibung: |
+        Legitime methodische Kritik vollständig akzeptieren:
+        Anti-Priming, Double-Barreled Items, Konstruktklarheit.
+        Diese Änderungen VERBESSERN auch unsere Parametrisierung.
+      intervista_feedback:
+        - "Story-driven Einleitungen entfernen (Anti-Priming)"
+        - "Double-Barreled Items auftrennen"
+        - "Konstrukt-Validität schärfen"
+        - "Suggestive Überleitungen neutralisieren"
+      ebf_nutzen: |
+        Sauberere Items → bessere Konstrukt-Validität →
+        präzisere Parameter-Schätzungen
+
+    - id: "S2"
+      name: "ERKLÄREN & VERANKERN"
+      beschreibung: |
+        Items, die verhaltensökonomische Parameter messen, als
+        Ist-Zustand-Erhebung positionieren — nicht als Intervention.
+        Jedes Item hat eine wissenschaftliche Referenz und misst
+        einen spezifischen, definierten Zustand.
+      beispiele:
+        - item: "BCJ-Stage Frage (F2.12)"
+          intervista_sicht: "Neue Frage, potenzielle Beeinflussung?"
+          unsere_erklaerung: |
+            Misst, WO jemand in seinem Entscheidungsprozess steht.
+            Analog zu einer medizinischen Diagnose: Wir fragen nach
+            dem Symptom, nicht nach der Therapie.
+        - item: "Social Norms (F2.10)"
+          intervista_sicht: "Suggeriert sozialen Druck?"
+          unsere_erklaerung: |
+            Fragt nach BEOBACHTUNG (deskriptive Norm), nicht nach
+            Erwartung (injunktive Norm). «Wie viele Nachbarn haben
+            gewechselt?» ist eine Fakten-Frage.
+        - item: "Installateur-Einfluss (F2.11)"
+          intervista_sicht: "Neuer Fragenblock"
+          unsere_erklaerung: |
+            Erfasst eine Informationsquelle — analog zu F2.7/F2.8.
+            Bei 55% Notfall-Ersatz ist der Installateur der primäre
+            Entscheider. Diese Information NICHT zu erheben wäre
+            eine systematische Lücke.
+
+    - id: "S3"
+      name: "MODULSPEZIFISCH FILTERN"
+      beschreibung: |
+        ECH-Wunsch nach modulspezifischen Zielgruppen vollständig
+        umsetzen — das verbessert sowohl die Datenqualität als auch
+        die Segment-spezifische Parametrisierung.
+      module_filter:
+        M1_gesamtmodernisierung:
+          zielgruppe: "Eigentümer:innen Immobilien > 5 Jahre"
+          ergaenzung_ech: "Inkl. Gebäude > 1900 (historischer Bestand)"
+          filter_logik: "F1.5 IN (2,3,4) ODER Baujahr <= 1900"
+        M2_gebaeudehuelle:
+          zielgruppe: "Eigentümer:innen älterer Immobilien OHNE energetische Sanierung der Hülle"
+          filter_logik: "F1.5 IN (3,4) AND Gebäudehülle_unsaniert = true"
+          neue_screening_frage: true
+        M3_heizungsersatz:
+          zielgruppe: "Eigentümer:innen mit älteren fossilen Heizsystemen"
+          boost_zielgruppe: "«erneuerbar heizen» Boost-ZG (Oliver)"
+          filter_logik: "F1.7 IN (1,2) AND F1.8 IN (2,3)"
+        M4_solarenergie:
+          zielgruppe: "ALLE Eigentümer:innen OHNE PV-Anlage (inkl. Neubauten)"
+          filter_logik: "F1.4 IN (2,3) AND PV_installiert = false"
+          neubauten: true
+        M5_emobilitaet:
+          zielgruppe: "Eigentümer:innen MIT Auto/Kaufinteresse UND Parkplatz OHNE Ladestation"
+          filter_logik: "Auto_vorhanden AND Parkplatz_vorhanden AND Ladestation = false"
+          wichtig: "NICHT zum Auto-Kauf motivieren — nur bestehende Autofahrer:innen"
+
+
+# ============================================================================
+# TEIL 2: FEEDBACK-MATRIX — PUNKT FÜR PUNKT
+# ============================================================================
+
+feedback_matrix:
+
+  # --------------------------------------------------------------------------
+  # KATEGORIE A: ANTI-PRIMING / NEUTRALITÄT
+  # --------------------------------------------------------------------------
+  kategorie_A_anti_priming:
+    intervista_kritik: |
+      Story-driven Einleitungen (INTRO04-INTRO13) sind Interventionen,
+      nicht neutrale Messung. «Bitte den Fragebogen nicht zur
+      Wissensbildung oder Beeinflussung nutzen.» (H237)
+      Suggestive Überleitungen zwischen Sektionen.
+
+    ech_position: |
+      «Wichtig ist uns, dass die Befragung zur Erhebung des Ist-Zustandes
+      dient und nicht selbst als Intervention fungiert.»
+
+    unsere_bewertung: "VOLLSTÄNDIG AKZEPTIERT"
+
+    massnahmen:
+      - id: "A-01"
+        was: "ALLE story-driven Einleitungen (INTRO04-13) durch neutrale Formulierungen ersetzen"
+        beispiel:
+          vorher: |
+            «Die Energiewende betrifft uns alle. Stellen Sie sich vor,
+            Sie könnten mit einer einfachen Massnahme...»
+          nachher: |
+            «Im Folgenden stellen wir Ihnen Fragen zu Ihrer aktuellen
+            Wohnsituation und Ihrem Heizsystem.»
+        ebf_konsequenz: "Keine — neutrale Einleitungen verbessern Datenqualität"
+        prioritaet: "HOCH"
+
+      - id: "A-02"
+        was: "Suggestive Überleitungen zwischen Sektionen neutralisieren"
+        beispiel:
+          vorher: |
+            «Nachdem Sie nun über die Vorteile informiert sind,
+            wie stehen Sie zu...»
+          nachher: |
+            «Bitte beantworten Sie nun die folgenden Fragen zu
+            Ihrer persönlichen Einschätzung.»
+        ebf_konsequenz: "Keine — Reihenfolge-Effekte werden reduziert"
+        prioritaet: "HOCH"
+
+      - id: "A-03"
+        was: "Wissensbildende Elemente komplett entfernen"
+        details: |
+          Alle Passagen, die Informationen VERMITTELN statt ERHEBEN,
+          müssen raus. Ein Fragebogen ist kein Lehrmittel.
+        ebf_konsequenz: |
+          POSITIV für EBF: Wir messen dann das TATSÄCHLICHE Wissen,
+          nicht das durch den Fragebogen induzierte.
+        prioritaet: "HOCH"
+
+      - id: "A-04"
+        was: "Quota-Variablen an den Anfang"
+        details: |
+          Alter, Geschlecht, PLZ VOR inhaltlichen Fragen.
+          Bereits in v4/v5 so implementiert (F1.1-F1.3).
+        ebf_konsequenz: "Bereits konform"
+        prioritaet: "BEREITS UMGESETZT"
+
+  # --------------------------------------------------------------------------
+  # KATEGORIE B: DOUBLE-BARRELED ITEMS
+  # --------------------------------------------------------------------------
+  kategorie_B_double_barreled:
+    intervista_kritik: |
+      Mehrere Konstrukte in einem Item kombiniert:
+      - Umwelt + Gesellschaft in einer Frage
+      - Kosten + ROI vermischt
+      - «glaubwürdig + verlässlich» als Einheit
+
+    unsere_bewertung: "AKZEPTIERT — VERBESSERUNG GEPLANT"
+
+    massnahmen:
+      - id: "B-01"
+        was: "Umwelt und Gesellschaft trennen"
+        vorher: |
+          «Wie wichtig ist Ihnen der Beitrag zum Umweltschutz
+          und zur Gesellschaft?»
+        nachher:
+          frage_1: |
+            «Wie wichtig ist Ihnen der Beitrag zum Umweltschutz
+            (z.B. CO₂-Reduktion)?»
+          frage_2: |
+            «Wie wichtig ist es Ihnen, mit Ihrem Verhalten einen
+            Beitrag für die Gesellschaft zu leisten?»
+        ebf_nutzen: |
+          BESSER für Parametrisierung: Trennung erlaubt separate
+          Schätzung von u_E (Environmental) und u_S (Social).
+          Bisher in FEPSDE vermischt.
+        prioritaet: "HOCH"
+
+      - id: "B-02"
+        was: "Kosten-Aspekte klar trennen"
+        vorher: |
+          «Ich kenne die Kosten und den Return on Investment.»
+        nachher:
+          frage_1: |
+            «Ich habe eine Vorstellung davon, was ein
+            Heizungsersatz kosten würde.»
+          frage_2: |
+            «Ich habe eine Vorstellung davon, wie viel ich
+            langfristig an Heizkosten einsparen könnte.»
+        ebf_nutzen: |
+          Trennt Kosten-WISSEN (AWARE) von TCO-Verständnis (WHAT/u_F).
+          Ermöglicht Identifikation: Wissen sie was es kostet?
+          Oder wissen sie was es SPART?
+        prioritaet: "HOCH"
+
+      - id: "B-03"
+        was: "Glaubwürdigkeit und Verlässlichkeit trennen"
+        vorher: |
+          «Ich finde die Kampagne glaubwürdig und verlässlich.»
+        nachher:
+          frage_1: |
+            «Ich finde die Informationen der Kampagne
+            glaubwürdig.»
+          frage_2: |
+            «Ich kann mich auf die Angaben der Kampagne
+            verlassen.»
+        ebf_nutzen: |
+          Trennt Source Credibility (wer sagt es?) von
+          Information Reliability (stimmt es?).
+          Verschiedene Interventionshebel.
+        prioritaet: "MITTEL"
+
+  # --------------------------------------------------------------------------
+  # KATEGORIE C: KONSTRUKT-VALIDITÄT
+  # --------------------------------------------------------------------------
+  kategorie_C_konstrukt_validitaet:
+    intervista_kritik: |
+      Items messen nicht klar, was sie messen sollen:
+      - Self-Efficacy Items sind ambig
+      - «Ich glaube erst an Vorteile, wenn ich sie schwarz auf weiss
+        sehe» — unklar welches Konstrukt
+      - Fehlende kognitive Verankerung
+
+    unsere_bewertung: "AKZEPTIERT MIT ERWEITERUNG"
+
+    massnahmen:
+      - id: "C-01"
+        was: "Self-Efficacy Items schärfen"
+        problem: |
+          «Ich traue mir zu, die richtige Entscheidung bei der
+          Heizungswahl zu treffen» misst unklar: Ist es Wissen?
+          Selbstvertrauen? Entscheidungsfähigkeit?
+        loesung: |
+          Drei separate Items für drei Konstrukte:
+          1. WISSEN: «Ich weiss, welche Heizungsoptionen für mein
+             Gebäude in Frage kommen.» → AWARE
+          2. FÄHIGKEIT: «Ich bin in der Lage, Offerten für eine
+             neue Heizung einzuholen und zu vergleichen.» → READY
+          3. ZUVERSICHT: «Ich bin zuversichtlich, dass ich die
+             Heizungswahl gut entscheiden kann.» → Self-Efficacy
+        ebf_nutzen: |
+          Trennt drei verschiedene Barrieren:
+          - Wissensbarriere (→ Information-Intervention)
+          - Fähigkeitsbarriere (→ Prozess-Vereinfachung)
+          - Zuversichtsbarriere (→ Social Proof, Beratung)
+        prioritaet: "HOCH"
+
+      - id: "C-02"
+        was: "«Schwarz auf weiss»-Item re-formulieren"
+        problem: |
+          «Ich glaube erst an Vorteile, wenn ich sie schwarz auf
+          weiss sehe» — ist das Skeptizismus? Evidence-Seeking?
+          Misstrauen? Analytischer Stil?
+        loesung:
+          option_a:
+            text: |
+              «Bevor ich eine Entscheidung treffe, brauche ich
+              konkrete Zahlen und Belege.»
+            konstrukt: "Evidence-Seeking / Need for Cognition"
+          option_b:
+            text: |
+              «Allgemeine Aussagen über Vorteile überzeugen mich
+              weniger als konkrete Berechnungen für mein Gebäude.»
+            konstrukt: "Personalization Need / Abstraction Aversion"
+        empfehlung: "Option B — misst klarer und ist interventionsrelevant"
+        ebf_nutzen: |
+          Option B identifiziert Personen, die personalisierte
+          Beratung brauchen (→ Impulsberatung als Intervention).
+        prioritaet: "MITTEL"
+
+      - id: "C-03"
+        was: "Inverse Items überdenken"
+        intervista_punkt: |
+          Inverse Items führen zu systematischen Antwortfehlern,
+          besonders bei Online-Panels.
+        loesung: |
+          Inverse Items durch positiv formulierte Alternativen
+          ersetzen, die dasselbe Konstrukt messen. Statt:
+          «Ich glaube NICHT, dass eine neue Heizung sich lohnt»
+          → «Für mich überwiegen die Kosten gegenüber dem Nutzen
+          eines Heizungsersatzes.»
+        ebf_nutzen: |
+          Weniger Messfehler = bessere Parameter-Schätzungen.
+          Wir verlieren nichts — gewinnen Datenqualität.
+        prioritaet: "MITTEL"
+
+  # --------------------------------------------------------------------------
+  # KATEGORIE D: FRAGEBOGEN-DESIGN & FLOW
+  # --------------------------------------------------------------------------
+  kategorie_D_design_flow:
+    intervista_kritik: |
+      - INTRO04-INTRO13 keine klare Storyline
+      - Items sollen in Matrizen gruppiert werden
+      - Fehlende Filter
+      - 2-Jahres-Horizont zu kurz
+      - E-Auto + Ladestation = zwei separate Fragen
+
+    unsere_bewertung: "GRÖSSTENTEILS AKZEPTIERT"
+
+    massnahmen:
+      - id: "D-01"
+        was: "Matrizen-Gruppierung für Likert-Items"
+        details: |
+          Gleichartige Skalen-Items zu Matrizen zusammenfassen.
+          Reduziert Befragungsdauer und verbessert Vergleichbarkeit.
+        beispiel: |
+          AWARE-Matrix (5-stufig: stimme gar nicht zu ... stimme voll zu):
+          - Ich weiss, welche Heizungsoptionen es gibt
+          - Ich kenne die ungefähren Kosten eines Heizungsersatzes
+          - Ich weiss, welche Fördergelder mir zustehen
+          - Ich kenne die langfristigen Einsparungen
+        ebf_nutzen: |
+          Matrix erlaubt Faktorenanalyse über AWARE-Sub-Items.
+          Bessere Konstrukt-Validierung.
+        prioritaet: "HOCH"
+
+      - id: "D-02"
+        was: "Planungshorizont erweitern"
+        vorher: "«Planen Sie in den nächsten 2 Jahren...»"
+        nachher: |
+          «Planen Sie, Ihre Heizung zu erneuern?»
+          - Ja, in den nächsten 2 Jahren
+          - Ja, in den nächsten 5 Jahren
+          - Ja, in den nächsten 10 Jahren  ← NEU
+          - Nein, kein Ersatz geplant
+          - Weiss nicht
+        ebf_nutzen: |
+          10-Jahres-Horizont erfasst "Contemplation" Stage
+          besser. Viele Eigentümer denken langfristig, sind aber
+          noch nicht in "Planning". Wichtig für BCJ-Kalibrierung.
+        prioritaet: "HOCH"
+
+      - id: "D-03"
+        was: "E-Mobilität: Auto und Ladestation trennen"
+        vorher: |
+          «Haben Sie ein Elektroauto und eine Ladestation?»
+        nachher:
+          frage_1: |
+            «Besitzen Sie ein Elektro- oder Hybridfahrzeug,
+            oder planen Sie in den nächsten 3 Jahren eines
+            anzuschaffen?»
+          frage_2: |
+            «Verfügen Sie über einen eigenen Parkplatz
+            (Garage, Carport, Stellplatz auf Privatgrund)?»
+          frage_3:
+            filter: "frage_2 = ja"
+            text: |
+              «Ist an Ihrem Parkplatz eine Ladestation für
+              Elektrofahrzeuge installiert?»
+        ebf_nutzen: |
+          Trennt drei Entscheidungen: (1) E-Auto Interesse,
+          (2) Infrastruktur-Voraussetzung, (3) Ladestation-Status.
+          Jede hat andere Barrieren und Interventionshebel.
+        prioritaet: "HOCH"
+        ech_bezug: |
+          Aus Email: «Es ist nicht unsere Absicht die Leute weg
+          von ÖV oder anderen Transportmitteln zu Auto zu bewegen.»
+          → Filter: NUR bei bestehendem Auto/Kaufinteresse!
+
+      - id: "D-04"
+        was: "Modulspezifische Filter implementieren"
+        details: |
+          Jedes Modul (M1-M5) erhält eigene Screening-Fragen,
+          die als Filter dienen. Bereits in Säule S3 definiert.
+        neue_screening_fragen:
+          - modul: "M2 Gebäudehülle"
+            frage: |
+              «Wurde an Ihrem Gebäude in den letzten 20 Jahren
+              eine energetische Sanierung der Gebäudehülle
+              (Aussenwände, Dach, Fenster) durchgeführt?»
+            optionen:
+              - "Ja, vollständig"
+              - "Ja, teilweise"
+              - "Nein"
+              - "Weiss nicht"
+            filter: "Modul M2 nur bei 'Nein' oder 'Teilweise'"
+          - modul: "M4 Solarenergie"
+            frage: |
+              «Ist auf Ihrem Gebäude eine Photovoltaik-Anlage
+              (Solarstrom) installiert?»
+            optionen:
+              - "Ja"
+              - "Nein"
+              - "Weiss nicht"
+            filter: "Modul M4 nur bei 'Nein'"
+        ebf_nutzen: |
+          Segment-spezifische Daten ermöglichen segment-spezifische
+          Parametrisierung (→ model.yaml Segment-Profile).
+        prioritaet: "HOCH"
+
+      - id: "D-05"
+        was: "«Energetische Modernisierung» klar definieren"
+        problem: |
+          intervista: Begriff nicht klar für Befragte.
+          «Schrittweise/teilweise» als Option fehlt.
+        loesung: |
+          1. Im Fragebogen kurze neutrale Definition einfügen:
+             «Mit energetischer Modernisierung meinen wir
+             Massnahmen, die den Energieverbrauch Ihres
+             Gebäudes senken: z.B. Heizungsersatz, Dämmung,
+             neue Fenster, Solaranlage.»
+          2. Bei Planungsfragen immer «teilweise» als Option:
+             - Ja, vollständige Modernisierung geplant
+             - Ja, einzelne Massnahmen geplant  ← NEU
+             - Nein
+        ebf_nutzen: |
+          «Teilweise» unterscheidet zwischen
+          Comprehensive Strategy (L2-Entscheidung) und
+          Single Measure (L1-Entscheidung) — wichtig für
+          HIERARCHY-Dimension.
+        prioritaet: "HOCH"
+
+  # --------------------------------------------------------------------------
+  # KATEGORIE E: EBF-SPEZIFISCHE ITEMS (VERTEIDIGEN + ERKLÄREN)
+  # --------------------------------------------------------------------------
+  kategorie_E_ebf_items:
+    kontext: |
+      Diese Items kommen aus der EBF-Erweiterung (v5) und müssen
+      gegenüber intervista/ECH als Ist-Zustand-Messung positioniert
+      werden — nicht als Intervention.
+
+    verteidigungslinie: |
+      JEDES EBF-Item erfüllt drei Kriterien:
+      1. Es misst einen AKTUELLEN ZUSTAND (nicht eine Absicht)
+      2. Es hat eine WISSENSCHAFTLICHE REFERENZ (Paper in bcm_master.bib)
+      3. Es liefert HANDLUNGSRELEVANTE INFORMATION für die Kampagnen-Entwicklung
+
+    items:
+      - id: "E-01"
+        item: "BCJ-Stage (F2.12)"
+        was_es_misst: "Wo steht die Person in ihrem Entscheidungsprozess?"
+        warum_keine_intervention: |
+          Fragt nach AKTUELLEM Stand, nicht nach gewünschtem.
+          Analog zu «In welchem Stadium ist Ihre Krankheit?»
+          in der Medizin — Diagnose, nicht Therapie.
+        paper_referenz: "prochaska1992search (Stages of Change)"
+        kampagnen_nutzen: |
+          Ohne BCJ-Stage wissen wir nicht, ob jemand Information
+          braucht (Aware) oder einen konkreten Prozess (Planning).
+          → Kampagne kann nicht zielgerichtet sein ohne diese Daten.
+        empfehlung: "BEIBEHALTEN — Kernfrage für Kampagnen-Steuerung"
+
+      - id: "E-02"
+        item: "Social Norms Descriptive (F2.10)"
+        was_es_misst: "Beobachtete Wechsel im Umfeld (Faktenfrage)"
+        warum_keine_intervention: |
+          Fragt nach BEOBACHTUNG: «Wie viele Nachbarn HABEN gewechselt?»
+          Nicht: «Finden Sie, dass Nachbarn wechseln SOLLTEN?»
+          (Das wäre injunktiv und wäre priming.)
+        paper_referenz: "allcott2011social (Energy Conservation Norms)"
+        kampagnen_nutzen: |
+          Peer-Effekt ist stärkster Treiber in der Literatur.
+          Wenn 30% niemanden kennen der gewechselt hat, ist
+          «Social Proof» die richtige Kampagnen-Strategie.
+        empfehlung: "BEIBEHALTEN — neutral formuliert"
+
+      - id: "E-03"
+        item: "Installateur-Einfluss (F2.11)"
+        was_es_misst: "Informationsquelle und Empfehlungsverhalten"
+        warum_keine_intervention: |
+          Analog zu F2.7/F2.8 (Informationsquellen). Fragt nach
+          einer ERFAHRUNG, nicht nach einer Einstellung.
+        paper_referenz: "beck2013credence (Credence Goods)"
+        kampagnen_nutzen: |
+          Bei 55% Notfall-Ersatz entscheidet der Installateur.
+          Ohne diese Daten ist die Kampagne blind für den
+          wichtigsten Touchpoint.
+        empfehlung: "BEIBEHALTEN — essentiell für Kanal-Strategie"
+
+      - id: "E-04"
+        item: "STWE-Entscheidungsstruktur (F2B.1-F2B.4)"
+        was_es_misst: "Governance-Struktur der STWE-Versammlung"
+        warum_keine_intervention: |
+          Erfasst institutionelle Rahmenbedingungen.
+          «Wer entscheidet?» ist eine Strukturfrage.
+        kampagnen_nutzen: |
+          500'000 STWE-Eigentümer:innen. Ohne Governance-Daten
+          kann Kampagne nicht auf Koordinationsprobleme eingehen.
+        empfehlung: "BEIBEHALTEN — Filter nur bei STWE (F1.4=2)"
+
+      - id: "E-05"
+        item: "Present Bias Proxy (F3.10)"
+        was_es_misst: "Zeitpräferenz bei Investitionsentscheidungen"
+        warum_potenzielle_bedenken: |
+          Intertemporal-Choice-Frage könnte als komplex empfunden
+          werden.
+        neutrale_formulierung: |
+          «Angenommen, Sie müssten zwischen zwei Optionen wählen:
+          Option A: Sie zahlen CHF 25'000 jetzt für eine neue Heizung
+          Option B: Sie zahlen weiterhin jährlich CHF 3'500 Heizkosten
+          Was würden Sie bevorzugen?»
+        paper_referenz: "laibson1997golden (Hyperbolic Discounting)"
+        kampagnen_nutzen: |
+          Misst, ob Upfront-Kosten die zentrale Barriere sind.
+          Wenn ja: Finanzierungsmodelle statt Information.
+        empfehlung: "BEIBEHALTEN — aber Formulierung mit intervista abstimmen"
+        kompromiss_option: |
+          Falls intervista die Intertemporal-Choice ablehnt:
+          Einfachere Proxy-Frage verwenden:
+          «Ich würde lieber jedes Jahr etwas mehr für Heizkosten
+          zahlen, als jetzt eine grosse Investition zu tätigen.»
+          (5-stufige Likert-Skala)
+
+      - id: "E-06"
+        item: "Loss Aversion Proxy (F4.9)"
+        was_es_misst: "Relative Gewichtung von Kosten vs. Einsparungen"
+        warum_potenzielle_bedenken: |
+          Framing-Experiment könnte als Manipulation gelesen werden.
+        neutrale_formulierung: |
+          Statt Framing-Experiment: Direkte Skala-Frage:
+          «Beim Heizungsersatz beschäftigen mich die Kosten
+          stärker als die möglichen Einsparungen.»
+          (5-stufige Likert-Skala)
+        paper_referenz: "kahneman1979prospect (Prospect Theory)"
+        kampagnen_nutzen: |
+          Bei hohem λ: Vermeidungs-Framing («Vermeiden Sie
+          steigende Ölpreise») statt Gewinn-Framing
+          («Sparen Sie mit Wärmepumpe»).
+        empfehlung: "ANPASSEN — Likert statt Framing-Experiment"
+
+  # --------------------------------------------------------------------------
+  # KATEGORIE F: TRUST-BLOCK (INTERVISTA/ECH-SPEZIFISCH)
+  # --------------------------------------------------------------------------
+  kategorie_F_trust:
+    intervista_kritik: |
+      Trust-Block unklar: Vertrauen in ECH als Absender
+      vs. Vertrauen in Renovationen als Massnahme.
+
+    massnahmen:
+      - id: "F-01"
+        was: "Trust-Block in zwei klare Sub-Blöcke trennen"
+        block_1_absender:
+          titel: "Vertrauen in Informationsquellen"
+          items:
+            - "Ich vertraue den Informationen von EnergieSchweiz."
+            - "Ich vertraue den Informationen meines Kantons."
+            - "Ich vertraue den Empfehlungen meines Installateurs."
+          konstrukt: "Source Trust / Institutional Trust"
+          ebf_parameter: "Trust_institutional"
+        block_2_massnahme:
+          titel: "Vertrauen in erneuerbare Heizsysteme"
+          items:
+            - "Ich vertraue darauf, dass eine Wärmepumpe zuverlässig funktioniert."
+            - "Ich vertraue darauf, dass sich die Investition langfristig lohnt."
+            - "Ich vertraue darauf, dass ich die richtige Beratung bekomme."
+          konstrukt: "Technology Trust / Investment Trust"
+          ebf_parameter: "Trust_technology"
+        ebf_nutzen: |
+          Klare Trennung erlaubt Diagnose:
+          - Misstrauen in ABSENDER → Kampagnen-Design ändern
+          - Misstrauen in TECHNOLOGIE → Beweislast erhöhen
+          Verschiedene Interventionen für verschiedene Trust-Defizite.
+        prioritaet: "HOCH"
+
+
+# ============================================================================
+# TEIL 3: LIEFERBARE VERSIONEN
+# ============================================================================
+
+lieferbare_versionen:
+
+  kontext: |
+    ECH wünscht «unterschiedliche, leicht verständliche Versionen»
+    für Fachspezialist:innen zur inhaltlichen Prüfung.
+
+  versionen:
+
+    - id: "V1"
+      name: "Fragebogen v5.1 — Bereinigt + EBF-Erweitert"
+      format: "YAML (technisch) + Excel/Word (lesbar)"
+      zielgruppe: "Lucas, Oliver (intern)"
+      inhalt: |
+        Kompletter Fragebogen mit:
+        - Allen intervista-Korrekturen (Kat. A-D)
+        - Allen EBF-Erweiterungen (Kat. E)
+        - Programmierhinweisen und Filtern
+        - EBF-Mapping pro Item
+      lieferdatum: "Nach Strategie-Abstimmung"
+
+    - id: "V2"
+      name: "Modul-Versionen für Fachspezialist:innen"
+      format: "Word/PDF (leicht lesbar)"
+      zielgruppe: "Fachspezialist:innen ECH"
+      inhalt: |
+        5 separate Dokumente (pro Modul eines):
+        - M1: Gesamtmodernisierung
+        - M2: Gebäudehülle
+        - M3: Heizungsersatz
+        - M4: Solarenergie
+        - M5: E-Mobilität
+        Jeweils NUR die modul-relevanten Fragen,
+        ohne technische Notation, ohne EBF-Mapping.
+      hinweis: |
+        Screening-Fragen + allgemeine Fragen in jedem
+        Modul-Dokument identisch (Konsistenz).
+
+    - id: "V3"
+      name: "Intervista-Version (Programmiervorlage)"
+      format: "Excel oder intervista-eigenes Format"
+      zielgruppe: "intervista (Programmierung)"
+      inhalt: |
+        - Fragen-ID, Text, Typ, Optionen
+        - Filter-Logik
+        - Randomisierung
+        - Matrizen-Gruppierung
+        - Keine EBF-Notation (nur technische Umsetzung)
+
+    - id: "V4"
+      name: "Begründungsdokument (Wissenschaftliche Basis)"
+      format: "PDF (Markdown → PDF)"
+      zielgruppe: "ECH, intervista (bei Rückfragen)"
+      inhalt: |
+        Pro EBF-Item:
+        - Welches Konstrukt wird gemessen?
+        - Wissenschaftliche Referenz (Paper)
+        - Warum ist das KEINE Intervention?
+        - Welchen Kampagnen-Nutzen hat die Information?
+      zweck: |
+        Legitimiert die EBF-Items gegenüber intervista und ECH.
+        Zeigt dass jede Frage einem Zweck dient.
+
+
+# ============================================================================
+# TEIL 4: PRIORISIERUNGSENTSCHEIDUNG
+# ============================================================================
+
+priorisierung:
+
+  kontext: |
+    Nicht alle Änderungen können gleichzeitig umgesetzt werden.
+    Wir empfehlen eine 3-Stufen-Priorisierung.
+
+  stufe_1_sofort:
+    name: "Quick Fixes (keine inhaltliche Diskussion nötig)"
+    items:
+      - "A-01: Story-driven Einleitungen neutralisieren"
+      - "A-02: Suggestive Überleitungen entfernen"
+      - "A-04: Quota-Variablen vorn (bereits umgesetzt)"
+      - "D-01: Matrizen-Gruppierung"
+      - "D-03: E-Auto/Ladestation trennen"
+      - "D-05: «Energetische Modernisierung» definieren"
+      - "F-01: Trust-Block klar trennen"
+    zeitaufwand: "1-2 Tage"
+    wer: "FehrAdvice (Lucas)"
+
+  stufe_2_abstimmung:
+    name: "Konstrukt-Verbesserungen (mit intervista abstimmen)"
+    items:
+      - "B-01: Double-Barreled Items auftrennen"
+      - "B-02: Kosten/ROI trennen"
+      - "C-01: Self-Efficacy Items schärfen"
+      - "C-02: «Schwarz auf weiss» reformulieren"
+      - "C-03: Inverse Items ersetzen"
+      - "D-02: Planungshorizont 10 Jahre"
+      - "D-04: Modulspezifische Filter"
+    zeitaufwand: "3-5 Tage (inkl. Abstimmungsrunde)"
+    wer: "FehrAdvice + intervista"
+
+  stufe_3_ebf_items:
+    name: "EBF-Erweiterungen (Begründung liefern)"
+    items:
+      - "E-01: BCJ-Stage (BEIBEHALTEN)"
+      - "E-02: Social Norms (BEIBEHALTEN)"
+      - "E-03: Installateur-Einfluss (BEIBEHALTEN)"
+      - "E-04: STWE-Fragen (BEIBEHALTEN)"
+      - "E-05: Present Bias (FORMULIERUNG ANPASSEN)"
+      - "E-06: Loss Aversion (LIKERT STATT EXPERIMENT)"
+    zeitaufwand: "Mit V4 Begründungsdokument: 2-3 Tage"
+    wer: "FehrAdvice (Begründung) → ECH (Entscheid)"
+
+
+# ============================================================================
+# TEIL 5: NÄCHSTE SCHRITTE
+# ============================================================================
+
+naechste_schritte:
+
+  - schritt: 1
+    was: "Interne Abstimmung (Lucas + Oliver)"
+    wer: "FehrAdvice"
+    wann: "Diese Woche"
+    ergebnis: "Priorisierung bestätigt, offene Fragen geklärt"
+
+  - schritt: 2
+    was: "Stufe 1 Quick Fixes umsetzen → v5.1-draft"
+    wer: "FehrAdvice (Lucas)"
+    wann: "Nächste Woche"
+    ergebnis: "v5.1 Draft mit allen neutralisierten Einleitungen"
+
+  - schritt: 3
+    was: "V4 Begründungsdokument erstellen"
+    wer: "FehrAdvice (EBF-Team)"
+    wann: "Parallel zu Schritt 2"
+    ergebnis: "PDF mit wissenschaftlicher Begründung pro EBF-Item"
+
+  - schritt: 4
+    was: "Abstimmung mit ECH"
+    wer: "Lucas + Oliver + ECH-Kontakt"
+    wann: "KW [X]"
+    ergebnis: |
+      - Stufe 2 Items bestätigt/angepasst
+      - Stufe 3 EBF-Items approved
+      - Modulspezifische Zielgruppen mit intervista klären
+
+  - schritt: 5
+    was: "V2 Modul-Versionen für Fachspezialist:innen"
+    wer: "FehrAdvice"
+    wann: "Nach Schritt 4"
+    ergebnis: "5 separate leicht verständliche Dokumente"
+
+  - schritt: 6
+    was: "V3 Programmiervorlage für intervista"
+    wer: "FehrAdvice → intervista"
+    wann: "Nach Schritt 4"
+    ergebnis: "Technische Umsetzungsvorlage"
+
+  - schritt: 7
+    was: "Quota-/Gewichtungs-Abstimmung mit intervista"
+    wer: "Lucas + intervista"
+    wann: "Parallel zu Schritt 5-6"
+    ergebnis: |
+      Klärung:
+      - Modulspezifische Quotierung möglich?
+      - Boost-Zielgruppe «erneuerbar heizen» (Oliver)
+      - Neubauten-Einschluss bei M4/M5
+      - Gewichtung nach Eigentümertyp/Region
+
+  offene_fragen_fuer_ech:
+    - frage: "Können die ZG themenentsprechend (pro Modul) definiert werden?"
+      hintergrund: |
+        ECH Email: «Ist es möglich die ZG themenentsprechend zu definieren?»
+        → Muss mit intervista technisch geklärt werden (Panel-Kapazität).
+      empfehlung: |
+        Ja, über modulspezifische Filter-Fragen im Screening.
+        Quota-Steuerung durch intervista-Panel.
+    - frage: "Sollen Neubauten bei Solarenergie und E-Mobilität eingeschlossen werden?"
+      empfehlung: |
+        Ja bei M4 (PV) und M5 (E-Mobilität): Kein Altersfilter.
+        Nein bei M1 (Gesamtmodernisierung) und M3 (Heizung):
+        Filter auf Gebäude > 5 Jahre.
+    - frage: "Wie Boost-Zielgruppe «erneuerbar heizen» definieren?"
+      empfehlung: "Oliver Wimmer direkt einbeziehen für Definition"

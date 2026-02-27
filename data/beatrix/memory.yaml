@@ -1,0 +1,129 @@
+metadata:
+  description: BEATRIX Extended Memory – ausgelagert aus Claude Memory
+  created: '2026-02-09'
+  last_updated: '2026-02-09'
+  version: '1.0'
+infrastructure:
+  frontend:
+    host: Vercel
+    url: bea-lab-frontend.vercel.app
+    domain: www.bea-lab.io
+    cname: cname.vercel-dns.com
+    repo: FehrAdvice-Partners-AG/bea-lab-frontend
+    team: FehrAdvice_Team_Beatrix
+  backend:
+    host: Railway
+    url: bea-lab-upload-production.up.railway.app
+    repo: gerhardfehr/bea-lab-upload
+    railway_project: 71bbbb54-ee68-4926-994d-e850bfdd8816
+    railway_env: 36f908e9-278e-4073-a8d0-743e7a8dd5c7
+    railway_service: 14a62e50-1e02-4b3f-a76f-982a565cace4
+  database:
+    type: PostgreSQL on Railway
+    user: beatrix
+    db: beatrix
+  dns:
+    provider: Squarespace Domains
+    login: gerhard.fehr@bea-lab.io
+    a_record: bea-lab.io → 76.76.21.21
+    cname: www.bea-lab.io → cname.vercel-dns.com
+  email:
+    service: Resend
+    domain: bea-lab.io
+    sender: registration_confirmation@bea-lab.io
+    note: 'Railway requests need User-Agent: BEATRIXLab/3.4 header to avoid Cloudflare
+      1010'
+  ai:
+    provider: Anthropic
+    model: claude-sonnet-4-20250514
+    env_var: ANTHROPIC_API_KEY on Railway
+repos:
+  backend: gerhardfehr/bea-lab-upload
+  frontend: FehrAdvice-Partners-AG/bea-lab-frontend
+  data: FehrAdvice-Partners-AG/complementarity-context-framework
+  note: Frontend updates must be pushed to BOTH frontend repo (Vercel auto-deploy)
+    AND gerhardfehr/bea-lab-upload/frontend/ (backup)
+credentials:
+  note: Stored here for BEATRIX system reference. Rotate regularly.
+  github_pat: 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 (expires Feb 2026)
+  railway_api: 13ec85b4-6cc6-44da-9060-7748f532d6ae
+  admin_login: gerhard.fehr@fehradvice.com / BeatrixLab2026!
+  second_admin: andrea.fehr@fehradvice.com / BeatrixLab2026!
+learnings:
+- id: L001
+  topic: Railway SSL
+  lesson: Railway SSL nach CNAME-Wechsel kann 30-60 Min dauern. NICHT Domain löschen/neu
+    anlegen! Einfach warten.
+  date: '2026-01-15'
+- id: L002
+  topic: GitHub PAT
+  lesson: 'GitHub PATs laufen ab. Immer prüfen bevor Push. Bei 401 neuen Token: github.com/settings/tokens/new
+    (Scope: repo)'
+  date: '2026-01-15'
+- id: L003
+  topic: DNS
+  lesson: DNS bei Squarespace Domains. Resend-Records (DKIM, SPF, MX) dort eingetragen.
+    Änderungen brauchen 5-30 Min.
+  date: '2026-01-15'
+- id: L004
+  topic: Deploy-Ablauf
+  lesson: 1) server.py + index.html editieren, 2) GitHub push (SHA holen, PUT), 3)
+    Railway serviceInstanceDeploy, 4) 90-100s warten, 5) Version prüfen
+  date: '2026-01-15'
+- id: L005
+  topic: APP_URL
+  lesson: APP_URL muss auf funktionierende URL zeigen (Railway-URL als Fallback bei
+    Custom Domain SSL-Problem). E-Mail-Links nutzen APP_URL.
+  date: '2026-01-15'
+- id: L006
+  topic: Resend/Cloudflare
+  lesson: 'Resend API von Railway braucht User-Agent Header, sonst Cloudflare Error
+    1010. Immer ''User-Agent: BEATRIXLab/3.4'' setzen.'
+  date: '2026-01-20'
+- id: L007
+  topic: Frontend Dual-Push
+  lesson: 'Frontend-Updates in BEIDE Repos: FehrAdvice-Partners-AG/bea-lab-frontend
+    (Vercel) + gerhardfehr/bea-lab-upload/frontend/ (Backup)'
+  date: '2026-01-20'
+- id: L008
+  topic: FehrAdvice Wertschöpfung
+  lesson: Projektarten leiten sich aus Kunden-Behavioral-Journey ab (Schwelle 'spannend'→'wertvoll'
+    = WTP). 10C-Modell für eigene Mandatsentscheidung wird über bea-lab.io gebaut.
+  date: '2026-02-09'
+- id: L009
+  topic: Memory System
+  lesson: Extended Memory auf GitHub ausgelagert. Claude Memory nur für Essentials
+    (Credentials, IDs). Alles andere in data/beatrix/memory.yaml
+  date: '2026-02-09'
+decisions:
+- id: D001
+  topic: Presentation Standards
+  decision: 'Readout Decks (standalone) vs Speaker Decks (live). Consulting deliverables:
+    navy header bars, proper tables, FehrAdvice CI/CD colors (NAVY: 1B365D, TEAL:
+    2A7F8E, ORANGE: E8A33D)'
+  date: '2026-01-25'
+- id: D002
+  topic: GitHub als Single Source of Truth
+  decision: Alle Projekt-, Kunden- und Modell-Daten leben in GitHub YAML. BEATRIX
+    liest/schreibt über API. PostgreSQL nur für User/Auth/CRM-Deals.
+  date: '2026-02-01'
+version_history:
+  current: v3.18.1+
+  features:
+  - Login/Register, JWT, E-Mail-Verifizierung, PW-Reset
+  - Profil + LinkedIn, Admin Dashboard
+  - Upload + Duplikat-Check → GitHub papers/evaluated/integrated/
+  - Chat/RAG (Claude API)
+  - 'CRM: Deals, Pipeline, Sync GitHub↔PostgreSQL'
+  - 'Firmen: Hierarchisch, 4 Kategorie-Filter, Profil-Seiten'
+  - 'Projekte: Liste + Wizard (Schnell/Geführt), GitHub Read+Write'
+  - 'Model Builder: Schnell/Geführt, Ψ-Profil Smart Defaults'
+
+
+# Experimental Economics Lab (fieldexperiments-uzh.bea-lab.io)
+lab_anthropic_key:
+  name: Lab_Key
+  created: 2026-02-19
+  console: platform.claude.com → API Keys → Lab_Key
+  vercel_env: ANTHROPIC_API_KEY
+  note: Separate key for Lab project, trackable independently from Beatrix_Key

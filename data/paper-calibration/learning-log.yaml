@@ -1,0 +1,395 @@
+# ═══════════════════════════════════════════════════════════════════
+# LEARNING LOG: Round 2 Active Learning Loop
+# Date: 2026-02-07
+# Purpose: Track batches, hypotheses, results, and learnings
+# ═══════════════════════════════════════════════════════════════════
+
+iterations:
+- batch: 1
+  batch_size: 20
+  selected_at: "2026-02-07 11:43"
+  papers:
+  - PAP-acemoglu2011skills
+  - PAP-caprettini2025viral
+  - PAP-BeckerMurphy1988
+  - PAP-Ackerberg2003
+  - PAP-AllcottRogers2014
+  - PAP-edelson2018leadership
+  - PAP-acemoglu2012whynations
+  - PAP-gans2025babbage
+  - PAP-acemoglu2023power
+  - PAP-HussamEtAl2022
+  - PAP-BanerjeeEtAl2021
+  - PAP-ariely2010cognitive
+  - PAP-epper2022crime
+  - PAP-acemoglu2018artificial
+  - PAP-luger2026framing
+  - PAP-acquisti2020secrets
+  - PAP-RoyerStehrSydnor2015
+  - PAP-Becker1992
+  - PAP-becker1964bdm
+  strata_covered:
+  - FULLTEXT_NEEDED_low
+  - FULLTEXT_NEEDED_medium
+  - PROXY_PLUS_LLMMC_high
+  - PROXY_PLUS_LLMMC_low
+  - PROXY_PLUS_LLMMC_medium
+  - PROXY_PLUS_WEB_high
+  - PROXY_PLUS_WEB_medium
+  results: {}
+  errors: []
+  systematic_biases: []
+  learnings: []
+
+  # ═════════════════════════════════════════════════════════════════
+  # PRE-BATCH HYPOTHESES (formulated BEFORE extraction)
+  # Each hypothesis: falsifiable prediction with metric + threshold
+  # After extraction: compare actual vs predicted → verdict
+  # ═════════════════════════════════════════════════════════════════
+  hypotheses:
+
+  # --- CATEGORY: ACCURACY (Tier-based predictions) ---
+
+  - id: "H1a-B1"
+    category: "accuracy"
+    prediction: "PROXY_PLUS_WEB papers achieve E1-E4 mean accuracy >= 0.40"
+    metric: "mean(E1, E2, E3, E4) for papers with tier=PROXY_PLUS_WEB"
+    threshold: 0.40
+    direction: ">="
+    rationale: >
+      Calibration Layer B = 0.42 for medium-fame papers. PROXY_PLUS_WEB
+      tier has highest predicted proxy accuracy (A >= 0.30). With WebSearch
+      augmentation, E1-E4 (excluding hard E5/E6) should reach >= 0.40.
+    falsification: "If mean < 0.30, hypothesis is falsified (proxy model overestimates web-tier quality)"
+    confidence: "medium"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  - id: "H1b-B1"
+    category: "accuracy"
+    prediction: "PROXY_PLUS_LLMMC papers achieve E1-E4 mean accuracy between 0.20 and 0.40"
+    metric: "mean(E1, E2, E3, E4) for papers with tier=PROXY_PLUS_LLMMC"
+    threshold_low: 0.20
+    threshold_high: 0.40
+    direction: "between"
+    rationale: >
+      LLMMC tier (A 0.20-0.30) should deliver moderate accuracy. Without
+      WebSearch, pure LLM recall drives quality. Calibration Layer A = 0.24
+      overall. E1-E4 should exceed overall average because E5/E6 drag it down.
+    falsification: "If mean < 0.15 OR mean > 0.50, hypothesis is falsified"
+    confidence: "medium"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  - id: "H1c-B1"
+    category: "accuracy"
+    prediction: "FULLTEXT_NEEDED papers achieve E1-E4 mean accuracy < 0.20"
+    metric: "mean(E1, E2, E3, E4) for papers with tier=FULLTEXT_NEEDED"
+    threshold: 0.20
+    direction: "<"
+    rationale: >
+      Papers triaged as FULLTEXT_NEEDED (A < 0.20) are predicted to be
+      difficult for LLM proxy. Low fame + complex methodology = low accuracy.
+      If these papers achieve >= 0.20, our triage threshold is wrong.
+    falsification: "If mean >= 0.25, hypothesis is falsified (triage too conservative)"
+    confidence: "low"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  # --- CATEGORY: ACCURACY (E-element predictions) ---
+
+  - id: "H2a-B1"
+    category: "accuracy"
+    prediction: "E1 (Parameter) accuracy is lower than S1 baseline (0.75) — expected E1 in [0.30, 0.55]"
+    metric: "mean(E1_accuracy) across all 20 papers"
+    threshold_low: 0.30
+    threshold_high: 0.55
+    direction: "between"
+    rationale: >
+      S1 (Research Question) had Layer A = 0.75. But E1 (Parameter extraction)
+      is harder — requires specific values (lambda, beta, gamma), not just
+      identifying the research question. Expected drop of ~0.20-0.40.
+    falsification: "If E1 > 0.60, parameter extraction is easier than expected; if E1 < 0.20, E1 is as hard as S5/S6"
+    confidence: "medium"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  - id: "H2b-B1"
+    category: "accuracy"
+    prediction: "E5 (Validity) and E6 (Case) accuracy remain below 0.15"
+    metric: "mean(E5_accuracy), mean(E6_accuracy) across all 20 papers"
+    threshold: 0.15
+    direction: "<"
+    rationale: >
+      Calibration showed S5 = 0.00 and S6 = 0.00 for pure LLM. E5 (Validity)
+      maps to S5, E6 (Case integration) is new but equally requires full text.
+      Without full texts, these should remain near zero.
+    falsification: "If E5 or E6 > 0.20, there is extractable validity/case information we missed in calibration"
+    confidence: "high"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  - id: "H2c-B1"
+    category: "accuracy"
+    prediction: "E3 (Theory mapping) is the second-best element after E1, achieving mean >= 0.35"
+    metric: "mean(E3_accuracy) across all 20 papers"
+    threshold: 0.35
+    direction: ">="
+    rationale: >
+      Theory catalog mapping (MS-XX-XXX) leverages LLM training knowledge about
+      theoretical frameworks. Similar to S1 (research question identification),
+      theory classification should be a relative strength.
+    falsification: "If E3 < 0.25, theory mapping from metadata alone is unreliable"
+    confidence: "medium"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  # --- CATEGORY: BIAS (Verifying known biases) ---
+
+  - id: "H3a-B1"
+    category: "bias"
+    prediction: "BIAS-01 (Citation Gradient): High-fame papers show >= 1.5x higher E1-E4 accuracy than low-fame"
+    metric: "mean(E1-E4, fame=high) / mean(E1-E4, fame=low)"
+    threshold: 1.5
+    direction: ">="
+    rationale: >
+      Calibration found 8x difference between very_high and low fame.
+      Batch 1 has narrower fame range (high/medium/low within tiers),
+      so 1.5x ratio is conservative. If < 1.5x, fame matters less for
+      E1-E6 than for S1-S6.
+    falsification: "If ratio < 1.2, citation gradient doesn't apply to EBF extraction elements"
+    confidence: "high"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  - id: "H3b-B1"
+    category: "bias"
+    prediction: "BIAS-06 (WebSearch Substitution): Occurs in <= 2 of 20 papers (<=10%)"
+    metric: "count(error_type='substitution') across all 20 papers"
+    threshold: 2
+    direction: "<="
+    rationale: >
+      Calibration found substitution in 1/10 papers (Enke 2024). At 10% rate,
+      we expect 2 in 20 papers. If more, this bias is more systematic.
+      Note: Batch 1 has no very-low-fame papers where this is worst.
+    falsification: "If > 4 substitutions (>20%), this is a critical pipeline risk requiring mandatory identity verification"
+    confidence: "medium"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  - id: "H3c-B1"
+    category: "bias"
+    prediction: "BIAS-08 (Headline Bias): E4 (Complementarity) accuracy is lowest among E1-E4"
+    metric: "rank(mean(E4)) among [mean(E1), mean(E2), mean(E3), mean(E4)]"
+    threshold: 4
+    direction: "=="
+    rationale: >
+      Complementarity (gamma interactions) are secondary findings, not headline
+      results. BIAS-08 predicts LLM omits secondary findings. E4 should
+      therefore be the weakest of the 'extractable' elements.
+    falsification: "If E4 is NOT lowest, either complementarity is easier than expected or another element is harder"
+    confidence: "medium"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  # --- CATEGORY: MODEL (B-I-K regression stability) ---
+
+  - id: "H4a-B1"
+    category: "model"
+    prediction: "B-coefficient remains positive (> 0.10) after refit with N=30"
+    metric: "B-coefficient in refitted OLS: A = a + b1*B + b2*I + b3*K"
+    threshold: 0.10
+    direction: ">"
+    rationale: >
+      Current B-coefficient = 0.197. Fame (B) is the strongest predictor.
+      With 20 new data points, if B drops below 0.10, fame matters less
+      than we thought for EBF extraction accuracy.
+    falsification: "If B < 0.05, the B-dimension needs fundamental reconceptualization"
+    confidence: "high"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  - id: "H4b-B1"
+    category: "model"
+    prediction: "K-coefficient remains negative after refit"
+    metric: "K-coefficient in refitted OLS"
+    threshold: 0.0
+    direction: "<"
+    rationale: >
+      Current K-coefficient = -0.182. Higher complexity should reduce proxy
+      accuracy. However, current K is near-zero for 88% of papers, making
+      this coefficient unreliable. After Batch 1, K values should be more
+      varied (structural_characteristics proxy).
+    falsification: "If K > 0, complexity HELPS proxy accuracy (counterintuitive — would indicate K measures something else)"
+    confidence: "medium"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  - id: "H4c-B1"
+    category: "model"
+    prediction: "R-squared remains above 0.50 with N=30 (model is not overfitted to 10 points)"
+    metric: "R-squared of refitted OLS with N=30"
+    threshold: 0.50
+    direction: ">"
+    rationale: >
+      Current R² = 0.774 with N=10. With 20 additional papers, if R² drops
+      below 0.50, the original model was likely overfitted. If R² stays
+      above 0.60, the B-I-K model generalizes.
+    falsification: "If R² < 0.40, the linear B-I-K model is fundamentally insufficient"
+    confidence: "medium"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  - id: "H4d-B1"
+    category: "model"
+    prediction: "RMSE decreases or stays stable (< 0.120) with N=30"
+    metric: "RMSE of refitted OLS with N=30"
+    threshold: 0.120
+    direction: "<"
+    rationale: >
+      Current RMSE = 0.103 (with proxy-B). Adding diverse papers may
+      increase RMSE slightly, but improved proxies should compensate.
+      If RMSE > 0.120, the model needs non-linear terms or additional dimensions.
+    falsification: "If RMSE > 0.150, the linear model breaks down at N=30"
+    confidence: "low"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  # --- CATEGORY: TRIAGE (Tier prediction correctness) ---
+
+  - id: "H5-B1"
+    category: "triage"
+    prediction: "Triage tier correctly predicts extraction difficulty in >= 60% of papers"
+    metric: "fraction of papers where tier matches actual extraction quality quartile"
+    threshold: 0.60
+    direction: ">="
+    rationale: >
+      Triage assigns papers to 3 tiers based on predicted accuracy.
+      If actual E1-E4 accuracy aligns with tier ranking (PROXY_PLUS_WEB >
+      PROXY_PLUS_LLMMC > FULLTEXT_NEEDED) for at least 12/20 papers,
+      the triage system has ordinal validity.
+    falsification: "If < 50% correct ordering, triage tier provides no useful signal for extraction strategy"
+    confidence: "medium"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  # --- CATEGORY: TIMING (Cost and efficiency) ---
+
+  - id: "H6a-B1"
+    category: "timing"
+    prediction: "Mean extraction time < 60 seconds per paper"
+    metric: "mean(time_seconds) across all 20 papers"
+    threshold: 60
+    direction: "<"
+    rationale: >
+      Target is 30s/paper for bulk. Batch 1 with unoptimized prompt
+      should take longer. If > 60s, prompt needs significant trimming.
+    falsification: "If > 120s/paper, the extraction pipeline is not scalable to 2,500 papers"
+    confidence: "low"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  - id: "H6b-B1"
+    category: "timing"
+    prediction: "Total batch cost < $5 (at Sonnet pricing ~$3/MTok)"
+    metric: "total_tokens * $0.003/1000"
+    threshold: 5.0
+    direction: "<"
+    rationale: >
+      At 5,000 tokens/paper × 20 papers = 100K tokens. At $3/MTok
+      = $0.30. Even with 10x overhead, should be < $5. If not,
+      token efficiency needs improvement.
+    falsification: "If > $10, cost model for bulk extraction needs revision"
+    confidence: "high"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  # --- CATEGORY: PROXY (New proxy validation) ---
+
+  - id: "H7a-B1"
+    category: "proxy"
+    prediction: "Title-keyword method classification matches actual methodology in >= 60% of papers"
+    metric: "fraction of papers where extract_method_from_title() matches actual methodology"
+    threshold: 0.60
+    direction: ">="
+    rationale: >
+      Title keywords ('experiment', 'theory', etc.) are a simple proxy
+      for methodology type. With 20 papers, at least 12 should be
+      correctly classified. If not, title keywords are too noisy.
+    falsification: "If < 50%, title-keyword proxy provides no useful methodology signal"
+    confidence: "medium"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  - id: "H7b-B1"
+    category: "proxy"
+    prediction: "Papers with structural_characteristics show higher actual extraction complexity"
+    metric: "mean(E1-E6 variance) for papers with structural_characteristics vs without"
+    threshold: 1.0
+    direction: ">"
+    rationale: >
+      structural_characteristics field was identified as perfect K-class
+      marker. If present, paper should be more complex to extract
+      (higher variance in E-scores, lower overall accuracy).
+    falsification: "If no difference, structural_characteristics doesn't predict extraction difficulty"
+    confidence: "low"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  # --- CATEGORY: DISCOVERY (New insights expected) ---
+
+  - id: "H8a-B1"
+    category: "discovery"
+    prediction: "At least 2 new systematic biases are discovered beyond the 8 from calibration"
+    metric: "count(new systematic_biases not in BIAS-01 to BIAS-08)"
+    threshold: 2
+    direction: ">="
+    rationale: >
+      Calibration used 10 papers with known full texts. Batch 1 uses
+      20 papers across different strata, including papers without full
+      text for verification. New extraction elements (E1-E6 vs S1-S6)
+      should reveal biases specific to EBF parameter extraction.
+    falsification: "If 0 new biases, the calibration was comprehensive (unlikely with only 10 papers)"
+    confidence: "medium"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+  - id: "H8b-B1"
+    category: "discovery"
+    prediction: "E2 (Context/Psi) extraction reveals a systematic gap in Psi-condition specificity"
+    metric: "fraction of papers where E2 captures >= 3 specific Psi-dimensions"
+    threshold: 0.30
+    direction: "<"
+    rationale: >
+      Context extraction (Psi-conditions) requires understanding experimental
+      setup deeply. Calibration showed MC = 0.25 (Layer A). We predict
+      that < 30% of papers will have >= 3 specific Psi-dimensions extracted,
+      revealing a 'context specificity gap'.
+    falsification: "If > 40% have >= 3 Psi-dimensions, context extraction is more feasible than expected"
+    confidence: "medium"
+    status: "pending"
+    actual_value: null
+    verdict: null
+
+metrics: {}
+model_updates: []
+proxy_improvements: []

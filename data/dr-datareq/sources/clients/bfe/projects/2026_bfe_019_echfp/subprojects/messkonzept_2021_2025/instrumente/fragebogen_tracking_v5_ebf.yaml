@@ -1,0 +1,1615 @@
+# ============================================================================
+# TRACKING KAMPAGNE "ERNEUERBAR HEIZEN" - EBF-KONFORMER FRAGEBOGEN
+# ============================================================================
+# Version: 5.0 (EBF-Enhanced)
+# Basiert auf: intervista v4.0
+# EBF-Erweiterungen: FehrAdvice & Partners AG
+# Datum: 2026-01-28
+# ============================================================================
+
+metadata:
+  version: "5.0-EBF"
+  basis_version: "4.0 (intervista)"
+  erweiterung_durch: "FehrAdvice & Partners AG / EBF Framework"
+  datum: "2026-01-28"
+
+  aenderungen_gegenueber_v4:
+    neue_fragen: 15
+    geloeschte_fragen: 0
+    modifizierte_fragen: 3
+    neue_sektionen: 2
+    geschaetzte_zusatzzeit: "5-7 Minuten"
+
+  ebf_konformitaet:
+    10c_abdeckung: "8/10"
+    behavioral_constructs: "6/6"
+    segment_abdeckung: "4/4"
+    panel_faehig: true
+
+  programmierhinweise:
+    m: "Einfachnennung"
+    q: "Mehrfachnennung"
+    skala: "Likert oder numerisch"
+    offen: "Offenes Textfeld"
+    maxdiff: "MaxDiff Design"
+    ranking: "Click-Ranking"
+
+# ============================================================================
+# SEKTION 1: SCREENING
+# ============================================================================
+# Zweck: Zielgruppen-Qualifikation
+# EBF-Dimension: WHO (AAA) - Grundlegende Segmentierung
+# Änderungen v5: Keine (bewährtes Screening beibehalten)
+# ============================================================================
+
+sektion_1_screening:
+  name: "Screening"
+  zweck: "Zielgruppen-Qualifikation"
+  ebf_dimension: "WHO (AAA)"
+
+  fragen:
+
+    - id: "F1.1"
+      text: "Wie alt sind Sie?"
+      typ: "numerisch"
+      einheit: "Jahre"
+      screening:
+        regel: "SCREENOUT wenn < 25 oder > 79"
+      ebf_mapping:
+        segment: "Altersgruppe"
+        parameter: "age"
+
+    - id: "F1.2"
+      text: "Bitte geben Sie Ihr Geschlecht an:"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "männlich"
+        - code: 2
+          label: "weiblich"
+        - code: 3
+          label: "divers"
+
+    - id: "F1.3"
+      text: "Wie lautet die Postleitzahl Ihres Hauptwohnsitzes?"
+      typ: "numerisch"
+      format: "4-stellig"
+      recodierung: "PLZ → Siedlungstyp (Stadt/Agglo/Land), Kanton, Sprachregion"
+      ebf_mapping:
+        context: "Ψ_geographic"
+
+    - id: "F1.4"
+      text: "Sind Sie oder ein anderes Haushaltsmitglied…"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "…Mieter oder Untermieter Ihrer Wohnung oder des Hauses, in welchem Sie wohnen?"
+          screening: "SCREENOUT"
+        - code: 2
+          label: "…Eigentümer Ihrer Wohnung (Stockwerkeigentum)?"
+          segment: "STWE"
+        - code: 3
+          label: "…Eigentümer Ihres Hauses?"
+          segment: "EFH/MFH"
+      ebf_mapping:
+        dimension: "WHO (AAA)"
+        segment: "Eigentümertyp"
+
+    - id: "F1.5"
+      text: "Wie alt ist Ihr Haus oder Ihre Wohnung?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Neubau / weniger als 5 Jahre alt"
+          screening: "SCREENOUT"
+        - code: 2
+          label: "Zwischen 5 und 24 Jahre alt"
+        - code: 3
+          label: "Zwischen 25 und 40 Jahre alt"
+        - code: 4
+          label: "Älter als 40 Jahre alt"
+        - code: 99
+          label: "Weiss nicht"
+          screening: "SCREENOUT"
+
+    - id: "F1.6"
+      text: "Wie viele Wohnungen gibt es in Ihrem Haus?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Einfamilienhaus (eine Wohneinheit)"
+          segment: "EFH"
+        - code: 2
+          label: "Mehrfamilienhaus mit 2 bis 6 Wohnungen"
+          segment: "MFH_klein"
+        - code: 3
+          label: "Mehrfamilienhaus mit 7 und mehr Wohnungen"
+          segment: "MFH_gross"
+      ebf_mapping:
+        dimension: "WHO (AAA)"
+        segment: "Gebäudetyp"
+
+    - id: "F1.7"
+      text: |
+        Welcher Heizungstyp ist bei Ihnen zu Hause installiert?
+        Wenn Sie mehrere Heizungen besitzen, geben Sie bitte die wichtigste an.
+        Falls Sie unterschiedliche Systeme für Heizung und Warmwasser haben,
+        nennen Sie bitte das System für die Heizung.
+      typ: "m"
+      randomisierung: true
+      gruppierung: "2+3, 4+5, 6-8"
+      optionen:
+        - code: 1
+          label: "Ölheizung"
+          kategorie: "fossil"
+          target: true
+        - code: 2
+          label: "Erdgasheizung"
+          kategorie: "fossil"
+          target: true
+        - code: 3
+          label: "Biogasheizung (ausschliessliche Nutzung von Biogas)"
+          kategorie: "erneuerbar"
+        - code: 4
+          label: "Wärmepumpe mit Erdsonde"
+          kategorie: "erneuerbar"
+        - code: 5
+          label: "Luft/Wasser-Wärmepumpe"
+          kategorie: "erneuerbar"
+        - code: 6
+          label: "Pelletheizung"
+          kategorie: "erneuerbar"
+        - code: 7
+          label: "Holzschnitzelheizung"
+          kategorie: "erneuerbar"
+        - code: 8
+          label: "Stückholzheizung"
+          kategorie: "erneuerbar"
+        - code: 9
+          label: "Elektroheizung"
+          kategorie: "elektrisch"
+          target: true
+        - code: 10
+          label: "Fernwärme"
+          kategorie: "erneuerbar"
+        - code: 11
+          label: "Thermische Solarheizung"
+          kategorie: "erneuerbar"
+        - code: 98
+          label: "Anderes"
+        - code: 99
+          label: "Weiss nicht"
+
+    - id: "F1.8"
+      text: "Welches Alter hat Ihre Heizung?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Neu / weniger als 5 Jahre alt"
+        - code: 2
+          label: "Zwischen 5 und 10 Jahre alt"
+        - code: 3
+          label: "Älter als 10 Jahre alt"
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        parameter: "heizung_alter"
+        relevanz: "Replacement Urgency"
+
+# ============================================================================
+# SEKTION 2: RENOVATIONSABSICHTEN UND BCJ-STAGE
+# ============================================================================
+# Zweck: Ersatzabsicht, Journey Stage, Barrieren/Treiber
+# EBF-Dimension: READY (AV), STAGE (AW)
+# Änderungen v5: +F2.10 (Social Norms), +F2.11 (Installateur), +F2.12 (BCJ Stage)
+# ============================================================================
+
+sektion_2_renovationsabsichten:
+  name: "Aktuelle Renovationsabsichten, Beweggründe und Journey Stage"
+  zweck: "Ersatzabsicht, BCJ-Phase, Barrieren/Treiber"
+  ebf_dimensionen: ["READY (AV)", "STAGE (AW)", "WHO (AAA)"]
+
+  fragen:
+
+    - id: "F2.1"
+      text: "Planen Sie, Ihre Heizung zu erneuern?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ja, in den nächsten 2 Jahren"
+          intent: "high"
+        - code: 2
+          label: "Ja, in den nächsten 5 Jahren"
+          intent: "medium"
+        - code: 3
+          label: "Nein"
+          intent: "none"
+        - code: 99
+          label: "Weiss nicht"
+          intent: "uncertain"
+      ebf_mapping:
+        dimension: "READY (AV)"
+        parameter: "τ_intent"
+        kpi: "Ersatzabsicht"
+
+    # NEU v5: Explizite BCJ-Stage Messung
+    - id: "F2.12"
+      neu_in_v5: true
+      text: "Wo stehen Sie aktuell beim Thema Heizungsersatz?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Habe mir noch nie Gedanken darüber gemacht"
+          stage: "UNAWARE"
+          bcj_phase: 0
+        - code: 2
+          label: "Weiss, dass ich irgendwann ersetzen muss, aber noch nicht aktiv"
+          stage: "AWARE"
+          bcj_phase: 1
+        - code: 3
+          label: "Informiere mich aktiv über verschiedene Optionen"
+          stage: "CONSIDERATION"
+          bcj_phase: 2
+        - code: 4
+          label: "Habe konkreten Plan und/oder Offerten eingeholt"
+          stage: "PLANNING"
+          bcj_phase: 3
+        - code: 5
+          label: "Habe bereits beauftragt oder Heizung wird gerade installiert"
+          stage: "ACTION"
+          bcj_phase: 4
+        - code: 6
+          label: "Habe ersetzt und empfehle anderen den Wechsel"
+          stage: "ADVOCACY"
+          bcj_phase: 5
+      ebf_mapping:
+        dimension: "STAGE (AW)"
+        parameter: "φ"
+        kpi: "BCJ Phase Distribution"
+
+    - id: "F2.2"
+      filter: "F1.8 > 1 AND F2.1 = 3"
+      text: "Aus welchen Gründen planen Sie aktuell keinen Ersatz Ihrer Heizung?"
+      typ: "q"
+      optionen:
+        - code: 1
+          label: "Die aktuelle Heizung funktioniert gut"
+          barrier: "Status Quo Bias"
+          ebf_construct: "SQ"
+        - code: 2
+          label: "Die aktuelle Heizung ist noch nicht so alt"
+          barrier: "Temporal Discounting"
+          ebf_construct: "β"
+        - code: 3
+          label: "Ein Ersatz ist zu teuer"
+          barrier: "Loss Aversion (Kosten)"
+          ebf_construct: "λ"
+        - code: 4
+          label: "Ein Ersatz ist sehr kompliziert"
+          barrier: "Complexity Aversion"
+          ebf_construct: "complexity"
+        - code: 5
+          label: "Ich plane, das Haus / die Wohnung bald zu verkaufen"
+          barrier: "Investment Horizon"
+        - code: 6
+          label: "Andere Sanierungsarbeiten sind aktuell dringender"
+          barrier: "Mental Accounting"
+          ebf_construct: "MA"
+        - code: 7
+          label: "Lieferschwierigkeiten einer neuen Heizung"
+          barrier: "External Constraint"
+        - code: 8
+          label: "Mangelnde Verfügbarkeit von Anbietern/Installateuren"
+          barrier: "External Constraint"
+        - code: 98
+          label: "Anderes"
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        dimension: "READY (AV)"
+        kpi: "Barrier Distribution"
+
+    - id: "F2.3"
+      filter: "F2.1 < 3"
+      text: "Aus welchen Gründen planen Sie einen Ersatz Ihrer Heizung?"
+      typ: "q"
+      optionen:
+        - code: 1
+          label: "Die aktuelle Heizung ist am Ende ihrer Lebensdauer"
+          driver: "Necessity"
+        - code: 2
+          label: "Die aktuelle Heizung ist defekt oder hat Störungen"
+          driver: "Problem-triggered"
+        - code: 3
+          label: "Aus Kostengründen"
+          driver: "Financial"
+          ebf_construct: "u_F"
+        - code: 4
+          label: "Zur Verbesserung der ökologischen Nachhaltigkeit"
+          driver: "Environmental"
+          ebf_construct: "u_E"
+        - code: 5
+          label: "Weil die Versorgung mit dem bisherigen Heizstoff unsicher ist"
+          driver: "Security"
+          ebf_construct: "u_P"
+        - code: 6
+          label: "Weil staatliche Subventionen die Kosten verringern"
+          driver: "Incentive"
+        - code: 7
+          label: "Zur Verbesserung der wirtschaftlichen Nachhaltigkeit"
+          driver: "Long-term Financial"
+        - code: 98
+          label: "Anderes"
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        dimension: "WHAT (C)"
+        kpi: "Driver Distribution"
+
+    - id: "F2.4"
+      filter: "F2.1 < 3"
+      text: "Welche Heizungstypen ziehen Sie aktuell für die Erneuerung in Betracht?"
+      typ: "q"
+      randomisierung: true
+      gruppierung: "2+3, 4+5, 6-8"
+      optionen: "Liste Heizsysteme (wie F1.7)"
+
+    - id: "F2.5"
+      filter: "F2.1 < 3 AND Anzahl(F2.4) > 1"
+      text: "Und welchen Heizungstyp bevorzugen Sie aktuell?"
+      typ: "m"
+      optionen: "Auswahl aus F2.4"
+
+    - id: "F2.6"
+      filter: "F2.4 = 9"
+      text: "Weshalb ziehen Sie eine Elektroheizung in Erwägung?"
+      typ: "offen"
+
+    - id: "F2.7"
+      filter: "F2.1 < 3"
+      text: "Wo informieren Sie sich über die Installation einer Heizung mit erneuerbaren Energien?"
+      typ: "q"
+      optionen:
+        - code: 1
+          label: "Energieberater:in"
+        - code: 2
+          label: "Impulsberater:in"
+          kpi: "Impulsberatung Source"
+        - code: 3
+          label: "Heizungsinstallateur:in"
+          kpi: "Installer Channel"
+        - code: 4
+          label: "Hauseigentümer-Verband"
+        - code: 5
+          label: "Architekt:in"
+        - code: 6
+          label: "Allgemeine Medien (TV, Zeitungen etc.)"
+        - code: 7
+          label: "Fachzeitschriften"
+        - code: 8
+          label: "Internet (Google-Suche etc.)"
+        - code: 9
+          label: "Informationen und Webseiten von Förderprogrammen von Bund und/oder Kanton"
+        - code: 10
+          label: "Fachmesse"
+        - code: 97
+          label: "Anderes"
+        - code: 98
+          label: "Eine Heizung mit erneuerbaren Energien steht nicht zur Diskussion"
+        - code: 99
+          label: "Weiss nicht"
+
+    - id: "F2.8"
+      filter: "F2.1 > 2"
+      text: "Wo würden Sie sich informieren, falls Sie sich in Zukunft überlegen würden, eine Heizung mit erneuerbaren Energien zu installieren?"
+      typ: "q"
+      optionen: "Wie F2.7"
+
+    - id: "F2.9"
+      filter: "Anzahl(F2.7) > 1 OR Anzahl(F2.8) > 1"
+      text: "Und was ist/wäre Ihre wichtigste Informationsquelle?"
+      typ: "m"
+      optionen: "Auswahl aus F2.7/F2.8"
+
+    # NEU v5: Social Norms - Descriptive
+    - id: "F2.10"
+      neu_in_v5: true
+      text: "Wie viele Ihrer Nachbarn oder Bekannten haben in den letzten 3 Jahren ihre Heizung durch ein erneuerbares System ersetzt?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Keine"
+          norm_exposure: 0
+        - code: 2
+          label: "1-2 Personen"
+          norm_exposure: 1
+        - code: 3
+          label: "3-5 Personen"
+          norm_exposure: 2
+        - code: 4
+          label: "Mehr als 5 Personen"
+          norm_exposure: 3
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        dimension: "WHO (AAA)"
+        construct: "Descriptive Social Norm"
+        parameter: "σ_peer"
+        kpi: "Peer Exposure"
+
+    # NEU v5: Installateur-Einfluss
+    - id: "F2.11"
+      neu_in_v5: true
+      text: "Hat Ihnen ein Heizungsinstallateur in den letzten Jahren aktiv eine bestimmte Heizungsart empfohlen?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ja, hat Wärmepumpe empfohlen"
+          installer_bias: "renewable"
+        - code: 2
+          label: "Ja, hat Holz-/Pelletheizung empfohlen"
+          installer_bias: "renewable"
+        - code: 3
+          label: "Ja, hat Fernwärme empfohlen"
+          installer_bias: "renewable"
+        - code: 4
+          label: "Ja, hat fossile Heizung (Öl/Gas) empfohlen"
+          installer_bias: "fossil"
+        - code: 5
+          label: "Nein, hatte noch keinen Kontakt mit Installateur"
+          installer_bias: "none"
+        - code: 6
+          label: "Nein, Installateur hat keine Empfehlung gegeben"
+          installer_bias: "neutral"
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        dimension: "WHO (AAA)"
+        construct: "Intermediary Influence"
+        parameter: "ι_installer"
+        kpi: "Installer Recommendation Rate"
+
+# ============================================================================
+# SEKTION 2B: STWE-SPEZIFISCHE FRAGEN (NEU v5)
+# ============================================================================
+# Zweck: Entscheidungskomplexität bei Stockwerkeigentum
+# EBF-Dimension: HIERARCHY (HI), WHO (AAA)
+# Filter: F1.4 = 2 (nur STWE)
+# ============================================================================
+
+sektion_2b_stwe:
+  name: "Stockwerkeigentum - Entscheidungsstruktur"
+  zweck: "STWE-spezifische Barrieren und Entscheidungskomplexität"
+  neu_in_v5: true
+  filter: "F1.4 = 2"
+  ebf_dimensionen: ["HIERARCHY (HI)", "WHO (AAA)"]
+
+  fragen:
+
+    - id: "F2B.1"
+      neu_in_v5: true
+      text: "Wer entscheidet in Ihrer Stockwerkeigentümergemeinschaft über den Heizungsersatz?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Einzelne Eigentümer können selbst entscheiden"
+          complexity: "low"
+        - code: 2
+          label: "Einfache Mehrheit der Versammlung"
+          complexity: "medium"
+        - code: 3
+          label: "Qualifizierte Mehrheit (z.B. 2/3)"
+          complexity: "high"
+        - code: 4
+          label: "Einstimmigkeit erforderlich"
+          complexity: "very_high"
+        - code: 5
+          label: "Die Verwaltung entscheidet"
+          complexity: "delegated"
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        dimension: "HIERARCHY (HI)"
+        construct: "Collective Decision Complexity"
+        parameter: "N_L2_stwe"
+
+    - id: "F2B.2"
+      neu_in_v5: true
+      text: "Haben Sie oder jemand anderes schon einmal versucht, einen Heizungsersatz in Ihrer STWE-Gemeinschaft anzustossen?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ja, und es wurde erfolgreich umgesetzt"
+          experience: "success"
+        - code: 2
+          label: "Ja, aber es ist gescheitert (keine Mehrheit)"
+          experience: "failed_vote"
+        - code: 3
+          label: "Ja, aber es wurde aus anderen Gründen nicht umgesetzt"
+          experience: "failed_other"
+        - code: 4
+          label: "Nein, weil es zu kompliziert erscheint"
+          experience: "avoided_complexity"
+        - code: 5
+          label: "Nein, kein Interesse"
+          experience: "no_interest"
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        construct: "Coordination Experience"
+        kpi: "STWE Initiative Rate"
+
+    - id: "F2B.3"
+      neu_in_v5: true
+      filter: "F2B.2 = 2 OR F2B.2 = 3"
+      text: "Was war der Hauptgrund für das Scheitern?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Zu hohe Kosten"
+          barrier: "financial"
+        - code: 2
+          label: "Uneinigkeit über Heizungstyp"
+          barrier: "preference_heterogeneity"
+        - code: 3
+          label: "Einzelne Eigentümer haben blockiert"
+          barrier: "holdout"
+        - code: 4
+          label: "Verwaltung war dagegen"
+          barrier: "administration"
+        - code: 5
+          label: "Technische Hürden (z.B. kein Platz für Erdsonde)"
+          barrier: "technical"
+        - code: 98
+          label: "Anderes"
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        kpi: "STWE Barrier Type"
+
+# ============================================================================
+# SEKTION 3: KONTEXT UND EXTERNE FAKTOREN
+# ============================================================================
+# Zweck: Externe Einflussfaktoren, Trigger Events
+# EBF-Dimension: WHEN (V)
+# Änderungen v5: +F3.10 (Present Bias), +F3.11 (Trigger Events)
+# ============================================================================
+
+sektion_3_kontext:
+  name: "Aktuelle Entwicklung und Kontext"
+  zweck: "Externe Faktoren, Marktentwicklung, Trigger Events"
+  ebf_dimension: "WHEN (V)"
+
+  fragen:
+
+    - id: "F3.1"
+      filter: "F2.1 < 3"
+      text: "Wird es beim Ersatz Ihrer Heizung möglicherweise Verzögerungen wegen Lieferengpässen oder mangelnder Verfügbarkeit von Installateuren geben?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ich habe mich nicht danach erkundigt"
+        - code: 2
+          label: "Voraussichtlich wird es keine Verzögerungen geben"
+        - code: 3
+          label: "Es wird möglicherweise Verzögerungen geben, diese haben aber keinen Einfluss auf meine Planung"
+        - code: 4
+          label: "Es wird möglicherweise Verzögerungen geben und diese haben einen Einfluss auf meine Planung"
+
+    - id: "F3.2"
+      text: "Besorgt Sie der Preisanstieg von Erdöl und Erdgas?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ja"
+        - code: 2
+          label: "Nein"
+      ebf_mapping:
+        construct: "Price Sensitivity"
+
+    - id: "F3.3"
+      filter: "F3.2 = 1"
+      text: "Hat dies einen Einfluss auf Ihre Entscheidung zu einem möglichen Heizungsersatz?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ja, ich habe deshalb konkrete Pläne zu einem Ersatz"
+          influence: "strong"
+        - code: 2
+          label: "Ja, ich überlege mir deshalb einen Ersatz"
+          influence: "moderate"
+        - code: 3
+          label: "Nein"
+          influence: "none"
+
+    - id: "F3.4"
+      text: "Besorgen Sie Versorgungsengpässe von Erdöl und Erdgas?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ja"
+        - code: 2
+          label: "Nein"
+      ebf_mapping:
+        construct: "Security Concern"
+
+    - id: "F3.5"
+      filter: "F3.4 = 1"
+      text: "Hat dies einen Einfluss auf Ihre Entscheidung zu einem möglichen Heizungsersatz?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ja, ich habe deshalb konkrete Pläne zu einem Ersatz"
+        - code: 2
+          label: "Ja, ich überlege mir deshalb einen Ersatz"
+        - code: 3
+          label: "Nein"
+
+    - id: "F3.6"
+      filter: "F2.1 < 3"
+      text: "Wie gut fühlen Sie sich über die Möglichkeit einer Umstellung Ihrer Heizung auf erneuerbare Energien informiert?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Sehr gut"
+          awareness: 5
+        - code: 2
+          label: "Eher gut"
+          awareness: 4
+        - code: 3
+          label: "Mittelmässig"
+          awareness: 3
+        - code: 4
+          label: "Eher schlecht"
+          awareness: 2
+        - code: 5
+          label: "Sehr schlecht"
+          awareness: 1
+      ebf_mapping:
+        dimension: "AWARE (AU)"
+        parameter: "A_self_reported"
+        kpi: "Subjective Knowledge"
+
+    - id: "F3.7"
+      filter: "F2.1 > 2"
+      text: "Nehmen wir an, Sie müssten in den kommenden Monaten eine neue Heizung installieren. Welche Art von Heizung käme grundsätzlich in Frage?"
+      typ: "q"
+      randomisierung: true
+      optionen: "Liste Heizsysteme"
+
+    - id: "F3.8"
+      filter: "F2.1 > 2 AND Anzahl(F3.7) > 1"
+      text: "Und was wäre aktuell Ihr bevorzugter Heizungstyp?"
+      typ: "m"
+      optionen: "Auswahl aus F3.7"
+
+    - id: "F3.9"
+      filter: "(F2.5 IN [1,2,9]) OR (F3.8 IN [1,2,9])"
+      text: "Warum bevorzugen Sie bei (einem möglichen) Ersatz Ihrer Heizung nicht ein System mit erneuerbaren Energien?"
+      typ: "offen"
+      ebf_mapping:
+        kpi: "Barrier Verbatims"
+
+    # NEU v5: Present Bias Messung
+    - id: "F3.10"
+      neu_in_v5: true
+      text: |
+        Stellen Sie sich vor, Sie könnten bei einem Heizungsersatz zwischen zwei Fördervarianten wählen:
+
+        Option A: CHF 5'000 Förderung sofort bei Vertragsabschluss
+        Option B: CHF 6'000 Förderung nach Abschluss der Installation (ca. 6 Monate später)
+
+        Welche Option würden Sie wählen?
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Option A: CHF 5'000 sofort"
+          choice: "immediate"
+          beta_implied: "< 0.83"
+        - code: 2
+          label: "Option B: CHF 6'000 in 6 Monaten"
+          choice: "delayed"
+          beta_implied: ">= 0.83"
+        - code: 3
+          label: "Mir wäre es egal"
+          choice: "indifferent"
+      ebf_mapping:
+        dimension: "WHEN (V)"
+        construct: "Present Bias"
+        parameter: "β"
+        kpi: "Present Bias Indicator"
+
+    # NEU v5: Trigger Events
+    - id: "F3.11"
+      neu_in_v5: true
+      text: "Welches Ereignis würde Sie am ehesten dazu bewegen, Ihre Heizung zu ersetzen?"
+      typ: "m"
+      randomisierung: true
+      optionen:
+        - code: 1
+          label: "Die Heizung fällt komplett aus"
+          trigger: "breakdown"
+          urgency: "reactive"
+        - code: 2
+          label: "Der Ölpreis verdoppelt sich"
+          trigger: "price_shock"
+          urgency: "reactive"
+        - code: 3
+          label: "Mehrere Nachbarn installieren eine Wärmepumpe"
+          trigger: "social_proof"
+          urgency: "proactive"
+        - code: 4
+          label: "Der Kanton verbietet fossile Heizungen ab einem bestimmten Jahr"
+          trigger: "regulation"
+          urgency: "planned"
+        - code: 5
+          label: "Die Förderung wird massiv erhöht (z.B. verdoppelt)"
+          trigger: "incentive_boost"
+          urgency: "proactive"
+        - code: 6
+          label: "Meine Kinder oder Enkel bitten mich darum"
+          trigger: "family_pressure"
+          urgency: "social"
+        - code: 7
+          label: "Ich würde auch ohne besonderes Ereignis ersetzen"
+          trigger: "intrinsic"
+          urgency: "proactive"
+        - code: 98
+          label: "Anderes"
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        dimension: "WHEN (V)"
+        construct: "Activation Threshold"
+        parameter: "θ"
+        kpi: "Trigger Type Distribution"
+
+# ============================================================================
+# SEKTION 4: KOSTEN UND EINSTELLUNGEN
+# ============================================================================
+# Zweck: Kostenwahrnehmung, Einstellungen, Loss Aversion
+# EBF-Dimension: WHAT (C), AWARE (AU)
+# Änderungen v5: +F4.9 (Loss Aversion), modifizierte F4.3
+# ============================================================================
+
+sektion_4_kosten:
+  name: "Wissen zu Kosten und Einstellungen"
+  zweck: "Kostenwahrnehmung, Einstellungen, Behavioral Constructs"
+  ebf_dimensionen: ["WHAT (C)", "AWARE (AU)"]
+
+  fragen:
+
+    - id: "F4.1"
+      text: "Finden Sie den Einbau einer Heizung, die mit erneuerbarer Energie betrieben wird, im Vergleich zu anderen Heizungstypen…"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "… eher günstig"
+        - code: 2
+          label: "… angemessen"
+        - code: 3
+          label: "… eher teuer"
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        construct: "Price Perception"
+
+    - id: "F4.2"
+      text: |
+        Welchen Stellenwert haben die folgenden grösseren Investitionen für Sie?
+        Bitte wählen Sie zuerst die Investition, die am wichtigsten für Sie ist, dann die zweitwichtigste usw.
+      typ: "ranking"
+      randomisierung: true
+      optionen:
+        - code: 1
+          label: "Küchenersatz"
+        - code: 2
+          label: "Fassaden- oder Dachrenovation"
+        - code: 3
+          label: "Installation einer Photovoltaik-Anlage"
+        - code: 4
+          label: "Heizungsersatz"
+          target: true
+        - code: 5
+          label: "Badersatz"
+        - code: 6
+          label: "Neuanlegen des Gartens"
+        - code: 7
+          label: "Keller-/Dachstockausbau"
+        - code: 8
+          label: "Erweiterung des Gebäudes"
+      ebf_mapping:
+        dimension: "WHAT (C)"
+        construct: "Mental Accounting / Investment Priority"
+        kpi: "Heizung Ranking Position"
+
+    - id: "F4.3"
+      text: "Inwiefern stimmen Sie den folgenden Aussagen zu?"
+      typ: "matrix_likert"
+      skala:
+        - code: 1
+          label: "Sehr einverstanden"
+        - code: 2
+          label: "Eher einverstanden"
+        - code: 3
+          label: "Eher nicht einverstanden"
+        - code: 4
+          label: "Überhaupt nicht einverstanden"
+        - code: 99
+          label: "Weiss nicht"
+      randomisierung: true
+      items:
+        - code: 1
+          text: "Die Investitionskosten für den Ersatz einer herkömmlichen Heizungsanlage durch eine Heizung mit erneuerbaren Energieträgern sind viel zu hoch."
+          construct: "Cost Barrier"
+          ebf_param: "perceived_cost"
+
+        - code: 2
+          text: "Wenn man alles zusammenrechnet (Anschaffung, Energiekosten, Unterhalt), spart man als Haus-/Wohnungsbesitzer/in mit einer Heizung mit erneuerbaren Energieträgern langfristig Kosten."
+          construct: "TCO Understanding"
+          ebf_param: "tco_belief"
+
+        - code: 3
+          text: "Der Ersatz einer herkömmlichen Heizungsanlage durch eine Heizung mit erneuerbaren Energieträgern ist in der Umsetzung zu kompliziert."
+          construct: "Complexity Aversion"
+          ebf_param: "complexity_perception"
+
+        - code: 4
+          text: "Indem man seine Heizung durch eine Anlage mit erneuerbaren Energieträgern ersetzt, leistet man einen spürbaren Beitrag zur Senkung der CO2-Emissionen in der Schweiz."
+          construct: "Efficacy Belief"
+          ebf_param: "efficacy_co2"
+
+        - code: 5
+          text: "Indem man seine Heizung durch eine Anlage mit erneuerbaren Energieträgern ersetzt, tut man etwas Gutes für die Natur und Umwelt."
+          construct: "Warm Glow"
+          ebf_param: "u_E"
+
+        - code: 6
+          text: "Eine neue Öl- oder Erdgasheizung ist ebenso umweltfreundlich und effizient wie eine Heizung mit erneuerbaren Energieträgern."
+          construct: "Misinformation"
+          ebf_param: "false_equivalence"
+
+        - code: 7
+          text: "Wenn man eine herkömmliche Heizungsanlage durch eine Heizung mit erneuerbaren Energieträgern ersetzt, steigt dadurch längerfristig der (Wiederverkaufs-)Wert des Hauses/der Eigentumswohnung."
+          construct: "Investment Value"
+          ebf_param: "resale_belief"
+
+        - code: 8
+          text: "Ich bin gut über die anfallenden Kosten bei einem Heizungsersatz informiert."
+          construct: "Subjective Knowledge"
+          ebf_param: "A_costs"
+
+        - code: 9
+          text: "Eine Heizung darf mehr kosten, wenn sie dafür weniger umweltbelastend ist."
+          construct: "Willingness to Pay (Environment)"
+          ebf_param: "wtp_environment"
+
+        - code: 10
+          text: "Eine Heizung darf mehr kosten, wenn man dafür unabhängig von Ressourcen aus dem Ausland (Öl, Gas) ist."
+          construct: "Willingness to Pay (Security)"
+          ebf_param: "wtp_security"
+
+        - code: 11
+          text: "Es ist teuer und schwierig, genug Holz für eine Holzheizung zu erhalten."
+          construct: "Availability Perception"
+          ebf_param: "wood_availability"
+
+        # NEU v5: Zusätzliches Item für Status Quo
+        - code: 12
+          text: "Solange meine Heizung funktioniert, sehe ich keinen Grund, etwas zu ändern."
+          construct: "Status Quo Bias"
+          ebf_param: "SQ_strength"
+          neu_in_v5: true
+
+    - id: "F4.4"
+      text: "Welcher der folgenden Heizungstypen bietet Ihrer Meinung nach die grösste Versorgungssicherheit, d.h. dass man immer heizen kann, wenn man es benötigt?"
+      typ: "m"
+      randomisierung: true
+      optionen:
+        - code: 1
+          label: "Ölheizung"
+        - code: 2
+          label: "Wärmepumpe mit Erdsonde"
+        - code: 3
+          label: "Fernwärme"
+        - code: 4
+          label: "Holzheizung"
+        - code: 5
+          label: "Erdgasheizung"
+        - code: 6
+          label: "Heizung mit Solarwärme (Solarthermie)"
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        construct: "Security Perception"
+
+    - id: "F4.5"
+      text: "Für welchen der folgenden Heizungstypen werden Ihrer Meinung nach die Heizkosten am wenigsten steigen?"
+      typ: "m"
+      optionen: "Wie F4.4"
+
+    - id: "F4.6"
+      text: "Für welchen der folgenden Heizungstypen sind Ihrer Meinung nach die Anschaffungskosten am tiefsten?"
+      typ: "m"
+      optionen: "Wie F4.4"
+
+    - id: "F4.7"
+      text: "Für welchen der folgenden Heizungstypen sind Ihrer Meinung nach die Energiekosten (z.B. Kosten für Holz, ohne Betriebskosten) am tiefsten?"
+      typ: "m"
+      optionen: "Wie F4.4"
+
+    - id: "F4.8"
+      text: "Für welchen der folgenden Heizungstypen sind Ihrer Meinung nach die Betriebskosten, z.B. die Unterhaltskosten, am tiefsten?"
+      typ: "m"
+      optionen: "Wie F4.4"
+
+    # NEU v5: Loss Aversion Proxy
+    - id: "F4.9"
+      neu_in_v5: true
+      text: "Stellen Sie sich vor, Sie müssten entscheiden: Was wiegt für Sie persönlich schwerer?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "CHF 500 pro Jahr sparen, weil eine neue Heizung weniger Energie braucht"
+          frame: "gain"
+          lambda_implied: "< 2"
+        - code: 2
+          label: "CHF 500 pro Jahr NICHT verlieren, weil die Öl-/Gaspreise weiter steigen"
+          frame: "loss"
+          lambda_implied: "> 2"
+        - code: 3
+          label: "Beides ist mir gleich wichtig"
+          frame: "neutral"
+          lambda_implied: "≈ 1"
+        - code: 99
+          label: "Kann ich nicht sagen"
+      ebf_mapping:
+        dimension: "WHAT (C)"
+        construct: "Loss Aversion"
+        parameter: "λ"
+        kpi: "Loss Aversion Indicator"
+
+# ============================================================================
+# SEKTION 5: MOTIVATION UND PRÄFERENZEN
+# ============================================================================
+# Zweck: Utility-Gewichte via MaxDiff
+# EBF-Dimension: WHAT (C)
+# Änderungen v5: Keine (MaxDiff ist bereits Gold-Standard)
+# ============================================================================
+
+sektion_5_motivation:
+  name: "Motivation zur Heizungserneuerung"
+  zweck: "Utility-Gewichte, Präferenzstruktur"
+  ebf_dimension: "WHAT (C)"
+
+  fragen:
+
+    - id: "F5.1"
+      text: |
+        Welche Aspekte sind Ihnen am wichtigsten, wenn Sie sich überlegen, Ihre Heizung zu erneuern?
+
+        Sie werden jeweils 4 verschiedene Aspekte sehen und wir bitten Sie anzugeben,
+        welchen Aspekt Sie am wichtigsten und welchen Sie am wenigsten wichtig finden.
+
+        Sie werden insgesamt 14 solche Auswahl-Aufgaben durchlaufen.
+      typ: "maxdiff"
+      design:
+        sets: 14
+        items_per_set: 4
+        balance: "orthogonal"
+      attribute:
+        - id: 1
+          label: "Anschaffungskosten"
+          ebf_utility: "u_F_initial"
+        - id: 2
+          label: "Unterhaltskosten"
+          ebf_utility: "u_F_maintenance"
+        - id: 3
+          label: "Energiekosten"
+          ebf_utility: "u_F_operating"
+        - id: 4
+          label: "CO2-Emissionen"
+          ebf_utility: "u_E_co2"
+        - id: 5
+          label: "Werterhalt des Hauses"
+          ebf_utility: "u_F_asset"
+        - id: 6
+          label: "Heizleistung"
+          ebf_utility: "u_P_performance"
+        - id: 7
+          label: "Versorgungssicherheit"
+          ebf_utility: "u_P_security"
+        - id: 8
+          label: "Nachhaltigkeit"
+          ebf_utility: "u_E_sustainability"
+        - id: 9
+          label: "Politische Unabhängigkeit"
+          ebf_utility: "u_X_autonomy"
+        - id: 10
+          label: "Regionaler Heizstoff"
+          ebf_utility: "u_S_local"
+      ebf_mapping:
+        dimension: "WHAT (C)"
+        construct: "Utility Weights"
+        parameter: "u_F, u_E, u_P, u_S, u_X"
+        kpi: "MaxDiff Utility Scores"
+
+    - id: "F5.2"
+      filter: "F2.1 < 3"
+      text: |
+        Haben Sie zu einem möglichen Heizungsersatz Rentabilitätsberechnungen gemacht oder in Auftrag gegeben?
+
+        Rentabilitätsberechnungen sind die Gegenüberstellung aller Kosten (Anschaffung, Unterhalt, Betrieb)
+        der bisherigen Heizung gegenüber einer möglichen neuen Heizung.
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ja"
+          deliberation: "high"
+        - code: 2
+          label: "Nein, aber ich habe es noch vor"
+          deliberation: "planned"
+        - code: 3
+          label: "Nein, und ich habe es auch nicht vor"
+          deliberation: "low"
+      ebf_mapping:
+        dimension: "HIERARCHY (HI)"
+        construct: "Deliberation Level"
+        parameter: "L2_engagement"
+
+# ============================================================================
+# SEKTION 6: KAMPAGNE UND IMPULSBERATUNG
+# ============================================================================
+# Zweck: Kampagnen-Awareness, Impulsberatung KPIs
+# EBF-Dimension: AWARE (AU)
+# Änderungen v5: Keine (Kampagnen-Tracking bereits gut)
+# ============================================================================
+
+sektion_6_kampagne:
+  name: "Kampagne und Impulsberatung"
+  zweck: "Kampagnen-Awareness, Impulsberatung-KPIs"
+  ebf_dimension: "AWARE (AU)"
+
+  fragen:
+
+    - id: "F6.1"
+      text: |
+        Von welchen Informationskampagnen zum Thema Wohnen und Heizung haben Sie
+        in den letzten Wochen etwas gesehen, gelesen oder gehört?
+
+        Geben Sie bitte alle Kampagnen an, die Ihnen in den Sinn kommen.
+      typ: "offen"
+      fallback:
+        code: 99
+        label: "Ich habe keine Kampagne gesehen, gelesen oder davon gehört"
+      ebf_mapping:
+        dimension: "AWARE (AU)"
+        kpi: "Unaided Recall"
+
+    - id: "F6.2"
+      text: "Und von welchen der folgenden Informationskampagnen haben Sie in den letzten Wochen etwas gesehen, gelesen oder gehört?"
+      typ: "matrix_ja_nein"
+      randomisierung: true
+      items:
+        - code: 1
+          text: "«erneuerbar heizen» (Ersatz bestehender Heizungen durch eine Heizung mit erneuerbarer Energie)"
+          kampagne: "TARGET"
+        - code: 2
+          text: "MakeHeatSimple (Zweitwohnung über die Fernbedienung heizen)"
+          kampagne: "RELATED"
+        - code: 3
+          text: "Heizen mit Öl"
+          kampagne: "COMPETITOR"
+        - code: 4
+          text: "Energiezukunft / gazenergie (Heizen mit Erdgas)"
+          kampagne: "COMPETITOR"
+      ebf_mapping:
+        dimension: "AWARE (AU)"
+        kpi: "Aided Recall"
+
+    - id: "F6.3"
+      filter: "F6.2.1 = Ja"
+      text: "Auf welchen Kanälen haben Sie die Informationskampagne «erneuerbar heizen» wahrgenommen?"
+      typ: "q"
+      optionen:
+        - code: 1
+          label: "TV-Spot"
+        - code: 2
+          label: "Kino-Spot"
+        - code: 3
+          label: "Radio-Spot"
+        - code: 4
+          label: "Plakat"
+        - code: 5
+          label: "Inserat in Zeitungen oder Zeitschriften"
+        - code: 6
+          label: "Werbebanner im Internet"
+        - code: 7
+          label: "Webseite von «erneuerbar heizen»"
+        - code: 9
+          label: "Social Media (z.B. Facebook, Instagram, LinkedIn)"
+        - code: 10
+          label: "Vorgeschalteter Werbespot auf Internet-Videoplattform (z.B. YouTube) oder Web-TV"
+        - code: 11
+          label: "Beitrag in TV-Sendung"
+        - code: 12
+          label: "Artikel in Zeitung oder Zeitschrift"
+        - code: 13
+          label: "Beitrag in Radio-Sendung"
+        - code: 14
+          label: "Broschüre oder Flyer"
+        - code: 15
+          label: "Werbung in einem öffentlichen Verkehrsmittel"
+        - code: 16
+          label: "Stand an einer Fachmesse"
+        - code: 98
+          label: "Anderes"
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        kpi: "Channel Attribution"
+
+    - id: "F6.4"
+      text: "Haben Sie einen oder mehrere der folgenden Artikel (zumindest teilweise) gelesen?"
+      typ: "m"
+      stimulus: "[Aktuelle Artikel einblenden]"
+      optionen:
+        - code: 1
+          label: "Ja"
+        - code: 2
+          label: "Nein"
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        kpi: "Content Recognition"
+
+    - id: "F6.5"
+      text: "Haben Sie eine oder mehrere dieser Werbungen in den vergangenen Wochen gesehen?"
+      typ: "m"
+      stimulus: "[Aktuelle Kampagnenwerbung einblenden]"
+      optionen:
+        - code: 1
+          label: "Ja"
+        - code: 2
+          label: "Nein"
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        kpi: "Ad Recognition"
+
+    - id: "F6.6"
+      text: "Haben Sie vor dieser Befragung schon einmal von der Impulsberatung «erneuerbar heizen» gehört?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ja"
+        - code: 2
+          label: "Nein"
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        dimension: "AWARE (AU)"
+        kpi: "Impulsberatung Awareness"
+
+    - id: "F6.7"
+      filter: "F6.6 = 1"
+      text: "Haben Sie bereits einmal eine/n Impulsberater/in beigezogen?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ja"
+        - code: 2
+          label: "Nein"
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        kpi: "Impulsberatung Trial"
+
+    - id: "F6.8"
+      filter: "F6.6 = 1"
+      text: "Planen Sie bei Ihrem nächsten Heizungsersatz, eine/n Impulsberater/in beizuziehen?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ja"
+        - code: 2
+          label: "Nein"
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        dimension: "READY (AV)"
+        kpi: "Impulsberatung Intent"
+
+    - id: "F6.9"
+      filter: "F6.8 = 2"
+      text: "Aus welchen Gründen möchten Sie keine/n Impulsberater/in beiziehen?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Bevorzuge eine Beratung durch einen Installateur"
+        - code: 2
+          label: "Bevorzuge eine Beratung durch eine/n Energieberater/in"
+        - code: 3
+          label: "Impulsberatung ist zu teuer"
+          barrier: "Cost Misperception"
+        - code: 4
+          label: "Kenne mich selber gut aus und brauche keine Beratung"
+        - code: 5
+          label: "Ich weiss nicht bzw. zu wenig genau, was eine Impulsberatung ist"
+          barrier: "Awareness Gap"
+        - code: 99
+          label: "Andere Gründe"
+      ebf_mapping:
+        kpi: "Impulsberatung Barrier"
+
+    - id: "F6.10"
+      text: |
+        Die Impulsberaterin oder der Impulsberater besichtigt Ihr Gebäude und berät vor Ort
+        über die Möglichkeiten, wie die Heizung ersetzt werden kann.
+        Was denken Sie, was kostet eine Impulsberatung?
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Eine Impulsberatung ist gratis"
+          correct: true
+        - code: 2
+          label: "1–100 Franken"
+        - code: 3
+          label: "101–500 Franken"
+        - code: 4
+          label: "Mehr als 500 Franken"
+        - code: 99
+          label: "Weiss nicht"
+      ebf_mapping:
+        dimension: "AWARE (AU)"
+        kpi: "Price Knowledge (correct = gratis)"
+
+# ============================================================================
+# SEKTION 7: MAKE HEAT SIMPLE (Zweitwohnung)
+# ============================================================================
+# Zweck: Nebenkampagne Tracking
+# Änderungen v5: Keine
+# ============================================================================
+
+sektion_7_makeheat:
+  name: "Make Heat Simple"
+  zweck: "Nebenkampagne Zweitwohnungen"
+
+  fragen:
+
+    - id: "F7.1"
+      text: |
+        Besitzen Sie eine Zweitwohnung oder -haus?
+        Das kann zum Beispiel eine Ferienwohnung oder ein Ferienhaus sein.
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ja"
+        - code: 2
+          label: "Nein"
+
+    - id: "F7.2"
+      filter: "F7.1 = 1"
+      text: |
+        Wie bedeutsam schätzen Sie die Heizkosten als Kostenfaktor für Ihre Zweitwohnung oder -haus ein?
+        Falls Sie mehrere Zweitwohnsitze besitzen, denken Sie bitte an den zuletzt erworbenen.
+      typ: "skala"
+      skala: "1 (Sehr kleiner Kostenfaktor) bis 5 (Sehr grosser Kostenfaktor)"
+
+    - id: "F7.3"
+      filter: "F7.1 = 1"
+      text: "Haben Sie Massnahmen ergriffen, um die Kosten für die Heizung Ihrer Zweitwohnung oder -haus zu reduzieren?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ja"
+        - code: 2
+          label: "Nein"
+        - code: 99
+          label: "Weiss nicht"
+
+    - id: "F7.4"
+      filter: "F7.1 = 1"
+      text: "Kennen Sie Systeme zur Fernsteuerung von Heizungen?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ja, ich habe in meiner Zweitwohnung oder -haus ein solches System installiert"
+        - code: 2
+          label: "Ja, ich habe mich dazu informiert"
+        - code: 3
+          label: "Ja, ich habe schon davon gehört"
+        - code: 4
+          label: "Nein"
+
+    - id: "F7.5"
+      filter: "F7.4 = 1"
+      text: "Wie sind Ihre Erfahrungen mit diesem System zur Fernsteuerung Ihrer Heizung?"
+      typ: "matrix_satisfaction"
+      skala: "1 (Überhaupt nicht zufrieden) bis 5 (Sehr zufrieden)"
+      items:
+        - "Installation des Systems"
+        - "System im Einsatz (laufender Betrieb)"
+
+    - id: "F7.6"
+      filter: "F7.4 IN [2,3]"
+      text: "Ziehen Sie ein solches System für Ihre Zweitwohnung oder -haus in Zukunft in Betracht?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ja"
+        - code: 2
+          label: "Nein"
+        - code: 3
+          label: "Ich weiss es nicht"
+
+# ============================================================================
+# SEKTION 8: CO2-ABGABE
+# ============================================================================
+# Zweck: Policy Knowledge
+# EBF-Dimension: AWARE (AU)
+# Änderungen v5: Keine
+# ============================================================================
+
+sektion_8_co2:
+  name: "CO2-Abgabe"
+  zweck: "Policy Knowledge"
+  ebf_dimension: "AWARE (AU)"
+
+  fragen:
+
+    - id: "F8.1"
+      text: |
+        Zum Abschluss dieser Befragung geht es um die sogenannte CO2-Abgabe.
+        Dies ist eine Abgabe, welche der Bund erhebt und an die Bevölkerung zurückverteilt.
+
+        Wissen Sie, ob eine CO2-Abgabe auf Heizöl und Erdgas zum Heizen erhoben wird?
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ja, wird auf Heizöl und Erdgas zum Heizen erhoben"
+          correct: true
+        - code: 2
+          label: "Nein, wird auf Heizöl und Erdgas zum Heizen nicht erhoben"
+        - code: 3
+          label: "Ich weiss es nicht"
+      ebf_mapping:
+        dimension: "AWARE (AU)"
+        kpi: "Policy Knowledge (CO2)"
+
+    - id: "F8.2"
+      filter: "F8.1 = 1"
+      text: "Wieviel beträgt die CO2-Abgabe für Heizöl und Erdgas zum Heizen? Wenn Sie den genauen Betrag nicht kennen, schätzen Sie es bitte."
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "1–10%"
+        - code: 2
+          label: "11–30%"
+          correct: "approximately"
+        - code: 3
+          label: "31–50%"
+        - code: 4
+          label: "Mehr als 50%"
+        - code: 99
+          label: "Weiss nicht"
+
+    - id: "F8.3"
+      text: "Welche Rolle spielt die CO2-Abgabe bei Ihren Überlegungen zu einem Heizungsersatz?"
+      typ: "skala"
+      skala: "1 (Geringe Rolle) bis 5 (Grosse Rolle)"
+      ebf_mapping:
+        construct: "Policy Salience"
+
+# ============================================================================
+# SEKTION 9: SOZIODEMOGRAFIE
+# ============================================================================
+# Zweck: Segmentierung
+# EBF-Dimension: WHO (AAA)
+# Änderungen v5: Keine
+# ============================================================================
+
+sektion_9_soziodemografie:
+  name: "Soziodemografie"
+  zweck: "Segmentierung"
+  ebf_dimension: "WHO (AAA)"
+
+  fragen:
+
+    - id: "F9.1"
+      text: "Welches ist die höchste Ausbildung, die Sie mit einem Zeugnis oder einem Diplom abgeschlossen haben?"
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Kein Schulabschluss"
+          bildung: "niedrig"
+        - code: 2
+          label: "Obligatorische Schule (Primarschule)"
+          bildung: "niedrig"
+        - code: 3
+          label: "Real-, Sekundar-, Bezirks-, Orientierungsschule"
+          bildung: "niedrig"
+        - code: 4
+          label: "10. Schuljahr, einjährige Vorlehre, einjährige Berufswahlschule"
+          bildung: "niedrig"
+        - code: 5
+          label: "Diplommittelschule, Fachmittelschule, Verkehrsschule"
+          bildung: "niedrig"
+        - code: 6
+          label: "Berufslehre, Berufsschule, Berufsmaturität"
+          bildung: "mittel"
+        - code: 7
+          label: "Mittelschule, Gymnasiale Maturität, Seminar"
+          bildung: "hoch"
+        - code: 8
+          label: "Höhere Fach-/Berufsausbildung, Höhere Fachschule"
+          bildung: "hoch"
+        - code: 9
+          label: "Universität, Fachhochschule, ETH, PH, HWV, Technikum"
+          bildung: "hoch"
+      codierung: "1-6 = niedrig/mittel, 7-9 = hoch"
+
+    - id: "F9.2"
+      text: "Wie viel beträgt das gesamte Bruttoeinkommen Ihres Haushalts pro Monat? Bitte zählen Sie das Einkommen aller Personen im Haushalt zusammen."
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Weniger als 3'000 CHF"
+        - code: 2
+          label: "Zwischen 3'000 und 4'500 CHF"
+        - code: 3
+          label: "Zwischen 4'501 und 6'000 CHF"
+        - code: 4
+          label: "Zwischen 6'001 und 7'500 CHF"
+        - code: 5
+          label: "Zwischen 7'501 und 9'000 CHF"
+        - code: 6
+          label: "Zwischen 9'001 und 12'000 CHF"
+        - code: 7
+          label: "Mehr als 12'000 CHF"
+        - code: 99
+          label: "Dazu möchte ich keine Angabe machen"
+
+# ============================================================================
+# SEKTION 10: PANEL-EINWILLIGUNG (NEU v5)
+# ============================================================================
+# Zweck: Follow-up Ermöglichung
+# EBF-Dimension: Verhaltens-Validierung
+# ============================================================================
+
+sektion_10_panel:
+  name: "Panel-Einwilligung"
+  zweck: "Follow-up für Intention-Behavior Gap Messung"
+  neu_in_v5: true
+  filter: "F2.1 < 3"
+
+  fragen:
+
+    - id: "F10.1"
+      neu_in_v5: true
+      text: |
+        Sie haben angegeben, dass Sie planen, Ihre Heizung in den nächsten Jahren zu ersetzen.
+
+        Dürfen wir Sie in etwa 12 Monaten nochmals kontaktieren, um zu erfahren,
+        wie sich Ihre Situation entwickelt hat?
+
+        Dies würde uns helfen, besser zu verstehen, wie Hausbesitzer:innen
+        bei der Entscheidung für eine neue Heizung vorgehen.
+      typ: "m"
+      optionen:
+        - code: 1
+          label: "Ja, ich bin einverstanden"
+          panel: true
+        - code: 2
+          label: "Nein, bitte nicht kontaktieren"
+          panel: false
+      ebf_mapping:
+        kpi: "Panel Recruitment Rate"
+
+# ============================================================================
+# ZUSAMMENFASSUNG: EBF-KONFORMITÄT
+# ============================================================================
+
+ebf_konformitaet_zusammenfassung:
+
+  dimensionen_abdeckung:
+    WHO_AAA:
+      status: "vollständig"
+      fragen: ["F1.4", "F1.6", "F2.10", "F2.11", "F2B.1-3"]
+      neu_v5: ["F2.10", "F2.11", "F2B.1-3"]
+
+    WHAT_C:
+      status: "vollständig"
+      fragen: ["F2.3", "F4.2", "F4.3", "F4.9", "F5.1"]
+      neu_v5: ["F4.9", "F4.3.12"]
+
+    HOW_B:
+      status: "teilweise"
+      fragen: ["F5.1 (implizit)"]
+      gap: "Keine explizite Komplementaritäts-Frage"
+
+    WHEN_V:
+      status: "vollständig"
+      fragen: ["F3.10", "F3.11"]
+      neu_v5: ["F3.10", "F3.11"]
+
+    WHERE_BBB:
+      status: "indirekt"
+      fragen: ["F4.4-F4.8 (Wahrnehmung)"]
+
+    AWARE_AU:
+      status: "vollständig"
+      fragen: ["F3.6", "F6.1-F6.10", "F8.1-F8.2"]
+
+    READY_AV:
+      status: "vollständig"
+      fragen: ["F2.1", "F2.2", "F6.8"]
+
+    STAGE_AW:
+      status: "vollständig"
+      fragen: ["F2.12"]
+      neu_v5: ["F2.12"]
+
+    HIERARCHY_HI:
+      status: "vollständig"
+      fragen: ["F2B.1", "F5.2"]
+      neu_v5: ["F2B.1"]
+
+  behavioral_constructs:
+    loss_aversion:
+      status: "gemessen"
+      frage: "F4.9"
+      parameter: "λ"
+
+    present_bias:
+      status: "gemessen"
+      frage: "F3.10"
+      parameter: "β"
+
+    social_norms:
+      status: "gemessen"
+      frage: "F2.10"
+      parameter: "σ_peer"
+
+    status_quo_bias:
+      status: "gemessen"
+      fragen: ["F2.2", "F4.3.12"]
+      parameter: "SQ_strength"
+
+    complexity_aversion:
+      status: "gemessen"
+      frage: "F4.3.3"
+      parameter: "complexity"
+
+    mental_accounting:
+      status: "gemessen"
+      frage: "F4.2"
+      parameter: "MA_priority"
+
+  neue_fragen_v5:
+    total: 15
+    liste:
+      - "F2.10: Social Norms (Nachbarn)"
+      - "F2.11: Installateur-Einfluss"
+      - "F2.12: BCJ Journey Stage"
+      - "F2B.1: STWE Entscheidungsstruktur"
+      - "F2B.2: STWE Koordinationserfahrung"
+      - "F2B.3: STWE Scheiternsgründe"
+      - "F3.10: Present Bias"
+      - "F3.11: Trigger Events"
+      - "F4.3.12: Status Quo Item"
+      - "F4.9: Loss Aversion"
+      - "F10.1: Panel-Einwilligung"
+
+  geschaetzte_befragungszeit:
+    v4_original: "18-22 Minuten"
+    v5_ebf: "23-28 Minuten"
+    zusatz: "+5-7 Minuten"
+
+  panel_design:
+    welle_1: "Baseline (dieser Fragebogen)"
+    welle_2: "12 Monate später (nur F2.1<3 mit F10.1=1)"
+    metriken:
+      - "Intention-Behavior Gap"
+      - "Impulsberatung Conversion"
+      - "Predictor Analysis"

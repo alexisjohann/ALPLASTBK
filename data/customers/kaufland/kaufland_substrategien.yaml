@@ -1,0 +1,935 @@
+# =============================================================================
+# KAUFLAND SUBSTRATEGIEN (6 Dimensionen)
+# =============================================================================
+# Abgeleitet aus: kaufland_strategie_modell.yaml (KIBSM, MOD-013)
+# Version: 1.0.0
+# Erstellt: 2026-02-20
+# Struktur: 6 Dimensionen mit Cross-Referenzen zum Gesamtmodell
+#
+# KERNLOGIK: Die 3 Saeulen (S1 Sauberkeit, S2 PX, S3 Synergie) schneiden
+# DURCH alle 6 Dimensionen. Jede Substrategie definiert, wie die Saeulen
+# in ihrem spezifischen Kontext wirken.
+#
+# DIMENSIONEN:
+#   D1: Laender (8)          — PCT pro Land
+#   D2: Sortiment (5)        — Marktbereich-spezifisch
+#   D3: Filialtypen          — Cluster-basiert
+#   D4: Personal-Segmente    — WHO-01 bis WHO-08 (→ KIBSM)
+#   D5: Zeit / Schicht       — Temporal-spezifisch
+#   D6: Funktionen (10)      — Funktionalbereich-spezifisch
+#
+# =============================================================================
+
+metadata:
+  name: "Kaufland Substrategien"
+  parent_model: "MOD-013 (KIBSM)"
+  version: "1.0"
+  created: "2026-02-20"
+  customer_id: "CUS-KAUF"
+  total_dimensions: 6
+  total_substrategies: 31
+  # D1(8) + D2(5) + D3(3) + D4(→KIBSM) + D5(4) + D6(10) + D3-Schnitte(1)
+
+# =============================================================================
+# DIMENSIONEN-UEBERSICHT
+# =============================================================================
+
+dimensions_overview:
+  matrix: |
+    Laender (8) x Sortiment (5) x Filialtyp (3) x Segment (8) x Schicht (4) x Funktion (10)
+
+    Nicht jede Kombination ist relevant. Jede Substrategie waehlt die
+    DOMINANTE Dimension und behandelt die anderen als Kontext-Variablen.
+
+    Beispiel: SUB-L-PL (Polen-Strategie)
+    → Dominante Dimension: Land (PL)
+    → Kontext: Sortiment (alle), Filialtyp (alle PL-Typen),
+               Segment (PL-spezifische Gewichtung), Schicht (PL-Arbeitsrecht)
+
+  cross_reference_principle: |
+    Jede Substrategie referenziert:
+    1. KIBSM (Gesamtmodell) — fuer Saeulen, Synergien, Portfolio
+    2. Andere Substrategien — fuer Schnittmengen
+    3. Interventions-IDs (INT-K-xxx) — fuer konkrete Massnahmen
+
+# =============================================================================
+# D1: LAENDERSTRATEGIE (8 Laender)
+# =============================================================================
+# PCT: theta_Land = theta_DE x prod_i M(Delta_Psi_i)
+# Deutschland = Anchor Context (theta_A)
+# =============================================================================
+
+d1_laender:
+
+  anchor: "DE"
+  anchor_description: |
+    Deutschland ist Anchor-Kontext: 780 Filialen, Pilotmarkt fuer
+    alle Interventionen, vollstaendiger Psi-Vektor in CVA SCHNELL.
+    Alle anderen Laender werden via PCT transformiert.
+
+  SUB-L-DE:
+    name: "Deutschland-Strategie"
+    country: "DE"
+    stores: 780
+    role: "Pilotmarkt, Anchor Context"
+    psi_delta_vs_anchor: null  # IST der Anchor
+    priority: "HOECHSTE — Post-Skandal Urgency"
+    saeulen:
+      s1_sauberkeit: "AKTIV — Hauptfokus, TUEV-Zertifizierung laeuft"
+      s2_px: "EXPLORATION — Gespraech mit PX-Team (Dammeyer)"
+      s3_synergie: "KONZEPTIONELL — nach S1+S2 Erfolg"
+    key_interventions: ["INT-K-001 bis INT-K-011"]
+    status: "in_progress"
+
+  SUB-L-PL:
+    name: "Polen-Strategie"
+    country: "PL"
+    stores: 260
+    role: "Zweitgroesster Markt, eigene Regulierung"
+    psi_delta_vs_anchor:
+      psi_I: -0.15  # PL Lebensmittelrecht weniger strikt als DE
+      psi_S: +0.10  # Staerkere Team-Kohaesion in PL-Filialen
+      psi_K: +0.20  # Andere Arbeitskultur, andere Hygiene-Normen
+      psi_E: -0.20  # Niedrigere Loehne, andere Anreizstruktur
+      psi_T: -0.30  # Kein Skandal-Druck in PL (DE-spezifisch)
+    pct_aggregate: 0.72
+    interpretation: |
+      Verhaltensparameter in PL ca. 28% niedriger als in DE.
+      Haupttreiber: Fehlende Post-Skandal-Urgency (psi_T) und
+      niedrigeres institutionelles Enforcement (psi_I).
+      ABER: Staerkere soziale Normen (psi_S) als Hebel nutzbar.
+    anpassungen:
+      - "Urgency muss INTERN erzeugt werden (kein externer Skandal-Druck)"
+      - "Social Proof staerker nutzen (psi_S hoeher als DE)"
+      - "Lohn-sensitive Interventionen anpassen (psi_E niedriger)"
+      - "PL-spezifische Regulierung beachten (Sanepid statt Veterinaeramt)"
+    status: "planned"
+
+  SUB-L-RO:
+    name: "Rumaenien-Strategie"
+    country: "RO"
+    stores: 170
+    role: "Wachstumsmarkt, hohe Expansion"
+    psi_delta_vs_anchor:
+      psi_I: -0.25  # Enforcement deutlich schwaecher
+      psi_S: +0.15  # Familiaere Team-Strukturen
+      psi_K: +0.30  # Stark andere Arbeitskultur
+      psi_E: -0.30  # Deutlich niedrigere Loehne
+      psi_T: -0.35  # Kein externer Druck
+    pct_aggregate: 0.58
+    interpretation: |
+      Groesste Kontext-Differenz zu DE. Interventionen muessen
+      FUNDAMENTAL angepasst werden — nicht nur uebersetzt.
+    anpassungen:
+      - "Bottom-up statt Top-down (psi_I schwach → Defaults staerker)"
+      - "Familiaere Team-Strukturen als Hebel (psi_S)"
+      - "Einfachere, visuelle Kommunikation (Sprachbarrieren)"
+      - "Expansion-Phase nutzen: Neue Filialen = Clean Start"
+    status: "planned"
+
+  SUB-L-CZ:
+    name: "Tschechien-Strategie"
+    country: "CZ"
+    stores: 130
+    psi_delta_vs_anchor:
+      psi_I: -0.10
+      psi_K: +0.10
+      psi_E: -0.15
+      psi_T: -0.30
+    pct_aggregate: 0.78
+    interpretation: "Naechster Kontext zu DE. Transfer relativ direkt moeglich."
+    status: "planned"
+
+  SUB-L-SK:
+    name: "Slowakei-Strategie"
+    country: "SK"
+    stores: 70
+    psi_delta_vs_anchor:
+      psi_I: -0.10
+      psi_K: +0.15
+      psi_E: -0.20
+      psi_T: -0.30
+    pct_aggregate: 0.74
+    interpretation: "Aehnlich CZ, aber kleinerer Markt. Kann als CZ-Satellit behandelt werden."
+    status: "planned"
+
+  SUB-L-HR:
+    name: "Kroatien-Strategie"
+    country: "HR"
+    stores: 30
+    psi_delta_vs_anchor:
+      psi_I: -0.20
+      psi_K: +0.25
+      psi_E: -0.25
+      psi_T: -0.35
+    pct_aggregate: 0.65
+    interpretation: "Kleiner Markt, EU-Beitritt 2013 → Regulierung im Aufbau."
+    status: "low_priority"
+
+  SUB-L-BG:
+    name: "Bulgarien-Strategie"
+    country: "BG"
+    stores: 40
+    psi_delta_vs_anchor:
+      psi_I: -0.30
+      psi_K: +0.30
+      psi_E: -0.35
+      psi_T: -0.35
+    pct_aggregate: 0.52
+    interpretation: "Grosse Kontext-Differenz. Aehnlich RO — eigene Strategie noetig."
+    status: "low_priority"
+
+  SUB-L-MD:
+    name: "Moldau-Strategie"
+    country: "MD"
+    stores: 10
+    psi_delta_vs_anchor:
+      psi_I: -0.35
+      psi_K: +0.35
+      psi_E: -0.40
+      psi_T: -0.35
+    pct_aggregate: 0.42
+    interpretation: |
+      Groesste Distanz zu DE. Nicht-EU, eigenes Regulierungsregime.
+      Kleiner Markt — Standard-Transfer nicht sinnvoll, eigener Ansatz.
+    status: "low_priority"
+
+  rollout_sequenz: |
+    Phase 1 (2026): DE (Pilot, 780 Filialen)
+    Phase 2 (2027 H1): PL + CZ (groesste Maerkte nach DE)
+    Phase 3 (2027 H2): RO + SK (mittlere Distanz)
+    Phase 4 (2028): HR + BG + MD (groesste Anpassung noetig)
+
+    Prinzip: Naechste Kontexte zuerst (PCT-Distanz aufsteigend)
+
+# =============================================================================
+# D2: SORTIMENTSSTRATEGIE (5 Marktbereiche)
+# =============================================================================
+# Jeder Marktbereich hat eigenes Hygiene-Risikoprofil, eigene Skill-Cluster
+# und eigene Verhaltensherausforderungen.
+# =============================================================================
+
+d2_sortiment:
+
+  SUB-S-FRI:
+    name: "Frische / Theke"
+    marktbereiche: ["Fleisch", "Wurst", "Kaese", "Fisch", "Feinkost"]
+    hygiene_risiko: "HOECHSTES — offene Lebensmittel, Kreuzkontamination"
+    primaer_segment: "WHO-03 (Frischetheken-Personal)"
+    headcount_approx: 25000
+    sbo_cluster: "DOM-HS (Hygiene & Sauberkeit)"
+    relevant_skills: ["SKL-HS-001 bis SKL-HS-005"]
+    psi_spezifisch:
+      psi_I: 0.95  # HACCP-Pflicht, hoechste Regulierungsstufe
+      psi_C: 0.85  # Zeitdruck in Stosszeiten + Temperaturkontrolle
+      psi_M: 0.80  # ATP-Tests, Thermometer, Handschuhe, Haarnetze
+    key_behaviors:
+      - "Haendewaschen zwischen Produktgruppen"
+      - "Temperaturkontrolle alle 2 Stunden"
+      - "FIFO-Prinzip konsequent anwenden"
+      - "Theken-Reinigung zwischen Kund:innen-Peaks"
+    interventions:
+      - ref: "INT-K-001"
+        anpassung: "Timer speziell fuer Temperaturkontrolle"
+      - ref: "INT-K-004"
+        anpassung: "ATP-Tests primaer hier einsetzen"
+    s2_px_relevanz: |
+      Frischetheken-Fachkraefte = wertvolles Talent-Reservoir.
+      Task-basierte Wertschoepfung hier besonders hoch (Fachkompetenz).
+    status: "hoechste_prioritaet"
+
+  SUB-S-TRO:
+    name: "Trockensortiment / Regal"
+    marktbereiche: ["Konserven", "Getraenke", "Haushalt", "Drogerie"]
+    hygiene_risiko: "MITTEL — MHD-Kontrolle, Schaedlingspraevention, Regalreinigung"
+    primaer_segment: "WHO-04 (Verkaufspersonal)"
+    headcount_approx: 75000
+    psi_spezifisch:
+      psi_I: 0.65  # MHD-Regeln klar, aber Enforcement lockerer
+      psi_C: 0.75  # Multitasking: Auffuellen + Reinigen + Kund:innen
+      psi_S: 0.65  # Team-Schichten, Social Proof moeglich
+    key_behaviors:
+      - "MHD-Kontrolle bei Regalauffuellung"
+      - "Regalreinigung als Teil der Auffuell-Routine"
+      - "Bruchware sofort entfernen"
+      - "Schaedlingsfallen kontrollieren"
+    interventions:
+      - ref: "INT-K-003"
+        anpassung: "Habit Stacking: Regal auffuellen = gleichzeitig MHD pruefen"
+      - new: "SUB-S-TRO-001: Schaedlings-Checkliste bei Warenannahme"
+    status: "hoch"
+
+  SUB-S-BAK:
+    name: "Backstube / In-Store Bakery"
+    marktbereiche: ["Brot", "Broetchen", "Feingebaeck", "Kuchen"]
+    hygiene_risiko: "HOCH — Produktionsumgebung, Allergene, Temperatur"
+    primaer_segment: "WHO-03 (Fachkraefte) + Aushilfen"
+    psi_spezifisch:
+      psi_I: 0.90  # Produktions-Hygienestandards (strenger als Verkauf)
+      psi_C: 0.80  # Produktionszyklen = Zeitdruck bei Backzeiten
+      psi_M: 0.85  # Oefen, Mehl, Allergen-Trennung — stark materiell
+    key_behaviors:
+      - "Allergen-Trennung konsequent"
+      - "Reinigung zwischen Produktionszyklen"
+      - "Temperatur-Kontrolle Oefen + Auslage"
+    interventions:
+      - ref: "INT-K-001"
+        anpassung: "Timer an Produktionszyklen koppeln"
+    status: "hoch"
+
+  SUB-S-KAS:
+    name: "Kasse / Checkout"
+    marktbereiche: ["Kassen", "SB-Kassen", "Kundenservice"]
+    hygiene_risiko: "NIEDRIG — kein direkter Lebensmittelkontakt"
+    primaer_segment: "WHO-04 (Verkaufspersonal)"
+    psi_spezifisch:
+      psi_I: 0.50  # Weniger Hygiene-Regulierung
+      psi_S: 0.75  # Hoechste Sichtbarkeit (Kund:innen sehen alles)
+      psi_F: 0.90  # Kund:innen als implizite Auditoren
+    key_behaviors:
+      - "Kassenbereich sauber halten"
+      - "Obst/Gemuese hygienisch scannen"
+      - "Bandtrenner und Scanner reinigen"
+    relevanz_px: |
+      Kasse = hoechste Kund:innen-Interaktion = Frontline fuer Markenimage.
+      PX-relevant: Kommunikationsverhalten, Freundlichkeit, Stressresistenz.
+    status: "mittel"
+
+  SUB-S-LAG:
+    name: "Lager / Logistik"
+    marktbereiche: ["Kuehllager", "Trockenlager", "Wareneingang", "Kommissionierung"]
+    hygiene_risiko: "HOCH — Kuehlketten-Integritaet, unsichtbar fuer Kund:innen"
+    primaer_segment: "WHO-05 (Logistik-Personal)"
+    headcount_approx: 34000
+    psi_spezifisch:
+      psi_I: 0.85  # Kuehlketten-Protokolle streng
+      psi_S: 0.35  # Oft allein, isoliert, unsichtbar
+      psi_C: 0.80  # Zeitdruck bei Anlieferung
+      psi_F: 0.30  # Unsichtbar fuer Kund:innen
+    key_behaviors:
+      - "Kuehlkette nicht unterbrechen"
+      - "Wareneingang sofort kontrollieren"
+      - "Lager-Reinigung nach Plan"
+      - "FIFO im Kuehllager"
+    interventions:
+      - new: "SUB-S-LAG-001: IoT-Kuehlketten-Monitoring (automatisch)"
+      - new: "SUB-S-LAG-002: Wareneingangs-Checkliste mit Timer"
+    besonderheit: |
+      UNSICHTBARKEIT ist der Kern: Lager-Hygiene ist fuer Kund:innen
+      nicht sichtbar, aber fuer Lebensmittelsicherheit kritisch.
+      → Technische Defaults (IoT, Sensoren) statt Social Proof.
+    status: "hoch"
+
+# =============================================================================
+# D3: FILIALTYPEN-STRATEGIE (Cluster)
+# =============================================================================
+
+d3_filialtypen:
+
+  clustering_logik: |
+    Filialen werden nach Psi-Vektor geclustert, nicht nur nach Groesse.
+    Ziel: Kontextbereinigte KPIs — faire Vergleiche innerhalb des Clusters.
+    Ref: INT-K-006 (Kontextbereinigte FK-KPIs)
+
+  SUB-F-GRO:
+    name: "Grossflaechenmaerkte"
+    flaeche: ">10'000 m2"
+    anteil: "~30% der DE-Filialen"
+    psi_spezifisch:
+      psi_F: 0.90     # Grosse Flaeche = mehr Reinigungsaufwand
+      psi_C: 0.85     # Mehr Abteilungen = mehr Koordination
+      psi_S: 0.60     # Groessere Teams = mehr Social Proof
+      psi_E: 0.65     # Mehr Personal, aber auch mehr Umsatz
+    herausforderung: "Koordination ueber viele Abteilungen, grosse Flaeche schwer zu ueberblicken"
+    hebel: "Abteilungsleiter als Mini-Change-Agents, Bereichs-Rankings"
+
+  SUB-F-STD:
+    name: "Standard-Maerkte"
+    flaeche: "5'000-10'000 m2"
+    anteil: "~55% der DE-Filialen"
+    psi_spezifisch:
+      psi_F: 0.75
+      psi_C: 0.70
+      psi_S: 0.55
+    herausforderung: "Repraesentativ — hier muessen Interventionen funktionieren"
+    hebel: "Standard-Interventions-Portfolio direkt anwendbar"
+
+  SUB-F-KOM:
+    name: "Kompakt-Maerkte / Stadtfilialen"
+    flaeche: "<5'000 m2"
+    anteil: "~15% der DE-Filialen"
+    psi_spezifisch:
+      psi_F: 0.60     # Kleinere Flaeche = besser ueberschaubar
+      psi_C: 0.75     # Weniger Personal = mehr Multitasking
+      psi_S: 0.70     # Kleine Teams = starker Social Proof
+      psi_E: 0.45     # Weniger Personalbudget
+    herausforderung: "Wenig Personal, jede:r muss alles machen"
+    hebel: "Kleine Teams = starke Normen, Filialleitung naeher dran"
+
+  SUB-F-CLUSTER:
+    name: "Kontextbasiertes Filial-Clustering"
+    beschreibung: |
+      Ueber die Groessen-Typen hinaus: Filialen nach Psi-Vektor clustern
+      fuer kontextbereinigte Vergleiche. Cluster-Variablen:
+    cluster_variablen:
+      - "Groesse (m2)"
+      - "Standort (Stadt / Vorstadt / Land)"
+      - "Alter (Neubau / Bestand / Modernisiert)"
+      - "Region (Nord / Sued / Ost / West)"
+      - "Personalstruktur (Vollzeit-Anteil, Fluktuation)"
+      - "Kund:innenfrequenz (Hoch / Mittel / Niedrig)"
+      - "Wettbewerbsintensitaet (Aldi/Lidl Naehe)"
+    methode: |
+      K-Means oder hierarchisches Clustering auf Psi-Vektor.
+      Ziel: 8-12 Cluster fuer Deutschland.
+      Innerhalb jedes Clusters: Faire TUEV-Score-Vergleiche.
+    ref_intervention: "INT-K-006 (Kontextbereinigte FK-KPIs)"
+
+# =============================================================================
+# D4: PERSONAL-SEGMENTE (→ KIBSM Referenz)
+# =============================================================================
+
+d4_personal:
+  referenz: "kaufland_strategie_modell.yaml → ten_c_mapping.WHO"
+  segmente: ["WHO-01 bis WHO-08"]
+  note: |
+    Vollstaendig im KIBSM dokumentiert. Hier nur Referenz.
+    Segment-spezifische Interventions-Multiplikatoren (sigma):
+    → kaufland_projekt_sauberkeit.yaml → segment_multipliers
+
+# =============================================================================
+# D5: ZEIT / SCHICHT-STRATEGIE
+# =============================================================================
+
+d5_zeit_schicht:
+
+  SUB-Z-FRU:
+    name: "Fruehschicht-Strategie"
+    zeitraum: "06:00-14:00"
+    psi_spezifisch:
+      psi_C: 0.65  # Morgens noch frisch, aber Wareneingang = Druck
+      psi_S: 0.60  # Volle Besetzung, Teams komplett
+      psi_T: 0.80  # Tagesbeginn = Reset, hoechste Motivation
+    key_behaviors:
+      - "Reinigung bei Schichtbeginn (→ INT-K-003 Habit Stacking)"
+      - "Wareneingang kontrollieren"
+      - "Frischetheken vorbereiten"
+    hebel: "Schichtbeginn = natuerlicher Trigger fuer Hygiene-Routinen"
+
+  SUB-Z-SPA:
+    name: "Spaetschicht-Strategie"
+    zeitraum: "14:00-22:00"
+    psi_spezifisch:
+      psi_C: 0.80  # Muedigkeit + hohe Kund:innenfrequenz
+      psi_S: 0.50  # Duennere Besetzung, mehr Alleinarbeit
+      psi_T: 0.60  # Tagesende = "Fast fertig"-Mentalitaet
+    key_behaviors:
+      - "MHD-Kontrolle vor Ladenschluss"
+      - "Theken-Abbau hygienisch"
+      - "Reinigung TROTZ Muedigkeit"
+    herausforderung: |
+      Present Bias am staerksten (beta sinkt ueber den Tag).
+      Reinigung wird aufgeschoben: "Macht die Nachtschicht."
+    hebel: "Schichtende-Checkliste als Default, klare Uebergabe-Routine"
+
+  SUB-Z-NAC:
+    name: "Nachtschicht-Strategie"
+    zeitraum: "22:00-06:00"
+    psi_spezifisch:
+      psi_C: 0.90  # Hoechste Muedigkeit
+      psi_S: 0.25  # Minimal-Besetzung, fast keine Peers
+      psi_F: 0.20  # Keine Kund:innen = keine impliziten Auditoren
+    key_behaviors:
+      - "Grundreinigung (Boeden, Regale)"
+      - "Kuehlketten-Kontrolle"
+      - "Schaedlingskontrolle"
+    primaer_segment: "WHO-06 (Reinigungskraefte)"
+    herausforderung: |
+      UNSICHTBARKEIT + ISOLATION + MUEDIGKEIT = hoechstes Risiko fuer
+      Hygienemaengel. Kein Social Proof, keine Kund:innen-Kontrolle.
+    hebel: |
+      Technische Defaults muessen Social Proof ersetzen:
+      → IoT-Sensoren, automatische Protokolle, GPS-Tracking der Reinigung
+      → Morgen-Shift sieht Ergebnis = nachgelagertes Feedback
+
+  SUB-Z-STO:
+    name: "Stosszeiten-Strategie"
+    zeitraum: "Samstag, Feiertags-Vorabende, 16:00-19:00 Werktags"
+    psi_spezifisch:
+      psi_C: 0.95  # Extremer Zeitdruck
+      psi_S: 0.70  # Volle Besetzung, aber alle gestresst
+      psi_E: 0.80  # Hoechster Umsatz = Prioritaet auf Verkauf
+    herausforderung: |
+      Hygiene wird dem Umsatzdruck geopfert.
+      "Zuerst Kund:innen bedienen, dann reinigen" = rationale Priorisierung,
+      aber Hygiene leidet.
+    hebel: |
+      Stosszeiten-Hygiene muss AUTOMATISCH sein (Defaults), nicht
+      willentlich. Reinigung = Teil des Workflows, nicht Extra-Aufgabe.
+      → Habit Stacking: Jede Pause = Haende waschen + Arbeitsflaeche wischen
+
+# =============================================================================
+# D6: FUNKTIONALE SUBSTRATEGIEN (10 Funktionen)
+# =============================================================================
+
+d6_funktionen:
+
+  # --------------------------------------------------------------------------
+  # F1: OPERATIONS / VERTRIEB
+  # --------------------------------------------------------------------------
+  SUB-F01-OPS:
+    name: "Operations-Strategie"
+    funktion: "Operations / Vertrieb / Filialsteuerung"
+    verantwortlich: "Verkaufsleiter:innen (WHO-07), Filialleitung (WHO-01)"
+    saeulen_relevanz:
+      s1_sauberkeit: "PRIMAER — Filial-Operations = Ort der Hygiene"
+      s2_px: "HOCH — FK-Qualitaet bestimmt operative Exzellenz"
+      s3_synergie: "KERN — Operations verbindet S1 und S2"
+    verhaltensproblem: |
+      Wie steuert man konsistentes operatives Verhalten in 780 dezentralen
+      Filialen? Jede Filiale ist ein eigenes Mikro-System mit eigenem
+      Psi-Vektor. Zentrale Standards treffen auf lokale Realitaeten.
+    zehn_c_schwerpunkt: ["WHEN", "HIERARCHY", "WHO"]
+    psi_spezifisch:
+      psi_I: 0.85  # Starke interne Prozess-Standards
+      psi_C: 0.80  # Operativer Zeitdruck = Kernherausforderung
+      psi_F: 0.90  # 100% physisch, Filiale = Interventionsfeld
+    key_interventions:
+      - ref: "INT-K-001"
+        rolle: "Smart Defaults fuer operative Prozesse"
+      - ref: "INT-K-002"
+        rolle: "Filial-Ranking als Steuerungsinstrument"
+      - ref: "INT-K-010"
+        rolle: "Verhaltens-Dashboard fuer Filialsteuerung"
+    kpis:
+      - "TUEV-Zertifizierungs-Rate pro Region"
+      - "Checklisten-Completion-Rate"
+      - "Operative Effizienz (Umsatz/MA-Stunde)"
+    status: "aktiv"
+
+  # --------------------------------------------------------------------------
+  # F2: LOGISTIK / SUPPLY CHAIN
+  # --------------------------------------------------------------------------
+  SUB-F02-LOG:
+    name: "Logistik-Strategie"
+    funktion: "Logistik / Supply Chain / Distribution"
+    verantwortlich: "Lager-/Logistikleitung, Transportmanagement"
+    saeulen_relevanz:
+      s1_sauberkeit: "HOCH — Kuehlkette = kritischste Hygiene-Schnittstelle"
+      s2_px: "MITTEL — Logistik-Talente oft unsichtbar im PX-System"
+      s3_synergie: "MITTEL — Daten-Pfad: Logistik-KPIs → FK-Bewertung"
+    verhaltensproblem: |
+      Kuehlketten-Integritaet haengt von individuellem Verhalten ab:
+      Tuer offen lassen, Ware nicht sofort einraeumen, Temperatur nicht
+      pruefen. Alles unsichtbar fuer Kund:innen und oft fuer Management.
+    zehn_c_schwerpunkt: ["WHEN", "AWARE", "HIERARCHY"]
+    psi_spezifisch:
+      psi_I: 0.85  # Kuehlketten-Vorschriften streng
+      psi_S: 0.30  # Hoechste Isolation — oft allein im Kuehllager
+      psi_F: 0.25  # Unsichtbar fuer Kund:innen
+      psi_M: 0.80  # Stark technisch: Kuehlsysteme, Sensoren, LKW
+    key_interventions:
+      - ref: "SUB-S-LAG-001"
+        rolle: "IoT-Kuehlketten-Monitoring"
+      - ref: "SUB-S-LAG-002"
+        rolle: "Wareneingangs-Checkliste mit Timer"
+      - new: "SUB-F02-001: Kuehlketten-Dashboard (Echtzeit, automatisch)"
+      - new: "SUB-F02-002: Anlieferungs-Countdown (Max. 15 Min. bis Kuehlregal)"
+    besonderheit: |
+      Logistik ist die Funktion wo TECHNISCHE DEFAULTS am meisten wirken.
+      Social Proof ist fast unmoeglich (psi_S = 0.30).
+      → IoT, Sensoren, automatische Alarme ersetzen menschliche Kontrolle.
+    kpis:
+      - "Kuehlketten-Unterbrechungen pro Woche"
+      - "Wareneingangs-Geschwindigkeit (Anlieferung → Regal)"
+      - "Temperatur-Abweichungen (automatisch gemessen)"
+    status: "geplant"
+
+  # --------------------------------------------------------------------------
+  # F3: EINKAUF
+  # --------------------------------------------------------------------------
+  SUB-F03-EKF:
+    name: "Einkaufs-Strategie"
+    funktion: "Einkauf / Procurement / Category Management"
+    verantwortlich: "Einkaufsleitung, Category Manager"
+    saeulen_relevanz:
+      s1_sauberkeit: "MITTEL — Lieferantenqualitaet beeinflusst Filialqualitaet"
+      s2_px: "NIEDRIG — Einkauf hat wenig direkte PX-Relevanz"
+      s3_synergie: "NIEDRIG — Upstream-Funktion"
+    verhaltensproblem: |
+      Einkaufsentscheidungen beeinflussen Filialqualitaet indirekt:
+      Billige Verpackungen → mehr Bruchware. Zu viele SKUs → Regalpflege leidet.
+      Lieferanten mit schlechter Hygiene → Problem wird in Filiale sichtbar.
+    zehn_c_schwerpunkt: ["WHAT", "HOW"]
+    psi_spezifisch:
+      psi_I: 0.70  # Lieferanten-Audits, Qualitaetsstandards
+      psi_E: 0.90  # Kostenoptimierung = Kernaufgabe
+      psi_C: 0.50  # Strategische Entscheidungen, weniger Zeitdruck
+    key_interventions:
+      - new: "SUB-F03-001: Lieferanten-Hygiene-Scorecard (Beschaffungsentscheidung)"
+      - new: "SUB-F03-002: Verpackungsqualitaet → Bruchware-KPI verknuepfen"
+    kpis:
+      - "Lieferanten-Hygiene-Score"
+      - "Bruchware-Quote pro Kategorie"
+      - "Reklamationsrate Frische-Sortiment"
+    status: "konzeptionell"
+
+  # --------------------------------------------------------------------------
+  # F4: MARKETING
+  # --------------------------------------------------------------------------
+  SUB-F04-MKT:
+    name: "Marketing-Strategie"
+    funktion: "Marketing / Marke / CRM / Kundenvertrauen"
+    verantwortlich: "Marketing-Leitung, Markenmanagement"
+    saeulen_relevanz:
+      s1_sauberkeit: "HOCH — Vertrauen zurueckgewinnen nach Skandal"
+      s2_px: "MITTEL — Employer Branding fuer Recruiting"
+      s3_synergie: "HOCH — Qualitaetsimage = Kund:innen + MA gleichzeitig"
+    verhaltensproblem: |
+      Kund:innen-Vertrauen ist ein VERHALTENSPARAMETER: Kaufentscheidung,
+      Wiederbesuch, Weiterempfehlung. Nach dem Skandal ist Vertrauen
+      beschaedigt. Wiederaufbau braucht konsistente Signale ueber Zeit.
+    zehn_c_schwerpunkt: ["AWARE", "WHAT", "STAGE"]
+    psi_spezifisch:
+      psi_S: 0.85  # Kund:innen-Verhalten ist hochgradig sozial (WOM)
+      psi_T: 0.75  # Post-Skandal: Vertrauensaufbau braucht Zeit
+      psi_K: 0.60  # Markenwahrnehmung ist kulturell gepraegt
+    key_interventions:
+      - new: "SUB-F04-001: TUEV-Zertifikat als Vertrauenssignal (Filiale + Online)"
+      - new: "SUB-F04-002: Transparenz-Kampagne (offene Kuechen, Hygiene-Live-Daten)"
+      - new: "SUB-F04-003: Kund:innen-Feedback als implizites Audit"
+    kund_innen_verhalten:
+      vertrauen_aktuell: "BESCHAEDIGT (Post-Skandal)"
+      vertrauen_ziel: "Wiederhergestellt durch konsistente Qualitaetssignale"
+      mechanismus: |
+        TUEV-Zertifikat = credible commitment signal
+        Konsistenz ueber 6-12 Monate → Vertrauen rebuilds
+        Ref: Prospect Theory — Vertrauen verlieren ist einfacher als aufbauen
+        (lambda fuer Vertrauensverlust > Vertrauensgewinn)
+    kpis:
+      - "Kund:innen-Zufriedenheit (Hygiene-Dimension)"
+      - "NPS (Net Promoter Score) Post-Skandal Trend"
+      - "Wiederkaufrate in betroffenen Filialen"
+    status: "geplant"
+
+  # --------------------------------------------------------------------------
+  # F5: HR / PEOPLE
+  # --------------------------------------------------------------------------
+  SUB-F05-HR:
+    name: "HR / People-Strategie"
+    funktion: "Human Resources / People Experience / FK-Entwicklung"
+    verantwortlich: "PX-Team (Dammeyer, Karg, Oster, Luisa)"
+    saeulen_relevanz:
+      s1_sauberkeit: "MITTEL — Recruiting, Onboarding, Schulung"
+      s2_px: "PRIMAER — Kern des PX-Projekts"
+      s3_synergie: "HOCH — HR verbindet FK-Qualitaet mit operativer Leistung"
+    verhaltensproblem: |
+      3 Verhaltens-Probleme in HR:
+      1. EVALUATIONS-BIAS: FK-Bewertungen sind subjektiv und noisy
+         (Kahneman 2021, Noise). Inter-Rater-Reliabilitaet unbekannt.
+      2. TALENT-UNSICHTBARKEIT: Talente in Lager, Kasse, Nachtschicht
+         werden systematisch uebersehen (Visibility Bias).
+      3. FLUKTUATION: 20-30% p.a. im LEH. Onboarding muss Hygiene-
+         Standards SOFORT verankern (nicht erst nach 3 Monaten).
+    zehn_c_schwerpunkt: ["WHO", "AWARE", "STAGE", "READY"]
+    psi_spezifisch:
+      psi_I: 0.55  # HR-Prozesse weniger reguliert als Hygiene
+      psi_S: 0.70  # FK-Evaluation ist hochgradig sozial
+      psi_C: 0.60  # Strategische Entscheidungen, aber unter Ressourcendruck
+    key_interventions:
+      - ref: "INT-K-006"
+        rolle: "Kontextbereinigte FK-KPIs"
+      - ref: "INT-K-007"
+        rolle: "Bias-Reduktion FK-Evaluation"
+      - ref: "INT-K-008"
+        rolle: "Task-basierte Wertschoepfungsanalyse"
+      - ref: "INT-K-009"
+        rolle: "Hidden Talent Discovery"
+      - ref: "INT-K-011"
+        rolle: "Evidenzbasierte FK-Pipeline"
+      - new: "SUB-F05-001: Onboarding-Hygiene-Modul (Tag 1 = Hygiene-Standard)"
+      - new: "SUB-F05-002: Exit-Interview Hygiene-Dimension"
+    kpis:
+      - "Inter-Rater-Reliabilitaet FK-Evaluationen"
+      - "Talent-Entdeckungs-Rate (datenbasiert vs. subjektiv)"
+      - "Fluktuation pro Filial-Cluster"
+      - "Time-to-Competency Onboarding (Tage bis HACCP-konform)"
+    status: "exploration"
+
+  # --------------------------------------------------------------------------
+  # F6: QUALITY / COMPLIANCE
+  # --------------------------------------------------------------------------
+  SUB-F06-QUA:
+    name: "Quality / Compliance-Strategie"
+    funktion: "Qualitaetsmanagement / HACCP / TUEV / Audits"
+    verantwortlich: "QM-Leitung, Hygiene-Beauftragte, TUEV-Koordination"
+    saeulen_relevanz:
+      s1_sauberkeit: "PRIMAER — Quality = Messinfrastruktur fuer Sauberkeit"
+      s2_px: "HOCH — Objektive KPIs fuer FK-Evaluation"
+      s3_synergie: "KERN — Quality liefert den DATEN-PFAD (V2)"
+    verhaltensproblem: |
+      Audit-Muedigkeit: Zu viele Checklisten → Compliance-Fatigue.
+      Audits werden als Kontrolle empfunden, nicht als Hilfe.
+      Gleichzeitig: Ohne Messung kein Management.
+      Balance zwischen Kontrolle und Autonomie ist der Kern.
+    zehn_c_schwerpunkt: ["AWARE", "HOW", "WHEN"]
+    psi_spezifisch:
+      psi_I: 0.95  # Hoechste Regulierung (HACCP, TUEV, Behoerden)
+      psi_C: 0.70  # Audit-Last als kognitive Belastung
+      psi_M: 0.85  # Checklisten, ATP-Tests, TUEV-Zertifikate
+    key_interventions:
+      - ref: "INT-K-004"
+        rolle: "ATP-Feedback-Loop"
+      - ref: "INT-K-005"
+        rolle: "TUEV-Stolz als Identity Signal"
+      - new: "SUB-F06-001: Self-Assessment VOR Fremd-Audit (Autonomie)"
+      - new: "SUB-F06-002: Positive Audits (suchen was GUT laeuft)"
+      - new: "SUB-F06-003: Audit-Frequenz dynamisch (gute Filialen → weniger)"
+    anti_crowding: |
+      KRITISCH: Ueberkontrolle zerstoert intrinsische Motivation.
+      → Self-Assessment zuerst → Fremd-Audit als Bestaetigung
+      → Positive Audits: "Was laeuft gut?" vor "Was laeuft schlecht?"
+      → Dynamische Frequenz: Gute Filialen werden belohnt mit WENIGER Audits
+    kpis:
+      - "TUEV-Zertifizierungs-Rate"
+      - "Audit-Muedigkeits-Index (MA-Befragung)"
+      - "Self-Assessment vs. Fremd-Audit Korrelation"
+    status: "aktiv"
+
+  # --------------------------------------------------------------------------
+  # F7: IT / DIGITAL
+  # --------------------------------------------------------------------------
+  SUB-F07-IT:
+    name: "IT / Digital-Strategie"
+    funktion: "IT / Schwarz Digits / STACKIT / Digitalisierung"
+    verantwortlich: "Schwarz Digits, IT-Leitung Kaufland"
+    saeulen_relevanz:
+      s1_sauberkeit: "ENABLER — Digitale Checklisten, IoT, Dashboards"
+      s2_px: "ENABLER — FK-Evaluations-Tool, Talent-Analytics"
+      s3_synergie: "ENABLER — Integriertes Verhaltens-Dashboard"
+    verhaltensproblem: |
+      Tool-Adoption: Viele Filialen arbeiten noch analog (Papier-Checklisten).
+      Umstellung auf digitale Tools braucht Verhaltensaenderung bei MA
+      die teilweise geringe Digitalaffinitaet haben.
+    zehn_c_schwerpunkt: ["WHEN (Psi_M)", "AWARE", "READY"]
+    psi_spezifisch:
+      psi_M: 0.70  # Transitionsphase analog → digital
+      psi_C: 0.65  # Neue Tools = kognitive Zusatzlast
+      psi_K: 0.50  # Digitalaffinitaet variiert stark nach Segment
+    key_interventions:
+      - ref: "INT-K-010"
+        rolle: "Verhaltens-Dashboard (Kern-Deliverable IT)"
+      - new: "SUB-F07-001: Papier → Digital Migration (schrittweise, nicht Big Bang)"
+      - new: "SUB-F07-002: IoT-Hygiene-Infrastruktur (Sensoren, Alarme)"
+      - new: "SUB-F07-003: Mobile-First Checklisten (Smartphone statt Terminal)"
+    besonderheit: |
+      IT ist NICHT Selbstzweck. Jedes Tool muss ein Verhaltensproblem loesen:
+      → Digitale Checkliste loest: Papier geht verloren, keine Auswertung
+      → IoT-Sensor loest: Kuehlkette wird nicht kontrolliert (psi_S niedrig)
+      → Dashboard loest: FK hat keinen Ueberblick (Awareness Gap)
+    kpis:
+      - "Digital-Checklisten Adoption Rate (% Filialen)"
+      - "IoT-Sensor Coverage (% Kuehlgeraete)"
+      - "Dashboard-Nutzung (taeglich aktive FK)"
+    status: "geplant"
+
+  # --------------------------------------------------------------------------
+  # F8: KOMMUNIKATION
+  # --------------------------------------------------------------------------
+  SUB-F08-KOM:
+    name: "Kommunikations-Strategie"
+    funktion: "Interne Kommunikation / Externe Kommunikation / Krisenkommunikation"
+    verantwortlich: "Unternehmenskommunikation, PR"
+    saeulen_relevanz:
+      s1_sauberkeit: "HOCH — Framing: 'Qualitaetsoffensive' nicht 'Schadensbegrenzung'"
+      s2_px: "MITTEL — Interne Kommunikation zu PX-Massnahmen"
+      s3_synergie: "HOCH — Ein Narrativ fuer beide Projekte"
+    verhaltensproblem: |
+      Framing bestimmt Wahrnehmung:
+      "Wir muessen Hygiene verbessern" (Defizit-Frame) → Reaktanz
+      "Wir sind auf dem Weg zum Qualitaetsfuehrer" (Ziel-Frame) → Motivation
+      Kommunikation muss das GLEICHE Verhalten unterschiedlich framen
+      fuer verschiedene Zielgruppen.
+    zehn_c_schwerpunkt: ["AWARE", "WHAT"]
+    psi_spezifisch:
+      psi_S: 0.80  # Kommunikation IST sozial
+      psi_K: 0.70  # Sprache, Kultur, Register variieren stark
+      psi_C: 0.50  # Botschaften muessen einfach sein (kognitive Last gering)
+    key_interventions:
+      - new: "SUB-F08-001: Zwei-Frame-Strategie (intern: Stolz, extern: Transparenz)"
+      - new: "SUB-F08-002: Mehrsprachige Hygiene-Kommunikation (Top 5 Sprachen)"
+      - new: "SUB-F08-003: Erfolgsgeschichten-Pipeline (Best Practice pro Monat)"
+    framing_matrix:
+      intern_ma:
+        frame: "Stolz — Wir sind qualitaetsbewusst"
+        tone: "Empowerment, Team-Spirit"
+        kanal: "Intranet, Team-Meetings, Aushang"
+      intern_fk:
+        frame: "Verantwortung — Ihr seid die Change Agents"
+        tone: "Professionell, ergebnisorientiert"
+        kanal: "FK-Konferenz, Dashboard, 1:1"
+      extern_kund_innen:
+        frame: "Transparenz — Seht was wir tun"
+        tone: "Ehrlich, konkret, belegt (TUEV)"
+        kanal: "Filiale (Zertifikat), Website, Social Media"
+      extern_medien:
+        frame: "Transformation — Vom Problem zur Loesung"
+        tone: "Faktenbasiert, proaktiv"
+        kanal: "Pressemitteilungen, Interviews"
+    kpis:
+      - "Kommunikations-Reichweite intern (% MA erreicht)"
+      - "Framing-Konsistenz (Audit interne Medien)"
+      - "Medien-Sentiment-Trend (positiv/negativ)"
+    status: "geplant"
+
+  # --------------------------------------------------------------------------
+  # F9: FACILITY MANAGEMENT
+  # --------------------------------------------------------------------------
+  SUB-F09-FAC:
+    name: "Facility Management-Strategie"
+    funktion: "Gebaeudeunterhalt / Reinigungsvertraege / Haustechnik"
+    verantwortlich: "FM-Leitung, externe Dienstleister"
+    saeulen_relevanz:
+      s1_sauberkeit: "HOCH — Gebaeudesubstanz bestimmt Reinigbarkeit"
+      s2_px: "NIEDRIG — Wenig direkte PX-Relevanz"
+      s3_synergie: "MITTEL — Infrastruktur ermoeglicht/verhindert Verhalten"
+    verhaltensproblem: |
+      Facility Management beeinflusst Verhalten INDIREKT:
+      → Alte Boeden sind SCHWERER zu reinigen → MA geben auf
+      → Defekte Kuehlgeraete → Kuehlkette KANN nicht gehalten werden
+      → Fehlende Handwaschbecken → Haendewaschen = Extra-Aufwand
+      Choice Architecture via physische Umgebung.
+    zehn_c_schwerpunkt: ["WHEN (Psi_F, Psi_M)"]
+    psi_spezifisch:
+      psi_F: 0.85  # Physische Umgebung IST das Interventionsfeld
+      psi_M: 0.80  # Gebaeudesubstanz als materieller Kontext
+      psi_E: 0.70  # 500 Mio EUR/Jahr Investment
+    key_interventions:
+      - new: "SUB-F09-001: Reinigbarkeits-Audit (Boeden, Oberflaechen, Fugen)"
+      - new: "SUB-F09-002: Handwaschbecken-Proximity (max. 10m in Frische)"
+      - new: "SUB-F09-003: Modernisierungs-Priorisierung nach Hygiene-Impact"
+    besonderheit: |
+      FM ist CHOICE ARCHITECTURE durch die physische Umgebung:
+      Handwaschbecken NEBEN der Theke = Default "waschen"
+      Handwaschbecken 30m ENTFERNT = Default "nicht waschen"
+      → Die billigste Intervention: Infrastruktur fuer Hygiene optimieren.
+    kpis:
+      - "Reinigbarkeits-Score pro Filiale"
+      - "Handwaschbecken-Dichte (pro Frische-m2)"
+      - "Kuehlgeraete-Ausfallrate"
+    status: "konzeptionell"
+
+  # --------------------------------------------------------------------------
+  # F10: FINANCE / CONTROLLING
+  # --------------------------------------------------------------------------
+  SUB-F10-FIN:
+    name: "Finance / Controlling-Strategie"
+    funktion: "Budget / Reporting / Investitionssteuerung / ROI"
+    verantwortlich: "CFO-Organisation, Controlling"
+    saeulen_relevanz:
+      s1_sauberkeit: "MITTEL — Budget-Allokation, ROI-Messung"
+      s2_px: "MITTEL — Business Case fuer FK-Investitionen"
+      s3_synergie: "HOCH — ROI der Komplementaritaet quantifizieren"
+    verhaltensproblem: |
+      Finance-Verhalten beeinflusst ALLE anderen Funktionen:
+      → Budget-Entscheidungen bestimmen, welche Interventionen moeglich sind
+      → ROI-Anforderungen bestimmen, welche Projekte ueberleben
+      → Reporting bestimmt, was sichtbar ist (und was nicht)
+      Bias: Kurzfristige Kosten sind sichtbar, langfristige Praevention nicht.
+    zehn_c_schwerpunkt: ["HIERARCHY", "WHAT"]
+    psi_spezifisch:
+      psi_I: 0.80  # Strenge Budgetprozesse (Schwarz-Gruppe)
+      psi_E: 0.95  # Kosten-Effizienz ist DNA der Schwarz-Gruppe
+      psi_T: 0.70  # Quartals-/Jahreszyklen bestimmen Entscheidungen
+    key_interventions:
+      - new: "SUB-F10-001: Praevention-vs-Reaktion Kostentransparenz"
+      - new: "SUB-F10-002: Synergy ROI Dashboard (gamma-Effekt monetarisieren)"
+      - new: "SUB-F10-003: Langfrist-KPI Integration (nicht nur Quartal)"
+    besonderheit: |
+      KERNFRAGE fuer Finance: Was kostet schlechte Hygiene?
+      → Skandal-Kosten: Umsatzrueckgang, Imageschaden, Rechtskosten
+      → Praventions-Kosten: 500 Mio EUR/Jahr klingt viel
+      → Aber: Praevention/Skandal-Kosten-Ratio zeigt klaren ROI
+      → Synergie-ROI: Wenn gamma(S1,S2) = 0.35, dann sind die
+         kombinierten Projekte 35% wertvoller als die Summe.
+    kpis:
+      - "Kosten pro TUEV-Zertifizierung (abnehmend)"
+      - "Praevention-vs-Reaktion Verhaeltnis"
+      - "ROI Interventions-Portfolio (6/12/24 Monate)"
+      - "Synergy Value (Delta zum additiven Modell)"
+    status: "konzeptionell"
+
+# =============================================================================
+# CROSS-REFERENZ-MATRIX: Dimensionen x Saeulen
+# =============================================================================
+
+cross_references:
+
+  matrix_saeulen_x_dimensionen: |
+
+    Dimension        S1 Sauberkeit    S2 PX              S3 Synergie
+    ─────────────────────────────────────────────────────────────────
+    D1 Laender       PCT pro Land     PCT pro Land        gamma pro Land
+    D2 Sortiment     Hygiene-Risiko   Talent pro Bereich  Daten-Pfad
+    D3 Filialtyp     Kontext-KPIs     Cluster-Vergleich   Faire Benchmarks
+    D4 Segmente      → KIBSM          → KIBSM             → KIBSM
+    D5 Schichten     Zeitspezifisch   FK-Praesenz         Schicht-Dashboard
+    D6 Funktionen    Ops/Qual/Fac     HR/Kom              Alle verbinden
+
+  schnittstellen:
+    - dims: ["D1 x D2"]
+      beschreibung: "Sortiment-Mix variiert nach Land (PL: weniger Backstuben)"
+    - dims: ["D1 x D5"]
+      beschreibung: "Arbeitszeitrecht variiert nach Land (DE: Nachtschicht-Regeln)"
+    - dims: ["D2 x D4"]
+      beschreibung: "Segment-Zuordnung pro Sortiment (Frische = WHO-03)"
+    - dims: ["D3 x D5"]
+      beschreibung: "Stosszeiten variieren nach Filialtyp (Stadt vs. Land)"
+    - dims: ["D6 x D1"]
+      beschreibung: "Funktionale Organisation variiert nach Land"
+    - dims: ["D6 x D2"]
+      beschreibung: "Quality-Anforderungen variieren nach Sortiment"
+
+# =============================================================================
+# PRIORISIERUNG
+# =============================================================================
+
+priorisierung:
+
+  sofort_q1_q2_2026:
+    - "SUB-L-DE (Deutschland — Pilot laeuft)"
+    - "SUB-F01-OPS (Operations — Kern von S1)"
+    - "SUB-F06-QUA (Quality — TUEV-Zertifizierung)"
+    - "SUB-S-FRI (Frische — hoechstes Risiko)"
+    - "SUB-S-LAG (Lager — Kuehlkette)"
+
+  mittelfristig_q3_q4_2026:
+    - "SUB-F05-HR (People Experience Pilot)"
+    - "SUB-F07-IT (Digitale Infrastruktur)"
+    - "SUB-F08-KOM (Framing-Strategie)"
+    - "SUB-F04-MKT (Vertrauens-Rebuilding)"
+    - "SUB-Z-NAC (Nachtschicht — hoechstes Unsichtbarkeits-Risiko)"
+
+  langfristig_2027:
+    - "SUB-L-PL + SUB-L-CZ (Internationale Skalierung Phase 2)"
+    - "SUB-F10-FIN (Synergy ROI quantifizieren)"
+    - "SUB-F03-EKF (Upstream-Qualitaet)"
+    - "SUB-F09-FAC (Infrastruktur-Optimierung)"
+    - "SUB-F-CLUSTER (Kontextbasiertes Filial-Clustering)"
+
+  spaeter_2028:
+    - "SUB-L-RO + SUB-L-SK + SUB-L-HR + SUB-L-BG + SUB-L-MD"
+
+# =============================================================================
+# METADATEN
+# =============================================================================
+
+_changelog:
+  - version: "1.0"
+    date: "2026-02-20"
+    author: "EBF/Claude"
+    changes: |
+      Initiale Erstellung der Kaufland Substrategien.
+      6 Dimensionen: Laender (8), Sortiment (5), Filialtypen (3+Cluster),
+      Personal (→KIBSM), Zeit/Schicht (4), Funktionen (10).
+      31 Substrategien mit Psi-Vektoren, Interventionen, KPIs.

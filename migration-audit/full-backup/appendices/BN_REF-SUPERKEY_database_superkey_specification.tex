@@ -1,0 +1,889 @@
+% =============================================================================
+% APPENDIX BN: REF-SUPERKEY: Database Superkey Specification
+% =============================================================================
+% Category: REF (Reference)
+% Module: BCM2_00_META
+% Version: 1.0 (January 2026)
+% Status: Final
+% Language: English
+%
+% This appendix defines the unified superkey system for all EBF databases,
+% ensuring referential integrity and consistent cross-database linking.
+%
+% =============================================================================
+
+% =============================================================================
+% CROSS-REFERENCE STRUCTURE
+% =============================================================================
+%
+% CHAPTER LINKAGE (Required):
+% - Primary Chapter: N/A (Meta-Infrastructure)
+% - Secondary Chapters: All chapters that reference data registries
+%
+% DEPENDENCIES (what this appendix REQUIRES):
+% - None (foundational specification)
+%
+% DEPENDENTS (what REQUIRES this appendix):
+% - All data registries (model-registry.yaml, session-registry.yaml, etc.)
+% - Appendix BBB (CORE-WHERE): Parameter references
+% - Appendix G (Glossary): Symbol definitions
+%
+% =============================================================================
+
+\chapter{REF-SUPERKEY: Database Superkey Specification}
+\label{app:superkey}
+
+
+% -----------------------------------------------------------------------------
+% HEADER BLOCK
+% -----------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=Appendix Metadata]
+
+\textbf{Appendix:} BN REF-SUPERKEY
+
+\textbf{Category:} REF (Reference)
+
+\textbf{Version:} 1.0 (January 2026)
+
+\textbf{Status:} Final
+
+\textbf{Language:} English
+
+\textbf{Purpose:} Defines the unified superkey system for all EBF databases, ensuring referential integrity and consistent cross-database linking.
+
+\end{tcolorbox}
+
+
+% -----------------------------------------------------------------------------
+% CHAPTER LINKAGE BOX
+% -----------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black,
+    title=Chapter Linkage]
+
+\textbf{Primary Chapter:} Meta-Infrastructure (no dedicated chapter)
+
+\textbf{Secondary Chapters:}
+\begin{itemize}[nosep]
+\item All chapters --- reference entities via superkeys
+\item CLAUDE.md --- operational implementation
+\end{itemize}
+
+\textbf{Reading Guide:}
+\begin{itemize}[nosep]
+\item For conceptual overview: Read Section~\ref{sec:superkey-fundamental} first
+\item For implementation: See Section~\ref{sec:superkey-specification}
+\item For migration: See Section~\ref{sec:superkey-migration}
+\end{itemize}
+
+\end{tcolorbox}
+
+
+% -----------------------------------------------------------------------------
+% ABSTRACT
+% -----------------------------------------------------------------------------
+
+\begin{abstract}
+This appendix specifies the unified superkey system for all EBF databases.
+A superkey is a unique identifier that enables cross-database referencing
+and ensures referential integrity. The specification covers 13 entity types
+across 5 hierarchical levels: Organisation, Knowledge, Output, Action, and Learning.
+Key design decisions include: hierarchical keys for customer-bound entities,
+flat keys for global knowledge entities, version management via attributes
+rather than key modification, and PAP- prefix for papers to prevent LLM hallucination.
+\end{abstract}
+
+
+% -----------------------------------------------------------------------------
+% QUICK REFERENCE BOX
+% -----------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=Quick Reference: Superkey Specification]
+
+\textbf{Core Question:} How do we uniquely identify and link entities across EBF databases?
+
+\textbf{Key Pattern:}
+\begin{equation}
+\text{SUPERKEY} = \text{PREFIX} + \text{[-HIERARCHY]} + \text{-SEQUENCE}
+\end{equation}
+
+\textbf{Entity Types (13):}
+\begin{itemize}[nosep]
+\item \textbf{Organisation:} CUS (Customer), PRJ (Project)
+\item \textbf{Knowledge:} EBF-S (Session), MOD (Model), MS (Theory), PAR (Parameter), CAS (Case), CON (Concept), FRM (Formula), PAP (Paper)
+\item \textbf{Output:} OUT (Output)
+\item \textbf{Action:} INT (Intervention)
+\item \textbf{Learning:} INO-L (Innosuisse Learning)
+\end{itemize}
+
+\textbf{Cross-References:} Appendix G (Glossary), Appendix BBB (CORE-WHERE)
+\end{tcolorbox}
+
+
+% -----------------------------------------------------------------------------
+% SCOPE BOX
+% -----------------------------------------------------------------------------
+
+\begin{tcolorbox}[
+    colback=orange!5!white,
+    colframe=orange!75!black,
+    title={\textbf{Appendix Scope: Ziel / In-Scope / Out-of-Scope / Constraints}},
+    fonttitle=\bfseries
+]
+
+\textbf{Ziel (Objective):}
+\begin{itemize}[nosep]
+    \item Define a unified, consistent superkey system for all EBF databases
+\end{itemize}
+
+\textbf{In-Scope:}
+\begin{itemize}[nosep]
+    \item Superkey format specification for all 13 entity types
+    \item Naming conventions and syntax rules
+    \item Cross-reference patterns between entities
+    \item Version management strategy
+    \item Migration plan from legacy identifiers
+\end{itemize}
+
+\textbf{Out-of-Scope (delegiert an andere Appendices):}
+\begin{itemize}[nosep]
+    \item Database schema details $\rightarrow$ Individual registry files
+    \item Parameter values $\rightarrow$ Appendix BBB (CORE-WHERE)
+    \item Symbol definitions $\rightarrow$ Appendix G (Glossary)
+\end{itemize}
+
+\textbf{Constraints (Anwendungsgrenzen):}
+\begin{itemize}[nosep]
+    \item All new entities MUST use this specification
+    \item Legacy identifiers require migration (see Section~\ref{sec:superkey-migration})
+    \item Superkeys are immutable once assigned (no renaming)
+\end{itemize}
+
+\textbf{Lieferobjekte (Deliverables):}
+\begin{itemize}[nosep]
+    \item Complete superkey format table (Table~\ref{tab:superkey-formats})
+    \item Axiom system (SK-1 to SK-9)
+    \item Migration mapping (Table~\ref{tab:superkey-migration})
+    \item Validation rules for automated checking
+\end{itemize}
+
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Fundamental Question}
+\label{sec:superkey-fundamental}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Why This Matters}
+
+The EBF framework operates across multiple interconnected databases:
+\begin{itemize}
+    \item \texttt{model-registry.yaml} --- Behavioral models
+    \item \texttt{model-building-session.yaml} --- Analysis sessions
+    \item \texttt{parameter-registry.yaml} --- Behavioral parameters
+    \item \texttt{intervention-registry.yaml} --- Projects and interventions
+    \item \texttt{case-registry.yaml} --- Precedent cases
+    \item \texttt{output-registry.yaml} --- Generated deliverables
+    \item \texttt{concept-registry.yaml} --- EIP-validated concepts
+    \item \texttt{formula-registry.yaml} --- Mathematical formulas
+    \item \texttt{theory-catalog.yaml} --- Scientific theories
+    \item \texttt{innosuisse-learning-database.yaml} --- Project-specific learnings
+    \item Customer databases (\texttt{data/customers/})
+\end{itemize}
+
+Without a unified identifier system, cross-referencing becomes error-prone
+and data integrity cannot be guaranteed.
+
+\subsection{The Core Problem}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black,
+    title=The Fundamental Question]
+\textbf{How do we uniquely identify every entity in the EBF ecosystem
+and maintain referential integrity across all databases?}
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Core Theory}
+\label{sec:superkey-theory}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This section defines the theoretical foundation of the superkey system.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Superkey Specification}
+\label{sec:superkey-specification}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Design Principles}
+
+The superkey system follows five design principles:
+
+\begin{enumerate}
+    \item \textbf{Uniqueness:} Every superkey identifies exactly one entity
+    \item \textbf{Stability:} Superkeys never change after assignment
+    \item \textbf{Readability:} Superkeys are human-readable and meaningful
+    \item \textbf{Hierarchy:} Customer-bound entities embed customer context
+    \item \textbf{Simplicity:} Prefer short keys with attributes over long keys
+\end{enumerate}
+
+\subsection{Entity Hierarchy}
+
+\begin{figure}[htbp]
+\centering
+\begin{verbatim}
+┌─────────────────────────────────────────────────────────────────────────┐
+│  LEVEL 1: ORGANISATION                                                  │
+│  ─────────────────────                                                  │
+│  CUS-{CODE}                     Customer    CUS-ALPLA, CUS-UBS          │
+│      │                                                                  │
+│      └──► CUS-{CODE}-PRJ-{NNN}  Project     CUS-ALPLA-PRJ-001           │
+│                                                                         │
+│  LEVEL 2: KNOWLEDGE (global, flat)                                      │
+│  ─────────────────────────────────                                      │
+│  EBF-S-{YYYY-MM-DD}-{DOM}-{NN}  Session     EBF-S-2026-01-25-REL-01     │
+│  MOD-{NNN|SEM}                  Model       MOD-001, MOD-PSF            │
+│  MS-{CAT}-{NNN}                 Theory      MS-RD-001 (historical)      │
+│  PAR-{TYP}-{NNN}                Parameter   PAR-BEH-001                 │
+│  CAS-{NNN}                      Case        CAS-001                     │
+│  CON-{YYYY}-{NNN}               Concept     CON-2026-001                │
+│  FRM-{NNN}                      Formula     FRM-001                     │
+│  PAP-{BibKey}                   Paper       PAP-PAP-kahneman1979prospectprospect    │
+│                                                                         │
+│  LEVEL 3: OUTPUT (session-bound via attribute)                          │
+│  ─────────────────────────────────────────────                          │
+│  OUT-{NNN}                      Output      OUT-001                     │
+│      → session_ref: EBF-S-...                                           │
+│                                                                         │
+│  LEVEL 4: ACTION (project-bound)                                        │
+│  ───────────────────────────────                                        │
+│  CUS-{CODE}-PRJ-{NNN}-INT-{NN}  Intervention CUS-ALPLA-PRJ-001-INT-01   │
+│                                                                         │
+│  LEVEL 5: LEARNING (project-specific knowledge capture)                 │
+│  ──────────────────────────────────────────────────────                 │
+│  INO-L-{YYYY-MM-DD}-{CAT}-{NNN} Learning     INO-L-2026-01-27-DOC-001   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+\end{verbatim}
+\caption{Superkey Hierarchy}
+\label{fig:superkey-hierarchy}
+\end{figure}
+
+\subsection{Complete Format Specification}
+
+\begin{table}[htbp]
+\centering
+\caption{Superkey Formats by Entity Type}
+\label{tab:superkey-formats}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}llllp{3.5cm}@{}}
+\toprule
+\textbf{Entity} & \textbf{Prefix} & \textbf{Format} & \textbf{Example} & \textbf{Notes} \\
+\midrule
+\multicolumn{5}{l}{\textit{Organisation Level}} \\
+Customer & CUS & CUS-\{CODE\} & CUS-ALPLA & CODE: 2-6 chars, natural \\
+Project & PRJ & CUS-\{CODE\}-PRJ-\{NNN\} & CUS-ALPLA-PRJ-001 & Hierarchical under customer \\
+\midrule
+\multicolumn{5}{l}{\textit{Knowledge Level}} \\
+Session & EBF-S & EBF-S-\{DATE\}-\{DOM\}-\{NN\} & EBF-S-2026-01-25-REL-01 & Date: YYYY-MM-DD \\
+Model & MOD & MOD-\{NNN$|$SEM\} & MOD-001, MOD-PSF & Semantic IDs allowed \\
+Theory & MS & MS-\{CAT\}-\{NNN\} & MS-RD-001 & Historical exception \\
+Parameter & PAR & PAR-\{TYP\}-\{NNN\} & PAR-BEH-001 & TYP: BEH, CTX, INT, CMP \\
+Case & CAS & CAS-\{NNN\} & CAS-001 & 3-digit sequence \\
+Concept & CON & CON-\{YYYY\}-\{NNN\} & CON-2026-001 & Year of creation \\
+Formula & FRM & FRM-\{NNN\} & FRM-001 & 3-digit sequence \\
+Paper & PAP & PAP-\{BibKey\} & PAP-PAP-kahneman1979prospectprospect & Prevents hallucination \\
+\midrule
+\multicolumn{5}{l}{\textit{Output Level}} \\
+Output & OUT & OUT-\{NNN\} & OUT-001 & + session\_ref attribute \\
+\midrule
+\multicolumn{5}{l}{\textit{Action Level}} \\
+Intervention & INT & CUS-\{CODE\}-PRJ-\{NNN\}-INT-\{NN\} & CUS-ALPLA-PRJ-001-INT-01 & Hierarchical under project \\
+\midrule
+\multicolumn{5}{l}{\textit{Learning Level}} \\
+Learning & INO-L & INO-L-\{DATE\}-\{CAT\}-\{NNN\} & INO-L-2026-01-27-DOC-001 & Date: YYYY-MM-DD, CAT: category \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Domain Codes}
+
+Session superkeys include a domain code:
+
+\begin{table}[htbp]
+\centering
+\caption{Domain Codes for Sessions}
+\label{tab:domain-codes}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Code} & \textbf{Domain} \\
+\midrule
+REL & Religion \\
+FIN & Finance \\
+HLT & Health \\
+ENV & Environment \\
+POL & Policy \\
+ORG & Organisation \\
+EDU & Education \\
+COG & Cognitive \\
+OTH & Other \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Parameter Type Codes}
+
+Parameter superkeys include a type code:
+
+\begin{table}[htbp]
+\centering
+\caption{Parameter Type Codes}
+\label{tab:param-codes}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Code} & \textbf{Type} \\
+\midrule
+BEH & Behavioral (λ, β, γ, etc.) \\
+CTX & Contextual (τ, trust, etc.) \\
+INT & Intervention effect sizes (E\_i) \\
+CMP & Complementarity (γ\_ij) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Learning Category Codes}
+
+Learning superkeys include a category code:
+
+\begin{table}[htbp]
+\centering
+\caption{Learning Category Codes}
+\label{tab:learning-codes}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Code} & \textbf{Category} \\
+\midrule
+DOC & Dokument-Erstellung und -Adaption \\
+PROC & Prozess und Workflow \\
+TECH & Technische Aspekte \\
+COMM & Kommunikation und Feedback \\
+QA & Qualitätssicherung \\
+MEET & Meeting-Verarbeitung \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Axioms and Formal Definitions}
+\label{sec:superkey-axioms}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom SK-1: Uniqueness]
+\textbf{Statement:} $\forall e_1, e_2 \in \mathcal{E}: \text{SK}(e_1) = \text{SK}(e_2) \Rightarrow e_1 = e_2$
+
+\textbf{Interpretation:} Every superkey identifies exactly one entity.
+
+\textbf{Implication:} Duplicate superkeys are forbidden; validation must reject them.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom SK-2: Immutability]
+\textbf{Statement:} $\forall e \in \mathcal{E}, \forall t_1 < t_2: \text{SK}(e, t_1) = \text{SK}(e, t_2)$
+
+\textbf{Interpretation:} Superkeys never change after assignment.
+
+\textbf{Implication:} Renaming requires deprecation + new entity creation.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom SK-3: Prefix Determinism]
+\textbf{Statement:} $\text{Type}(e) = f(\text{Prefix}(\text{SK}(e)))$
+
+\textbf{Interpretation:} The prefix uniquely determines the entity type.
+
+\textbf{Implication:} CUS- is always a customer, MOD- is always a model.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom SK-4: Hierarchical Embedding]
+\textbf{Statement:} $\text{Parent}(e) = \text{Extract}(\text{SK}(e))$ for hierarchical entities
+
+\textbf{Interpretation:} Child entities embed their parent's superkey.
+
+\textbf{Implication:} CUS-ALPLA-PRJ-001 → parent is CUS-ALPLA.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom SK-5: Separator Consistency]
+\textbf{Statement:} $\text{Separator} = \text{``-''} \quad \forall \text{SK}$
+
+\textbf{Interpretation:} All superkeys use hyphen as the only separator.
+
+\textbf{Implication:} No underscores, dots, or other separators allowed.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom SK-6: Version Externality]
+\textbf{Statement:} $\text{Version}(e) \notin \text{SK}(e)$
+
+\textbf{Interpretation:} Version information is stored as an attribute, not in the superkey.
+
+\textbf{Implication:} MOD-PSF has version: 2.0 as attribute, not MOD-PSF-2.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom SK-7: Reference Validity]
+\textbf{Statement:} $\forall \text{ref} \in \text{DB}: \exists e \in \mathcal{E}: \text{SK}(e) = \text{ref}$
+
+\textbf{Interpretation:} Every reference must point to an existing entity.
+
+\textbf{Implication:} Dangling references are validation errors.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom SK-8: Historical Exception]
+\textbf{Statement:} $\text{Prefix}(\text{Theory}) = \text{``MS-''} \neq \text{``THE-''}$
+
+\textbf{Interpretation:} Theories retain the historical MS- prefix.
+
+\textbf{Implication:} No migration required for theory-catalog.yaml.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom SK-9: Paper Exception]
+\textbf{Statement:} $\forall p \in \mathcal{P}: \text{SK}(p) = \text{``PAP-''} + \text{BibKey}(p)$
+
+\textbf{Interpretation:} Papers use PAP- prefix followed by the BibTeX key.
+
+\textbf{Rationale:} Prevents LLM hallucination by making paper references unambiguous.
+Without PAP- prefix, an LLM might invent plausible-looking BibTeX keys (e.g.,
+``smith2020theory'') that don't exist in the bibliography.
+
+\textbf{Format:} PAP-\{author\}\{year\}\{keyword\}
+
+\textbf{Examples:}
+\begin{itemize}[nosep]
+\item PAP-kahneman1979prospectprospect $\rightarrow$ PAP-PAP-kahneman1979prospectprospect
+\item fehr1999theory $\rightarrow$ PAP-fehr1999theory
+\item thaler2008nudge $\rightarrow$ PAP-sunstein2014nudge
+\end{itemize}
+
+\textbf{Implication:} All BibTeX entries in bcm\_master.bib must be migrated to PAP- prefix.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom SK-10: Learning Database Keys]
+\textbf{Statement:} $\forall l \in \mathcal{L}: \text{SK}(l) = \text{``INO-L-''} + \text{DATE}(l) + \text{``-''} + \text{CAT}(l) + \text{``-''} + \text{SEQ}(l)$
+
+\textbf{Interpretation:} Learning entries use INO-L prefix followed by date, category, and sequence.
+
+\textbf{Rationale:} Project-specific learning databases capture knowledge from practical work
+(document creation, meetings, process improvements). The date-first format enables chronological
+ordering while the category enables filtering by learning type.
+
+\textbf{Format:} INO-L-\{YYYY-MM-DD\}-\{CAT\}-\{NNN\}
+
+\textbf{Categories:}
+\begin{itemize}[nosep]
+\item DOC --- Dokument-Erstellung und -Adaption
+\item PROC --- Prozess und Workflow
+\item TECH --- Technische Aspekte
+\item COMM --- Kommunikation und Feedback
+\item QA --- Qualitätssicherung
+\item MEET --- Meeting-Verarbeitung
+\end{itemize}
+
+\textbf{Examples:}
+\begin{itemize}[nosep]
+\item INO-L-2026-01-27-DOC-001 (Versionsnummern-Konsistenz)
+\item INO-L-2026-01-27-PROC-001 (Ernst Fehr Feedback-Muster)
+\item INO-L-2026-01-27-MEET-001 (Meeting-Transkript-Analyse)
+\end{itemize}
+
+\textbf{Implication:} All entries in innosuisse-learning-database.yaml must use this format.
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Key Results}
+\label{sec:superkey-results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The superkey specification establishes a unified identification system across all EBF databases:
+
+\begin{enumerate}
+    \item \textbf{Unified Entity Identification:} 11 entity types are uniquely identified through prefix-based superkeys, enabling unambiguous cross-database referencing.
+
+    \item \textbf{Hierarchical Organisation:} Customer-bound entities (Projects, Interventions) embed their parent key, creating natural hierarchies without separate lookup tables.
+
+    \item \textbf{Knowledge Graph Integration:} Flat keys for knowledge entities (Models, Theories, Parameters) enable flexible many-to-many relationships across the EBF knowledge base.
+
+    \item \textbf{Session Traceability:} Every analytical output can be traced to its originating session via the \texttt{session\_ref} attribute, supporting full audit trails.
+
+    \item \textbf{Version Independence:} Semantic versioning as attributes (not in keys) ensures referential stability while supporting entity evolution.
+
+    \item \textbf{Backward Compatibility:} Historical formats (MS- for theories) are preserved, requiring no migration of existing data.
+\end{enumerate}
+
+\paragraph{Quantitative Summary.}
+\begin{itemize}
+    \item 5 hierarchical levels (Organisation, Knowledge, Output, Action, Learning)
+    \item 13 entity types with unique prefixes (including PAP- for papers, INO-L for learnings)
+    \item 10 formal axioms guaranteeing consistency (SK-1 to SK-10)
+    \item 10 cross-reference patterns defined
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Cross-Reference Patterns}
+\label{sec:superkey-crossref}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Reference Types}
+
+\begin{table}[htbp]
+\centering
+\caption{Cross-Reference Patterns}
+\label{tab:crossref-patterns}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lllp{4cm}@{}}
+\toprule
+\textbf{From} & \textbf{To} & \textbf{Attribute} & \textbf{Example} \\
+\midrule
+Session & Customer & customer\_ref & CUS-UBS \\
+Session & Project & project\_ref & CUS-UBS-PRJ-001 \\
+Session & Model & model\_ref & MOD-PSF \\
+Output & Session & session\_ref & EBF-S-2026-01-25-REL-01 \\
+Model & Theory & theory\_basis & [MS-RD-001, MS-SP-001] \\
+Model & Session & created\_in\_session & EBF-S-2026-01-25-REL-01 \\
+Parameter & Session & source\_session & EBF-S-2026-01-25-FIN-01 \\
+Parameter & Model & source\_model & MOD-REF-001 \\
+Intervention & Project & (embedded) & CUS-ALPLA-PRJ-001-INT-01 \\
+Concept & Session & session & EBF-S-2026-01-19-OTH-01 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Cardinality}
+
+\begin{itemize}
+    \item Customer → Projects: 1:N
+    \item Project → Interventions: 1:N
+    \item Session → Outputs: 1:N
+    \item Session → Models: N:M (sessions can use/create multiple models)
+    \item Model → Theories: N:M
+    \item Model → Parameters: 1:N (model defines parameters)
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Worked Example}
+\label{sec:superkey-example}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Complete Project Lifecycle}
+
+\paragraph{Setup.} ALPLA engages FehrAdvice for a behavioral strategy project.
+
+\paragraph{Step 1: Customer Registration.}
+\begin{verbatim}
+id: CUS-ALPLA
+name: "ALPLA Werke Alwin Lehner GmbH & Co. KG"
+code: ALPLA
+created: 2026-01-15
+\end{verbatim}
+
+\paragraph{Step 2: Project Creation.}
+\begin{verbatim}
+id: CUS-ALPLA-PRJ-001
+customer_ref: CUS-ALPLA
+name: "Strategic Option Comparison"
+start_date: 2026-01-15
+\end{verbatim}
+
+\paragraph{Step 3: Analysis Session.}
+\begin{verbatim}
+id: EBF-S-2026-01-20-ORG-01
+customer_ref: CUS-ALPLA
+project_ref: CUS-ALPLA-PRJ-001
+question: "Which strategic option maximizes utility?"
+mode: TIEF
+\end{verbatim}
+
+\paragraph{Step 4: Model Creation.}
+\begin{verbatim}
+id: MOD-SOCM
+version: 1.0
+name: "Strategy Option Comparison Model"
+created_in_session: EBF-S-2026-01-20-ORG-01
+theory_basis: [MS-IB-001, MS-SP-001]
+\end{verbatim}
+
+\paragraph{Step 5: Output Generation.}
+\begin{verbatim}
+id: OUT-001
+session_ref: EBF-S-2026-01-20-ORG-01
+type: F3
+format: pdf
+\end{verbatim}
+
+\paragraph{Step 6: Intervention Design.}
+\begin{verbatim}
+id: CUS-ALPLA-PRJ-001-INT-01
+type: nudge
+subtype: default
+target_10c: WHEN
+\end{verbatim}
+
+\paragraph{Result.} Complete traceability from customer to intervention:
+\begin{verbatim}
+CUS-ALPLA
+    └── CUS-ALPLA-PRJ-001
+            ├── EBF-S-2026-01-20-ORG-01
+            │       ├── MOD-SOCM (created)
+            │       └── OUT-001 (generated)
+            └── CUS-ALPLA-PRJ-001-INT-01
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Migration Plan}
+\label{sec:superkey-migration}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[htbp]
+\centering
+\caption{Migration from Legacy to New Superkeys}
+\label{tab:superkey-migration}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Entity} & \textbf{Legacy} & \textbf{New} & \textbf{Action} \\
+\midrule
+Session & EBF-S-2026-01-25-REL-001 & EBF-S-2026-01-25-REL-01 & Shorten sequence \\
+Model & EBF-MOD-001 & MOD-001 & Remove EBF- prefix \\
+Model & PSF-2.0 & MOD-PSF & Standardize, version as attr \\
+Model & ESL-META-001 & MOD-ESL & Standardize \\
+Output & EBF-OUT-001 & OUT-001 & Remove EBF- prefix \\
+Case & CASE-001 & CAS-001 & 3-char prefix \\
+Concept & CONC-2026-001 & CON-2026-001 & 3-char prefix \\
+Project & PRJ-001 & CUS-XXX-PRJ-001 & Add customer context \\
+Theory & MS-RD-001 & MS-RD-001 & No change (SK-8) \\
+Customer & (none) & CUS-ALPLA & \textbf{NEW} \\
+Formula & (none) & FRM-001 & \textbf{NEW} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Migration Strategy}
+
+\begin{enumerate}
+    \item \textbf{Phase 1:} Create customer registry with CUS- keys
+    \item \textbf{Phase 2:} Update project references to include customer
+    \item \textbf{Phase 3:} Standardize model IDs (remove EBF-MOD- prefix)
+    \item \textbf{Phase 4:} Shorten case/concept prefixes
+    \item \textbf{Phase 5:} Add FRM- keys to formula registry
+    \item \textbf{Phase 6:} Validation script to check all references
+\end{enumerate}
+
+
+\subsection{Paper Migration: Incremental Learning Algorithm}
+\label{sec:paper-migration-algorithm}
+
+The migration of 2,278 papers to PAP- superkeys uses an \textbf{incremental learning
+algorithm} that prioritizes simple cases and accumulates learnings for complex ones.
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black,
+    title=Paper Migration Algorithm (Incremental Learning)]
+
+\textbf{Core Principle:} Start with papers having fewest references, validate completely,
+learn patterns, apply learnings to complex cases.
+
+\textbf{Pre-Migration Validation:}
+\begin{enumerate}[nosep]
+    \item Verify DOI exists (CrossRef API or manual lookup)
+    \item Verify URL is accessible (doi.org resolver)
+    \item PAP- prefix is only assigned to \textbf{validated} papers
+\end{enumerate}
+
+\textbf{Migration Steps (per paper):}
+\begin{enumerate}[nosep]
+    \item Update BibTeX entry: \texttt{@article\{key,} $\rightarrow$ \texttt{@article\{PAP-key,}
+    \item Update all references in:
+    \begin{itemize}[nosep]
+        \item LaTeX files: \verb|\citep{key}| $\rightarrow$ \verb|\citep{PAP-key}|
+        \item YAML files: \texttt{bib\_keys}, \texttt{use\_for}, \texttt{theory\_support}
+    \end{itemize}
+    \item \textbf{Validate:} \texttt{grep "key" | grep -v "PAP-key"} must return empty
+    \item Log learnings to \texttt{data/paper\_migration\_learnings.yaml}
+\end{enumerate}
+
+\textbf{Priority Order:}
+\begin{enumerate}[nosep]
+    \item Papers with 0 references (BibTeX only) --- 239 papers
+    \item Papers with 1 reference --- 1,321 papers
+    \item Papers with 2--5 references --- 410 papers
+    \item Papers with 6+ references --- 308 papers
+\end{enumerate}
+
+\textbf{Learning Loop:}
+\begin{itemize}[nosep]
+    \item Each migration records: files changed, patterns found, issues encountered
+    \item Patterns become rules for automated migration
+    \item Edge cases inform manual review requirements
+\end{itemize}
+
+\end{tcolorbox}
+
+\textbf{Tooling:}
+\begin{itemize}
+    \item \texttt{scripts/migrate\_paper\_validated.py --analyze} --- Show migration status
+    \item \texttt{scripts/migrate\_paper\_validated.py --check KEY} --- Check single paper
+    \item \texttt{scripts/migrate\_paper\_validated.py --migrate KEY --execute} --- Migrate paper
+    \item \texttt{scripts/migrate\_paper\_validated.py --validate KEY} --- Verify no orphans
+\end{itemize}
+
+\textbf{Learnings Log:} \texttt{data/paper\_migration\_learnings.yaml}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Implications for Practice}
+\label{sec:superkey-practice}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=Practical Implications]
+\begin{enumerate}
+\item \textbf{Always use the registry:} Never invent superkeys ad-hoc; check availability first
+\item \textbf{Customer context first:} For client work, create CUS- entry before anything else
+\item \textbf{Version as attribute:} Never put version numbers in superkeys
+\item \textbf{Validate references:} Run \texttt{validate\_referential\_integrity.py} before commits
+\item \textbf{Document in session:} Every session should record which entities it created/used
+\end{enumerate}
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Summary}
+\label{sec:superkey-summary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Appendix BN Summary: Superkey Specification]
+
+\textbf{Core Contribution:}
+A unified superkey system for all EBF databases ensuring referential integrity
+and consistent cross-database linking.
+
+\textbf{Key Pattern:}
+\begin{equation}
+\text{SUPERKEY} = \text{PREFIX} + \text{[-HIERARCHY]} + \text{-SEQUENCE}
+\end{equation}
+
+\textbf{Key Insights:}
+\begin{itemize}[nosep]
+\item 13 entity types across 5 hierarchical levels
+\item Hierarchical keys for customer-bound entities (CUS-, PRJ-, INT-)
+\item Flat keys for global knowledge entities (MOD-, PAR-, CAS-, PAP-)
+\item Version management via attributes, not key modification
+\item Historical exception: Theories retain MS- prefix (SK-8)
+\item Paper exception: PAP- prefix prevents LLM hallucination (SK-9)
+\item Learning exception: INO-L- prefix with date-category format (SK-10)
+\end{itemize}
+
+\textbf{Next Steps:} Create customer-registry.yaml and migrate existing keys
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Glossary of Symbols}
+\label{sec:superkey-glossary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{Central Reference:} For complete symbol definitions, see
+\textbf{Appendix G} (Glossary).
+
+This section lists only symbols introduced in this appendix.
+\end{tcolorbox}
+
+\begin{table}[htbp]
+\centering
+\caption{Symbols Introduced in Appendix BN}
+\label{tab:superkey-symbols}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clp{6cm}c@{}}
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Definition} & \textbf{Also in G?} \\
+\midrule
+SK$(e)$ & Superkey function & Returns the superkey of entity $e$ & NEW \\
+$\mathcal{E}$ & Entity set & Set of all EBF entities & NEW \\
+PREFIX & Prefix component & Type-identifying prefix (CUS-, MOD-, etc.) & NEW \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Open Issues and Research Agenda}
+\label{sec:superkey-open}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[htbp]
+\centering
+\caption{Research Roadmap for Superkey System}
+\label{tab:superkey-roadmap}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clcl@{}}
+\toprule
+\textbf{\#} & \textbf{Issue} & \textbf{Priority} & \textbf{Status} \\
+\midrule
+1 & Customer registry implementation & HIGH & PENDING \\
+2 & Migration script for legacy keys & HIGH & PENDING \\
+3 & Validation script enhancement & MEDIUM & PARTIAL \\
+4 & UUID fallback for external systems & LOW & OPEN \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{References}
+\label{sec:superkey-references}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{Master Bibliography:} For complete reference details, see
+\texttt{bcm\_master.bib} in the repository.
+
+This appendix is a methodological specification with no external references.
+\end{tcolorbox}
+
+\nocite{bcm_master}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CROSS-REFERENCE FOOTER
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\vspace{1em}
+\hrule
+\vspace{0.5em}
+
+\noindent\textit{Cross-references:}
+Appendix G (Glossary),
+Appendix BBB (CORE-WHERE),
+Appendix VC (METHOD-VALIDATE).
+
+\noindent\textit{Master Bibliography:} \texttt{bcm\_master.bib}
+
+
+% =============================================================================
+% END OF APPENDIX BN
+% =============================================================================

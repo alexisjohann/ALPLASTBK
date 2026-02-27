@@ -1,0 +1,752 @@
+# =============================================================================
+# NQR-CH — Nationaler Qualifikationsrahmen Berufsbildung (Schweiz)
+# =============================================================================
+# Version: 1.0.0
+# Quellen: nqr-berufsbildung.ch, sbfi.admin.ch, becc.admin.ch
+# Erstellt: 2026-02-22
+# Zweck: Schweizer Qualifikations-Niveaus + Retail-Mapping + EQF-Bridge
+# =============================================================================
+#
+# WARUM NQR-CH?
+#
+# Die Schweiz hat ein EIGENES Qualifikationssystem, das sich fundamental
+# vom deutschen DQR unterscheidet:
+#
+#   1. NQR-CH deckt NUR Berufsbildung ab (nicht akademische Bildung!)
+#      → DQR deckt ALLES (Berufs- und Hochschulbildung)
+#
+#   2. Berufsmaturitaet (BM) ist einzigartig schweizerisch
+#      → Kombiniert Berufslehre + erweiterte Allgemeinbildung
+#      → Oeffnet Zugang zu Fachhochschulen (FH)
+#      → Hat KEIN deutsches Aequivalent
+#
+#   3. Hoehere Fachschulen (HF) sind in CH viel wichtiger als in DE
+#      → Eigenstaendiger Bildungsweg neben FH/Uni
+#      → Praxisorientiert, oft berufsbegleitend
+#
+#   4. Passerelle = einzigartiger Durchlaessigkeits-Mechanismus
+#      → BM + Ergaenzungspruefung → Uni-Zugang
+#      → Gibt es in DE nicht
+#
+# SCHWEIZER BERUFSBILDUNG IN ZAHLEN:
+#   - ~70% eines Jahrgangs absolvieren Berufslehre (EFZ/EBA)
+#   - ~15% erwerben Berufsmaturitaet (BM I oder BM II)
+#   - ~250 verschiedene EFZ-Berufe
+#   - ~60 verschiedene EBA-Berufe
+#
+# =============================================================================
+
+metadata:
+  version: "1.1.0"
+  nqr_basis: "Verordnung ueber den nationalen Qualifikationsrahmen (V-NQR, SR 412.105.1)"
+  sbfi_basis: "SBFI Berufsverzeichnis (sbfi.admin.ch)"
+  eqf_referenzierung: "Referenzierungsbericht Schweiz (2015, aktualisiert 2021)"
+  sprachen: ["de", "fr", "it"]
+  cross_references:
+    dqr_eqf_ref: "data/skill-levels/dqr-eqf-levels.yaml"
+    nqr_at_ref: "data/skill-levels/nqr-at-levels.yaml"
+    dach_transferability_ref: "data/skill-levels/dach-transferability.yaml"
+    kaufland_roles_ref: "data/skill-levels/kaufland-role-profiles.yaml"
+  note: |
+    Der NQR-CH ist ein TRANSPARENZ-Instrument, kein Berechtigungsinstrument.
+    Er ordnet Berufsabschluesse den 8 NQR-Niveaus zu.
+    Die NQR-Niveaus sind mit den EQF-Niveaus referenziert (NICHT identisch!).
+    Akademische Abschluesse (Bachelor, Master) werden NICHT im NQR-CH,
+    sondern im nationalen Qualifikationsrahmen fuer den Hochschulbereich (nqf.ch-HS) gefuehrt.
+
+# =============================================================================
+# SCHWEIZER BILDUNGSSYSTEM — ARCHITEKTUR
+# =============================================================================
+#
+#                       TERTIARSTUFE
+#                           |
+#          +----------------+----------------+
+#          |                |                |
+#    HOCHSCHULEN      HOeHERE FACH-     HOeHERE
+#    (Uni/FH/PH)      PRUEFUNGEN (HFP)  FACHSCHULEN (HF)
+#          |                |                |
+#          |           BERUFS-               |
+#          |           PRUEFUNGEN (BP)       |
+#          |                |                |
+#    +-----+-----+    +----+----+      +----+----+
+#    | GYMNASIALE |    | BERUFS- |      |         |
+#    | MATURITAET |    | MATUR.  |      |         |
+#    +-----+------+    | (BM)    |      |         |
+#          |           +----+----+      |         |
+#          |                |           |         |
+#    +-----+----------------+-----------+---------+
+#    |              SEKUNDARSTUFE II               |
+#    |  +----------+  +----------+  +-----------+  |
+#    |  | Gymnasium|  | Berufs-  |  | Fachmit-  |  |
+#    |  |          |  | lehre    |  | telschule |  |
+#    |  |  (4 J.)  |  | (EFZ/EBA)|  | (FMS)     |  |
+#    |  +----------+  +----------+  +-----------+  |
+#    +---------------------------------------------+
+#                           |
+#                    OBLIGATORISCHE SCHULE
+#                    (Primar + Sekundar I)
+#
+# =============================================================================
+
+bildungssystem:
+  obligatorische_schule:
+    dauer: "11 Jahre (inkl. 2 Jahre Kindergarten/Eingangsstufe)"
+    note: "Kantonal unterschiedlich organisiert"
+  sekundarstufe_ii:
+    berufliche_grundbildung:
+      eba: "2-jaehrige Grundbildung mit eidg. Berufsattest"
+      efz: "3- oder 4-jaehrige Grundbildung mit eidg. Faehigkeitszeugnis"
+    allgemeinbildung:
+      gymnasium: "Gymnasiale Maturitaet (4 Jahre)"
+      fms: "Fachmittelschule (3 Jahre + Fachmaturitaet)"
+    berufsmaturitaet:
+      bm_i: "Waehrend der Lehre (lehrbegleitend)"
+      bm_ii: "Nach der Lehre (Vollzeit 1 Jahr oder Teilzeit 1.5-2 Jahre)"
+  tertiaerstufe:
+    hoehere_berufsbildung:
+      bp: "Berufspruefung (eidg. Fachausweis)"
+      hfp: "Hoehere Fachpruefung (eidg. Diplom)"
+      hf: "Hoehere Fachschule (HF-Diplom)"
+    hochschulen:
+      fh: "Fachhochschule (Bachelor/Master FH)"
+      uni: "Universitaet (Bachelor/Master/Doktorat)"
+      ph: "Paedagogische Hochschule"
+
+# =============================================================================
+# KOMPETENZ-MODELL NQR-CH
+# =============================================================================
+#
+# Der NQR-CH verwendet Deskriptoren in 4 Bereichen:
+#   1. Wissen und Verstehen (Kenntnisse)
+#   2. Anwendung von Wissen und Verstehen (Fertigkeiten)
+#   3. Urteilsfaehigkeit
+#   4. Kommunikative Kompetenzen und Schluesselkompetenzen
+#
+# Dies unterscheidet sich vom DQR (4-Saeulen: Wissen, Fertigkeiten,
+# Sozialkompetenz, Selbstaendigkeit)
+# =============================================================================
+
+kompetenz_modell:
+  kenntnisse:
+    description: "Wissen und Verstehen — Tiefe und Breite des Wissens"
+  fertigkeiten:
+    description: "Anwendung von Wissen und Verstehen — Problemloesung, praktische Umsetzung"
+  urteilsfaehigkeit:
+    description: "Reflexion, Bewertung, eigenstaendige Entscheidungen"
+  schluesselkompetenzen:
+    description: "Kommunikation, Zusammenarbeit, Selbstmanagement, Verantwortung"
+
+# =============================================================================
+# 8 NQR-CH / EQF NIVEAUS
+# =============================================================================
+
+levels:
+
+  # ---------------------------------------------------------------------------
+  # NIVEAU 1 — Einfache Taetigkeiten unter direkter Anleitung
+  # ---------------------------------------------------------------------------
+  level_1:
+    nqr_ch: 1
+    eqf: 1
+    isced: "1-2"
+    niveauindikator: |
+      Kompetenzen zur Ausfuehrung einfacher Taetigkeiten in einem klar
+      strukturierten und stabilen Umfeld. Direkte Anleitung.
+
+    kenntnisse: "Elementares Allgemeinwissen. Grundlegende Kenntnisse eines Arbeitsbereichs."
+    fertigkeiten: "Einfache, routinemaessige Aufgaben ausfuehren. Vorgegebene Hilfsmittel einsetzen."
+    urteilsfaehigkeit: "Entscheidungen in einfachen, klar definierten Situationen."
+    schluesselkompetenzen: "Einfache muendliche und schriftliche Kommunikation. Grundlegende Zusammenarbeit."
+
+    typische_qualifikationen:
+      - "Vorlehre (Integrationsmassnahme)"
+      - "Brueckenangebote"
+      - "Praktische Ausbildung (PrA) nach INSOS"
+
+    retail_rollen:
+      - rolle: "Aushilfe / Hilfskraft (Stundenarbeit)"
+        status: "informell"
+        note: "Keine formale Qualifikation. Regale auffuellen, einfache Reinigung."
+
+    onet_level_mapping:
+      typical_range: [1, 2]
+
+  # ---------------------------------------------------------------------------
+  # NIVEAU 2 — Grundlegende Taetigkeiten mit begrenzter Autonomie
+  # ---------------------------------------------------------------------------
+  level_2:
+    nqr_ch: 2
+    eqf: 2
+    isced: "2"
+    niveauindikator: |
+      Kompetenzen zur Ausfuehrung grundlegender Taetigkeiten in einem
+      strukturierten Umfeld. Begrenzte Autonomie.
+
+    kenntnisse: "Grundlegendes Fachwissen in einem begrenzten Arbeitsbereich."
+    fertigkeiten: "Standardaufgaben nach Anweisung ausfuehren. Grundlegende Werkzeuge nutzen."
+    urteilsfaehigkeit: "Einfache Routineentscheidungen. Erkennen, wann Hilfe noetig."
+    schluesselkompetenzen: "In einem Team mitarbeiten. Grundlegende Kundeninteraktion."
+
+    typische_qualifikationen:
+      - "Attestausbildung im 1. Lehrjahr (Anlehrphase)"
+
+    retail_rollen:
+      - rolle: "Lernende/r im 1. Lehrjahr (EBA)"
+        status: "in_ausbildung"
+        note: "Unter Anleitung: Waren verraeuemen, Kassenbedienung lernen"
+
+    onet_level_mapping:
+      typical_range: [2, 3]
+
+  # ---------------------------------------------------------------------------
+  # NIVEAU 3 — EBA: Eidgenoessisches Berufsattest (2-jaehrige Lehre)
+  # ---------------------------------------------------------------------------
+  level_3:
+    nqr_ch: 3
+    eqf: 3
+    isced: "3"
+    niveauindikator: |
+      Kompetenzen zur selbstaendigen Ausfuehrung praktischer Taetigkeiten
+      in einem ueberschaubaren Arbeitsbereich. Grundlegende berufliche
+      Handlungsfaehigkeit.
+
+    kenntnisse: "Grundlegendes Fachwissen im Berufsfeld. Betriebliche Ablaeufe verstehen."
+    fertigkeiten: "Berufstypische Aufgaben selbstaendig ausfuehren. Arbeitsergebnisse nach definierten Kriterien ueberpruefen."
+    urteilsfaehigkeit: "In bekannten Situationen angemessen entscheiden. Einfache Probleme loesen."
+    schluesselkompetenzen: "Kundenkontakt pflegen. Im Team arbeiten. Grundlegende Kommunikation in Landessprache."
+
+    typische_qualifikationen:
+      - qualifikation: "EBA Detailhandelsassistent/in"
+        sbfi_nummer: "71100"
+        dauer: "2 Jahre"
+        abschluss: "Eidg. Berufsattest (EBA)"
+        note: "Hauptqualifikation fuer einfache Verkaufstaetigkeiten"
+      - qualifikation: "EBA Logistiker/in"
+        sbfi_nummer: "95504"
+        dauer: "2 Jahre"
+        abschluss: "Eidg. Berufsattest (EBA)"
+
+    retail_rollen:
+      - rolle: "Detailhandelsassistent/in (ausgelernt)"
+        status: "offiziell_nqr_zugeordnet"
+        aufgaben:
+          - "Waren praesentieren und nachfuellen"
+          - "Kasse bedienen"
+          - "Kunden beraten (einfache Fragen)"
+          - "Ordnung und Sauberkeit"
+        aufstieg_zu: "Detailhandelsfachmann/-frau EFZ (verkuerzte Lehre moeglich)"
+
+    onet_level_mapping:
+      typical_range: [2, 4]
+      note: "Praktische Abilities hoch, kognitive im mittleren Bereich."
+
+    vergleich_de:
+      aequivalent: "Verkaeufer/in (DQR 3)"
+      unterschied: |
+        Beide sind 2-jaehrige Ausbildungen. Die Schweizer EBA hat
+        etwas weniger theoretischen Anteil, dafuer klaren Praxisfokus.
+        Die schulische Komponente ist in CH weniger umfangreich.
+
+  # ---------------------------------------------------------------------------
+  # NIVEAU 4 — EFZ: Eidgenoessisches Faehigkeitszeugnis (3-4-jaehrige Lehre)
+  # ---------------------------------------------------------------------------
+  level_4:
+    nqr_ch: 4
+    eqf: 4
+    isced: "3-4"
+    niveauindikator: |
+      Kompetenzen zur selbstaendigen Planung, Ausfuehrung und Kontrolle
+      beruflicher Aufgaben in einem sich veraendernden Arbeitsumfeld.
+      Vollstaendige berufliche Handlungsfaehigkeit.
+
+    kenntnisse: "Breites berufliches Fachwissen. Zusammenhaenge im Berufsfeld verstehen. Fachtheoretische Grundlagen."
+    fertigkeiten: "Komplexe berufliche Aufgaben selbstaendig planen und ausfuehren. Arbeitsprozesse optimieren. Transferleistungen."
+    urteilsfaehigkeit: "In neuen Situationen Loesungen entwickeln. Arbeitsergebnisse kritisch bewerten. Alternativen abwaegen."
+    schluesselkompetenzen: "Fachgespraeche fuehren. Kunden umfassend beraten. Im Team Verantwortung uebernehmen. Lernbereitschaft."
+
+    typische_qualifikationen:
+      - qualifikation: "EFZ Detailhandelsfachmann/-frau"
+        sbfi_nummer: "71200"
+        dauer: "3 Jahre"
+        abschluss: "Eidg. Faehigkeitszeugnis (EFZ)"
+        schwerpunkte:
+          - beratung: "Schwerpunkt Beratung (Kundenberatung, Verkaufsgespraeche)"
+          - bewirtschaftung: "Schwerpunkt Bewirtschaftung (Warenwirtschaft, Logistik)"
+        note: |
+          DIE zentrale Qualifikation im Schweizer Detailhandel.
+          Rund 5'000 neue EFZ-Abschluesse pro Jahr im Detailhandel.
+      - qualifikation: "EFZ Logistiker/in"
+        sbfi_nummer: "95505"
+        dauer: "3 Jahre"
+      - qualifikation: "EFZ Kaufmann/Kauffrau"
+        sbfi_nummer: "68500"
+        dauer: "3 Jahre"
+        note: "Reform 2023: Handlungskompetenzbereiche statt Faecher"
+
+    berufsmaturitaet:
+      bm_i:
+        description: "Lehrbegleitend (waehrend der Lehre)"
+        mehrwert: "Zugang zu Fachhochschulen (FH)"
+        dauer: "Parallel zur 3-jaehrigen Lehre"
+        note: |
+          Ca. 15% der EFZ-Lernenden absolvieren BM I.
+          Erfordert hoeheres Leistungsniveau.
+      bm_ii:
+        description: "Nach der Lehre (Vollzeit oder Teilzeit)"
+        dauer_vollzeit: "1 Jahr"
+        dauer_teilzeit: "1.5-2 Jahre"
+        note: "Ca. 7'000 BM-II-Abschluesse pro Jahr"
+      richtungen:
+        - "Technik, Architektur, Life Sciences"
+        - "Natur, Landschaft und Lebensmittel"
+        - "Wirtschaft und Dienstleistungen"  # ← relevant fuer Retail
+        - "Gestaltung und Kunst"
+        - "Gesundheit und Soziales"
+
+    retail_rollen:
+      - rolle: "Detailhandelsfachmann/-frau (ausgelernt)"
+        status: "offiziell_nqr_zugeordnet"
+        aufgaben:
+          - "Umfassende Kundenberatung und Verkauf"
+          - "Warenwirtschaft und Bestellwesen"
+          - "Warenpraesentation und Visual Merchandising"
+          - "Kassensystem und Zahlungsabwicklung"
+          - "Reklamationsbehandlung"
+        aufstieg_zu: "Detailhandelsspezialist/in (BP) oder HF Wirtschaft"
+      - rolle: "Fachverkaefer/in (Lebensmittel)"
+        status: "typisch"
+        note: "Spezialisierung auf Frischprodukte, Kaese, Metzgerei etc."
+
+    onet_level_mapping:
+      typical_range: [3, 5]
+      note: |
+        Breitere Range als DQR 4 weil:
+        - Schwerpunkt Beratung → hoehere soziale/kognitive O*NET-Levels
+        - Schwerpunkt Bewirtschaftung → hoehere physische/organisatorische Levels
+        - BM-Absolventen: kognitive Levels nochmals hoeher
+
+    vergleich_de:
+      aequivalent: "Kaufmann/Kauffrau im Einzelhandel (DQR 4)"
+      unterschied: |
+        Sehr aehnlich in Breite und Tiefe. Schweizer EFZ hat:
+        - Explizite Schwerpunkte (Beratung vs. Bewirtschaftung)
+        - Optional BM → Zugang zu FH (in DE gibt es das nicht)
+        - Hoehere Durchlaessigkeit ins Tertiaere
+
+  # ---------------------------------------------------------------------------
+  # NIVEAU 5 — Berufspruefung (BP) mit eidg. Fachausweis
+  # ---------------------------------------------------------------------------
+  level_5:
+    nqr_ch: 5
+    eqf: 5
+    isced: "5"
+    niveauindikator: |
+      Kompetenzen zur selbstaendigen Planung und Bearbeitung umfassender
+      beruflicher Aufgaben in einem spezialisierten Taetigkeitsfeld.
+      Fuehrung von Mitarbeitenden oder Projekten.
+
+    kenntnisse: "Vertieftes Fachwissen in einem Spezialgebiet. Betriebswirtschaftliche Grundlagen. Fuehrungswissen."
+    fertigkeiten: "Spezialisierte Aufgaben loesen. Kleine Teams fuehren. Prozesse verbessern. Budgetverantwortung."
+    urteilsfaehigkeit: "Komplexe Situationen analysieren. Massnahmen planen und umsetzen. Ergebnisse evaluieren."
+    schluesselkompetenzen: "Mitarbeitende anleiten. Verhandlungen fuehren. Projekte managen. Konflikte loesen."
+
+    typische_qualifikationen:
+      - qualifikation: "Detailhandelsspezialist/in mit eidg. Fachausweis"
+        dauer: "1-2 Jahre (berufsbegleitend)"
+        voraussetzung: "EFZ + 2 Jahre Berufserfahrung"
+        pruefung: "Eidgenoessische Berufspruefung (BP)"
+        module:
+          - "Fuehrung und Organisation"
+          - "Marketing und Kommunikation"
+          - "Finanz- und Rechnungswesen"
+          - "Personalmanagement"
+          - "Branchenspezifische Vertiefung"
+        note: |
+          Die BP ist DER Karriereweg im Schweizer Detailhandel.
+          Bereitet auf Abteilungs- und Filialleitung vor.
+      - qualifikation: "HR-Fachmann/-frau mit eidg. Fachausweis"
+        note: "Relevant fuer People-Experience-Rollen"
+      - qualifikation: "Logistikfachmann/-frau mit eidg. Fachausweis"
+        note: "Relevant fuer Supply Chain im Retail"
+
+    retail_rollen:
+      - rolle: "Abteilungsleiter/in"
+        status: "typisch"
+        aufgaben:
+          - "Fuehrung von 5-15 Mitarbeitenden"
+          - "Sortimentsverantwortung fuer Warengruppe"
+          - "Kennzahlensteuerung (Umsatz, Marge, Schwund)"
+          - "Personaleinsatzplanung"
+          - "Lieferantenbeziehungen pflegen"
+        aufstieg_zu: "Filialleiter/in (HFP oder HF)"
+      - rolle: "Stellvertretende/r Filialleiter/in"
+        status: "typisch"
+        note: "Uebergang von NQR 5 zu NQR 6"
+
+    onet_level_mapping:
+      typical_range: [4, 5]
+      note: "Fuehrungskompetenz + spezialisiertes Fachwissen"
+
+    vergleich_de:
+      aequivalent: "Fachwirt/in fuer Vertrieb im Einzelhandel (DQR 5)"
+      unterschied: |
+        Funktional sehr aehnlich. Schweizer BP hat:
+        - Mehr Praxisbezug (Fallstudien statt theoretischer Pruefung)
+        - Eidgenoessischer Fachausweis als formaler Abschluss
+        - Klarer definierte Zulassungsvoraussetzungen
+
+  # ---------------------------------------------------------------------------
+  # NIVEAU 6 — Hoehere Fachpruefung (HFP) / Hoehere Fachschule (HF)
+  # → BACHELOR-AEQUIVALENT
+  # ---------------------------------------------------------------------------
+  level_6:
+    nqr_ch: 6
+    eqf: 6
+    isced: "6"
+    niveauindikator: |
+      Kompetenzen zur eigenverantwortlichen Leitung komplexer beruflicher
+      Aufgaben oder Organisationseinheiten. Strategisches Denken und
+      innovative Problemloesung.
+
+    kenntnisse: "Breites und vertieftes Fachwissen. Strategisches und unternehmerisches Wissen. Wissenschaftliche Grundlagen des Berufsfelds."
+    fertigkeiten: "Komplexe Probleme in wechselnden Kontexten loesen. Organisationseinheiten fuehren. Neue Loesungsansaetze entwickeln."
+    urteilsfaehigkeit: "Strategische Entscheidungen treffen. Komplexe Sachverhalte bewerten. Langfristige Auswirkungen abschaetzen."
+    schluesselkompetenzen: "Groessere Teams fuehren. Change Management. Verhandlungen auf Managementebene. Nachwuchsfoerderung."
+
+    typische_qualifikationen:
+      - qualifikation: "Detailhandelsmanager/in mit eidg. Diplom"
+        dauer: "1-2 Jahre (berufsbegleitend)"
+        voraussetzung: "Eidg. Fachausweis + 3 Jahre Fuehrungserfahrung"
+        pruefung: "Eidgenoessische Hoehere Fachpruefung (HFP)"
+        note: |
+          Hoechster reiner Berufsbildungsabschluss im Detailhandel.
+          Vergleichbar mit DQR 6 Handelsfachwirt, aber mit
+          deutlich mehr Fuehrungserfahrung als Voraussetzung.
+      - qualifikation: "Dipl. Betriebswirtschafter/in HF"
+        dauer: "2-3 Jahre (Vollzeit) oder 3-4 Jahre (berufsbegleitend)"
+        abschluss: "HF-Diplom"
+        note: |
+          Hoehere Fachschule Wirtschaft — sehr verbreitet in CH.
+          Praxisorientierter als FH-Bachelor, berufsbegleitend moeglich.
+          In DE gibt es kaum ein Aequivalent (Fachschule ist DQR 6,
+          aber weniger verbreitet).
+      - qualifikation: "Bachelor FH/Uni"
+        note: |
+          NICHT im NQR-CH (der deckt nur Berufsbildung ab!),
+          aber EQF-Level 6. Im nqf.ch-HS (Hochschulrahmen) gefuehrt.
+
+    retail_rollen:
+      - rolle: "Filialleiter/in (Geschaeftsfuehrer/in)"
+        status: "typisch"
+        aufgaben:
+          - "Gesamtverantwortung fuer Filiale (P&L)"
+          - "Fuehrung von 20-200 Mitarbeitenden"
+          - "Sortiments- und Marketingstrategie lokal"
+          - "Personalentwicklung und Nachwuchsfoerderung"
+          - "Budgetverantwortung CHF 10-50 Mio."
+        aufstieg_zu: "Regionalleiter/in"
+      - rolle: "Bereichsleiter/in (Zentrale)"
+        status: "typisch"
+        note: "Fachliche Fuehrung in Zentralfunktionen (HR, Einkauf, Marketing)"
+
+    onet_level_mapping:
+      typical_range: [5, 6]
+      note: |
+        Fuehrung, strategisches Denken, komplexe Problemloesung.
+        Hohe O*NET-Levels bei: Oral/Written Expression, Problem Sensitivity,
+        Deductive Reasoning, Social Perceptiveness.
+
+    gleichwertigkeit_hinweis: |
+      WICHTIG (gleich wie in DE): Eidg. Diplom und HF-Diplom sind
+      GLEICHWERTIG mit Bachelor, aber NICHT GLEICHARTIG.
+      HFP/HF → kein automatischer Zugang zu Master-Programmen.
+      Aber: "sur dossier"-Aufnahme an vielen FH/Uni moeglich.
+
+    vergleich_de:
+      aequivalent: "Gepr. Handelsfachwirt/in (DQR 6)"
+      unterschied: |
+        In CH gibt es ZWEI Wege auf NQR 6:
+        1. HFP (eidg. Diplom) — aehnlich wie Meister in DE
+        2. HF (Hoehere Fachschule) — kein echtes DE-Aequivalent
+        Beide fuehren zu NQR/EQF 6, mit unterschiedlichem Profil.
+
+  # ---------------------------------------------------------------------------
+  # NIVEAU 7 — Strategische Verantwortung, Innovation
+  # → MASTER-AEQUIVALENT
+  # ---------------------------------------------------------------------------
+  level_7:
+    nqr_ch: 7
+    eqf: 7
+    isced: "7"
+    niveauindikator: |
+      Kompetenzen zur eigenverantwortlichen Steuerung komplexer,
+      strategieorientierter Prozesse. Innovation und Organisationsentwicklung.
+      Umgang mit unvorhersehbaren Veraenderungen.
+
+    kenntnisse: "Umfassendes, spezialisiertes Wissen auf neuestem Stand. Wissenschaftliche Methoden und Theorien anwenden."
+    fertigkeiten: "Strategische Problemstellungen bearbeiten. Bei unvollstaendiger Information entscheiden. Innovation vorantreiben."
+    urteilsfaehigkeit: "Unter Unsicherheit entscheiden. Gesellschaftliche und wirtschaftliche Auswirkungen reflektieren."
+    schluesselkompetenzen: "Grosse Organisationseinheiten fuehren. Veraenderungsprozesse steuern. Auf C-Level kommunizieren."
+
+    typische_qualifikationen:
+      - qualifikation: "Master FH/Uni"
+        note: "Nicht im NQR-CH, aber EQF 7"
+      - qualifikation: "Executive MBA (EMBA)"
+        note: "Weit verbreitet auf Geschaeftsleitungsebene im Retail"
+      - qualifikation: "MAS (Master of Advanced Studies)"
+        note: "Berufsbegleitende Weiterbildung an FH/Uni"
+
+    retail_rollen:
+      - rolle: "Regionalleiter/in (Bezirksleiter)"
+        status: "typisch"
+        aufgaben:
+          - "Strategische Steuerung von 5-15 Filialen"
+          - "Umsatzverantwortung CHF 100-500 Mio."
+          - "Organisationsentwicklung"
+          - "Fuehrungskraefteentwicklung"
+          - "Markt- und Wettbewerbsanalyse"
+      - rolle: "Geschaeftsleitungsmitglied"
+        status: "typisch"
+        note: "Divisionsleitung, COO, CHRO etc."
+
+    onet_level_mapping:
+      typical_range: [5, 7]
+
+    vergleich_de:
+      aequivalent: "Gepr. Betriebswirt/in oder Master (DQR 7)"
+
+  # ---------------------------------------------------------------------------
+  # NIVEAU 8 — Forschung, Innovation, hoechste Komplexitaet
+  # → DOKTORAT
+  # ---------------------------------------------------------------------------
+  level_8:
+    nqr_ch: 8
+    eqf: 8
+    isced: "8"
+    niveauindikator: |
+      Kompetenzen zur Gewinnung von Forschungserkenntnissen und zur
+      Entwicklung innovativer Loesungen in neuartigen Problemfeldern.
+
+    kenntnisse: "Spitzenforschung. Beitrag zur Erweiterung des Fachwissens."
+    fertigkeiten: "Neuartige Problemstellungen identifizieren und loesen. Forschungsprojekte leiten."
+    urteilsfaehigkeit: "Hoechste Reflexionsfaehigkeit. Neue Wissensgebiete erschliessen."
+    schluesselkompetenzen: "Internationale Fachkommunikation. Interdisziplinaere Zusammenarbeit."
+
+    typische_qualifikationen:
+      - "Doktorat / PhD"
+
+    retail_rollen:
+      - rolle: "(Nicht typisch im operativen Retail)"
+        status: "selten"
+        note: |
+          Moeglich bei: Head of Consumer Insights (Migros/Coop Konzern),
+          Chief Data Officer, Forschungskooperationen mit Universitaeten.
+
+    onet_level_mapping:
+      typical_range: [6, 7]
+
+# =============================================================================
+# SBFI BERUFSVERZEICHNIS — RETAIL-RELEVANTE BERUFE
+# =============================================================================
+#
+# Quelle: sbfi.admin.ch/berufsverzeichnis
+# Stand: 2026-02 (nach Reform KV 2023 und DHF 2022)
+# =============================================================================
+
+sbfi_berufsverzeichnis_retail:
+
+  eba_berufe:
+    - beruf: "Detailhandelsassistent/in EBA"
+      sbfi_nr: "71100"
+      dauer: 2
+      nqr: 3
+      branche_retail: true
+      reform: "BiVO 2022 (neue Handlungskompetenzbereiche)"
+      handlungskompetenzbereiche:
+        - "Gestalten von Kundenbeziehungen"
+        - "Bewirtschaften und Praesentieren von Produkten und Dienstleistungen"
+        - "Unterstuetzen betrieblicher Ablaeufe"
+
+    - beruf: "Logistiker/in EBA"
+      sbfi_nr: "95504"
+      dauer: 2
+      nqr: 3
+      branche_retail: true
+      note: "Lager, Kommissionierung, Wareneingang"
+
+  efz_berufe:
+    - beruf: "Detailhandelsfachmann/-frau EFZ"
+      sbfi_nr: "71200"
+      dauer: 3
+      nqr: 4
+      branche_retail: true
+      reform: "BiVO 2022 (neue Handlungskompetenzbereiche)"
+      schwerpunkte:
+        - code: "DHF-B"
+          name: "Beratung"
+          fokus: "Kundenberatung, Verkaufsgespraeche, Beziehungsmanagement"
+        - code: "DHF-W"
+          name: "Bewirtschaftung"
+          fokus: "Warenwirtschaft, Logistik, Warenpraesentation"
+      handlungskompetenzbereiche:
+        - "Gestalten von Kundenbeziehungen"
+        - "Bewirtschaften und Praesentieren von Produkten und Dienstleistungen"
+        - "Einsetzen von Instrumenten der Betriebswirtschaft"
+        - "Einsetzen von Instrumenten des Marketings und der Kommunikation"
+        - "Nutzen von Instrumenten der Branche"
+      ueberbetriebliche_kurse: "18 Tage verteilt auf 3 Lehrjahre"
+      berufsfachschule: "1 Tag pro Woche (mit BM: 1.5-2 Tage)"
+
+    - beruf: "Kaufmann/Kauffrau EFZ"
+      sbfi_nr: "68500"
+      dauer: 3
+      nqr: 4
+      branche_retail: "indirekt (Verwaltung, HR, Finanzen)"
+      reform: "Reform 2023 — Handlungskompetenzbereiche statt Faecher"
+
+    - beruf: "Logistiker/in EFZ"
+      sbfi_nr: "95505"
+      dauer: 3
+      nqr: 4
+      branche_retail: true
+
+  hoehere_berufsbildung:
+    - beruf: "Detailhandelsspezialist/in (eidg. Fachausweis)"
+      pruefung: "Berufspruefung (BP)"
+      nqr: 5
+      branche_retail: true
+      voraussetzung: "EFZ + 2 Jahre Berufserfahrung im Detailhandel"
+      traeger: "Bildung Detailhandel Schweiz (BDS)"
+
+    - beruf: "Detailhandelsmanager/in (eidg. Diplom)"
+      pruefung: "Hoehere Fachpruefung (HFP)"
+      nqr: 6
+      branche_retail: true
+      voraussetzung: "Eidg. Fachausweis + 3 Jahre Fuehrungserfahrung"
+      traeger: "Bildung Detailhandel Schweiz (BDS)"
+
+    - beruf: "Dipl. Betriebswirtschafter/in HF"
+      typ: "Hoehere Fachschule"
+      nqr: 6
+      branche_retail: "branchenuebergreifend"
+      note: "Sehr verbreitet fuer Filialleitung im Retail"
+
+# =============================================================================
+# NQR-CH → O*NET LEVEL CROSS-REFERENZ
+# =============================================================================
+
+nqr_to_onet_crossref:
+  summary_table:
+    nqr_1: { onet_min: 1, onet_typical: 1.5, onet_max: 2 }
+    nqr_2: { onet_min: 1, onet_typical: 2.5, onet_max: 3 }
+    nqr_3: { onet_min: 2, onet_typical: 3.0, onet_max: 4 }
+    nqr_4: { onet_min: 3, onet_typical: 4.0, onet_max: 5 }
+    nqr_5: { onet_min: 3, onet_typical: 4.5, onet_max: 5 }
+    nqr_6: { onet_min: 4, onet_typical: 5.5, onet_max: 6 }
+    nqr_7: { onet_min: 5, onet_typical: 6.0, onet_max: 7 }
+    nqr_8: { onet_min: 5, onet_typical: 6.5, onet_max: 7 }
+
+# =============================================================================
+# SCHWEIZER RETAIL-KARRIERELEITER
+# =============================================================================
+
+schweizer_retail_karriereleiter:
+
+  - position: "Aushilfe / Hilfskraft"
+    nqr: "1-2 (informell)"
+    eqf: "1-2"
+    qualifikation: "Keine formale Qualifikation"
+    onet_typical: [1, 3]
+    typische_arbeitgeber: ["Migros", "Coop", "Denner", "Lidl CH", "Aldi Suisse", "Volg"]
+    note: "Stundenloehne CHF 20-23 (GAV Detailhandel)"
+
+  - position: "Detailhandelsassistent/in EBA"
+    nqr: 3
+    eqf: 3
+    qualifikation: "2-jaehrige Grundbildung mit eidg. Berufsattest"
+    onet_typical: [2, 4]
+    aufstieg_zu: "Detailhandelsfachmann/-frau EFZ (verkuerzte Lehre)"
+    lohn_median: "CHF 3'800-4'200/Monat"
+
+  - position: "Detailhandelsfachmann/-frau EFZ"
+    nqr: 4
+    eqf: 4
+    qualifikation: "3-jaehrige Grundbildung mit eidg. Faehigkeitszeugnis"
+    onet_typical: [3, 5]
+    aufstieg_zu: "Detailhandelsspezialist/in (BP) oder HF Wirtschaft"
+    lohn_median: "CHF 4'200-4'800/Monat"
+    note: "Mit BM: Zugang zu FH (z.B. BSc Betriebsoekonomie)"
+
+  - position: "Detailhandelsspezialist/in (eidg. Fachausweis)"
+    nqr: 5
+    eqf: 5
+    qualifikation: "Berufspruefung (BP)"
+    onet_typical: [4, 5]
+    aufstieg_zu: "Detailhandelsmanager/in (HFP) oder Filialleiter/in"
+    lohn_median: "CHF 5'500-6'500/Monat"
+
+  - position: "Filialleiter/in"
+    nqr: 6
+    eqf: 6
+    qualifikation: "HFP (eidg. Diplom) oder HF Wirtschaft oder Bachelor FH"
+    onet_typical: [5, 6]
+    aufstieg_zu: "Regionalleiter/in"
+    lohn_median: "CHF 7'000-9'000/Monat (abhaengig von Filialgroesse)"
+
+  - position: "Regionalleiter/in"
+    nqr: 7
+    eqf: 7
+    qualifikation: "Master, EMBA oder langjaerige Fuehrungserfahrung"
+    onet_typical: [5, 7]
+    lohn_median: "CHF 10'000-15'000/Monat"
+
+# =============================================================================
+# SCHWEIZER BESONDERHEITEN (NICHT in DE/AT vorhanden)
+# =============================================================================
+
+schweizer_besonderheiten:
+
+  berufsmaturitaet:
+    description: |
+      Die Berufsmaturitaet (BM) ist ein einzigartig schweizerisches Instrument.
+      Sie kombiniert die berufliche Grundbildung (EFZ) mit erweiterter
+      Allgemeinbildung und oeffnet den Zugang zu Fachhochschulen.
+    typen:
+      bm_i: "Waehrend der Lehre (lehrbegleitend)"
+      bm_ii: "Nach der Lehre"
+    zugang: "FH ohne Aufnahmepruefung (fachgebunden)"
+    passerelle: "BM + Ergaenzungspruefung → Zugang zu Universitaeten"
+    statistik: "Ca. 15% aller EFZ-Absolventen erwerben BM"
+
+  hoehere_fachschulen:
+    description: |
+      Hoehere Fachschulen (HF) sind in der Schweiz ein eigenstaendiger,
+      etablierter Bildungsweg auf Tertiaerstufe. In Deutschland gibt es
+      kaum ein Aequivalent (die deutsche "Fachschule" ist weniger prestigetraechtig).
+    retail_relevanz: |
+      Dipl. Betriebswirtschafter/in HF ist einer der haeufigsten
+      Abschluesse fuer Filialleiter/innen im Schweizer Retail.
+    dauer: "2-3 Jahre Vollzeit oder 3-4 Jahre berufsbegleitend"
+
+  gav_detailhandel:
+    description: |
+      Gesamtarbeitsvertrag (GAV) fuer den Detailhandel — regelt
+      Mindestloehne, Arbeitszeiten, Ferien fuer die Branche.
+    geltungsbereich: "Landesmantelvertrag Detailhandel"
+    mindestloehne_2025:
+      ungelernt: "CHF 3'600/Monat (13 Monatsloehnne)"
+      eba: "CHF 3'900/Monat"
+      efz: "CHF 4'200/Monat"
+      note: "Regional und firmenspezifisch unterschiedlich"
+
+  mehrsprachigkeit:
+    description: |
+      Schweizer Berufsbildungsabschluesse existieren in 3 Sprachen.
+      Die Berufsbezeichnungen variieren:
+    beispiel_detailhandelsfachmann:
+      de: "Detailhandelsfachmann/-frau EFZ"
+      fr: "Gestionnaire du commerce de detail CFC"
+      it: "Impiegato/a del commercio al dettaglio AFC"
+    relevanz: |
+      Fuer internationale Retail-Unternehmen wichtig:
+      Migros, Coop, Denner, Manor operieren in allen Sprachregionen.

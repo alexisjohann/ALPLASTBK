@@ -1,0 +1,237 @@
+name: Crossref Paper Search
+
+on:
+  workflow_dispatch:
+    inputs:
+      search_type:
+        description: 'Search type'
+        required: true
+        type: choice
+        options:
+          - doi
+          - title
+          - author
+          - nber_recent
+      query:
+        description: 'DOI, title, or author name (not needed for nber_recent)'
+        required: false
+        default: ''
+      limit:
+        description: 'Max results'
+        required: false
+        default: '10'
+      auto_add:
+        description: 'Auto-add to papers-to-integrate.yaml'
+        required: false
+        default: 'true'
+        type: boolean
+
+jobs:
+  crossref-search:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pyyaml
+
+      - name: Run Crossref search
+        run: |
+          cat > crossref_search.py << 'SCRIPT'
+          #!/usr/bin/env python3
+          """Crossref Paper Search for EBF"""
+
+          import os
+          import sys
+          import json
+          import requests
+          import yaml
+          from datetime import datetime, timedelta
+
+          CROSSREF_API = "https://api.crossref.org/works"
+          HEADERS = {
+              "User-Agent": "EBF-Research/1.0 (https://github.com/FehrAdvice-Partners-AG; mailto:research@fehradvice.com)"
+          }
+
+          def search_by_doi(doi):
+              """Lookup single DOI."""
+              url = f"{CROSSREF_API}/{doi}"
+              resp = requests.get(url, headers=HEADERS, timeout=30)
+              if resp.status_code == 200:
+                  return [resp.json().get("message", {})]
+              return []
+
+          def search_by_title(title, limit=10):
+              """Search by title."""
+              params = {"query.title": title, "rows": limit}
+              resp = requests.get(CROSSREF_API, params=params, headers=HEADERS, timeout=30)
+              return resp.json().get("message", {}).get("items", [])
+
+          def search_by_author(author, limit=10):
+              """Search by author."""
+              params = {"query.author": author, "rows": limit}
+              resp = requests.get(CROSSREF_API, params=params, headers=HEADERS, timeout=30)
+              return resp.json().get("message", {}).get("items", [])
+
+          def search_nber_recent(limit=10):
+              """Get recent NBER working papers."""
+              since = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+              params = {
+                  "filter": f"prefix:10.3386,from-pub-date:{since}",
+                  "rows": limit,
+                  "sort": "published",
+                  "order": "desc"
+              }
+              resp = requests.get(CROSSREF_API, params=params, headers=HEADERS, timeout=30)
+              return resp.json().get("message", {}).get("items", [])
+
+          def format_paper(item):
+              """Format Crossref item for papers-to-integrate."""
+              authors = item.get("author", [])
+              author_list = [f"{a.get('given', '')} {a.get('family', '')}".strip() for a in authors]
+              first_author = authors[0].get("family", "unknown").lower() if authors else "unknown"
+
+              title = item.get("title", [""])[0]
+              year = item.get("published", {}).get("date-parts", [[None]])[0][0]
+              doi = item.get("DOI", "")
+
+              # Generate bibtex_key
+              title_word = "".join(c for c in title.split()[0].lower() if c.isalnum()) if title else "paper"
+              bibtex_key = f"{first_author}{year or 'nd'}{title_word}"
+
+              # Determine source type
+              source_type = "JOURNAL"
+              if "10.3386" in doi:
+                  source_type = "NBER"
+              elif "10.2139" in doi:
+                  source_type = "SSRN"
+
+              return {
+                  "bibtex_key": bibtex_key,
+                  "doi": doi,
+                  "status": "PENDING",
+                  "priority": "MEDIUM",
+                  "added": datetime.now().strftime("%Y-%m-%d"),
+                  "title": title,
+                  "authors": author_list,
+                  "year": year,
+                  "source": source_type,
+                  "journal": item.get("container-title", [""])[0],
+                  "url": item.get("URL", ""),
+                  "target": None,
+                  "use_for": [],
+                  "theory_support": [],
+                  "eip": {"pro": [], "contra": [], "decision": None, "rationale": ""},
+                  "notes": "Added via Crossref GitHub Action"
+              }
+
+          def main():
+              search_type = os.environ.get("SEARCH_TYPE", "title")
+              query = os.environ.get("QUERY", "")
+              limit = int(os.environ.get("LIMIT", "10"))
+              auto_add = os.environ.get("AUTO_ADD", "true").lower() == "true"
+
+              print(f"=== Crossref Search ===")
+              print(f"Type: {search_type}")
+              print(f"Query: {query}")
+              print(f"Limit: {limit}")
+              print()
+
+              # Execute search
+              if search_type == "doi":
+                  results = search_by_doi(query)
+              elif search_type == "title":
+                  results = search_by_title(query, limit)
+              elif search_type == "author":
+                  results = search_by_author(query, limit)
+              elif search_type == "nber_recent":
+                  results = search_nber_recent(limit)
+              else:
+                  print(f"Unknown search type: {search_type}")
+                  sys.exit(1)
+
+              print(f"Found {len(results)} results\n")
+
+              # Format results
+              papers = []
+              for item in results:
+                  paper = format_paper(item)
+                  papers.append(paper)
+                  print(f"✓ {paper['bibtex_key']}")
+                  print(f"  Title: {paper['title'][:60]}...")
+                  print(f"  DOI: {paper['doi']}")
+                  print(f"  Year: {paper['year']}")
+                  print()
+
+              # Save results
+              with open("crossref_results.json", "w") as f:
+                  json.dump(papers, f, indent=2)
+
+              # Add to papers-to-integrate.yaml if requested
+              if auto_add and papers:
+                  yaml_path = "data/papers-to-integrate.yaml"
+                  with open(yaml_path, "r") as f:
+                      data = yaml.safe_load(f)
+
+                  existing_keys = {p["bibtex_key"] for p in (data.get("papers") or [])}
+                  new_papers = [p for p in papers if p["bibtex_key"] not in existing_keys]
+
+                  if new_papers:
+                      if data.get("papers") is None:
+                          data["papers"] = []
+                      data["papers"].extend(new_papers)
+
+                      # Update statistics
+                      data["metadata"]["statistics"]["total"] = len(data["papers"])
+                      data["metadata"]["statistics"]["by_status"]["PENDING"] = len(
+                          [p for p in data["papers"] if p.get("status") == "PENDING"]
+                      )
+                      data["metadata"]["last_updated"] = datetime.now().strftime("%Y-%m-%d")
+
+                      with open(yaml_path, "w") as f:
+                          yaml.dump(data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+
+                      print(f"Added {len(new_papers)} new papers to {yaml_path}")
+                  else:
+                      print("No new papers to add (all already in queue)")
+
+              print("\nDone!")
+
+          if __name__ == "__main__":
+              main()
+          SCRIPT
+
+          SEARCH_TYPE="${{ inputs.search_type }}" \
+          QUERY="${{ inputs.query }}" \
+          LIMIT="${{ inputs.limit }}" \
+          AUTO_ADD="${{ inputs.auto_add }}" \
+          python crossref_search.py
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: crossref-results
+          path: crossref_results.json
+
+      - name: Commit changes
+        if: ${{ inputs.auto_add == 'true' }}
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/papers-to-integrate.yaml
+          git diff --staged --quiet || git commit -m "feat(papers): Add papers from Crossref search
+
+          Search type: ${{ inputs.search_type }}
+          Query: ${{ inputs.query }}
+
+          https://claude.ai/code/session_01TGmFwDNt6H1UEYrdCHZeh2"
+          git push

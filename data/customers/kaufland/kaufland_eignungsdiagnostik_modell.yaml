@@ -1,0 +1,1001 @@
+# =============================================================================
+# KAUFLAND EIGNUNGSDIAGNOSTIK-MODELL (EBF)
+# =============================================================================
+# Model-ID: MOD-KAUF-DIAG-001
+# Name:     Kaufland Kontextualisierte Eignungsdiagnostik (KKE)
+# Customer: CUS-KAUF (Kaufland Stiftung & Co. KG)
+# Version:  1.0.0
+# Erstellt: 2026-02-26
+# Basis:    MOD-ORG-SBO-001 (SBO), MOD-013 (KIBSM)
+#           STAX-KAUF-001 (120 Skills), JPRF-KAUF-001 (22 Rollenprofile)
+#           data/skill-levels/ (WEF, O*NET, Bartram, ESCO, DACH)
+# Owner:    Joshua Oster (Eignungsdiagnostik), Susanne Karg (Talentmanagement)
+# =============================================================================
+#
+# ZWECK: Kontextualisiertes Eignungsdiagnostik-Modell fuer Kaufland.
+#
+# KERNTHESE: Traditionelle Eignungsdiagnostik behandelt Anforderungen als
+# KONTEXTFREI — dieselben Kompetenzen gelten fuer alle Filialen, alle
+# Regionen, alle Situationen. Das ist empirisch falsch.
+#
+# Die EBF-Innovation: KSAO(Psi) — Anforderungsprofile als FUNKTION des
+# Kontexts. Dieselbe Rolle (z.B. Marktleiter:in) braucht in einer
+# Grossstadt-Filiale mit hoher Fluktuation ANDERE Skills als in einer
+# Kleinstadt-Filiale mit stabilem Team.
+#
+# ARCHITEKTUR:
+#   Layer 1: ANFORDERUNG — KSAO(Psi) kontextualisierte Profile
+#   Layer 2: DIAGNOSTIK  — Verfahren-Skill-Mapping mit Validitaet
+#   Layer 3: MATCHING    — Person-Job Fit mit PCT-Transformation
+#   Layer 4: PRAEDIKTION — Kontextbereinigte Leistungsvorhersage
+#   Layer 5: FEEDBACK    — Bidirektionales Signaling + Kalibrierung
+#
+# =============================================================================
+
+metadata:
+  model_id: "MOD-KAUF-DIAG-001"
+  name: "Kaufland Kontextualisierte Eignungsdiagnostik (KKE)"
+  short_name: "KKE"
+  version: "1.0.0"
+  created: "2026-02-26"
+  last_updated: "2026-02-26"
+  customer_id: "CUS-KAUF"
+  status: "theoretical"
+  model_type: "diagnostic_assessment"
+  parent_models:
+    - "MOD-ORG-SBO-001 — SBO (Skill-Taxonomie, Dreyfus-Levels)"
+    - "MOD-013 — KIBSM (Gesamtstrategie, Psi-Dimensionen)"
+  data_dependencies:
+    - "data/sbo/skill-taxonomy-kaufland.yaml — 120 Skills × 5 Levels"
+    - "data/sbo/job-profiles-kaufland.yaml — 22 Rollenprofile"
+    - "data/skill-levels/kaufland-role-profiles.yaml — 7 Kernrollen × WEF"
+    - "data/skill-levels/wef-to-onet-mapping.yaml — WEF → O*NET Loadings"
+    - "data/skill-levels/bartram-factors.yaml — Great Eight Kompetenzfaktoren"
+  description: |
+    Kontextualisiertes Eignungsdiagnostik-Modell, das traditionelle KSAO-
+    Diagnostik (Knowledge, Skills, Abilities, Other) um die EBF-Kontext-
+    Transformation erweitert: KSAO(Psi).
+
+    Kerngleichung: KSAO_target = KSAO_standard × prod_i M(Delta_Psi_i)
+
+    Statt universeller Anforderungsprofile werden kontextabhaengige Profile
+    generiert, die den spezifischen Filial-Kontext beruecksichtigen.
+
+# =============================================================================
+# 1. THEORETISCHE FUNDIERUNG
+# =============================================================================
+
+theory_basis:
+
+  primary_theories:
+
+    - theory_id: "PCT"
+      name: "Parameter Context Transformation"
+      source: "EBF Core Theory"
+      relevance: |
+        Die zentrale Innovation: KSAO-Anforderungen sind keine Konstanten,
+        sondern Funktionen des Kontexts.
+        KSAO_B = KSAO_A × prod_i M(Delta_Psi_i)
+        Anchor = Standard-Anforderungsprofil (JPRF-KAUF-001)
+        Target = Filialspezifisches Profil
+      parameters:
+        - "M(Delta_Psi_i): Kontext-Multiplikatoren aus pct-multiplier-tables.yaml"
+
+    - theory_id: "MS-IF-013"
+      name: "Bidirectional Interview Signaling"
+      authors: "Ash, Shukla, Sockin (2025)"
+      source: "ash2025interviews"
+      relevance: |
+        Interviews sind BIDIREKTIONAL: Nicht nur Kaufland beurteilt Bewerber:innen,
+        sondern Bewerber:innen beurteilen auch Kaufland. Leichte Interviews
+        signalisieren geringe Selektivitaet und schwache Kolleg:innen.
+        Konsequenz: Diagnostische Verfahren muessen ANSPRUCHSVOLL genug sein,
+        um Qualitaetssignal an Bewerber:innen zu senden.
+      parameters:
+        - "satisfaction_gap: -0.4 SD (leichtes vs. schwieriges Interview)"
+        - "retention_gap: -10% 1-Jahres-Retention"
+        - "difficulty_signal: Kolleg:innen-Qualitaet"
+
+    - theory_id: "MS-IB-001"
+      name: "Identity Economics"
+      authors: "Akerlof, Kranton (2000)"
+      source: "akerlof2000economics"
+      relevance: |
+        Identitaets-Fit (ID-Fit) ist ein eigenstaendiger Praediktor neben
+        Skills: Passt die berufliche Identitaet der Person zur Rolle?
+        U_total = U_base + mu × U_IDN
+        ID-Fit beeinflusst Motivation, Retention und Leistung unabhaengig
+        von technischen Kompetenzen.
+
+    - theory_id: "MS-SF-004"
+      name: "Skill Learning Time Estimator (SLTE)"
+      authors: "EBF Integration (2026)"
+      source: "MOD-ORG-SBO-001"
+      relevance: |
+        Eignungsdiagnostik bewertet nicht nur IST-Zustand, sondern auch
+        LERNPOTENZIAL. Die SLTE-Formel schaetzt Trainingszeit pro Skill:
+        T(s,p,Psi,g) = T_base(s,l) / [L(p) × C(Psi) × DC(K,s) × ID(s,p) × Cohort(g)]
+        Personen mit hohem Lernpotenzial koennen Gaps schneller schliessen.
+
+  secondary_theories:
+
+    - theory_id: "BARTRAM-2005"
+      name: "Great Eight Competency Framework"
+      authors: "Bartram (2005)"
+      source: "bartram2005great"
+      relevance: |
+        8 Kompetenzfaktoren als Aggregationsebene fuer Board-Reporting.
+        Verbindet Big Five Persoenlichkeit mit Arbeitsleistung.
+        Operationale Validitaet: rho = 0.53 (Meta-Analyse, N=4'861).
+
+    - theory_id: "BARRICK-MOUNT-1991"
+      name: "Big Five × Job Performance"
+      authors: "Barrick, Mount (1991)"
+      source: "barrick1991big"
+      relevance: |
+        Conscientiousness als universeller Praediktor (rho = 0.22).
+        Aber: KONTEXTABHAENGIG — Extraversion praediziert nur in
+        Rollen mit sozialem Kontakt (Kasse, Beratung), nicht im Lager.
+
+    - theory_id: "MS-IF-002"
+      name: "Signaling"
+      authors: "Spence (1973)"
+      source: "spence1973job"
+      relevance: |
+        Formale Qualifikationen (IHK, EFZ, Meister) als Signale.
+        Im DACH-Kontext besonders relevant wegen des dualen Ausbildungssystems.
+        KSAO(Psi_K) variiert stark zwischen DE, CH, AT (EQF-5 Divergenz).
+
+    - theory_id: "EEOC-1978"
+      name: "Uniform Guidelines on Employee Selection Procedures"
+      source: "eeoc1978uniform"
+      relevance: |
+        Rechtliche Anforderung an Validitaet: Content Validity,
+        Criterion Validity, Construct Validity. Im DE-Kontext:
+        AGG §1-3 (Diskriminierungsverbot) + BetrVG §94-95
+        (Mitbestimmung bei Personalfrageboegen und Auswahlrichtlinien).
+
+# =============================================================================
+# 2. ARCHITEKTUR: 5-LAYER PIPELINE
+# =============================================================================
+
+architecture:
+  type: "5-layer-diagnostic-pipeline"
+  overview: |
+    Die Pipeline transformiert Standard-Anforderungsprofile (Layer 1) in
+    kontextualisierte Diagnosen (Layer 4) und schliesst den Loop durch
+    bidirektionales Feedback (Layer 5).
+
+    Standard-Profil → Kontextualisierung → Diagnostik → Matching → Praediktion → Feedback
+         L1                  L1                L2          L3          L4          L5
+
+  layers:
+
+    # =========================================================================
+    # LAYER 1: ANFORDERUNGSPROFIL — KSAO(Psi)
+    # =========================================================================
+    - layer: 1
+      name: "ANFORDERUNG"
+      subtitle: "Kontextualisierte Anforderungsprofile"
+      formula: |
+        KSAO_j(Psi) = KSAO_j_standard × prod_i M(Delta_Psi_i)
+
+        Wo:
+          KSAO_j_standard  = Standard-Profil aus JPRF-KAUF-001 (22 Rollen)
+          Delta_Psi_i      = Psi_i(Filiale) - Psi_i(Referenz)
+          M(·)             = Kontext-Multiplikator aus pct-multiplier-tables.yaml
+
+      inputs:
+        - "JPRF-KAUF-001: 22 Rollenprofile × 120 Skills × 5 Levels"
+        - "Filial-Kontext: 8 Psi-Dimensionen pro Filiale"
+
+      psi_modifiers:
+        - dimension: "Psi_I"
+          name: "Institutionell"
+          modifier_range: [0.80, 1.20]
+          examples:
+            - "Psi_I_high (strikte Compliance-Kultur): Hygiene-Skills +20%"
+            - "Psi_I_low (lasche Kontrolle): Selbstorganisation-Skills +15%"
+          kaufland_relevanz: |
+            780 Filialen × 8 Laender = massive institutionelle Varianz.
+            DE (BetrVG, IHK) vs. PL (andere Arbeitsrechtstradition) vs.
+            CZ (EU-Recht mit lokaler Interpretation).
+
+        - dimension: "Psi_S"
+          name: "Sozial"
+          modifier_range: [0.85, 1.15]
+          examples:
+            - "Psi_S_high (stabiles Team): Teamfaehigkeit weniger kritisch"
+            - "Psi_S_low (hohe Fluktuation): Onboarding-Faehigkeit +15%"
+          kaufland_relevanz: |
+            Filialen mit <10% Fluktuation vs. Filialen mit >40% Fluktuation
+            brauchen fundamental andere FK-Profile. In High-Turnover-Filialen
+            ist die Faehigkeit, schnell neue MA einzuarbeiten, wichtiger als
+            langfristiges Teambuilding.
+
+        - dimension: "Psi_C"
+          name: "Kognitiv"
+          modifier_range: [0.85, 1.20]
+          examples:
+            - "Psi_C_high (komplexe Filiale): Analytische Skills +20%"
+            - "Psi_C_low (einfache Struktur): Routine-Effizienz +10%"
+          kaufland_relevanz: |
+            Verbrauchermarkt (12'000 qm, 30+ Abteilungen) vs. Discounter-
+            Konzept (800 qm, 5 Abteilungen). Komplexitaet der Filiale
+            bestimmt kognitive Anforderungen an Fuehrung.
+
+        - dimension: "Psi_K"
+          name: "Kulturell"
+          modifier_range: [0.75, 1.25]
+          examples:
+            - "Psi_K_DE (duale Ausbildung): Formalqualifikation gewichtet"
+            - "Psi_K_PL (andere Tradition): Praxiserfahrung gewichtet"
+            - "Psi_K_CZ: Pragmatismus-Orientierung"
+          kaufland_relevanz: |
+            8 Laender mit FUNDAMENTAL verschiedenen Ausbildungssystemen.
+            EQF-5 in AT (HAK-Matura, 19 Jahre) ≠ EQF-5 in DE (Fachwirt, 28 Jahre).
+            KSAO(Psi_K) muss diese Differenz abbilden.
+
+        - dimension: "Psi_E"
+          name: "Oekonomisch"
+          modifier_range: [0.85, 1.15]
+          examples:
+            - "Psi_E_high (profitable Filiale): Innovation-Skills +10%"
+            - "Psi_E_low (Turnaround-Filiale): Cost-Control-Skills +15%"
+
+        - dimension: "Psi_T"
+          name: "Temporal"
+          modifier_range: [0.90, 1.15]
+          examples:
+            - "Psi_T_urgent (Sauberkeits-Skandal): Krisenmanagement +15%"
+            - "Psi_T_stable: Strategische Planung +10%"
+
+        - dimension: "Psi_F"
+          name: "Physisch"
+          modifier_range: [0.85, 1.15]
+          examples:
+            - "Psi_F_urban (Grossstadt): Diversitaetskompetenz +10%"
+            - "Psi_F_rural (Land): Stammkunden-Beziehung +10%"
+
+        - dimension: "Psi_G"
+          name: "Generational"
+          modifier_range: [0.80, 1.20]
+          examples:
+            - "Psi_G_young (Team 70% GenZ): Digitale FK-Kompetenzen +20%"
+            - "Psi_G_mixed: Generationen-Management +15%"
+            - "Psi_G_senior (Team 60% GenX/BB): Erfahrungs-Wertschaetzung +15%"
+
+      outputs:
+        - "KSAO_j(Psi): Kontextualisiertes Anforderungsprofil pro Filiale/Rolle"
+        - "Delta-Report: Wo weicht Filial-Profil vom Standard ab?"
+        - "Critical Skills: Top-5 kontextspezifisch priorisierte Skills"
+
+    # =========================================================================
+    # LAYER 2: DIAGNOSTIK — Verfahren-Skill-Mapping
+    # =========================================================================
+    - layer: 2
+      name: "DIAGNOSTIK"
+      subtitle: "Assessment-Verfahren mit Validitaetskoeffizienten"
+      formula: |
+        Score_s(p, m) = V(m, s) × Raw_Score(p, m, s) + epsilon
+
+        Wo:
+          V(m, s)     = Validitaetskoeffizient von Methode m fuer Skill s
+          Raw_Score   = Rohwert der Person p in Methode m fuer Skill s
+          epsilon     = Messfehler (abhaengig von Reliabilitaet)
+
+        Aggregation ueber Methoden (Incremental Validity):
+        Score_s(p) = sum_m w_m × Score_s(p, m)
+        w_m proportional zu V(m, s) × (1 - R²_already_explained)
+
+      diagnostic_battery:
+
+        # --- Verfahren 1: Strukturiertes Interview (SI) ---
+        - id: "DIAG-SI"
+          name: "Strukturiertes Verhaltensinterview"
+          name_en: "Structured Behavioral Interview"
+          type: "interview"
+          duration_minutes: 45
+          validity_general: 0.51  # Schmidt & Hunter 1998 meta
+          reliability_interrater: 0.85
+          applicable_skills:
+            high_validity:   # V >= 0.40
+              - "Fuehrungskompetenz (SKL-FK-*): V=0.48"
+              - "Kundenorientierung (SKL-KS-*): V=0.45"
+              - "Problemloesungsverhalten (SKL-FK-020): V=0.42"
+              - "Kommunikation (SKL-KS-020): V=0.44"
+            medium_validity:  # V 0.20-0.40
+              - "Teamfaehigkeit (SKL-FK-030): V=0.35"
+              - "Selbstorganisation (SKL-PS-010): V=0.30"
+            low_validity:     # V < 0.20
+              - "Warenkunde (SKL-WM-*): V=0.12 — besser via Wissenstest"
+              - "Manuelle Fertigkeiten (SKL-WM-010): V=0.08 — besser via Work Sample"
+          bidirectional_signal:
+            theory: "MS-IF-013 (Ash et al. 2025)"
+            design_principle: |
+              Interview muss ANSPRUCHSVOLL genug sein, damit Bewerber:innen
+              Qualitaetssignal ueber Kaufland erhalten. Konkret:
+              - Situative Fragen aus ECHTEM Kaufland-Alltag (nicht generisch)
+              - Fachliche Vertiefungsfragen die nur mit Erfahrung beantwortbar
+              - Transparente Rueckmeldung der Bewertungskriterien
+            expected_effect:
+              retention_gain: "+10% 1-Jahres-Retention"
+              quality_signal: "Bewerber:innen schliessen auf Kolleg:innen-Qualitaet"
+          kaufland_anpassung: |
+            Leitfaden pro Rolle aus JPRF-KAUF-001 ableiten.
+            Kontextualisiert: Fragen variieren je nach Filial-Psi.
+            Bsp: Grossstadt-Filiale → Diversitaets-Szenario.
+                 Turnaround-Filiale → Krisen-Szenario.
+
+        # --- Verfahren 2: Situational Judgment Test (SJT) ---
+        - id: "DIAG-SJT"
+          name: "Situativer Beurteilungstest"
+          name_en: "Situational Judgment Test"
+          type: "test"
+          duration_minutes: 30
+          validity_general: 0.34  # McDaniel et al. 2007 meta
+          reliability_internal: 0.78
+          applicable_skills:
+            high_validity:
+              - "Kontextsensitivitaet (WHEN): V=0.38"
+              - "Priorisierung unter Druck: V=0.36"
+              - "Kundenreklamation: V=0.35"
+            medium_validity:
+              - "Teamkonflikt-Loesung: V=0.30"
+              - "Hygiene-Entscheidungen: V=0.28"
+          kaufland_anpassung: |
+            20 Szenarien aus echtem Kaufland-Filialltag:
+            - 5× Kund:innen-Situationen (Reklamation, Beratung, Konflikt)
+            - 5× Team-Situationen (Schichtplanung, Einarbeitung, Feedback)
+            - 5× Operations-Situationen (Lieferengpass, Hygiene-Fund, Rush)
+            - 5× Fuehrungs-Situationen (nur fuer FK-Rollen)
+            Kontextualisiert via Psi: Szenarien variieren nach Filialtyp.
+
+        # --- Verfahren 3: Arbeitsprobe (WS) ---
+        - id: "DIAG-WS"
+          name: "Arbeitsprobe / Work Sample"
+          name_en: "Work Sample Test"
+          type: "practical"
+          duration_minutes: 60
+          validity_general: 0.54  # Schmidt & Hunter 1998
+          reliability_interrater: 0.88
+          applicable_skills:
+            high_validity:
+              - "Warenmanagement (SKL-WM-*): V=0.58"
+              - "Hygiene-Prozesse (SKL-HS-*): V=0.55"
+              - "Kassenprozesse (SKL-KS-010): V=0.52"
+              - "Regalbestueckung (SKL-WM-010): V=0.50"
+            medium_validity:
+              - "Thekenpraesentation (SKL-WM-012): V=0.40"
+              - "Kund:innen-Beratung (SKL-KS-020): V=0.38"
+          kaufland_anpassung: |
+            Standardisierte Arbeitsproben pro Rollencluster:
+            - Operative Rollen: 1 Regal in 15 Min, Kasse 10 Transaktionen
+            - Fach-Rollen: Frische-Bewertung 20 Produkte, Thekenaufbau
+            - FK-Rollen: Filial-Rundgang mit Analyse + Massnahmenplan
+            Bewertung via Beobachtungsbogen (STAX-KAUF-001 Skills).
+
+        # --- Verfahren 4: Persoenlichkeitstest (PT) ---
+        - id: "DIAG-PT"
+          name: "Persoenlichkeitsfragebogen (Big Five + Facetten)"
+          name_en: "Personality Inventory (Big Five)"
+          type: "questionnaire"
+          duration_minutes: 20
+          validity_general: 0.22  # Barrick & Mount 1991 meta (Conscientiousness)
+          reliability_internal: 0.85
+          applicable_skills:
+            high_validity:
+              - "Zuverlaessigkeit/Conscientiousness: V=0.22 (universell)"
+              - "Extraversion → Kundenrollen: V=0.18 (kontextabhaengig!)"
+            medium_validity:
+              - "Offenheit → Lernbereitschaft: V=0.15"
+              - "Vertraeglichkeit → Teamrollen: V=0.13"
+            low_validity:
+              - "Neurotizismus → allgemein: V=0.08 (nicht empfohlen als Selektion)"
+          kaufland_anpassung: |
+            15-Facetten-Modell (wie in MOD-ORG-SBO-001 Layer 1):
+            β_O1 Intellektuelle Neugier = 0.225 (PCT-angepasst fuer LEH)
+            Kontextspezifisch: Extraversion nur fuer Rollen mit Kundenkontakt
+            gewichtet (ROLE-K-002 Kasse, ROLE-K-003 Beratung).
+          legal_note: |
+            BetrVG §94 Abs. 1: Personalfrageboegen beduerften der Zustimmung
+            des Betriebsrats. Fragebogen muss Anforderungsbezug nachweisen.
+
+        # --- Verfahren 5: Wissenstest (WT) ---
+        - id: "DIAG-WT"
+          name: "Fachlicher Wissenstest"
+          name_en: "Job Knowledge Test"
+          type: "test"
+          duration_minutes: 30
+          validity_general: 0.48  # Schmidt & Hunter 1998
+          reliability_internal: 0.90
+          applicable_skills:
+            high_validity:
+              - "Warenkunde alle Bereiche (SKL-WM-001 bis 007): V=0.55"
+              - "HACCP/Hygiene-Wissen (SKL-HS-001): V=0.60"
+              - "Kassensystem-Wissen (SKL-KS-010): V=0.50"
+              - "Arbeitsrecht-Basics (SKL-PS-030): V=0.45"
+          kaufland_anpassung: |
+            Adaptive Testung: Fragen werden aus STAX-KAUF-001 Skill-Pool
+            gezogen, kontextualisiert nach Zielrolle.
+            FK-Rollen: + Betriebswirtschaft, Arbeitsrecht, Fuehrungstheorie.
+            Multi-Language: DE, PL, CZ, SK, HR, RO, BG, MD.
+
+        # --- Verfahren 6: Assessment Center (AC) ---
+        - id: "DIAG-AC"
+          name: "Assessment Center (nur FK-Rollen)"
+          name_en: "Assessment Center"
+          type: "multi_method"
+          duration_minutes: 480  # 1 Tag
+          validity_general: 0.37  # Hermelin et al. 2007 meta
+          reliability_interrater: 0.80
+          applicable_skills:
+            high_validity:
+              - "Fuehrungsverhalten gesamt: V=0.42"
+              - "Strategisches Denken (SKL-FK-020): V=0.38"
+              - "Mitarbeiter:innen-Entwicklung (SKL-FK-030): V=0.36"
+          components:
+            - "Postkorbuebung (Priorisierung, Delegation)"
+            - "Mitarbeiter:innen-Gespraech (Coaching, Feedback)"
+            - "Gruppendiskussion (Einflussnahme, Konsensbildung)"
+            - "Praesentation (Analyse, Kommunikation)"
+            - "Filial-Planspiel (Operations, P&L-Verstaendnis)"
+          kaufland_anpassung: |
+            NUR fuer FK-Rollen (ROLE-K-004 bis ROLE-K-007).
+            Kontext-Szenarien aus ECHTER Kaufland-Filiale.
+            Beobachter:innen geschult in STAX-KAUF-001 Taxonomie.
+            Kontextualisierte Bewertung: AC-Szenarien variieren nach
+            Zielfiliale (Psi-Profil bestimmt Szenario-Mix).
+          cost_per_candidate_eur: 2500
+          roi_note: |
+            Nur wirtschaftlich fuer Rollen ab Abteilungsleitung (ROLE-K-004+).
+            Bei 500 FK-Positionen und 20% Fehlbesetzungsrate:
+            Vermiedene Kosten pro Fehlbesetzung ≈ 40'000 EUR
+            → ROI AC = (500 × 0.20 × 40'000 × Delta_V) / (500 × 2'500)
+            → Bei Delta_V = 0.05 (5% Verbesserung): ROI = 160%
+
+        # --- Verfahren 7: 360-Grad-Feedback (nur interne Besetzung) ---
+        - id: "DIAG-360"
+          name: "360-Grad-Feedback (nur intern)"
+          name_en: "360-Degree Feedback"
+          type: "multi_rater"
+          duration_minutes: 60  # pro Rater, 4-6 Rater
+          validity_general: 0.36  # Mount et al. 1998
+          reliability_convergent: 0.75
+          applicable_skills:
+            high_validity:
+              - "Fuehrungsverhalten im Alltag: V=0.42"
+              - "Kommunikation/Feedback-Qualitaet: V=0.38"
+              - "Teamfuehrung: V=0.36"
+            medium_validity:
+              - "Fachkompetenz (Fremdeinschaetzung): V=0.30"
+          kaufland_anpassung: |
+            Rater-Gruppen: Vorgesetzte (1-2), Kolleg:innen (2-3),
+            Mitarbeitende (3-5), optional Kund:innen.
+            Items aus STAX-KAUF-001 abgeleitet (Behavioral Anchors).
+            NUR fuer interne Befoerderungen, nicht fuer Neueinstellungen.
+
+      # Incremental Validity Matrix
+      incremental_validity:
+        description: |
+          Nicht alle Verfahren gleichzeitig einsetzen — inkrementelle Validitaet
+          beruecksichtigen. Kombinations-Empfehlung nach Rolle:
+        role_batteries:
+          operative_roles:  # ROLE-K-001, K-002, K-003
+            methods: ["DIAG-WS", "DIAG-WT", "DIAG-SI"]
+            combined_validity: 0.62
+            duration_total_minutes: 135
+            cost_per_candidate_eur: 200
+            note: "Arbeitsprobe hat hoechste Validitaet fuer operative Rollen"
+
+          first_leadership:  # ROLE-K-004
+            methods: ["DIAG-SI", "DIAG-SJT", "DIAG-WS", "DIAG-PT"]
+            combined_validity: 0.65
+            duration_total_minutes: 155
+            cost_per_candidate_eur: 400
+            note: "SJT fuer Fuehrungssituationen + Persoenlichkeit fuer FK-Eignung"
+
+          middle_leadership:  # ROLE-K-005, K-006
+            methods: ["DIAG-AC", "DIAG-360", "DIAG-PT"]
+            combined_validity: 0.68
+            duration_total_minutes: 560
+            cost_per_candidate_eur: 3000
+            note: "AC nur fuer ML-Positionen wirtschaftlich vertretbar"
+
+          senior_leadership:  # ROLE-K-007
+            methods: ["DIAG-AC", "DIAG-360", "DIAG-SI", "DIAG-PT"]
+            combined_validity: 0.71
+            duration_total_minutes: 605
+            cost_per_candidate_eur: 4000
+            note: "Vollstaendigste Batterie fuer Bezirksleiter:in"
+
+          internal_promotion:  # Alle Rollen, interne Befoerderung
+            methods: ["DIAG-360", "DIAG-SJT", "DIAG-SI"]
+            combined_validity: 0.64
+            duration_total_minutes: 135
+            cost_per_candidate_eur: 500
+            note: "360-Grad nutzt existierende Verhaltensdaten"
+
+    # =========================================================================
+    # LAYER 3: MATCHING — Person-Job Fit mit PCT
+    # =========================================================================
+    - layer: 3
+      name: "MATCHING"
+      subtitle: "Kontextualisierter Person-Job Fit"
+      formula: |
+        F(p, j, Psi) = Gate(p, j, Psi) × [
+          w_core × S_core(p, j, Psi) +
+          w_dev  × S_dev(p, j) +
+          w_pot  × S_pot(p) +
+          w_id   × ID_fit(p, j)
+        ]
+
+        Wo:
+          Gate(p, j, Psi) = 1 wenn ALLE mandatory Skills >= min_level(Psi), sonst 0
+          S_core  = Skill-Match (kontextualisiert)
+          S_dev   = Entwicklungspotenzial
+          S_pot   = Lernpotenzial (aus SLTE-Modell)
+          ID_fit  = Identitaets-Fit (Akerlof/Kranton)
+
+        KONTEXTUALISIERUNG:
+          min_level(Psi) = min_level_standard × M(Delta_Psi)
+          Bsp: HACCP Level-2 mandatory → in Turnaround-Filiale (Psi_I hoher Druck)
+               erhoet auf Level-3 mandatory.
+
+      weights:
+        w_core: 0.50   # (reduziert von 0.60 wegen ID-Fit-Dimension)
+        w_dev:  0.20
+        w_pot:  0.15
+        w_id:   0.15   # NEU: Identitaets-Fit
+      note_weights: |
+        Gewichte gegenueber JPRF-KAUF-001 angepasst:
+        w_core 0.60 → 0.50 (Identitaets-Fit absorbiert Teil der Varianz)
+        w_id 0.00 → 0.15 (NEU, basierend auf Akerlof/Kranton 2000)
+
+      fit_thresholds:
+        excellent: 0.85
+        good: 0.70
+        development: 0.55
+        stretch: 0.40
+
+      identity_fit:
+        description: |
+          Identitaets-Fit misst Passung zwischen Person-Identitaet und
+          Rollen-Identitaet. Basiert auf 3 Subdimensionen:
+        subdimensions:
+          - name: "Berufliche Identitaet"
+            question: "Sieht sich Person als [Rollenbezeichnung]?"
+            example: "Sehe ich mich als Marktleiter:in? Oder als Uebergangsloesung?"
+            weight: 0.50
+          - name: "Organisationale Identifikation"
+            question: "Passt Kaufland zur Person?"
+            example: "Identifiziert sich Person mit Kaufland-Werten?"
+            weight: 0.30
+          - name: "Wertekongruenz"
+            question: "Passen persoenliche Werte zur Rolle?"
+            example: "Qualitaetsbewusstsein bei Sauberkeits-Rollen"
+            weight: 0.20
+        measurement: |
+          3 Items im strukturierten Interview + 5 Items im Persoenlichkeits-
+          fragebogen. Auswertung gegen Referenzprofil der Rolle.
+
+    # =========================================================================
+    # LAYER 4: PRAEDIKTION — Kontextbereinigte Leistungsvorhersage
+    # =========================================================================
+    - layer: 4
+      name: "PRAEDIKTION"
+      subtitle: "Leistungsvorhersage mit Kontextbereinigung"
+      formula: |
+        Y_pred(p, j, Psi) = beta_0
+          + beta_F × F(p, j, Psi)
+          + beta_Psi × Psi_filiale
+          + beta_FxPsi × F × Psi
+          + epsilon
+
+        Kontextbereinigte Leistung:
+        KPI_bereinigt(p) = KPI_roh(p) / E[KPI | Psi_filiale]
+
+        Wo:
+          E[KPI | Psi] = Erwarteter KPI gegeben Filial-Kontext
+          → Ermoeglicht fairen Vergleich zwischen Filialen
+
+      criterion_variables:
+        primary:
+          - name: "Umsatz pro MA-Stunde"
+            type: "hard_kpi"
+            kontextbereinigung: "Standort, Sortiment, Saison"
+          - name: "Sauberkeits-Score"
+            type: "hard_kpi"
+            kontextbereinigung: "Filialgroesse, Bausubstanz, Alter"
+            source: "MOD-013 Saeule 1"
+          - name: "MA-Fluktuation (12 Monate)"
+            type: "hard_kpi"
+            kontextbereinigung: "Arbeitsmarkt, Region, Branchendurchschnitt"
+        secondary:
+          - name: "MA-Zufriedenheit (Engagement Score)"
+            type: "soft_kpi"
+            kontextbereinigung: "Teamgroesse, Schichtmodell"
+          - name: "Kundenzufriedenheit (NPS/CSAT)"
+            type: "soft_kpi"
+            kontextbereinigung: "Standort, Einzugsgebiet"
+          - name: "Abwesenheitsquote"
+            type: "hard_kpi"
+            kontextbereinigung: "Saison, Teamgroesse, Altersstruktur"
+
+      validation_design:
+        method: "Natuerliches Experiment"
+        description: |
+          FK-Wechsel als Quasi-Experiment (aus Meeting 2026-02-20):
+          Wenn Marktleiter:in A Filiale wechselt, aendert sich der Kontext
+          (Psi), aber die Person bleibt gleich. Dadurch:
+          - Kausal identifizierbar: Person-Effekt vs. Kontext-Effekt
+          - N ≈ 100 FK-Wechsel/Jahr bei 780 Filialen → ausreichende Power
+          - Differenz-in-Differenzen (DiD) Ansatz moeglich
+        required_data:
+          - "KPI-Zeitreihen pro Filiale (mind. 24 Monate)"
+          - "FK-Wechsel-Daten (Datum, Quelle, Ziel)"
+          - "Filial-Psi-Profile (8 Dimensionen)"
+          - "Diagnostik-Scores der FK (Layer 2)"
+        statistical_power:
+          n_switches_per_year: 100
+          minimum_detectable_effect: "0.3 SD"
+          alpha: 0.05
+          power: 0.80
+
+    # =========================================================================
+    # LAYER 5: FEEDBACK — Bidirektionales Signaling + Kalibrierung
+    # =========================================================================
+    - layer: 5
+      name: "FEEDBACK"
+      subtitle: "Lernendes System mit bidirektionalem Signal"
+      components:
+
+        - name: "Bidirektionales Signaling"
+          theory: "MS-IF-013"
+          description: |
+            Diagnostik sendet Signal an BEIDE Seiten:
+            → An Kaufland: Person-Job Fit Score
+            → An Bewerber:in: Kaufland-Qualitaetssignal
+
+            Schwierige, relevante Diagnostik signalisiert:
+            "Kaufland nimmt Qualitaet ernst, hier arbeiten gute Leute."
+
+            Zu leichte Diagnostik signalisiert:
+            "Hier wird jede:r genommen, Kolleg:innen-Qualitaet unklar."
+          design_rules:
+            - "Mindestens 1 Arbeitsprobe (WS) in jeder Batterie"
+            - "SJTs mit echten Kaufland-Szenarien (nicht generisch)"
+            - "Transparentes Feedback nach Abschluss"
+            - "Anspruchsvolles SI mit Fachfragen"
+
+        - name: "Praediktive Kalibrierung"
+          description: |
+            System lernt aus Outcomes:
+            1. Predicted_Score vs. Actual_KPI nach 6/12/24 Monaten
+            2. Validitaetskoeffizienten V(m,s) werden aktualisiert
+            3. Psi-Multiplikatoren M(Delta_Psi) werden nachkalibriert
+            4. Schwellenwerte (min_level, fit_thresholds) werden angepasst
+          update_cycle:
+            frequency: "Jaehrlich"
+            minimum_n: 50  # pro Rolle fuer stabile Schaetzung
+            method: "Bayesian Update auf V(m,s) und M(Delta_Psi)"
+
+        - name: "Bias-Monitoring"
+          description: |
+            Systematische Pruefung auf:
+            - Adverse Impact (4/5-Regel, AGG §1-3)
+            - Halo-Effekt (Korrelation zwischen unabhaengigen Dimensionen)
+            - Noise (Varianz zwischen Beobachter:innen bei gleicher Leistung)
+            - Kontextbedingter Bias (Psi_K → kulturelle Verzerrung)
+          kaufland_specific:
+            - "8-Laender-Fairness: Gleiche Diagnostik → vergleichbare Ergebnisse?"
+            - "DACH-EQF-Divergenz: Wird AT-HAK-Matura fair bewertet vs. DE-Fachwirt?"
+            - "Gender-Fairness: Keine Benachteiligung bei FK-Selektion"
+          reporting: "Quartalsweise an PX-Leitung (Thomas Dammeyer)"
+
+# =============================================================================
+# 3. PARAMETER (PAR-DIAG-*)
+# =============================================================================
+
+parameters:
+  total: 38
+  tiers:
+    tier_1_meta: 12   # Meta-Analysen (Schmidt/Hunter, Barrick/Mount, etc.)
+    tier_2_study: 10   # Einzelstudien, Branchendaten
+    tier_3_llmmc: 9    # EBF LLMMC Priors
+    tier_4_expert: 7   # Kaufland-spezifisch, zu kalibrieren
+
+  key_parameters:
+
+    # --- Validitaetskoeffizienten (Tier 1: Meta-Analysen) ---
+    - id: "PAR-DIAG-001"
+      name: "V_SI (Strukturiertes Interview)"
+      value: 0.51
+      ci_95: [0.43, 0.59]
+      source: "Schmidt & Hunter 1998 meta-analysis"
+      tier: 1
+      note: "Genereller Wert; kontextspezifisch via Psi adjustierbar"
+
+    - id: "PAR-DIAG-002"
+      name: "V_WS (Arbeitsprobe)"
+      value: 0.54
+      ci_95: [0.46, 0.62]
+      source: "Schmidt & Hunter 1998 meta-analysis"
+      tier: 1
+
+    - id: "PAR-DIAG-003"
+      name: "V_WT (Wissenstest)"
+      value: 0.48
+      ci_95: [0.40, 0.56]
+      source: "Schmidt & Hunter 1998 meta-analysis"
+      tier: 1
+
+    - id: "PAR-DIAG-004"
+      name: "V_SJT (Situational Judgment)"
+      value: 0.34
+      ci_95: [0.28, 0.40]
+      source: "McDaniel et al. 2007 meta-analysis"
+      tier: 1
+
+    - id: "PAR-DIAG-005"
+      name: "V_PT_C (Conscientiousness)"
+      value: 0.22
+      ci_95: [0.18, 0.26]
+      source: "Barrick & Mount 1991 meta-analysis"
+      tier: 1
+
+    - id: "PAR-DIAG-006"
+      name: "V_AC (Assessment Center)"
+      value: 0.37
+      ci_95: [0.29, 0.45]
+      source: "Hermelin et al. 2007 meta-analysis"
+      tier: 1
+
+    - id: "PAR-DIAG-007"
+      name: "V_360 (360-Grad-Feedback)"
+      value: 0.36
+      ci_95: [0.28, 0.44]
+      source: "Mount et al. 1998 meta-analysis"
+      tier: 1
+
+    # --- Bidirectional Signaling (Tier 2: Studie) ---
+    - id: "PAR-DIAG-008"
+      name: "Delta_Satisfaction_Easy_Interview"
+      value: -0.40
+      unit: "SD"
+      source: "Ash, Shukla, Sockin 2025 (ash2025interviews)"
+      tier: 2
+      note: "Zufriedenheitsgap bei leichtem vs. schwierigem Interview"
+
+    - id: "PAR-DIAG-009"
+      name: "Delta_Retention_Easy_Interview"
+      value: -0.10
+      unit: "proportion"
+      source: "Ash, Shukla, Sockin 2025"
+      tier: 2
+      note: "1-Jahres-Retentions-Differenz: -10pp bei leichtem Interview"
+
+    # --- Identitaets-Fit (Tier 2/3) ---
+    - id: "PAR-DIAG-010"
+      name: "w_ID (Identitaets-Fit Gewicht)"
+      value: 0.15
+      ci_95: [0.10, 0.20]
+      source: "EBF LLMMC auf Basis Akerlof/Kranton 2000, Bartel 2004"
+      tier: 3
+      note: "Gewicht des ID-Fit im Matching Score F(p,j,Psi)"
+
+    # --- Kontext-Multiplikatoren (Tier 3/4: zu kalibrieren) ---
+    - id: "PAR-DIAG-011"
+      name: "M(Psi_S_fluktuation)"
+      value: 1.15
+      ci_95: [1.05, 1.25]
+      source: "LLMMC Prior, zu kalibrieren mit Kaufland HR-Daten"
+      tier: 3
+      note: "Hohe Fluktuation → Onboarding-Skill +15% wichtiger"
+
+    - id: "PAR-DIAG-012"
+      name: "M(Psi_K_DACH)"
+      value_de: 1.00
+      value_ch: 0.95
+      value_at: 0.90
+      source: "DACH-Transferability-Analyse (dach-transferability.yaml)"
+      tier: 3
+      note: "Qualifikationssignal-Gewichtung je nach Land"
+
+    # --- Fehlbesetzungskosten (Tier 2/4) ---
+    - id: "PAR-DIAG-013"
+      name: "Cost_Misfit_Operative"
+      value: 8000
+      unit: "EUR"
+      source: "Branchendurchschnitt LEH, LLMMC-adjustiert"
+      tier: 4
+      note: "Kosten einer Fehlbesetzung operative Rolle (Recruiting + Einarbeitung + Produktivitaetsverlust)"
+
+    - id: "PAR-DIAG-014"
+      name: "Cost_Misfit_FK"
+      value: 40000
+      unit: "EUR"
+      source: "Branchendurchschnitt LEH, LLMMC-adjustiert"
+      tier: 4
+      note: "Kosten einer Fehlbesetzung Fuehrungskraft (inkl. Team-Impact)"
+
+# =============================================================================
+# 4. INTERVENTIONEN (aus Diagnostik abgeleitet)
+# =============================================================================
+
+interventions:
+
+  - id: "INT-DIAG-01"
+    name: "Kontextualisierte Anforderungsprofile"
+    target_10c: "WHEN (V)"
+    description: |
+      780 Filialen erhalten filialspezifische Anforderungsprofile
+      statt einheitlicher Standard-Profile.
+    implementation:
+      - "Psi-Profiling fuer alle 780 Filialen (8 Dimensionen)"
+      - "PCT-Transformation der 22 Standard-Rollenprofile"
+      - "Jaehrliche Aktualisierung via HR-Daten-Pipeline"
+    expected_impact: "Matching-Qualitaet +15% (durch kontextgerechte Selektion)"
+
+  - id: "INT-DIAG-02"
+    name: "Bidirektionales Interview-Design"
+    target_10c: "AWARE (AU)"
+    description: |
+      Interview-Redesign nach MS-IF-013: Anspruchsvolle, Kaufland-
+      spezifische Diagnostik als Qualitaetssignal.
+    implementation:
+      - "Szenarien-Pool aus echtem Filialltag (20 pro Rolle)"
+      - "Fachliche Vertiefungsfragen aus STAX-KAUF-001"
+      - "Transparentes Feedback-Gespraech (15 Min) am Ende"
+    expected_impact: "Retention +10%, Bewerber:innen-Qualitaet +Selektion"
+
+  - id: "INT-DIAG-03"
+    name: "SLTE-basierte Potenzialanalyse"
+    target_10c: "READY (AV)"
+    description: |
+      Nicht nur IST-Zustand messen, sondern LERNPOTENZIAL schaetzen.
+      Aus SLTE (MOD-ORG-SBO-001): T(s,p,Psi) = Trainingszeit.
+      Personen mit niedrigem IST aber hohem Potenzial → Development Fit.
+    implementation:
+      - "SLTE-Rechner in Diagnostik-Tool integrieren"
+      - "Lernfaehigkeits-Assessment (3 Items in SI + Lernprobe)"
+      - "Development-Plan automatisch aus Gap + SLTE generieren"
+    expected_impact: "Hidden Talents Discovery +25% (Sichtbarkeits-Bias Reduktion)"
+
+  - id: "INT-DIAG-04"
+    name: "Kontextbereinigte FK-Evaluation"
+    target_10c: "WHO (AAA)"
+    description: |
+      Fuehrungskraefte fair bewerten trotz unterschiedlicher Filialkontexte.
+      KPI_bereinigt = KPI_roh / E[KPI | Psi_filiale]
+    implementation:
+      - "Kontext-Variablen pro Filiale erheben (Standort, Bausubstanz, etc.)"
+      - "Regressionsmodell: E[KPI | Psi] schaetzen"
+      - "Dashboard: Kontextbereinigte vs. rohe KPIs nebeneinander"
+    expected_impact: "Faire Beurteilung, +20% Genauigkeit bei Talent-Identifikation"
+    source: "Meeting MTG-2026-02-20-001, Kernfrage 2+3"
+
+# =============================================================================
+# 5. COMPLIANCE & RECHTLICHER RAHMEN
+# =============================================================================
+
+legal_compliance:
+
+  deutschland:
+    - "AGG §1-3: Diskriminierungsverbot (Geschlecht, Alter, Herkunft, etc.)"
+    - "BetrVG §94 Abs. 1: Personalfrageboegen → Betriebsrat-Zustimmung"
+    - "BetrVG §95 Abs. 1: Auswahlrichtlinien → Betriebsrat-Zustimmung"
+    - "DSGVO Art. 6, 9: Rechtsgrundlage fuer Verarbeitung diagnostischer Daten"
+    - "Allg. Persoenlichkeitsrecht: Verhältnismässigkeit der Diagnostik"
+  note: |
+    Jedes diagnostische Verfahren muss Anforderungsbezug nachweisen
+    (Content Validity). Persoenlichkeitstests nur mit Einwilligung und
+    nachgewiesenem Zusammenhang zur Taetigkeit.
+
+  dach_specifics:
+    ch: "DSG Art. 6 + OR Art. 328b: Persoenlichkeitsschutz im Arbeitsverhaeltnis"
+    at: "GlBG: Gleichbehandlungsgesetz + DSG 2018 + ArbVG §96 (Betriebsvereinbarung)"
+
+  betriebsrat_roadmap:
+    - phase: "M-3"
+      action: "Information BR ueber geplante Diagnostik-Verfahren"
+    - phase: "M-2"
+      action: "Verhandlung Rahmen-BV fuer Eignungsdiagnostik (§94/95)"
+    - phase: "M0"
+      action: "BV abgeschlossen, Pilot-Start"
+    - phase: "M6"
+      action: "Evaluation Pilot, BV-Anpassung falls noetig"
+    - phase: "M12"
+      action: "Rollout-BV fuer alle Regionen"
+
+# =============================================================================
+# 6. INTEGRATION MIT BESTEHENDEM OEKOSYSTEM
+# =============================================================================
+
+cross_references:
+  models:
+    - "MOD-ORG-SBO-001 — SBO (Layer 1: SLTE-Formel, Layer 2: Skill-Dynamik)"
+    - "MOD-013 — KIBSM (Psi-Dimensionen, Sauberkeits-KPIs als Kriterium)"
+  data:
+    - "STAX-KAUF-001 — 120 Skills × 9 Domains × 5 Levels (Diagnostik-Items)"
+    - "JPRF-KAUF-001 — 22 Rollenprofile (Standard-Anforderungen)"
+    - "data/skill-levels/kaufland-role-profiles.yaml — 7 WEF-Profile + DACH"
+    - "data/skill-levels/wef-to-onet-mapping.yaml — Psychometrische Referenz"
+    - "data/skill-levels/bartram-factors.yaml — Executive Reporting"
+  theories:
+    - "MS-IF-013 — Bidirectional Interview Signaling"
+    - "MS-IB-001 — Identity Economics"
+    - "MS-SF-004 — SLTE"
+    - "MS-IF-002 — Signaling (Spence)"
+  papers:
+    - "ash2025interviews — Bidirektionale Interviews"
+    - "barrick1991big — Big Five × Job Performance"
+    - "akerlof2000economics — Identity Economics"
+    - "ericsson1993role — Deliberate Practice"
+    - "landy1983measurement — KSAO-Framework"
+    - "eeoc1978uniform — Selection Procedures"
+  opportunities:
+    - "opp1: FK-Evaluation (Bias/Noise-Reduktion)"
+    - "opp2: Task-basierte Wertschoepfungsanalyse"
+    - "opp3: Fuehrungsqualitaet messen & steuern"
+    - "opp4: Hidden Talent Discovery"
+
+# =============================================================================
+# 7. VALIDIERUNG & KALIBRIERUNG
+# =============================================================================
+
+validation:
+  status: "theoretical_with_literature_basis"
+  monte_carlo_validated: false
+  ode_simulated: false
+  empirical_tests: []
+
+  calibration_plan:
+    pilot:
+      scope: "3-5 Filialen, 1 Region Deutschland"
+      duration_months: 6
+      n_candidates: 80
+      n_existing_staff: 200  # fuer 360-Grad und Criterion-Validierung
+      data_collection:
+        - "Diagnostik-Scores (Layer 2) fuer alle Neueinstellungen"
+        - "KPI-Zeitreihen (Layer 4) fuer Criterion-Validierung"
+        - "Psi-Profile (Layer 1) fuer Kontextualisierungs-Validierung"
+        - "FK-Wechsel-Daten fuer natuerliches Experiment"
+      success_criteria:
+        - "Criterion Validity V >= 0.30 fuer kombinierte Batterie"
+        - "Incremental Validity Delta_R² >= 0.05 ueber Status Quo"
+        - "Kein Adverse Impact (4/5-Regel erfuellt)"
+        - "Bewerber:innen-Akzeptanz >= 4.0/5.0"
+        - "ROI >= 100% nach 12 Monaten"
+
+    rollout:
+      prerequisites:
+        - "Pilot erfolgreich (alle 5 Kriterien erfuellt)"
+        - "BV mit Betriebsrat abgeschlossen"
+        - "IT-Integration in Kaufland HR-Systeme"
+      phases:
+        - "Phase 1 (M7-12): 50 Filialen, 1 Region"
+        - "Phase 2 (M13-18): 200 Filialen, 3 Regionen"
+        - "Phase 3 (M19-24): Alle 780 Filialen Deutschland"
+        - "Phase 4 (M25-36): Internationale Expansion (PL, CZ, etc.)"
+
+  sensitivity_analysis:
+    top_drivers:
+      - "V_SI × Interviewer-Training: +/- 25% auf Combined Validity"
+      - "Psi-Profiling Genauigkeit: +/- 15% auf Matching-Qualitaet"
+      - "SLTE-Kalibrierung: +/- 20% auf Potenzial-Schaetzung"
+      - "ID-Fit Messung: +/- 10% auf Retention-Praediktion"
+      - "Criterion-Bereinigung: +/- 15% auf faire FK-Bewertung"
+
+# =============================================================================
+# 8. VERSION HISTORY
+# =============================================================================
+
+version_history:
+  - version: "1.0.0"
+    date: "2026-02-26"
+    changes: |
+      Initial KKE model with 5-layer pipeline, 7 diagnostic methods,
+      38 parameters, 4 interventions, KSAO(Psi) formalization,
+      bidirectional signaling integration (MS-IF-013), and DACH compliance.
+    session: "EBF-S-2026-02-26-ORG-KAUF"

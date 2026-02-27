@@ -1,0 +1,162 @@
+name: Fetch Papers from MPG.PuRe
+
+on:
+  workflow_dispatch:
+    inputs:
+      researcher_name:
+        description: 'Researcher last name'
+        required: true
+        default: 'Sutter'
+      researcher_first_name:
+        description: 'Researcher first name (for author verification)'
+        required: false
+        default: 'Matthias'
+      person_id:
+        description: 'PuRe person ID (e.g., persons206813)'
+        required: true
+        default: 'persons206813'
+      orcid:
+        description: 'ORCID (e.g., 0000-0002-6143-8406)'
+        required: false
+        default: '0000-0002-6143-8406'
+      lit_appendix:
+        description: 'LIT-Appendix code (e.g., SUT)'
+        required: true
+        default: 'SUT'
+      mode:
+        description: 'Run mode'
+        required: false
+        default: 'traditional'
+        type: choice
+        options:
+          - 'traditional'
+          - 'experimental'
+      stages:
+        description: 'Custom stages for experimental mode (comma-separated, 0=all)'
+        required: false
+        default: '1,10,100,0'
+      dry_run:
+        description: 'Dry run (report only, no changes)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-papers:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pyyaml
+
+      - name: Fetch papers from MPG.PuRe
+        run: |
+          ARGS="--person-id ${{ github.event.inputs.person_id }}"
+          ARGS="$ARGS --name ${{ github.event.inputs.researcher_name }}"
+          ARGS="$ARGS --first-name ${{ github.event.inputs.researcher_first_name }}"
+          ARGS="$ARGS --lit ${{ github.event.inputs.lit_appendix }}"
+
+          if [ -n "${{ github.event.inputs.orcid }}" ]; then
+            ARGS="$ARGS --orcid ${{ github.event.inputs.orcid }}"
+          fi
+
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          else
+            ARGS="$ARGS --append-to-bib"
+          fi
+
+          if [ "${{ github.event.inputs.mode }}" = "experimental" ]; then
+            ARGS="$ARGS --experimental --stages ${{ github.event.inputs.stages }}"
+          fi
+
+          python scripts/fetch_mpg_pure_papers.py $ARGS
+
+      - name: Show summary
+        if: always()
+        run: |
+          echo "=== FETCH SUMMARY ==="
+          if [ -f fetch_summary.json ]; then
+            cat fetch_summary.json
+          else
+            echo "No summary file generated"
+          fi
+
+          echo ""
+          echo "=== NEW PAPERS (first 50 lines) ==="
+          if [ -f new_papers_bibtex.bib ]; then
+            head -50 new_papers_bibtex.bib
+          else
+            echo "No new papers file"
+          fi
+
+      - name: Commit new papers
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+          # Check if there are changes to bib
+          if git diff --quiet bibliography/bcm_master.bib 2>/dev/null; then
+            echo "No changes to bibliography - checking if new_papers file exists"
+            if [ ! -f new_papers_bibtex.bib ] || [ ! -s new_papers_bibtex.bib ]; then
+              echo "No new papers to commit"
+              exit 0
+            fi
+          fi
+
+          # Count new entries
+          NEW_COUNT=$(grep -c "^@" new_papers_bibtex.bib 2>/dev/null || echo "0")
+          echo "New papers count: ${NEW_COUNT}"
+
+          if [ "$NEW_COUNT" = "0" ]; then
+            echo "No new papers to commit"
+            exit 0
+          fi
+
+          git add bibliography/bcm_master.bib
+          if [ -f new_papers_bibtex.bib ]; then
+            git add new_papers_bibtex.bib
+          fi
+
+          # Show what we're committing
+          git status
+
+          git commit -m "feat(papers): Auto-import ${NEW_COUNT} ${{ github.event.inputs.researcher_name }} papers from MPG.PuRe
+
+          Source: pure.mpg.de (or OpenAlex fallback)
+          Researcher: ${{ github.event.inputs.researcher_name }}
+          Person-ID: ${{ github.event.inputs.person_id }}
+          LIT-Appendix: LIT-${{ github.event.inputs.lit_appendix }}
+          Status: pending_review (evidence_tier=2, use_for=LIT-${{ github.event.inputs.lit_appendix }})"
+
+          # Push to the trigger branch
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          echo "Pushing to branch: ${BRANCH}"
+          git push origin HEAD:${BRANCH}
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-fetch-results
+          path: |
+            new_papers_bibtex.bib
+            fetch_summary.json

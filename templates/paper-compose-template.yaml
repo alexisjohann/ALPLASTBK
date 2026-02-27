@@ -1,0 +1,504 @@
+# =============================================================================
+# EBF PAPER COMPOSE TEMPLATE
+# =============================================================================
+# Version: 1.0 (February 2026)
+# Purpose: Defines the structure for MODE B (COMPOSE) of /generate-paper
+#          Registry-driven paper composition from EBF models and data
+# Reference: .claude/commands/generate-paper.md
+# Validate:  python scripts/paper_compose_helper.py --model <MODEL_ID> --summary
+# =============================================================================
+
+schema_version: "1.0"
+schema_date: "2026-02-14"
+
+# -----------------------------------------------------------------------------
+# PAPER METADATA (filled by Claude during COMPOSE workflow)
+# -----------------------------------------------------------------------------
+
+paper_metadata:
+  # Working Paper ID (auto-generated)
+  wp_id: "WP-{YEAR}-{NNN}"
+  # Source model or session
+  model_id: ""          # e.g., MOD-PSF-2.0
+  session_id: ""        # e.g., EBF-S-2026-02-14-POL-001
+  # Style profile (from 8D)
+  style: "ernst_fehr"   # ernst_fehr | nber_working_paper | nature | policy_brief | etc.
+  # Language
+  language: "en"        # en | de
+  # Output format (derived from 8D Rule O-1)
+  output_format: "latex" # latex | markdown | plain
+  # Auto-compile (8D Rule O-2)
+  auto_compile: true
+
+# -----------------------------------------------------------------------------
+# 8D STYLE PROFILES (pre-configured)
+# -----------------------------------------------------------------------------
+
+style_profiles:
+  ernst_fehr:
+    genre: "research_article"
+    d1_knowledge: 0.9
+    d2_proximity: 0.9
+    d3_scope: 0.7
+    d4_time: 0.8
+    d5_goal: "G1"        # Inform
+    d6_context: 1.0       # External/Public
+    d7_emotion: 0.1       # Sachlich
+    d8_persistence: 0.95  # Archiv
+    hedging: true
+    register: "formal"
+    pronouns: false       # "the study", not "we"
+    max_sentence_length: 35
+    formulas: true
+    target_journals: ["AER", "JPE", "QJE", "Econometrica", "JEEA"]
+    abstract_max_words: 250
+    total_target_words: 8000
+
+  nber_working_paper:
+    genre: "working_paper"
+    d1_knowledge: 0.85
+    d2_proximity: 0.8
+    d3_scope: 0.7
+    d4_time: 0.8
+    d5_goal: "G1"
+    d6_context: 1.0
+    d7_emotion: 0.1
+    d8_persistence: 0.9
+    hedging: true
+    register: "formal"
+    pronouns: true        # "we show", "we estimate"
+    max_sentence_length: 40
+    formulas: true
+    target_journals: ["NBER Working Paper Series"]
+    abstract_max_words: 300
+    total_target_words: 12000
+
+  nature:
+    genre: "letter"
+    d1_knowledge: 0.85
+    d2_proximity: 0.6
+    d3_scope: 0.9
+    d4_time: 0.5
+    d5_goal: "G1"
+    d6_context: 1.0
+    d7_emotion: 0.2
+    d8_persistence: 0.95
+    hedging: true
+    register: "formal"
+    pronouns: true
+    max_sentence_length: 25
+    formulas: false       # Formulas in supplement
+    target_journals: ["Nature", "Nature Human Behaviour", "Science"]
+    abstract_max_words: 150
+    total_target_words: 4000
+
+  policy_brief:
+    genre: "policy_brief"
+    d1_knowledge: 0.6
+    d2_proximity: 0.4
+    d3_scope: 0.85
+    d4_time: 0.3
+    d5_goal: "G2"        # Action
+    d6_context: 1.0
+    d7_emotion: 0.25
+    d8_persistence: 0.7
+    hedging: false
+    register: "semi-formal"
+    pronouns: true
+    max_sentence_length: 20
+    formulas: false
+    target_journals: []
+    abstract_max_words: 100
+    total_target_words: 3000
+
+  kahneman_tversky:
+    genre: "research_article"
+    d1_knowledge: 0.8
+    d2_proximity: 0.7
+    d3_scope: 0.8
+    d4_time: 0.7
+    d5_goal: "G1"
+    d6_context: 1.0
+    d7_emotion: 0.2
+    d8_persistence: 0.95
+    hedging: true
+    register: "formal"
+    pronouns: true
+    max_sentence_length: 30
+    formulas: true
+    target_journals: ["Econometrica", "Science", "Psychological Review"]
+    abstract_max_words: 250
+    total_target_words: 9000
+
+  ebf_appendix:
+    genre: "technical_report"
+    d1_knowledge: 0.85
+    d2_proximity: 0.75
+    d3_scope: 0.6
+    d4_time: 0.7
+    d5_goal: "G1"
+    d6_context: 1.0
+    d7_emotion: 0.15
+    d8_persistence: 0.9
+    hedging: true
+    register: "formal"
+    pronouns: false
+    max_sentence_length: 35
+    formulas: true
+    target_journals: []
+    abstract_max_words: 200
+    total_target_words: 6000
+
+# -----------------------------------------------------------------------------
+# GENRE → SECTION TEMPLATES (SWSM Move Sequences)
+# -----------------------------------------------------------------------------
+
+genre_templates:
+
+  research_article:
+    description: "Standard journal article (AER, JPE, QJE format)"
+    sections:
+      - id: "abstract"
+        swsm_moves: []
+        title: "Abstract"
+        required: true
+        write_order: 8       # Written LAST
+        display_order: 0     # Displayed FIRST
+        target_words: 250
+        registry_sources:
+          primary: "output-registry.key_findings"
+          secondary: ["session.question", "model-registry.calibration"]
+        content_template: |
+          Problem statement (1-2 sentences).
+          Approach/method (1-2 sentences).
+          Key results (2-3 sentences).
+          Implications (1 sentence).
+
+      - id: "introduction"
+        swsm_moves: ["M1_establish_territory", "M2_establish_niche", "M3_occupy_niche"]
+        title: "Introduction"
+        required: true
+        write_order: 1
+        display_order: 1
+        target_words: 800
+        registry_sources:
+          primary: "session.question"
+          secondary: ["session.domain", "bcm_master.bib"]
+        content_template: |
+          M1: Why is the topic important? (2-3 paragraphs)
+            → Broad context, societal relevance
+            → 2-3 references to established work
+          M2: What gap exists? (1-2 paragraphs)
+            → "However, existing approaches..."
+            → Limitations of prior work
+          M3: What do WE do? (1-2 paragraphs)
+            → Contribution statement
+            → Preview of results
+            → Paper structure outline
+
+      - id: "literature"
+        swsm_moves: ["M1b_position_in_literature"]
+        title: "Related Literature"
+        required: true
+        write_order: 2
+        display_order: 2
+        target_words: 600
+        registry_sources:
+          primary: "bcm_master.bib.theory_support"
+          secondary: ["theory-catalog.yaml"]
+        content_template: |
+          Thematic clusters (NOT chronological):
+            Cluster 1: [Theory family] → 3-5 key papers
+            Cluster 2: [Method family] → 3-5 key papers
+            Cluster 3: [Domain family] → 3-5 key papers
+          Positioning: How does OUR approach build on this?
+
+      - id: "model"
+        swsm_moves: ["M4_model_specification"]
+        title: "Model"
+        required: true
+        write_order: 3
+        display_order: 3
+        target_words: 1200
+        registry_sources:
+          primary: "model-registry.functional_form"
+          secondary: ["model-registry.variables", "appendix.tex"]
+        content_template: |
+          3.1 Setup & Notation
+            → Define agents, choice set, information structure
+          3.2 Model Specification
+            → Core equations (from model-registry.functional_form)
+            → Parameter definitions (from parameter-registry)
+          3.3 Model Properties
+            → Key properties, equilibrium conditions
+            → Connection to established theory
+
+      - id: "data_methods"
+        swsm_moves: ["M5_data_methods"]
+        title: "Data and Calibration"
+        required: true
+        write_order: 4
+        display_order: 4
+        target_words: 800
+        registry_sources:
+          primary: "parameter-registry.values"
+          secondary: ["model-registry.calibration"]
+        content_template: |
+          4.1 Data Description
+            → Sources, scope, time period
+          4.2 Variable Definition
+            → Each variable with PAR-ID reference
+          4.3 Estimation Strategy
+            → Calibration method (literature, empirical, hybrid)
+          4.4 Parameter Table
+            → All parameters with values, sources, confidence
+
+      - id: "results"
+        swsm_moves: ["M6_results"]
+        title: "Results"
+        required: true
+        write_order: 5
+        display_order: 5
+        target_words: 1000
+        registry_sources:
+          primary: "model-registry.calibration"
+          secondary: ["output-registry.key_findings"]
+        content_template: |
+          5.1 Main Results
+            → Primary finding (prominent, first)
+          5.2 Detailed Results
+            → Tables, figures
+          5.3 Sensitivity Analysis
+            → Parameter variations
+          5.4 Robustness Checks
+            → Alternative specifications
+
+      - id: "discussion"
+        swsm_moves: ["M7_discussion"]
+        title: "Discussion"
+        required: true
+        write_order: 6
+        display_order: 6
+        target_words: 600
+        registry_sources:
+          primary: "session.learnings"
+          secondary: ["bcm_master.bib"]
+        content_template: |
+          Summary of main findings.
+          Interpretation in context of literature.
+          Theoretical implications.
+          Practical implications.
+          Limitations (honest, specific).
+          Future research directions.
+
+      - id: "conclusion"
+        swsm_moves: ["M8_conclusion"]
+        title: "Conclusion"
+        required: true
+        write_order: 7
+        display_order: 7
+        target_words: 400
+        registry_sources:
+          primary: "output-registry.key_findings"
+          secondary: ["session.question"]
+        content_template: |
+          Paragraph 1: What did we do?
+          Paragraph 2: What did we find?
+          Paragraph 3: Why does it matter?
+
+  working_paper:
+    description: "NBER-style working paper with extended appendices"
+    extends: "research_article"
+    additional_sections:
+      - id: "derivations"
+        swsm_moves: ["M4b_derivations"]
+        title: "Model Derivations"
+        required: false
+        write_order: 3.5
+        display_order: 3.5
+        target_words: 800
+        content_template: |
+          Detailed mathematical derivations.
+          Proofs of key propositions.
+
+      - id: "robustness"
+        swsm_moves: ["M6b_robustness"]
+        title: "Robustness Checks"
+        required: true
+        write_order: 5.5
+        display_order: 5.5
+        target_words: 600
+        content_template: |
+          Alternative specifications.
+          Subsample analysis.
+          Placebo tests (if applicable).
+
+      - id: "technical_appendix"
+        swsm_moves: ["M9_technical_appendix"]
+        title: "Technical Appendix"
+        required: false
+        write_order: 9
+        display_order: 9
+        target_words: 1000
+        content_template: |
+          A.1 Proofs
+          A.2 Additional Tables and Figures
+          A.3 Data Sources
+          A.4 Code Availability
+
+  letter:
+    description: "Nature/Science short format"
+    sections:
+      - id: "abstract"
+        title: "Abstract"
+        required: true
+        write_order: 4
+        display_order: 0
+        target_words: 150
+
+      - id: "main_text"
+        swsm_moves: ["M1_M2_M3_compressed", "M4_M5_compressed", "M6_M7_compressed"]
+        title: "Main Text"
+        required: true
+        write_order: 1
+        display_order: 1
+        target_words: 3500
+        content_template: |
+          Opening paragraph: Territory + Niche + Contribution (compressed M1-M3)
+          Model & Methods section: Specification + Data (compressed M4-M5)
+          Results & Discussion section: Findings + Interpretation (compressed M6-M7)
+          Closing paragraph (replaces separate Conclusion)
+
+      - id: "methods"
+        title: "Methods"
+        required: true
+        write_order: 2
+        display_order: 2
+        target_words: 500
+        content_template: |
+          Detailed methods (appears after references in Nature format)
+
+      - id: "supplement"
+        title: "Supplementary Information"
+        required: false
+        write_order: 3
+        display_order: 3
+        target_words: 2000
+
+  policy_brief:
+    description: "Policy-oriented brief for decision makers"
+    sections:
+      - id: "executive_summary"
+        title: "Executive Summary"
+        required: true
+        write_order: 6
+        display_order: 0
+        target_words: 150
+
+      - id: "problem"
+        title: "The Problem"
+        required: true
+        write_order: 1
+        display_order: 1
+        target_words: 400
+
+      - id: "evidence"
+        title: "What the Evidence Shows"
+        required: true
+        write_order: 2
+        display_order: 2
+        target_words: 800
+
+      - id: "recommendations"
+        title: "Recommendations"
+        required: true
+        write_order: 3
+        display_order: 3
+        target_words: 600
+
+      - id: "implementation"
+        title: "Implementation Considerations"
+        required: false
+        write_order: 4
+        display_order: 4
+        target_words: 400
+
+      - id: "references"
+        title: "Key References"
+        required: true
+        write_order: 5
+        display_order: 5
+        target_words: 200
+
+# -----------------------------------------------------------------------------
+# QUALITY GATES (PHASE 4)
+# -----------------------------------------------------------------------------
+
+quality_gates:
+  swsm_move_coverage:
+    threshold: 0.90
+    description: "All starred (★) SWSM moves must be present"
+    blocking: true
+
+  reference_completeness:
+    threshold: 0.80
+    description: "Papers from registry cited in paper"
+    blocking: false
+
+  parameter_documentation:
+    threshold: 1.00
+    description: "All PAR-IDs from parameter-registry cited"
+    blocking: true
+
+  formula_consistency:
+    threshold: 1.00
+    description: "Formulas match model-registry exactly"
+    blocking: true
+
+  abstract_length:
+    description: "Abstract within word limit for style"
+    blocking: false
+
+  contribution_statement:
+    description: "Explicit contribution statement in Introduction"
+    blocking: true
+
+  limitations_section:
+    description: "Honest limitations in Discussion"
+    blocking: true
+
+# -----------------------------------------------------------------------------
+# OUTPUT CONFIGURATION
+# -----------------------------------------------------------------------------
+
+output:
+  # Directory for generated papers
+  base_dir: "outputs/papers"
+  # Filename pattern
+  filename_pattern: "WP_{year}_{number}_{model}_{style}"
+  # Registry entry
+  register_in_output_registry: true
+  # Git commit
+  auto_commit: true
+  commit_message_pattern: "feat(paper): Generate WP-{number} from {model} ({style})"
+
+# -----------------------------------------------------------------------------
+# LATEX TEMPLATE (for output_format: latex)
+# -----------------------------------------------------------------------------
+
+latex_config:
+  document_class: "article"
+  font_size: "12pt"
+  packages:
+    - "amsmath"
+    - "amssymb"
+    - "natbib"
+    - "graphicx"
+    - "hyperref"
+    - "booktabs"
+    - "geometry"
+  geometry: "margin=1in"
+  bibliography_style: "aer"    # aer | chicago | plainnat
+  line_spacing: 1.5
+  # FehrAdvice branding (optional, for internal papers)
+  fehradvice_branding: false

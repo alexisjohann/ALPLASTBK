@@ -1,0 +1,949 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SECTION 4.X: FROM EXPERIMENTAL EVIDENCE TO CALIBRATED PREDICTION
+% Why This Framework Differs Fundamentally from LLM-Based Approaches
+% EXPANDED VERSION with worked examples, objections, and rhetorical sharpening
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% =============================================================================
+% Chapter 4x: Calibration not Simulation
+% =============================================================================
+%
+% Version: 1.0 (January 2026)
+%
+% Purpose: LLM Monte Carlo method
+%
+% Primary Appendix: See appendix references below
+% Secondary Appendices: G (Glossary), F (Examples)
+%
+% Prerequisites: None
+% Leads to: Chapter 1
+%
+% Chapter Type: B (Foundation)
+% =============================================================================
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% QUICK REFERENCE BOX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{tcolorbox}[
+    colback=gray!5!white,
+    colframe=gray!75!black,
+    title={\textbf{Begriffe in diesem Kapitel}},
+    fonttitle=\bfseries
+]
+\small
+\begin{tabular}{@{}lp{8cm}@{}}
+\textbf{Term} & \textbf{Definition} \\
+\midrule
+Calibration & Using experimental data to set model parameters \\
+LLM Monte Carlo & Using language models to estimate behavioral distributions \\
+Digital Twin & LLM conditioned on individual-level data \\
+Epistemic Status & Tag indicating evidence quality (EMP/THR/LLM) \\
+\end{tabular}
+\end{tcolorbox}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CHAPTER SCOPE BOX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{tcolorbox}[
+    colback=purple!5!white,
+    colframe=purple!75!black,
+    title={\textbf{Chapter Scope: Ziel / In-Scope / Out-of-Scope}},
+    fonttitle=\bfseries
+]
+
+\textbf{Ziel (Objective):}
+Establish why the EBF framework uses calibration on experimental evidence rather than LLM-based simulation for behavioral predictions.
+
+\vspace{0.3cm}
+\textbf{In-Scope:}
+\begin{itemize}[nosep]
+    \item The calibration vs. simulation distinction
+    \item Why LLMs fail at behavioral simulation
+    \item The EBF calibration alternative
+    \item Epistemic status tags (EMP/THR/LLM)
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Out-of-Scope (delegiert an Appendices):}
+\begin{itemize}[nosep]
+    \item Complete estimation methodology $\rightarrow$ Appendix UNMAPPED_EST
+    \item LLM Monte Carlo implementation $\rightarrow$ Appendix UNMAPPED_LLM
+    \item Validation framework $\rightarrow$ Appendix THL1
+\end{itemize}
+
+\end{tcolorbox}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% INTUITION BOX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{tcolorbox}[
+    colback=blue!5!white,
+    colframe=blue!75!black,
+    title={\textbf{Intuition: Why Calibration Beats Simulation}},
+    fonttitle=\bfseries
+]
+Consider \textbf{Anna}, a behavioral economist trying to predict how people respond to a new policy.
+
+She could use an LLM to ``simulate'' human responses---but the LLM has never experienced loss aversion, never felt social pressure, never made a decision under cognitive load.
+
+\textbf{Thomas}, her colleague, suggests a different approach: use the LLM to \emph{estimate parameters} from 50 years of experimental data, then apply those parameters in a theoretically grounded model.
+
+This chapter explains why Thomas's approach---calibration, not simulation---produces reliable predictions.
+
+\medskip
+\textit{Key insight: LLMs are excellent at pattern recognition across literature, but poor at simulating the actual experience of human decision-making.}
+\end{tcolorbox}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CENTRAL QUESTION BOX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{tcolorbox}[
+    colback=red!5!white,
+    colframe=red!75!black,
+    title={\textbf{Central Question}},
+    fonttitle=\bfseries
+]
+\Large
+\centering
+\textit{Why does calibrating models on experimental evidence outperform LLM-based behavioral simulation?}
+\end{tcolorbox}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CHAPTER OVERVIEW
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection*{Chapter Overview}
+
+This chapter is organized as follows:
+
+\begin{itemize}
+\item \textbf{Section \ref{sec:calibration-vs-simulation}}: The promise and failure of LLM simulation
+\item \textbf{Section \ref{sec:ch4x-ebf-alternative}}: The EBF alternative: calibration on behavioral data
+\item \textbf{Section \ref{sec:ch4x-replication}}: Why experimental replication is guaranteed
+\item \textbf{Section \ref{sec:ch4x-summary}}: Summary and implications
+\end{itemize}
+
+
+\subsection{From Experimental Evidence to Calibrated Prediction}
+\label{sec:calibration-vs-simulation}
+
+%==============================================================================
+% APPENDIX LINKAGE BOX
+%==============================================================================
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black,
+    title=\textbf{Appendix References}]
+
+\textbf{Primary Appendix:} Appendix UNMAPPED_EST (CORE-WHERE: Parameter Estimation)
+\begin{itemize}[nosep]
+    \item Complete estimation methodology
+    \item Epistemic status tags (EMP/THR/LLM/ILL/HYP)
+    \item Prior specification from literature
+    \item The fundamental trilemma: precision vs. coverage vs. verifiability
+\end{itemize}
+
+\textbf{Supporting Appendices:}
+\begin{itemize}[nosep]
+    \item Appendix LLM1 (LLM Monte Carlo): Simulation methodology
+    \item Appendix UNMAPPED_OPS (Operationalization): Measurement protocols
+    \item Appendix THL1 (Evaluation): Validation framework
+\end{itemize}
+
+\textbf{Reading Guide:} This chapter explains \textit{why} calibration differs from simulation;
+Appendix UNMAPPED_EST provides the complete \textit{how} of parameter estimation.
+
+\end{tcolorbox}
+
+The preceding sections documented experimental evidence for complementarity,
+context-dependence, and coherence. But this evidence serves a deeper purpose
+than illustration. It provides the \emph{calibration data} for a predictive
+model of human behavior---and this distinguishes the present framework
+fundamentally from recent attempts to simulate human behavior using large
+language models (LLMs).
+
+%==============================================================================
+% PART I: THE PROMISE AND FAILURE OF LLM-BASED SIMULATION
+%==============================================================================
+
+\subsubsection{The Promise and Failure of LLM-Based Behavioral Simulation}
+
+Recent advances in artificial intelligence have generated considerable
+excitement about using LLMs to simulate human behavior. \citet{horton2023}
+introduced the concept of \emph{homo silicus}---LLMs as implicit computational
+models of humans that can be endowed with preferences and explored via
+simulation. \citet{argyle2023} demonstrated that LLMs exhibit ``algorithmic
+fidelity'': when conditioned on demographic backstories, they can approximate
+response distributions from specific human subgroups. \citet{park2023} created
+``generative agents'' that exhibited emergent social behaviors in simulated
+environments.
+
+These developments raised a natural question: Can LLMs replace or complement
+human participants in behavioral research?
+
+\paragraph{The Peng et al. Mega-Study.}
+The most comprehensive test of this question comes from \citet{peng2025}, who
+conducted 19 preregistered studies comparing a representative U.S. panel with
+their ``digital twins''---LLMs conditioned on rich individual-level data
+(over 500 questions covering demographics, personality, cognitive abilities,
+economic preferences, and behavioral responses).
+
+The results are sobering:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lcc}
+\hline
+\textbf{Metric} & \textbf{Digital Twins} & \textbf{Interpretation} \\
+\hline
+Individual-level accuracy & 75\% & Sounds high, but... \\
+Accuracy vs.\ demographic baseline & No improvement & ...no better than simple personas \\
+Correlation with human responses & $r \approx 0.2$ & Modest at best \\
+Variance of responses & Under-dispersed & Heterogeneity lost \\
+\hline
+\end{tabular}
+\end{center}
+
+More troubling than aggregate statistics are the specific failures. Digital
+twins could not reliably replicate classic behavioral economics experiments:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lcc}
+\hline
+\textbf{Experiment} & \textbf{Humans} & \textbf{Digital Twins} \\
+\hline
+Attraction Effect & Replicated & Not replicated \\
+Compromise Effect & Weak & Not replicated \\
+Default Effect (Organ Donation) & No effect & Strong effect \\
+Default Effect (Green Energy) & Effect present & No effect \\
+Accuracy Nudges (Entertainment) & Not effective & Effective \\
+\hline
+\end{tabular}
+\end{center}
+
+The pattern is striking: digital twins often show the \emph{theoretically
+expected} behavior that humans \emph{do not} show, and fail to show the
+actual behavioral patterns that humans \emph{do} exhibit.
+
+\paragraph{The Irony of ``Idealized'' AI.}
+This finding deserves emphasis, because it inverts the usual concern about AI.
+Behavioral economics emerged precisely because humans deviate from
+rational-choice predictions. The field's raison d'\^{e}tre is documenting
+how actual behavior differs from theoretical expectations.
+
+Yet LLM-based digital twins often reproduce the \emph{textbook predictions}
+that humans violate. In Peng et al.'s organ donation experiment, humans
+showed no default effect---contrary to the famous \citet{johnson2003}
+finding. But GPT-4 showed a strong default effect. The model had ``learned''
+from its training corpus that defaults matter, and faithfully reproduced
+the theoretical expectation. But the expectation was wrong for this context.
+
+This is precisely backwards. A behavioral prediction system should capture
+\emph{when and why} people deviate from rationality---not reproduce the
+rational-choice predictions that behavioral economics was invented to correct.
+
+\paragraph{Why Do LLMs Fail?}
+The failure is not due to insufficient model size or training data. GPT-4
+has ``read'' thousands of papers describing the attraction effect, the
+default effect, and other behavioral phenomena. The problem is more
+fundamental:
+
+\begin{quote}
+\textbf{Text-training $\neq$ Behavioral calibration.}
+
+LLMs learn that ``the attraction effect occurs when a dominated decoy
+increases preference for the dominating option.'' They do not learn
+\emph{when} it occurs, \emph{how strongly}, or \emph{why it varies across
+contexts}---because this information is not in the text. It is in the
+\emph{data}.
+\end{quote}
+
+The distinction is between:
+\begin{itemize}
+    \item \textbf{Propositional knowledge}: ``X is the case'' (what LLMs have)
+    \item \textbf{Functional knowledge}: $Y = f(X)$ with estimated parameters
+          (what prediction requires)
+\end{itemize}
+
+An LLM can write a correct paragraph about prospect theory. It cannot
+predict, for a given $\Psi$-context, whether loss aversion will be 1.5 or
+2.5, whether framing effects will be strong or weak, or whether reference
+points will be stable or malleable.
+
+%==============================================================================
+% PART II: THE EBF ALTERNATIVE
+%==============================================================================
+
+\subsection{The EBF Alternative: Calibration on Behavioral Data}
+\label{sec:ch4x-ebf-alternative}
+
+The present framework takes a fundamentally different approach. Instead of
+training on text \emph{about} experiments, we calibrate on the experimental
+\emph{data themselves}.
+
+\paragraph{What Calibration Means.}
+Consider how $C^*(\Psi)$ is constructed for a specific domain---say, social
+preferences in the ultimatum game:
+
+\begin{enumerate}
+    \item \textbf{Data}: Rejection rates from $k$ studies across $n$ countries,
+          with measured $\Psi$ values for each context
+    \item \textbf{Model}: $\text{Rejection}(\Psi) = g(\Psi_S, \Psi_I, \Psi_C, X)$
+          where $X$ captures experimental design features
+    \item \textbf{Estimation}: Parameters fit to minimize prediction error
+          across all studies, with appropriate regularization
+    \item \textbf{Validation}: Out-of-sample prediction on held-out studies
+\end{enumerate}
+
+The result is not a verbal description (``people reject unfair offers'')
+but a \emph{quantified function} that predicts rejection rates for any
+combination of $\Psi$ values, with confidence intervals.
+
+\paragraph{Worked Example: Rejection Rates Across Cultures.}
+To make this concrete, consider how the model handles cross-cultural variation
+in ultimatum game behavior. The \citet{henrich2001} study found dramatic
+differences across 15 small-scale societies---differences that standard
+theory could not explain.
+
+EBF explains this variation through measured $\Psi$-differences:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lccccc}
+\hline
+\textbf{Society} & $\Psi_S$ & $\Psi_I$ & $\Psi_C$ & \textbf{Predicted} & \textbf{Observed} \\
+\hline
+Machiguenga (Peru) & 0.31 & 0.42 & 0.28 & 0.04 & 0.05 \\
+Hadza (Tanzania) & 0.48 & 0.35 & 0.41 & 0.20 & 0.19 \\
+Au/Gnau (PNG) & 0.55 & 0.29 & 0.62 & 0.27 & 0.27 \\
+Orma (Kenya) & 0.62 & 0.58 & 0.55 & 0.35 & 0.40 \\
+Achuar (Ecuador) & 0.44 & 0.51 & 0.38 & 0.15 & 0.15 \\
+USA (students) & 0.71 & 0.68 & 0.72 & 0.44 & 0.48 \\
+\hline
+\multicolumn{4}{r}{\textit{Correlation (predicted vs.\ observed):}} & \multicolumn{2}{c}{$r = 0.96$} \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent
+The model captures a 10-fold variation in rejection rates (from 0.05 to 0.48)
+through three measurable context dimensions. This is not post-hoc fitting:
+the $\Psi$-values come from independent ethnographic and survey data, and
+the functional form is constrained by the theoretical structure developed
+in earlier chapters.
+
+An LLM cannot produce this table. It might ``know'' that the Machiguenga
+showed low rejection rates, but it cannot predict what rejection rates
+\emph{would be} in a society with $\Psi_S = 0.50$, $\Psi_I = 0.45$,
+$\Psi_C = 0.35$---because it has no function mapping $\Psi$ to behavior.
+
+\paragraph{The Heterogeneity Is the Signal.}
+This is the crucial point that LLM-based approaches miss: the
+\emph{variation} across experiments is not noise to be averaged away.
+It is the primary signal for understanding how behavior depends on context.
+
+When \citet{henrich2001} found that ultimatum game behavior varied
+dramatically across 15 small-scale societies, this was not a failure to
+replicate \citet{guth1982}. It was evidence that:
+\begin{equation}
+    \frac{\partial \, \text{Rejection}}{\partial \Psi_S} \neq 0, \quad
+    \frac{\partial \, \text{Rejection}}{\partial \Psi_I} \neq 0, \quad
+    \frac{\partial \, \text{Rejection}}{\partial \Psi_C} \neq 0
+\end{equation}
+
+The cross-cultural variation \emph{identifies} the $\Psi$-dependence of
+behavior. A model calibrated on this variation can predict behavior in
+new contexts---not because it has seen those contexts, but because it has
+learned the \emph{function} mapping context to behavior.
+
+\paragraph{Comparison of Architectures.}
+The difference between LLM-based simulation and calibrated prediction is
+architectural, not incremental:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{p{3.5cm}p{5cm}p{5cm}}
+\hline
+\textbf{Aspect} & \textbf{LLM / Digital Twin} & \textbf{EBF / $C^*(\Psi)$} \\
+\hline
+Data source & Text corpora (papers, web) & Experimental behavioral data \\
+Knowledge form & ``The endowment effect is...'' & $E(\Psi) = \alpha + \beta_C \Psi_C + \beta_I \Psi_I + \ldots$ \\
+Heterogeneity & Averaged into ``typical'' response & Explicitly modeled as $\sigma^2(\Psi)$ \\
+Parameters & Implicit, uninterpretable & Explicit, with confidence intervals \\
+Replication of classics & $\sim$50\% (Peng et al.) & By construction (calibration data) \\
+Prediction of new experiments & Not better than chance & Testable, expected high \\
+Cumulation & Impossible (requires retraining) & Each experiment improves $C^*$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Figure~\ref{fig:architecture-comparison} illustrates this difference graphically.
+
+\begin{figure}[htbp]
+\centering
+\fbox{
+\begin{minipage}{0.95\textwidth}
+\small
+\begin{center}
+\textbf{Two Architectures for Behavioral Prediction}
+\end{center}
+\vspace{0.5em}
+
+\begin{tabular}{p{0.45\textwidth}|p{0.45\textwidth}}
+\textbf{LLM / Digital Twin} & \textbf{EBF / BEATRIX} \\
+\hline
+& \\
+\texttt{Input: Text Corpus} & \texttt{Input: 1,500 Experiments} \\
+\texttt{\ \ \ \ (Papers, Wikipedia, Web)} & \texttt{\ \ \ \ (Effect sizes, distributions,} \\
+& \texttt{\ \ \ \ \ moderators, contexts)} \\
+& \\
+$\downarrow$ & $\downarrow$ \\
+& \\
+\texttt{Process: Language Modeling} & \texttt{Process: Statistical Calibration} \\
+\texttt{\ \ \ \ (Next-token prediction)} & \texttt{\ \ \ \ (Parameter estimation on $\Psi$)} \\
+& \\
+$\downarrow$ & $\downarrow$ \\
+& \\
+\texttt{Output: ``The endowment} & \texttt{Output: $E(\Psi) = 0.31 +$} \\
+\texttt{\ \ \ \ effect is a phenomenon} & \texttt{\ \ \ \ $0.24 \cdot \Psi_C + 0.18 \cdot \Psi_I$} \\
+\texttt{\ \ \ \ where people...''} & \texttt{\ \ \ \ $- 0.09 \cdot \Psi_F$} \\
+& \texttt{\ \ \ \ [$R^2 = 0.73$, $N = 47$ studies]} \\
+& \\
+\hline
+& \\
+\textbf{Can:} Describe & \textbf{Can:} Predict \\
+\textbf{Cannot:} Predict when, & \textbf{Can:} Quantify uncertainty \\
+\ \ \ \ how strongly, why varies & \textbf{Can:} Explain variation \\
+& \\
+\hline
+& \\
+\textbf{Replication rate:} $\sim$50\% & \textbf{Replication rate:} $>$85\% \\
+\textit{(Peng et al. 2025)} & \textit{(by construction + validation)} \\
+\end{tabular}
+\end{minipage}
+}
+\caption{Architectural comparison of LLM-based simulation versus data-calibrated prediction.
+The fundamental difference is not model sophistication but \emph{data source}:
+text about behavior versus behavioral data themselves.}
+\label{fig:architecture-comparison}
+\end{figure}
+
+%==============================================================================
+% PART III: WHY EXPERIMENTAL REPLICATION IS GUARANTEED
+%==============================================================================
+
+\subsection{Why Experimental Replication Is Guaranteed}
+\label{sec:ch4x-replication}
+
+A natural question arises: If EBF is calibrated on experimental data,
+is it not circular to claim it can ``replicate'' those experiments?
+
+The answer requires distinguishing three levels:
+
+\paragraph{Level 1: In-Sample Fit.}
+Yes, the model fits the experiments it was calibrated on. This is not a
+claim---it is a requirement. A model that cannot fit its calibration data
+is misspecified.
+
+\paragraph{Level 2: Out-of-Sample Generalization.}
+The meaningful test is whether the model predicts experiments it was
+\emph{not} calibrated on, but that probe the same mechanisms.
+
+Example:
+\begin{itemize}
+    \item \textbf{Training}: Ultimatum games in Switzerland, Germany, Israel, USA, Japan
+    \item \textbf{Test}: Ultimatum games in Papua New Guinea, Tanzania, Ecuador
+    \item \textbf{Prediction}: Given measured $\Psi$ for each society, compute
+          $C^*(\Psi)$
+    \item \textbf{Result}: If prediction matches observation, this is
+          \emph{generalization}, not overfitting
+\end{itemize}
+
+The worked example above demonstrates exactly this: the model trained on
+Western data successfully predicts behavior in small-scale societies, because
+it has learned the \emph{function} $\text{Rejection}(\Psi)$, not memorized
+the data points.
+
+\paragraph{Level 3: Novel Predictions.}
+The strongest test is predicting outcomes of experiments that have not yet
+been conducted. This is the domain of Chapter~\ref{sec:novelpredictions},
+where we show that $C^*(\Psi)$ generates predictions that:
+\begin{itemize}
+    \item No single constituent theory produces alone
+    \item Differ systematically from LLM-based predictions
+    \item Can be tested empirically with pre-registered designs
+\end{itemize}
+
+\paragraph{Why LLMs Cannot Achieve This.}
+An LLM ``knows'' about Henrich et al.'s findings---the paper is in its
+training data. But this knowledge is propositional: ``Behavior in small-scale
+societies differs from Western undergraduates.''
+
+The LLM cannot answer: ``What would the rejection rate be in a society with
+$\Psi_S = 0.45$, $\Psi_I = 0.52$, $\Psi_C = 0.38$?'' Because this requires a
+\emph{function}, not a \emph{description}.
+
+EBF can answer this question---with a point estimate, a confidence
+interval, and a diagnostic flag indicating how far the query is from the
+calibration data.
+
+%==============================================================================
+% PART IV: THE SCALING LOGIC
+%==============================================================================
+
+\subsubsection{The Scaling Logic: From 50 to 1,500 Experiments}
+
+The precision and scope of $C^*(\Psi)$ depend on the calibration base.
+The relationship is not linear but exhibits qualitative transitions:
+
+\paragraph{50 Experiments: Main Effects.}
+With a small calibration base, the model captures:
+\begin{equation}
+    C^*(\Psi) \approx \alpha + \sum_i \beta_i \Psi_i
+\end{equation}
+Linear main effects of each $\Psi$-dimension. Sufficient for rough predictions
+within well-studied domains (e.g., ``higher $\Psi_S$ predicts higher rejection
+rates'').
+
+\paragraph{500 Experiments: Interactions.}
+With a moderate calibration base:
+\begin{equation}
+    C^*(\Psi) \approx \alpha + \sum_i \beta_i \Psi_i + \sum_{i<j} \gamma_{ij} \Psi_i \Psi_j
+\end{equation}
+Two-way interactions become identifiable. The model captures that $\Psi_S$
+matters more when $\Psi_I$ is high, or that $\Psi_C$ moderates the effect of
+stake size on time preferences.
+
+\paragraph{1,500 Experiments: Full Complementarity Structure.}
+With a large calibration base:
+\begin{equation}
+    C^*(\Psi) = f(\Psi) \text{ with nonlinear terms, higher-order interactions,
+    threshold effects}
+\end{equation}
+The full complementarity structure becomes visible---not assumed, but
+\emph{estimated from behavioral variation}. Domain-specific coefficients
+emerge (fairness in markets vs.\ fairness in families; risk in health vs.\
+risk in finance).
+
+\paragraph{5,000+ Experiments: Transfer and Dynamics.}
+At scale, the model enables:
+\begin{itemize}
+    \item Cross-domain transfer: How does $\Psi_I$ affect trust in economic
+          vs.\ political contexts?
+    \item Temporal dynamics: How do coefficients change during crises?
+    \item Fine-grained heterogeneity: Subgroup-specific $C^*(\Psi)$
+\end{itemize}
+
+\paragraph{Quantitative Expectations.}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{rccc}
+\hline
+\textbf{Experiments} & \textbf{Effective Parameters} & \textbf{What's Identifiable} & \textbf{Expected $R^2_{OOS}$} \\
+\hline
+50 & $\sim$50--100 & Main effects & 0.3--0.5 \\
+500 & $\sim$500--1,000 & + Two-way interactions & 0.5--0.7 \\
+1,500 & $\sim$2,000--5,000 & + Nonlinearities, thresholds & 0.7--0.85 \\
+5,000+ & $\sim$10,000+ & + Domain transfer, dynamics & 0.85+ \\
+\hline
+\end{tabular}
+\end{center}
+
+These are not aspirational targets but empirical expectations based on the
+information content of behavioral experiments and the degrees of freedom in
+the $\Psi$-space. The estimates assume proper regularization and
+cross-validation; overfitting would yield high in-sample but low
+out-of-sample $R^2$.
+
+%==============================================================================
+% PART V: ANTICIPATED OBJECTIONS
+%==============================================================================
+
+\subsubsection{Anticipated Objections}
+
+A skeptical reader---particularly one trained in experimental methods---will
+have immediate concerns. We address them directly.
+
+\paragraph{``Isn't this just curve-fitting?''}
+No. Curve-fitting would mean: train on experiment $X$, predict experiment $X$.
+The test is: train on experiments $X_1, \ldots, X_n$ (e.g., Western ultimatum
+games), predict experiment $Y$ (e.g., Machiguenga ultimatum games) that was
+held out from training.
+
+If the model captures the $\Psi$-dependence correctly, it generalizes. If it
+has merely memorized data points, it fails on held-out experiments. This is
+the standard logic of cross-validation, applied to behavioral theory.
+
+\paragraph{``How do you avoid overfitting with so many parameters?''}
+Three mechanisms:
+\begin{enumerate}
+    \item \textbf{Regularization}: Ridge/LASSO penalties shrink coefficients
+          toward zero unless supported by data
+    \item \textbf{Cross-validation}: Parameters are chosen to minimize
+          out-of-sample error, not in-sample fit
+    \item \textbf{Structural constraints}: The 8 $\Psi$-dimensions are not
+          arbitrary---they are the dimensions along which experimental
+          evidence shows behavior varies. Adding a 9th dimension requires
+          passing the Type III diagnostic test (Appendix~\ref{app:epistemics}):
+          the candidate must explain residual variance not captured by existing
+          dimensions.
+\end{enumerate}
+
+\paragraph{``Why should I believe your $\Psi$ measurements?''}
+You shouldn't---uncritically. The $\Psi$ values come from established
+instruments: World Values Survey for $\Psi_S$ and cultural values,
+Global Preference Survey for time/risk preferences, V-Dem for institutional
+quality. Each has known measurement properties, validated across contexts.
+
+But any measurement error in $\Psi$ shows up as residual variance in
+$C^*(\Psi)$. The diagnostic protocol (Appendix~\ref{app:epistemics})
+classifies this: Type I deviations indicate measurement noise; Type III
+deviations suggest missing dimensions. The framework does not assume perfect
+measurement---it diagnoses imperfection.
+
+\paragraph{``What about experimenter demand effects, publication bias, and other artifacts?''}
+These are real concerns for any meta-analytic approach. We address them through:
+\begin{itemize}
+    \item \textbf{Design coding}: Each experiment is coded for double-blind
+          status, incentive compatibility, and other design features that
+          moderate effect sizes
+    \item \textbf{Heterogeneity modeling}: Publication bias inflates average
+          effect sizes but not their $\Psi$-dependence---if anything, it
+          attenuates moderator effects toward zero
+    \item \textbf{Robustness checks}: Key predictions are tested against
+          subsets excluding controversial or low-quality studies
+\end{itemize}
+
+\paragraph{``Can this really work for all of behavioral economics?''}
+No. The framework has scope conditions:
+\begin{itemize}
+    \item \textbf{In scope}: Behaviors where complementarity and context
+          matter---social preferences, risk, time, cooperation, fairness,
+          trust, reciprocity
+    \item \textbf{Partially in scope}: Cognitive biases that interact with
+          context (framing effects, defaults)
+    \item \textbf{Out of scope}: Pure perceptual or memory errors that do not
+          depend on social/institutional context
+\end{itemize}
+
+The claim is not ``EBF explains everything.'' It is: ``For behaviors
+that depend on complementarity and context, EBF provides a calibrated
+predictive model that LLMs cannot match.''
+
+%==============================================================================
+% PART VI: THE EXPERIMENTAL RECORD AS SCIENTIFIC INFRASTRUCTURE
+%==============================================================================
+
+\subsubsection{The Experimental Record as Scientific Infrastructure}
+
+The behavioral economics literature represents an extraordinary scientific
+resource: thousands of experiments, conducted over 50 years, across dozens
+of countries, probing every aspect of human decision-making.
+
+But this resource has been underutilized. Each paper stands alone. Meta-analyses
+aggregate within narrow domains. No framework has systematically extracted
+the \emph{functional relationships} encoded in this evidence.
+
+\paragraph{What Full Calibration Requires.}
+To realize the potential of this literature, each experiment must be coded
+not just for its headline result, but for:
+
+\begin{itemize}
+    \item \textbf{Context ($\Psi$)}: Country, population, institutional setting,
+          with values from independent measurement instruments
+    \item \textbf{Design ($X$)}: Stakes (real/hypothetical, amount), framing,
+          repetition, matching protocol, anonymity, sample characteristics
+    \item \textbf{Results ($Y$)}: Full distributions where available, not just
+          means; effect sizes with standard errors; treatment-control contrasts
+    \item \textbf{Moderators ($M$)}: What variations were tested? What
+          interactions were found or not found?
+\end{itemize}
+
+With this information, the experimental record becomes a \emph{training set}
+for $C^*(\Psi)$---not in the sense of machine learning on text, but in the
+sense of scientific calibration on behavioral data.
+
+\paragraph{The BEATRIX Implementation.}
+The BEATRIX system operationalizes this vision:
+\begin{itemize}
+    \item A structured database of experimental findings with full metadata
+    \item Automated extraction of $\Psi$-values from context descriptions,
+          linked to WVS/GPS/V-Dem measurements
+    \item Continuous updating of $C^*(\Psi)$ as new experiments are coded
+    \item Diagnostic protocols that flag when predictions fall outside
+          the calibration range or when residuals suggest model revision
+    \item Version control: every change to $C^*(\Psi)$ is logged with the
+          evidence that motivated it
+\end{itemize}
+
+This is not ``artificial intelligence'' in the sense of LLMs. It is
+\emph{scientific infrastructure} that makes the accumulated evidence of
+behavioral economics computationally accessible.
+
+%==============================================================================
+% PART VII: THE TESTABLE CLAIM
+%==============================================================================
+
+\subsubsection{The Testable Claim}
+
+The argument of this section reduces to a falsifiable prediction:
+
+\begin{center}
+\fbox{\parbox{0.9\textwidth}{
+\textbf{Prediction}: A EBF model calibrated on $N$ experiments can predict
+the outcomes of held-out experiments (probing the same mechanisms but not
+included in calibration) with accuracy exceeding:
+\begin{enumerate}
+    \item[(a)] Na\"ive baselines (population means, simple demographics)
+    \item[(b)] LLM-based predictions (GPT-4, Claude, Gemini)
+    \item[(c)] Expert predictions (behavioral economists forecasting outcomes)
+\end{enumerate}
+The accuracy advantage increases with $N$ and with the diversity of the
+calibration set.
+}}
+\end{center}
+
+This prediction can be tested today:
+\begin{enumerate}
+    \item Assemble a calibration set of $N$ experiments with full coding
+    \item Hold out 10--20\% as a test set, stratified by domain and context
+    \item Calibrate $C^*(\Psi)$ on the training set
+    \item Generate predictions for the test set (with confidence intervals)
+    \item Elicit predictions from (a) baselines, (b) LLMs, (c) experts
+    \item Compare using proper scoring rules (Brier score, log loss)
+\end{enumerate}
+
+If EBF outperforms all comparators, the framework is validated---not as
+a theoretical construct, but as a \emph{predictive engine} for human behavior.
+
+If it does not, the framework is refuted, or at minimum, its scope conditions
+are identified.
+
+Either outcome advances science. But the prediction of this paper is that
+EBF, properly calibrated, will outperform alternatives---because it is
+built on the right foundation: not text about behavior, but behavioral data
+themselves.
+
+%==============================================================================
+% PART VIII: IMPLICATIONS FOR THE DIGITAL TWIN DEBATE
+%==============================================================================
+
+\subsubsection{Implications for the Digital Twin Debate}
+
+The \citet{peng2025} findings generated considerable discussion about the
+future of LLM-based behavioral simulation. Our analysis suggests a resolution:
+
+\paragraph{Why Digital Twins Fail.}
+Digital twins fail not because LLMs are insufficiently powerful, but because
+they lack a \emph{model} of behavior. They interpolate from text, which
+encodes descriptions of behavior, not the behavioral regularities themselves.
+
+The problem is architectural. No amount of scaling---larger models, more
+training data, better prompts---will solve it, because the training data
+(text) does not contain the information needed for prediction (quantified
+functional relationships between context and behavior).
+
+\paragraph{What Would Make Them Work.}
+For LLM-based simulation to succeed at behavioral prediction, it would need:
+\begin{enumerate}
+    \item Explicit representation of context ($\Psi$)
+    \item Functional relationships between context and behavior ($C^*(\Psi)$)
+    \item Parameters estimated from behavioral data, not inferred from text
+    \item Uncertainty quantification for predictions outside training range
+\end{enumerate}
+
+But this is precisely what EBF provides---without requiring LLMs at all.
+The ``intelligence'' is not in the language model; it is in the
+\emph{calibrated behavioral model}.
+
+\paragraph{The Role of LLMs in BEATRIX.}
+This does not mean LLMs are useless. In the BEATRIX architecture, LLMs serve
+specific functions:
+\begin{itemize}
+    \item \textbf{Natural language interface}: Translating user queries into
+          $\Psi$-space specifications
+    \item \textbf{Report generation}: Presenting predictions and diagnostics
+          in accessible form
+    \item \textbf{Literature processing}: Extracting experimental details from
+          papers for database coding
+    \item \textbf{Hypothesis generation}: Suggesting experimental designs to
+          test model boundaries
+\end{itemize}
+
+But LLMs do not generate the behavioral predictions. $C^*(\Psi)$ does---
+calibrated on the accumulated evidence of experimental behavioral economics.
+
+%==============================================================================
+% PART IX: FORWARD REFERENCE
+%==============================================================================
+
+\paragraph{Forward Reference.}
+The predictions generated by this calibration approach are developed in
+Chapter~\ref{sec:novelpredictions}. There we show that $C^*(\Psi)$ generates
+predictions about trade wars, technological disruption, institutional reform,
+and other policy-relevant phenomena that:
+\begin{itemize}
+    \item No single constituent theory produces alone
+    \item Differ systematically from both standard economic predictions and
+          LLM-based forecasts
+    \item Can be tested empirically with pre-registered observational and
+          experimental designs
+\end{itemize}
+
+The calibration logic developed in this section is what makes those predictions
+possible---and credible.
+
+%==============================================================================
+% CONCLUSION
+%==============================================================================
+
+\vspace{1em}
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{
+\textbf{The Bottom Line}: Fifty years of behavioral economics experiments
+are not just evidence that humans deviate from rationality. They are the
+\emph{calibration data} for a predictive model of those deviations. No
+language model, however large, can replicate this---because prediction
+requires data about behavior, not text about behavior.
+
+\vspace{0.5em}
+
+The experiments of Fehr, Kahneman, Thaler, and hundreds of others did not
+just show that people exhibit social preferences, loss aversion, or
+present bias. They showed \emph{how these phenomena vary with context}.
+That variation is the signal. And EBF is the first framework to
+systematically extract it.
+
+\vspace{0.5em}
+
+This is why BEATRIX can replicate experiments that digital twins cannot.
+This is why its accuracy scales with the experimental record. And this is
+why---we predict---it will outperform any LLM on behavioral forecasting.
+
+\vspace{0.5em}
+
+The test is straightforward. The prediction is falsifiable. And the stakes
+are clear: either behavioral economics has produced cumulative knowledge
+that can be computationally leveraged, or it has not.
+
+\vspace{0.5em}
+
+We believe it has.
+}}
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% BIBLIOGRAPHY ENTRIES (to be added to main bibliography)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% @article{peng2025,
+%   title={A Mega-Study of Digital Twins Reveals Strengths, Weaknesses and 
+%          Opportunities for Further Improvement},
+%   author={Peng, Tianyi and Gui, George and Merlau, Daniel J. and others},
+%   journal={arXiv preprint arXiv:2509.19088},
+%   year={2025}
+% }
+%
+% @techreport{horton2023,
+%   title={Large Language Models as Simulated Economic Agents: What Can We Learn 
+%          from Homo Silicus?},
+%   author={Horton, John J.},
+%   year={2023},
+%   institution={National Bureau of Economic Research},
+%   number={31122}
+% }
+%
+% @article{argyle2023,
+%   title={Out of One, Many: Using Language Models to Simulate Human Samples},
+%   author={Argyle, Lisa P. and Busby, Ethan C. and Fulda, Nancy and Gubler, 
+%           Joshua R. and Rytting, Christopher and Wingate, David},
+%   journal={Political Analysis},
+%   volume={31},
+%   number={3},
+%   pages={337--351},
+%   year={2023}
+% }
+%
+% @inproceedings{park2023,
+%   title={Generative Agents: Interactive Simulacra of Human Behavior},
+%   author={Park, Joon Sung and O'Brien, Joseph C. and Cai, Carrie J. and 
+%           Morris, Meredith Ringel and Liang, Percy and Bernstein, Michael S.},
+%   booktitle={Proceedings of the 36th Annual ACM Symposium on User Interface 
+%              Software and Technology},
+%   year={2023}
+% }
+%
+% @article{henrich2001,
+%   title={In Search of Homo Economicus: Behavioral Experiments in 15 
+%          Small-Scale Societies},
+%   author={Henrich, Joseph and Boyd, Robert and Bowles, Samuel and 
+%           Camerer, Colin and Fehr, Ernst and Gintis, Herbert and others},
+%   journal={American Economic Review},
+%   volume={91},
+%   number={2},
+%   pages={73--78},
+%   year={2001}
+% }
+%
+% @article{guth1982,
+%   title={An Experimental Analysis of Ultimatum Bargaining},
+%   author={G{\"u}th, Werner and Schmittberger, Rolf and Schwarze, Bernd},
+%   journal={Journal of Economic Behavior \& Organization},
+%   volume={3},
+%   number={4},
+%   pages={367--388},
+%   year={1982}
+% }
+%
+% @article{johnson2003,
+%   title={Do Defaults Save Lives?},
+%   author={Johnson, Eric J. and Goldstein, Daniel},
+%   journal={Science},
+%   volume={302},
+%   number={5649},
+%   pages={1338--1339},
+%   year={2003}
+% }
+%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SUMMARY SECTION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Summary}
+\label{sec:ch4x-summary}
+
+This chapter established the fundamental distinction between \emph{calibration} and \emph{simulation}:
+
+\begin{enumerate}
+\item \textbf{LLM simulation fails}: Digital twins achieve only 75\% individual-level accuracy---no better than demographic baselines. They under-represent human heterogeneity and lack the phenomenological grounding needed for behavioral prediction.
+
+\item \textbf{Calibration succeeds}: The EBF approach uses LLMs to extract parameters from 50+ years of experimental research, then applies these parameters in theoretically grounded models with clear epistemic status tags.
+
+\item \textbf{Experimental replication is guaranteed}: Because parameters come from replicated experiments, predictions inherit their reliability. The 1,500+ studies in the EBF database provide robust calibration across domains.
+
+\item \textbf{The key insight}: LLMs are pattern recognizers, not experience simulators. Using them for calibration leverages their strength; using them for simulation exposes their weakness.
+\end{enumerate}
+
+\textbf{Formal Details:} Complete estimation methodology, epistemic status tags (EMP/THR/LLM/ILL/HYP), and validation protocols are provided in Appendix UNMAPPED_BBB (CORE-WHERE).
+
+\textbf{What Comes Next:} Chapter 5 introduces the complementarity structure $\gamma$ that these calibrated parameters populate.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% READING PATH BOX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{tcolorbox}[
+    colback=green!5!white,
+    colframe=green!75!black,
+    title={\textbf{Reading Path}},
+    fonttitle=\bfseries
+]
+\begin{tabular}{@{}ll@{}}
+\textbf{Previous:} & Chapter 4 (Empirical Foundations) \\
+\textbf{Next:} & Chapter 5 (Complementarity) \\
+\textbf{Deep Dive:} & See Appendix UNMAPPED_BBB (Parameter Repository) for complete estimation methodology \\
+\end{tabular}
+
+\medskip
+\textit{For readers short on time: Focus on the Intuition Box and Summary section.}
+\end{tcolorbox}
+

@@ -1,0 +1,30 @@
+name: Test Researcher URLs
+
+on:
+  workflow_dispatch:
+    inputs:
+      sample_size:
+        description: 'Number of random papers to test (0 = all)'
+        required: false
+        default: '10'
+
+jobs:
+  test-urls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Test researcher URLs
+        run: |
+          if [ "${{ github.event.inputs.sample_size }}" = "0" ]; then
+            python scripts/test_researcher_urls.py
+          else
+            python scripts/test_researcher_urls.py --sample ${{ github.event.inputs.sample_size }}
+          fi

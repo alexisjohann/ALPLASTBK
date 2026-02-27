@@ -1,0 +1,681 @@
+# =============================================================================
+# UBS GROWTH MARKETING ACTIVATION MODEL (GMA)
+# =============================================================================
+# Superkey: MOD-UBS-GMA-001
+# Version: 1.0.0
+# Created: 2026-02-02
+# Purpose: Integriertes Modell für Marcel Aisslinger (Head Growth Marketing)
+# Scope: Digital Activation, Trust Recovery, Growth Effectiveness, Integration
+# =============================================================================
+
+metadata:
+  id: "MOD-UBS-GMA-001"
+  name: "UBS Growth Marketing Activation Model"
+  short_name: "GMA"
+  version: "1.0.0"
+  created: "2026-02-02"
+  created_for: "Marcel Aisslinger"
+  customer: "UBS"
+  unit: "Marketing / Digital Communication & Growth"
+
+  question_types:
+    - "Wie aktivieren wir Kunden in digitalen Kanälen?"
+    - "Wie bauen wir Vertrauen bei ex-CS Kunden auf?"
+    - "Wie optimieren wir Growth Marketing Effectiveness?"
+    - "Wie kommunizieren wir während der Integration?"
+
+# =============================================================================
+# SECTION 1: MODELL-ARCHITEKTUR
+# =============================================================================
+
+architecture:
+  type: "Multi-Challenge Integrated Model"
+  approach: "10C → 4 Challenge Modules → Unified Activation Score"
+
+  # Das Modell hat 4 Module, die alle auf denselben 10C-Kern zugreifen
+  modules:
+    A_activation:
+      name: "Digital Activation"
+      primary_10c: [AWARE, STAGE, WHAT]
+      challenge: "95% nutzen App, aber investieren nicht"
+
+    B_trust:
+      name: "Trust Recovery"
+      primary_10c: [WHO, WHAT]
+      challenge: "Ex-CS Kunden misstrauen UBS"
+
+    C_effectiveness:
+      name: "Growth Effectiveness"
+      primary_10c: [AWARE, HOW, WHEN]
+      challenge: "Kampagnen performen unter Erwartung"
+
+    D_integration:
+      name: "Integration Communication"
+      primary_10c: [WHO, AWARE, STAGE]
+      challenge: "Merger-Kommunikation an Kunden"
+
+# =============================================================================
+# SECTION 2: 10C CORE SPECIFICATION
+# =============================================================================
+
+core_10c:
+
+  WHO:
+    description: "Wer sind die Zielkunden?"
+    segments:
+      - id: "SEG-UBS-LEGACY"
+        name: "UBS Legacy Kunden"
+        size: 1500000  # 1.5 Mio
+        tau_base: 0.85  # Hohes Grundvertrauen
+        activation_potential: "medium"
+
+      - id: "SEG-CS-MIGRATED"
+        name: "Ex-CS Migrierte Kunden"
+        size: 1000000  # 1 Mio migriert
+        tau_base: 0.55  # Reduziertes Vertrauen
+        activation_potential: "high"  # Grosses Potenzial
+        trust_recovery_priority: true
+
+      - id: "SEG-DIGITAL-ONLY"
+        name: "Digital-Only Kunden"
+        size: 800000
+        tau_base: 0.70
+        activation_potential: "very_high"
+        primary_channel: "app"
+
+      - id: "SEG-AFFLUENT"
+        name: "Affluent (CHF 250k-2M)"
+        size: 400000
+        tau_base: 0.80
+        lambda: 2.1  # Höhere Loss Aversion
+        activation_potential: "high"
+
+    behavioral_parameters_by_segment:
+      SEG-UBS-LEGACY:
+        lambda: 1.8
+        tau: 0.85
+        beta: 0.88
+        iota_brand: 0.75
+
+      SEG-CS-MIGRATED:
+        lambda: 2.2  # Erhöht durch Unsicherheit
+        tau: 0.55  # Deutlich reduziert
+        beta: 0.82
+        iota_brand: 0.40  # Identität mit UBS noch schwach
+        trust_recovery_multiplier: 1.35  # Potenzial bei Erfolg
+
+      SEG-DIGITAL-ONLY:
+        lambda: 1.6  # Etwas niedriger (jünger)
+        tau: 0.70
+        beta: 0.78  # Mehr present bias
+        iota_brand: 0.55
+        digital_affinity: 0.90
+
+  WHAT:
+    description: "Welche Utility-Dimensionen treiben Verhalten?"
+
+    utility_dimensions:
+      - dim: "u_F"
+        name: "Financial Utility"
+        description: "Rendite, Kosten, Performance"
+        weight: 0.30
+
+      - dim: "u_E"
+        name: "Emotional Utility"
+        description: "Sicherheitsgefühl, Kontrolle, Ruhe"
+        weight: 0.25
+
+      - dim: "u_S"
+        name: "Social Utility"
+        description: "Status, Prestige, Peer-Vergleich"
+        weight: 0.15
+
+      - dim: "u_P"
+        name: "Process Utility"
+        description: "Einfachheit, Convenience, UX"
+        weight: 0.20
+
+      - dim: "u_D"
+        name: "Identity Utility"
+        description: "Selbstbild als 'Anleger', 'UBS-Kunde'"
+        weight: 0.10
+
+    # Segment-spezifische Gewichtung
+    utility_weights_by_segment:
+      SEG-CS-MIGRATED:
+        u_E: 0.35  # Sicherheit wichtiger
+        u_F: 0.25
+        u_P: 0.20
+        u_D: 0.15  # Identität im Aufbau
+        u_S: 0.05
+
+      SEG-DIGITAL-ONLY:
+        u_P: 0.35  # UX extrem wichtig
+        u_F: 0.30
+        u_E: 0.15
+        u_S: 0.10
+        u_D: 0.10
+
+  HOW:
+    description: "Wie interagieren Kunden mit UBS?"
+
+    channels:
+      - id: "CH-APP"
+        name: "Mobile Banking App"
+        reach: 0.75  # 75% nutzen App
+        activation_rate: 0.05  # Nur 5% investieren via App
+        friction_score: 0.60  # Mittlere Friction
+        improvement_potential: "very_high"
+
+      - id: "CH-WEB"
+        name: "E-Banking Web"
+        reach: 0.45
+        activation_rate: 0.08
+        friction_score: 0.55
+
+      - id: "CH-BRANCH"
+        name: "Filiale"
+        reach: 0.25
+        activation_rate: 0.35  # Höchste Conversion
+        friction_score: 0.30  # Niedrigste Friction (persönlich)
+
+      - id: "CH-RM"
+        name: "Relationship Manager"
+        reach: 0.15  # Nur Affluent+
+        activation_rate: 0.55
+        friction_score: 0.20
+
+      - id: "CH-CHAT"
+        name: "Chat / Digital Assistant"
+        reach: 0.20
+        activation_rate: 0.12
+        friction_score: 0.45
+
+    channel_complementarity:
+      # γ > 0 = verstärken sich, γ < 0 = kannibalisieren
+      APP_x_RM: 0.25  # App-Nutzer mit RM-Kontakt aktivieren besser
+      APP_x_BRANCH: 0.15
+      WEB_x_APP: -0.10  # Leichte Kannibalisierung
+      CHAT_x_APP: 0.20
+
+  WHEN:
+    description: "Wann sind Kunden aktivierbar?"
+
+    temporal_context:
+      # Life Events mit hoher Aktivierungswahrscheinlichkeit
+      life_events:
+        - event: "Bonus/13. Monatslohn"
+          timing: "Dezember-Januar"
+          activation_multiplier: 1.8
+
+        - event: "Steuererklärung"
+          timing: "Februar-März"
+          activation_multiplier: 1.5
+
+        - event: "3a Deadline"
+          timing: "Dezember"
+          activation_multiplier: 2.2
+
+        - event: "Erbschaft"
+          timing: "anytime"
+          activation_multiplier: 2.5
+
+        - event: "Immobilienkauf"
+          timing: "anytime"
+          activation_multiplier: 1.6
+
+      # Integration-spezifische Zeitfenster
+      integration_timeline:
+        - phase: "Migration abgeschlossen"
+          timing: "jetzt"
+          opportunity: "Willkommens-Kommunikation"
+          window_days: 90
+
+        - phase: "Erste UBS-Interaktion"
+          timing: "nach Migration"
+          opportunity: "First Impression Excellence"
+          window_days: 30
+
+  WHERE:
+    description: "Wo findet die Interaktion statt?"
+
+    touchpoints:
+      digital:
+        - "App Home Screen"
+        - "Save & Invest Landing Page"
+        - "Post-Login Dashboard"
+        - "Push Notifications"
+        - "E-Mail Kampagnen"
+
+      physical:
+        - "Filiale (190 UBS + 95 ex-CS)"
+        - "Events"
+        - "Beratungsgespräch"
+
+    context_modifiers:
+      app_homescreen:
+        attention_available: 0.3  # Nur 30% Aufmerksamkeit
+        decision_readiness: 0.2
+
+      branch_meeting:
+        attention_available: 0.9
+        decision_readiness: 0.7
+
+  AWARE:
+    description: "Was wissen Kunden? Was ist salient?"
+
+    awareness_dimensions:
+      - dim: "A_product"
+        name: "Produktkenntnis"
+        current_level: 0.35  # Niedrig
+        target_level: 0.70
+        gap: 0.35
+
+      - dim: "A_benefit"
+        name: "Nutzenkenntnis"
+        current_level: 0.25  # Sehr niedrig
+        target_level: 0.65
+        gap: 0.40
+
+      - dim: "A_risk"
+        name: "Risikowahrnehmung"
+        current_level: 0.70  # Hoch (Barriere!)
+        target_level: 0.50  # Kalibrieren, nicht eliminieren
+        gap: -0.20
+
+      - dim: "A_action"
+        name: "Handlungswissen"
+        current_level: 0.20  # Sehr niedrig
+        target_level: 0.80
+        gap: 0.60
+
+    salience_factors:
+      # Was ist aktuell salient (top of mind)?
+      current:
+        - "CS-UBS Merger"
+        - "Inflation/Kaufkraftverlust"
+        - "Zinsen auf Sparkonto"
+
+      target:
+        - "Langfristiger Vermögensaufbau"
+        - "Einfachheit des Investierens"
+        - "UBS als Partner"
+
+  READY:
+    description: "Wie bereit sind Kunden zu handeln?"
+
+    readiness_model:
+      # WAX = Willingness, Ability, Context
+
+      willingness:
+        SEG-CS-MIGRATED: 0.40  # Durch Unsicherheit reduziert
+        SEG-DIGITAL-ONLY: 0.55
+        SEG-UBS-LEGACY: 0.50
+
+      ability:
+        financial: 0.70  # Haben Geld
+        knowledge: 0.30  # Wissen fehlt
+        access: 0.85  # Zugang vorhanden
+
+      context:
+        integration_uncertainty: -0.15  # Negativer Modifier
+        market_volatility: -0.10
+        inflation_pressure: +0.20  # Treiber!
+
+  STAGE:
+    description: "Wo in der Customer Journey?"
+
+    journey_stages:
+      - stage: "UNAWARE"
+        share: 0.20
+        description: "Wissen nicht, dass sie investieren könnten"
+        primary_intervention: "Awareness Campaigns"
+
+      - stage: "AWARE_PASSIVE"
+        share: 0.45
+        description: "Wissen von Möglichkeit, kein Interesse"
+        primary_intervention: "Benefit Communication"
+
+      - stage: "CONSIDERING"
+        share: 0.20
+        description: "Denken darüber nach"
+        primary_intervention: "Friction Reduction"
+
+      - stage: "INTENDING"
+        share: 0.10
+        description: "Wollen, aber haben nicht gehandelt"
+        primary_intervention: "Activation Nudges"
+
+      - stage: "ACTIVE"
+        share: 0.05
+        description: "Investieren bereits"
+        primary_intervention: "Retention & Deepening"
+
+# =============================================================================
+# SECTION 3: MODUL A - DIGITAL ACTIVATION
+# =============================================================================
+
+module_A_digital_activation:
+
+  challenge: |
+    95% der UBS Mobile Banking Nutzer investieren nicht,
+    obwohl Lösungen verfügbar sind.
+
+  root_causes:
+    - cause: "Awareness Gap"
+      10c: "AWARE"
+      evidence: "A_action = 0.20 (wissen nicht WIE)"
+      weight: 0.30
+
+    - cause: "Friction Overload"
+      10c: "HOW"
+      evidence: "friction_score App = 0.60"
+      weight: 0.25
+
+    - cause: "Risk Salience"
+      10c: "AWARE"
+      evidence: "A_risk = 0.70 (zu hoch)"
+      weight: 0.20
+
+    - cause: "Identity Gap"
+      10c: "WHAT"
+      evidence: "u_D = 0.10 (sehen sich nicht als 'Anleger')"
+      weight: 0.15
+
+    - cause: "Stage Stuck"
+      10c: "STAGE"
+      evidence: "45% in AWARE_PASSIVE"
+      weight: 0.10
+
+  intervention_vector:
+    # I ∈ [0,1]^9 für 9 targetierbare 10C-Dimensionen
+    I_WHO: 0.3    # Segment-spezifische Ansprache
+    I_WHAT: 0.6   # Identity + Benefit Framing
+    I_HOW: 0.7    # Friction Reduction, Channel Optimization
+    I_WHEN: 0.5   # Trigger-based Activation
+    I_WHERE: 0.4  # Touchpoint Optimization
+    I_AWARE: 0.9  # Höchste Priorität: Awareness & Salience
+    I_READY: 0.6  # Barrier Reduction
+    I_STAGE: 0.7  # Journey Progression
+    I_HIER: 0.2   # Entscheidungsarchitektur
+
+  recommended_interventions:
+    - id: "INT-A1"
+      name: "Micro-Learning Nudges"
+      target_10c: "AWARE"
+      description: "30-Sekunden Education Snippets in App"
+      expected_lift: 0.15
+
+    - id: "INT-A2"
+      name: "One-Click Investment Entry"
+      target_10c: "HOW"
+      description: "Radikal vereinfachter Einstieg"
+      expected_lift: 0.25
+
+    - id: "INT-A3"
+      name: "Social Proof Integration"
+      target_10c: "WHAT"
+      description: "'X% deiner Altersgruppe investieren bereits'"
+      expected_lift: 0.12
+
+# =============================================================================
+# SECTION 4: MODUL B - TRUST RECOVERY
+# =============================================================================
+
+module_B_trust_recovery:
+
+  challenge: |
+    1 Mio+ ex-CS Kunden wurden migriert.
+    Trust Level bei τ = 0.55 (vs. 0.85 bei UBS Legacy).
+
+  trust_model:
+    # τ = f(Competence, Benevolence, Integrity, Predictability)
+
+    dimensions:
+      competence:
+        perception: 0.70  # "Können sie Banking?"
+        gap_to_ubs_legacy: -0.10
+
+      benevolence:
+        perception: 0.45  # "Wollen sie mein Bestes?"
+        gap_to_ubs_legacy: -0.30  # Grösste Lücke!
+
+      integrity:
+        perception: 0.50  # "Halten sie Versprechen?"
+        gap_to_ubs_legacy: -0.25
+
+      predictability:
+        perception: 0.55  # "Weiss ich, was kommt?"
+        gap_to_ubs_legacy: -0.20
+
+  intervention_vector:
+    I_WHO: 0.8    # Segment-spezifisch (ex-CS)
+    I_WHAT: 0.7   # Benevolence signalisieren
+    I_HOW: 0.5    # Konsistente Interaktionen
+    I_WHEN: 0.6   # Kritische Momente nutzen
+    I_WHERE: 0.4
+    I_AWARE: 0.6  # Transparenz
+    I_READY: 0.5
+    I_STAGE: 0.3
+    I_HIER: 0.2
+
+  recommended_interventions:
+    - id: "INT-B1"
+      name: "Proactive Outreach"
+      target_10c: "WHAT"
+      description: "Persönliche Willkommens-Kommunikation"
+      expected_trust_lift: 0.08
+
+    - id: "INT-B2"
+      name: "Consistency Signals"
+      target_10c: "HOW"
+      description: "Gleiche Konditionen garantieren (12 Monate)"
+      expected_trust_lift: 0.12
+
+    - id: "INT-B3"
+      name: "Voice of Customer"
+      target_10c: "WHO"
+      description: "Aktiv Feedback einholen und reagieren"
+      expected_trust_lift: 0.10
+
+# =============================================================================
+# SECTION 5: MODUL C - GROWTH EFFECTIVENESS
+# =============================================================================
+
+module_C_growth_effectiveness:
+
+  challenge: |
+    Growth Marketing Kampagnen performen unter Erwartung.
+    CAC steigt, Conversion sinkt.
+
+  effectiveness_model:
+    # E = Reach × Relevance × Response × Retention
+
+    current_funnel:
+      reach: 0.65        # Kampagnen erreichen 65%
+      relevance: 0.30    # Nur 30% finden es relevant
+      response: 0.08     # 8% reagieren
+      retention: 0.40    # 40% bleiben aktiv
+
+    bottleneck: "relevance"  # Grösstes Problem
+
+  intervention_vector:
+    I_WHO: 0.7    # Bessere Segmentierung
+    I_WHAT: 0.6   # Relevantere Value Props
+    I_HOW: 0.8    # Channel-Mix optimieren
+    I_WHEN: 0.9   # Timing ist kritisch!
+    I_WHERE: 0.5
+    I_AWARE: 0.7  # Message Salience
+    I_READY: 0.4
+    I_STAGE: 0.6  # Stage-appropriate Messaging
+    I_HIER: 0.3
+
+  recommended_interventions:
+    - id: "INT-C1"
+      name: "Behavioral Segmentation"
+      target_10c: "WHO"
+      description: "Segmente nach Verhalten, nicht Demografie"
+      expected_relevance_lift: 0.15
+
+    - id: "INT-C2"
+      name: "Trigger-Based Campaigns"
+      target_10c: "WHEN"
+      description: "Life Events als Auslöser"
+      expected_response_lift: 0.20
+
+    - id: "INT-C3"
+      name: "A/B Testing Framework"
+      target_10c: "HOW"
+      description: "Systematisches Experimentieren"
+      expected_overall_lift: 0.25
+
+# =============================================================================
+# SECTION 6: MODUL D - INTEGRATION COMMUNICATION
+# =============================================================================
+
+module_D_integration_communication:
+
+  challenge: |
+    Wie kommunizieren wir die CS-Integration so,
+    dass Vertrauen steigt statt sinkt?
+
+  communication_principles:
+    - principle: "Proactive > Reactive"
+      rationale: "Kunden vor Überraschungen schützen"
+
+    - principle: "Benefit-First"
+      rationale: "Was haben SIE davon?"
+
+    - principle: "Acknowledge Uncertainty"
+      rationale: "Ehrlichkeit baut Vertrauen"
+
+    - principle: "Consistency Across Channels"
+      rationale: "Keine widersprüchlichen Botschaften"
+
+  intervention_vector:
+    I_WHO: 0.6    # Differenzierte Ansprache
+    I_WHAT: 0.5
+    I_HOW: 0.7    # Channel Consistency
+    I_WHEN: 0.8   # Timing kritisch
+    I_WHERE: 0.6
+    I_AWARE: 0.9  # Transparenz höchste Prio
+    I_READY: 0.4
+    I_STAGE: 0.7  # Journey-Phase beachten
+    I_HIER: 0.3
+
+  recommended_interventions:
+    - id: "INT-D1"
+      name: "Integration Roadmap Communication"
+      target_10c: "AWARE"
+      description: "Klare Timeline kommunizieren"
+
+    - id: "INT-D2"
+      name: "Personal Milestone Markers"
+      target_10c: "STAGE"
+      description: "Individuelle Journey visualisieren"
+
+    - id: "INT-D3"
+      name: "Feedback Loops"
+      target_10c: "WHO"
+      description: "Systematisch Rückmeldung einholen"
+
+# =============================================================================
+# SECTION 7: UNIFIED ACTIVATION SCORE
+# =============================================================================
+
+unified_model:
+
+  # Kombiniert alle 4 Module zu einem Score
+  activation_score:
+    formula: |
+      A = Σᵢ wᵢ × Mᵢ
+
+      wobei:
+      - w_A = 0.35 (Digital Activation)
+      - w_B = 0.25 (Trust Recovery)
+      - w_C = 0.25 (Growth Effectiveness)
+      - w_D = 0.15 (Integration Communication)
+
+    current_estimate: 0.32  # Baseline
+    target: 0.55
+    gap: 0.23
+
+  # Segment-spezifische Gewichtung
+  weights_by_segment:
+    SEG-CS-MIGRATED:
+      w_A: 0.25
+      w_B: 0.40  # Trust wichtiger!
+      w_C: 0.20
+      w_D: 0.15
+
+    SEG-DIGITAL-ONLY:
+      w_A: 0.50  # Activation wichtiger!
+      w_B: 0.15
+      w_C: 0.25
+      w_D: 0.10
+
+  # Erwarteter Impact bei Umsetzung aller Interventionen
+  expected_outcomes:
+    activation_rate_lift: "+8-12pp"  # Von 5% auf 13-17%
+    trust_score_lift: "+0.15-0.20"   # Von 0.55 auf 0.70-0.75
+    campaign_effectiveness_lift: "+25-35%"
+    nps_lift: "+10-15 points"
+
+# =============================================================================
+# SECTION 8: QUICK REFERENCE FOR MEETING
+# =============================================================================
+
+meeting_quick_reference:
+
+  marcel_context:
+    role: "Head Growth Marketing & Co-Lead Integration"
+    priorities:
+      - "Digital Activation"
+      - "CS Integration Communication"
+      - "Growth Effectiveness"
+
+  key_insights_to_share:
+    - insight: "45% der Kunden sind in 'Aware but Passive' - das ist der grösste Hebel"
+      evidence: "STAGE Distribution"
+
+    - insight: "Trust Gap bei ex-CS ist primär Benevolence, nicht Competence"
+      evidence: "Trust Model Dimensions"
+
+    - insight: "Timing ist der stärkste Multiplier - Life Events nutzen"
+      evidence: "WHEN Analysis"
+
+    - insight: "App Friction Score 0.60 ist zu hoch - One-Click Entry fehlt"
+      evidence: "HOW Channel Analysis"
+
+  questions_to_ask_marcel:
+    - "Welches der 4 Module ist aktuell die höchste Priorität?"
+    - "Wie misst ihr aktuell Activation Success?"
+    - "Welche Daten habt ihr zu ex-CS Kundenverhalten?"
+    - "Gibt es bereits A/B Testing Infrastruktur?"
+
+  fehradvice_offering:
+    - "BEATRIX-Pilot für Save & Invest (bereits mit CoE XD aktiv)"
+    - "Behavioral Segmentation Workshop"
+    - "Trust Recovery Measurement"
+    - "Growth Experimentation Framework"
+
+# =============================================================================
+# CROSS-REFERENCES
+# =============================================================================
+
+references:
+  related_projects:
+    - "UBS_037 BEATRIX Pilot (CoE XD)"
+    - "UBS_036 Capability Building"
+
+  ebf_appendices:
+    - "AW CORE-STAGE (Customer Journey)"
+    - "AU CORE-AWARE (Awareness)"
+    - "HHH METHOD-TOOLKIT (Interventions)"
+    - "V CORE-WHEN (Context)"
+
+  theory_support:
+    - "MS-NU-001: Default Effects"
+    - "MS-TP-001: Present Bias"
+    - "MS-IB-001: Identity Economics"
+    - "MS-SP-001: Social Preferences"

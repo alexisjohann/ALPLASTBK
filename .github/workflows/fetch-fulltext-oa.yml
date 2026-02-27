@@ -1,0 +1,121 @@
+# =============================================================================
+# FULL-TEXT FETCH WORKFLOW (L2 → L3 Upgrade)
+# =============================================================================
+# Fetches Open Access full texts via Unpaywall API.
+# Converts PDF → text via pdftotext, stores as markdown.
+#
+# Content Level L3 Requirements:
+#   R1: All original sections present
+#   R2: References section with all citations
+#   R3: >10k words (article) / >5k (short paper)
+#   R4: No EBF sections in text
+#
+# Triggers:
+#   - Manual (workflow_dispatch)
+# =============================================================================
+
+name: Fetch Full-Text (OA)
+
+on:
+  workflow_dispatch:
+    inputs:
+      batch_size:
+        description: 'Number of papers to process'
+        required: false
+        default: '5'
+      author:
+        description: 'Author filter (e.g., sutter). Leave empty for all.'
+        required: false
+        default: 'sutter'
+      dry_run:
+        description: 'Dry run (check OA availability only, no downloads)'
+        required: false
+        default: 'true'
+        type: boolean
+      paper_key:
+        description: 'Process a specific paper key (overrides batch/author)'
+        required: false
+        default: ''
+      target_branch:
+        description: 'Branch to commit results to'
+        required: false
+        default: 'claude/beatrix-hallucination-investigation-HLDWb'
+
+jobs:
+  fetch-fulltext:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_branch }}
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests pyyaml
+          sudo apt-get update && sudo apt-get install -y poppler-utils
+
+      - name: Verify pdftotext
+        run: |
+          which pdftotext
+          pdftotext -v 2>&1 || true
+
+      - name: Run full-text fetch
+        run: |
+          ARGS="--batch ${{ inputs.batch_size }}"
+
+          if [ -n "${{ inputs.author }}" ]; then
+            ARGS="$ARGS --author ${{ inputs.author }}"
+          fi
+
+          if [ -n "${{ inputs.paper_key }}" ]; then
+            ARGS="--key ${{ inputs.paper_key }}"
+          fi
+
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+
+          echo "Running: python scripts/fetch_fulltext_oa.py $ARGS"
+          python scripts/fetch_fulltext_oa.py $ARGS
+
+      - name: Upload log artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fulltext-fetch-log
+          path: data/fulltext-fetch-log.yaml
+
+      - name: Commit results
+        if: ${{ inputs.dry_run == 'false' }}
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          # Add new full texts and updated YAMLs
+          git add data/paper-texts/ data/paper-references/ data/fulltext-fetch-log.yaml
+
+          # Check if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            CHANGED=$(git diff --staged --name-only | wc -l)
+            git commit -m "feat(papers): Fetch $CHANGED Open Access full texts (L2→L3)
+
+          Author filter: ${{ inputs.author }}
+          Batch size: ${{ inputs.batch_size }}
+          Branch: ${{ inputs.target_branch }}
+
+          https://claude.ai/code/session_015eQ5iY9wbAt5Q9xNrK2JoY"
+
+            git push
+            echo "✓ Committed and pushed $CHANGED files"
+          fi
