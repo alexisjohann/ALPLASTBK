@@ -1,0 +1,68 @@
+name: Weekly README Update
+
+on:
+  schedule:
+    # Jeden Montag um 08:00 UTC (9:00 CET)
+    - cron: '0 8 * * 1'
+  workflow_dispatch:  # Manuell auslösbar
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Volle Git-Historie für Log-Analyse
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install PyYAML
+
+      - name: Update README statistics
+        run: |
+          python scripts/update_readme_stats.py
+
+      - name: Check if changes exist
+        id: verify
+        run: |
+          if git diff --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push changes
+        if: steps.verify.outputs.has_changes == 'true'
+        run: |
+          git config --local user.email "claude@fehradvice.com"
+          git config --local user.name "Claude (Automated)"
+          git add README.md docs/README.md chapters/README.md appendices/README.md
+          git commit -m "docs(weekly): Auto-update README statistics
+
+- Appendices count
+- Chapters count
+- Bibliography entries
+- Recent git commits
+- Version & timestamp"
+          git push
+
+      - name: Create GitHub issue if no changes
+        if: steps.verify.outputs.has_changes == 'false'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: 1,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ Weekly README check: No changes needed. All statistics are current.'
+            })

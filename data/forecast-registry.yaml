@@ -1,0 +1,1329 @@
+# =============================================================================
+# FORECAST REGISTRY - Systematisches Tracking aller EBF-Prognosen
+# =============================================================================
+# Version: 1.0
+# Created: 2026-01-30
+# Purpose: Tracking von Prognosen, Vergleich mit Realität, Modell-Kalibrierung
+# =============================================================================
+
+metadata:
+  version: "1.2"
+  created: "2026-01-30"
+  last_updated: "2026-02-02"
+  description: |
+    Zentrale Datenbank für alle EBF-Prognosen mit:
+    - Systematischem Tracking von Vorhersagen
+    - Vergleich Prognose vs. tatsächliches Ergebnis
+    - Kalibrierungsmetriken (Brier Score, Log Loss, etc.)
+    - Learnings für Modellverbesserung
+
+  id_format: "FCT-{DOMAIN}-{YYYY}-{NNN}"
+  domains:
+    - POL: "Politische Abstimmungen, Wahlen"
+    - GEO: "Geopolitische Ereignisse, Konflikte"
+    - ECO: "Wirtschaftsprognosen"
+    - FIN: "Finanzmarkt-Prognosen"
+    - BEH: "Verhaltensvorhersagen"
+    - ORG: "Organisationale Outcomes"
+
+# =============================================================================
+# KALIBRIERUNGS-METRIKEN (Aggregiert)
+# =============================================================================
+
+calibration_summary:
+  total_forecasts: 5
+  resolved_forecasts: 0  # Mit bekanntem Outcome
+  pending_forecasts: 5   # Noch offen
+
+  # Wird nach Auflösung berechnet
+  metrics:
+    brier_score: null        # 0 = perfekt, 1 = schlecht
+    log_loss: null           # Niedriger = besser
+    calibration_error: null  # Abweichung von perfekter Kalibrierung
+    resolution: null         # Fähigkeit zur Diskriminierung
+
+  by_domain:
+    POL:
+      count: 3
+      resolved: 0
+      avg_brier: null
+    GEO:
+      count: 1
+      resolved: 0
+      avg_brier: null
+    FIN:
+      count: 1
+      resolved: 0
+      avg_brier: null
+
+# =============================================================================
+# PROGNOSEN
+# =============================================================================
+
+forecasts:
+
+  # ---------------------------------------------------------------------------
+  # FCT-POL-2025-001: 10-Millionen-Initiative
+  # ---------------------------------------------------------------------------
+  - id: "FCT-POL-2025-001"
+
+    # === IDENTIFIKATION ===
+    title: "10-Millionen-Initiative (Keine 10-Millionen-Schweiz!)"
+    domain: POL
+    subdomain: "referendum"
+    country: CH
+
+    # === ZEITRAHMEN ===
+    dates:
+      forecast_created: "2025-06-01"
+      forecast_updated: "2025-11-30"
+      event_date: "2025-Q4"  # Genaues Datum war noch offen
+      event_resolved: null   # Datum wenn Ergebnis bekannt
+
+    # === FRAGE ===
+    question:
+      original: |
+        Wie wird die Volksinitiative «Keine 10-Millionen-Schweiz!» ausgehen?
+        Ziel: Begrenzung der Wohnbevölkerung auf 10 Mio. bis 2050
+      binary_framing: "Wird die Initiative angenommen?"
+      direction: "JA = Annahme, NEIN = Ablehnung"
+
+    # === MODELL ===
+    model:
+      id: "MOD-ECOS-10MIO-001"
+      name: "Referendum Dynamics Model (RDM)"
+      type: "Dynamic Bayesian Forecast"
+      session_ref: null  # Damals keine Session-ID
+      project_ref: "PRJ-ECOS-001"
+
+    # === PROGNOSEN (SZENARIEN) ===
+    scenarios:
+
+      baseline:
+        name: "Business as Usual"
+        description: "Ohne zusätzliche Interventionen"
+        assumptions:
+          nein_campaign_budget_mio: 5
+          ja_campaign_budget_mio: 3
+          media_sentiment: "neutral"
+        prediction:
+          ja: 0.52
+          nein: 0.48
+          confidence_interval_95:
+            ja: [0.48, 0.56]
+            nein: [0.44, 0.52]
+          p_ja_wins: 0.55
+          p_nein_wins: 0.45
+        conclusion: "Knapp, aber Tendenz zu JA (Annahme)"
+
+      full_portfolio:
+        name: "Full Portfolio Deployment"
+        description: "Alle Interventionen aktiviert"
+        assumptions:
+          nein_campaign_budget_mio: 8
+          ja_campaign_budget_mio: 3
+          interventions_active: "all"
+          media_sentiment: "leicht positiv für Nein"
+        prediction:
+          ja: 0.46
+          nein: 0.54
+          confidence_interval_95:
+            ja: [0.42, 0.50]
+            nein: [0.50, 0.58]
+          p_ja_wins: 0.30
+          p_nein_wins: 0.70
+        conclusion: "Nein gewinnt mit solidem Vorsprung"
+
+      focused:
+        name: "Focused on Swing Voters"
+        description: "Konzentration auf SEG-MITTE und SEG-BESORGT"
+        assumptions:
+          nein_campaign_budget_mio: 6
+          ja_campaign_budget_mio: 3
+          interventions_active:
+            - "INT-SHORT-001"
+            - "INT-MEDIUM-001"
+            - "INT-MEDIUM-002"
+          media_sentiment: "neutral"
+        prediction:
+          ja: 0.48
+          nein: 0.52
+          confidence_interval_95:
+            ja: [0.44, 0.52]
+            nein: [0.48, 0.56]
+          p_ja_wins: 0.40
+          p_nein_wins: 0.60
+        conclusion: "Empfohlene Strategie: Effizient & effektiv"
+        is_recommended: true
+
+      adverse:
+        name: "Adverse Events"
+        description: "Negative Ereignisse (Wirtschaftskrise, Terror)"
+        assumptions:
+          nein_campaign_budget_mio: 5
+          ja_campaign_budget_mio: 3
+          adverse_event_impact: -0.05
+          media_sentiment: "negativ für Zuwanderung"
+        prediction:
+          ja: 0.57
+          nein: 0.43
+          confidence_interval_95:
+            ja: [0.53, 0.61]
+            nein: [0.39, 0.47]
+          p_ja_wins: 0.75
+          p_nein_wins: 0.25
+        conclusion: "Risiko-Szenario: JA gewinnt deutlich"
+
+    # === HAUPT-PROGNOSE (für Kalibrierung) ===
+    primary_forecast:
+      scenario_used: "baseline"
+      point_estimate:
+        ja: 0.52
+        nein: 0.48
+      probability:
+        p_ja_wins: 0.55
+        p_nein_wins: 0.45
+      confidence: "MITTEL"
+      uncertainty_drivers:
+        - "Mobilisierungsdynamik beider Seiten"
+        - "Externe Ereignisse (Wirtschaft, Migration)"
+        - "Kampagnen-Intensität"
+
+    # === TATSÄCHLICHES ERGEBNIS ===
+    actual_outcome:
+      resolved: false
+      date: null
+      result:
+        ja: null
+        nein: null
+      turnout: null
+      standeresult: null  # Bei Volksinitiativen relevant
+      source: null
+
+    # === KALIBRIERUNG (nach Auflösung) ===
+    calibration:
+      brier_score: null
+      log_loss: null
+      absolute_error: null
+      direction_correct: null
+      within_ci: null
+
+    # === METADATEN ===
+    client: "economiesuisse"
+    tags:
+      - migration
+      - svp
+      - referendum
+      - switzerland
+    notes: |
+      Projekt für economiesuisse zur Entwicklung eines Forecast-Modells
+      und Interventionsportfolios für die NEIN-Kampagne.
+
+      WICHTIG: Baseline-Prognose zeigt JA-Tendenz - ohne Interventionen
+      wäre die Initiative wahrscheinlich angenommen worden!
+
+  # ---------------------------------------------------------------------------
+  # FCT-POL-2026-001: SRG-Halbierungsinitiative
+  # ---------------------------------------------------------------------------
+  - id: "FCT-POL-2026-001"
+
+    # === IDENTIFIKATION ===
+    title: "SRG-Halbierungsinitiative (200 Franken sind genug!)"
+    domain: POL
+    subdomain: "referendum"
+    country: CH
+
+    # === ZEITRAHMEN ===
+    dates:
+      forecast_created: "2026-01-30"
+      forecast_updated: "2026-01-30"
+      event_date: "2026-03-08"
+      event_resolved: null
+
+    # === FRAGE ===
+    question:
+      original: |
+        Wie wird die Volksinitiative «200 Franken sind genug!» ausgehen?
+        Ziel: Reduktion der Radio-/TV-Abgabe von 335 CHF auf 200 CHF
+      binary_framing: "Wird die Initiative angenommen?"
+      direction: "JA = Annahme (200 CHF), NEIN = Ablehnung (335 CHF bleibt)"
+
+    # === MODELL ===
+    model:
+      id: "MOD-015"
+      name: "Referendum Dynamics Model Extended (RDM-X)"
+      type: "Dynamic Bayesian Forecast with Monte Carlo"
+      session_ref: "EBF-S-2026-01-30-POL-003"
+      project_ref: null
+
+    # === PROGNOSEN (SZENARIEN) ===
+    scenarios:
+
+      baseline:
+        name: "Gewichtete Umfragen"
+        description: "gfs.bern (40%), Tamedia (30%), Sotomo (30%)"
+        assumptions:
+          poll_date: "2026-01-22"
+          days_to_vote: 37
+        prediction:
+          ja: 0.484
+          nein: 0.492
+          undecided: 0.024
+        conclusion: "Ausgangslage: Patt"
+
+      corrected:
+        name: "Mit Korrekturfaktoren"
+        description: "Historische Korrekturen + Mobilisierung"
+        assumptions:
+          mobilization_effect: "+3.0pp NEIN"
+          campaign_effect: "+1.0pp NEIN"
+          external_events: "+0.5pp NEIN"
+          historical_correction: "-7.0pp JA"
+          gender_gap: "-1.5pp JA"
+        prediction:
+          ja: 0.449
+          nein: 0.521
+          undecided: 0.030
+          confidence_interval_95:
+            ja: [0.405, 0.489]
+            nein: [0.481, 0.565]
+          p_ja_wins: 0.376
+          p_nein_wins: 0.624
+        conclusion: "NEIN wahrscheinlich, aber eng"
+        is_primary: true
+
+      high_turnout:
+        name: "Hohe Stimmbeteiligung (>55%)"
+        description: "Mobilisierung beider Seiten erfolgreich"
+        assumptions:
+          turnout: 0.55
+          mitte_mobilization: "high"
+        prediction:
+          ja: 0.43
+          nein: 0.55
+          p_nein_wins: 0.75
+        conclusion: "NEIN gewinnt deutlicher"
+
+      low_turnout:
+        name: "Tiefe Stimmbeteiligung (<45%)"
+        description: "SVP-Basis dominiert"
+        assumptions:
+          turnout: 0.42
+          svp_overrepresentation: true
+        prediction:
+          ja: 0.51
+          nein: 0.47
+          p_ja_wins: 0.55
+        conclusion: "JA knapp möglich"
+
+      srg_scandal:
+        name: "SRG-Skandal"
+        description: "Negatives Ereignis kurz vor Abstimmung"
+        assumptions:
+          scandal_impact: "+5pp JA"
+          media_sentiment: "negativ für SRG"
+        prediction:
+          ja: 0.52
+          nein: 0.46
+          p_ja_wins: 0.60
+        conclusion: "JA gewinnt bei Skandal"
+
+    # === HAUPT-PROGNOSE (für Kalibrierung) ===
+    primary_forecast:
+      scenario_used: "corrected"
+      point_estimate:
+        ja: 0.449
+        nein: 0.521
+      probability:
+        p_ja_wins: 0.376
+        p_nein_wins: 0.624
+      confidence_interval_95:
+        ja: [0.363, 0.535]
+        nein: [0.435, 0.607]
+      confidence: "MITTEL"
+      monte_carlo:
+        n_simulations: 10000
+        mean_nein: 0.521
+        std_nein: 0.044
+      uncertainty_drivers:
+        - "Mobilisierungsasymmetrie (SVP vs. breite Koalition)"
+        - "Turnout-Niveau"
+        - "Externe Ereignisse in letzten 5 Wochen"
+        - "FDP-Positionierung (gespalten)"
+
+    # === TATSÄCHLICHES ERGEBNIS ===
+    actual_outcome:
+      resolved: false
+      date: null  # 2026-03-08 nach Abstimmung eintragen
+      result:
+        ja: null
+        nein: null
+      turnout: null
+      source: null
+
+    # === KALIBRIERUNG (nach Auflösung) ===
+    calibration:
+      brier_score: null
+      log_loss: null
+      absolute_error: null
+      direction_correct: null
+      within_ci: null
+
+    # === METADATEN ===
+    client: null  # Interne Analyse
+    tags:
+      - srg
+      - media
+      - referendum
+      - switzerland
+      - service-public
+
+    # === VERGLEICH MIT ÄHNLICHEN ABSTIMMUNGEN ===
+    historical_comparisons:
+      - id: "No-Billag 2018"
+        initial_polls: "50% JA"
+        final_result: "71.6% NEIN"
+        swing: "-21.6pp"
+        lesson: "Starke Gegenmobilisierung bei Medienvorlagen"
+
+      - id: "RTVG 2015"
+        initial_polls: "52% JA"
+        final_result: "50.1% JA"
+        swing: "-1.9pp"
+        lesson: "Knapp, aber leichte Swing zu NEIN"
+
+      - id: "Medienpaket 2022"
+        initial_polls: "60% JA"
+        final_result: "54.6% NEIN"
+        swing: "-14.6pp"
+        lesson: "Massiver Swing, unterschätzte Opposition"
+
+    notes: |
+      Analyse erstellt am 30.01.2026, 37 Tage vor Abstimmung.
+
+      Hauptunsicherheit: Mobilisierungsasymmetrie. SVP-Basis ist
+      hoch motiviert (Gebühren senken = populär), während die
+      Gegner-Koalition fragmentiert ist.
+
+      Historische Korrektur von -7pp basiert auf No-Billag, RTVG
+      und Medienpaket - alle zeigten Swing zu NEIN.
+
+  # ---------------------------------------------------------------------------
+  # FCT-GEO-2026-001: US/Israel Angriff auf Iran
+  # ---------------------------------------------------------------------------
+  - id: "FCT-GEO-2026-001"
+
+    # === IDENTIFIKATION ===
+    title: "Militärischer Angriff auf iranische Nuklearanlagen"
+    domain: GEO
+    subdomain: "military_conflict"
+    region: "Middle East"
+
+    # === ZEITRAHMEN ===
+    dates:
+      forecast_created: "2026-01-30"
+      forecast_updated: "2026-01-30"
+      time_horizon: "2026-12-31"  # Bis Ende 2026
+      event_resolved: null
+
+    # === FRAGE (PRÄZISE DEFINITION) ===
+    question:
+      original: |
+        Wird es 2026 einen militärischen Angriff auf iranische
+        Nuklearanlagen geben?
+      binary_framing: "Erfolgt ein Angriff auf Iran bis Ende 2026?"
+      direction: "JA = Angriff erfolgt, NEIN = Kein Angriff"
+
+      # Präzise Auflösungskriterien (wichtig für Kalibrierung!)
+      resolution_criteria:
+        what_counts_as_yes:
+          - "Luftangriffe auf Nuklearanlagen (Fordow, Natanz, Isfahan, Arak)"
+          - "Cruise Missile / Drohnenangriffe auf nukleare Infrastruktur"
+          - "Spezialoperationen mit signifikanter Zerstörung"
+          - "Cyberangriff mit physischer Zerstörung (Stuxnet 2.0 mit Explosion)"
+        what_counts_as_no:
+          - "Sanktionen (auch verschärfte)"
+          - "Cyberangriffe ohne physische Zerstörung"
+          - "Attentate auf Einzelpersonen (Wissenschaftler)"
+          - "Proxy-Konflikte ohne direkte Beteiligung"
+          - "Rhetorische Drohungen"
+        actors_included:
+          - "USA (direkt)"
+          - "Israel (direkt)"
+          - "USA + Israel (koordiniert)"
+        actors_excluded:
+          - "Saudi-Arabien allein"
+          - "Nicht-staatliche Akteure"
+
+    # === MODELL ===
+    model:
+      id: "MOD-GEO-001"
+      name: "US-Iran Crisis Escalation Model"
+      type: "Sequential Game (Extensive Form)"
+      solution_concept: "Subgame Perfect Equilibrium"
+      session_ref: "EBF-S-2026-01-28-GEO-001"
+      approach: |
+        Backward Induction mit 2 Hauptakteuren (USA, Iran).
+        Utility-Gewichte: Credibility, Security, War Cost, Face-Saving.
+        Dekonstruktion in bedingte Wahrscheinlichkeiten:
+        P(Angriff) = P(Trigger) × P(Entscheidung|Trigger) × P(Ausführung)
+
+    # === PROBABILITY HISTORY (Zeitreihe für Updates) ===
+    probability_history:
+      # --- INITIALE SCHÄTZUNG (28. Januar 2026) ---
+      - date: "2026-01-28"
+        time_horizon: "48h"
+        probability: 0.18
+        confidence_interval: [0.12, 0.25]
+        confidence: "MEDIUM"
+        reasoning: |
+          Sequential Game Analyse (Backward Induction):
+          - Gleichgewicht: Verhandlung → Deal (Pareto-optimal)
+          - USS Abraham Lincoln vor Ort (Drohkulisse)
+          - Davos-Signal (24.01.) de-eskalierend
+          - Trump 48h Deadline möglich aber nicht angekündigt
+        key_drivers:
+          positive:  # Erhöhen P(Angriff)
+            - "USS Abraham Lincoln vor Ort"
+            - "Trump hawkish rhetoric"
+            - "5'002 Tote bei Iran-Protesten"
+            - "Face-Saving Zwang beidseitig"
+          negative:  # Senken P(Angriff)
+            - "Gleichgewicht ist Verhandlung"
+            - "Davos de-eskalierend"
+            - "Keine konkrete Deadline"
+            - "Iran-Regime will überleben"
+        trigger_scenarios:
+          - trigger: "Iran exekutiert Demonstranten"
+            p_strike: 0.45
+            delta: "+27pp"
+          - trigger: "Proxy greift US-Truppen an"
+            p_strike: 0.60
+            delta: "+42pp"
+          - trigger: "Trump-Tweet mit Deadline"
+            p_strike: 0.33
+            delta: "+15pp"
+          - trigger: "Direkter Trump-Iran Call"
+            p_strike: 0.05
+            delta: "-13pp"
+        updated_by: "EBF-S-2026-01-28-GEO-001"
+
+      # --- AKTUELLER STAND (30. Januar 2026) ---
+      - date: "2026-01-30"
+        time_horizon: "2026-12-31"
+        probability: 0.35
+        confidence_interval: [0.20, 0.55]
+        confidence: "LOW"
+        reasoning: |
+          Extrapolation von 48h auf Jahres-Horizont:
+          - Kurzfristig (48h): 18% → stabil, kein Trigger eingetreten
+          - Kumulativ 2026: ~35% (viele potenzielle Trigger-Fenster)
+          - Q1: 25%, Q2: 35%, Q3: 40%, Q4: 45% (steigend)
+        key_drivers:
+          positive:
+            - "Trump 2.0: Maximum Pressure zurück"
+            - "Iran Breakout-Zeit verkürzt auf ~2 Wochen"
+            - "Netanyahu unter Druck (Gaza, Libanon)"
+            - "Abraham Accords + potentieller Saudi-Deal"
+          negative:
+            - "US Kriegsmüdigkeit"
+            - "Ölpreis-Risiko ($120+ möglich)"
+            - "Russland/China diplomatische Unterstützung"
+            - "Iranische Vergeltungskapazität (Proxies, Hormuz)"
+        updated_by: "Update 30.01.2026"
+
+    # === SZENARIEN MIT BEDINGTEN WAHRSCHEINLICHKEITEN ===
+    conditional_scenarios:
+
+      - name: "Iran erreicht Breakout"
+        condition: "Iran produziert waffenfähiges Uran (>90%)"
+        p_condition: 0.40  # P(Breakout in 2026)
+        p_attack_given_condition: 0.70
+        combined_probability: 0.28  # 0.40 × 0.70
+
+      - name: "Status Quo"
+        condition: "Iran bleibt bei 60% Anreicherung"
+        p_condition: 0.50
+        p_attack_given_condition: 0.15
+        combined_probability: 0.075
+
+      - name: "Diplomatischer Durchbruch"
+        condition: "Neues Abkommen / De-Eskalation"
+        p_condition: 0.10
+        p_attack_given_condition: 0.02
+        combined_probability: 0.002
+
+    # === HAUPT-PROGNOSE ===
+    primary_forecast:
+      # Kurzfristig (48h, aus Session 28.01.)
+      short_term:
+        time_horizon: "48h"
+        point_estimate: 0.18
+        confidence_interval_95: [0.12, 0.25]
+        model_session: "EBF-S-2026-01-28-GEO-001"
+        equilibrium: "Verhandlung → Deal"
+
+      # Langfristig (Jahr 2026)
+      annual:
+        time_horizon: "2026-12-31"
+        point_estimate: 0.35
+        confidence_interval_80: [0.20, 0.55]
+        confidence: "LOW"
+
+      time_decay: |
+        Wahrscheinlichkeit steigt über das Jahr:
+        - Q1 2026: 25% (Neue Administration, Orientierung)
+        - Q2 2026: 35% (Policy kristallisiert, Iran-Policy klar)
+        - Q3 2026: 40% (Vor Midterms, politisches Fenster)
+        - Q4 2026: 45% (Letztes Fenster vor 2027)
+
+    # === TATSÄCHLICHES ERGEBNIS ===
+    actual_outcome:
+      resolved: false
+      date: null
+      result: null  # "attack" oder "no_attack"
+      details: null
+      source: null
+
+    # === KALIBRIERUNG ===
+    calibration:
+      brier_score: null
+      log_loss: null
+      direction_correct: null
+
+    # === UPDATE-PROTOKOLL ===
+    update_triggers:
+      automatic:
+        - "IAEA Report (monatlich)"
+        - "Signifikante Truppenbewegungen"
+        - "Hochrangige Statements (POTUS, PM Israel)"
+      manual:
+        - "Geopolitische Schocks"
+        - "Neue Intelligence"
+
+    update_workflow: |
+      Bei jedem Update:
+      1. Neuen Eintrag in probability_history hinzufügen
+      2. Reasoning dokumentieren (was hat sich geändert?)
+      3. Key Drivers aktualisieren
+      4. Conditional Scenarios anpassen falls nötig
+      5. forecast_updated Datum aktualisieren
+
+    # === METADATEN ===
+    tags:
+      - iran
+      - nuclear
+      - israel
+      - usa
+      - middle-east
+      - trump
+      - geopolitics
+
+    related_forecasts:
+      - "Regional war escalation"
+      - "Oil price spike >$150"
+      - "Strait of Hormuz closure"
+
+    notes: |
+      GEOPOLITISCHE PROGNOSEN unterscheiden sich von Referenden:
+      - Kein fixes Datum → Zeitraum mit Wahrscheinlichkeit
+      - Bedingte Wahrscheinlichkeiten wichtiger
+      - Updates bei neuen Informationen PFLICHT
+      - Resolution-Kriterien VORHER festlegen!
+
+      WICHTIG: Diese Prognose dient der analytischen Einschätzung
+      und hat keinen operativen oder beratenden Charakter.
+
+  # ---------------------------------------------------------------------------
+  # FCT-POL-2026-002: SPÖ Nationalratswahl Österreich 2029
+  # ---------------------------------------------------------------------------
+  - id: "FCT-POL-2026-002"
+
+    # === IDENTIFIKATION ===
+    title: "SPÖ Stimmenanteil Nationalratswahl Österreich 2029"
+    domain: POL
+    subdomain: "election"
+    country: AT
+
+    # === ZEITRAHMEN ===
+    dates:
+      forecast_created: "2026-02-02"
+      forecast_updated: "2026-02-02"
+      event_date: "2029-Q3"  # Voraussichtlich Herbst 2029
+      event_resolved: null
+
+    # === FRAGE ===
+    question:
+      original: |
+        Welchen Stimmenanteil erreicht die SPÖ bei der nächsten
+        österreichischen Nationalratswahl (voraussichtlich 2029)?
+      binary_framing: "Erreicht SPÖ mindestens 30%?"
+      direction: "JA = SPÖ ≥ 30%, NEIN = SPÖ < 30%"
+
+      resolution_criteria:
+        what_counts:
+          - "Offizielles Endergebnis der Nationalratswahl"
+          - "Amtliches Ergebnis vom BMI"
+        measurement: "Stimmenanteil in Prozent (gerundet auf 1 Dezimalstelle)"
+
+    # === MODELL ===
+    model:
+      id: "MOD-SPO-TWOPATH-001"
+      name: "Two-Path γ_{E×X} Model + 10-Axiom Framework"
+      type: "Monte Carlo Simulation with Scenario Analysis"
+      session_ref: "EBF-S-2026-01-27-POL-002"
+      project_ref: null
+      approach: |
+        Erweitertes EBF-Modell basierend auf:
+        1. Two-Path γ_{E×X} Modell (Funktion vs. Ausschluss)
+        2. 10 Axiome K1-K10 (AXIOME_ordnung_statt_spalten.yaml)
+        3. Utility-Funktion: U_i = α·F + β·S + Σ_k [γ^{k}·(E^{k} × X^{k})·Salience_k·Credibility_{p,k}]
+
+        Kernunterscheidung:
+        - γ^{Ausschluss} = E(Grenzen) × X(Herkunft) → FPÖ (γ=0.42)
+        - γ^{Funktion} = E(Systeme) × X(Beitrag) → SPÖ-Ziel (γ=0.15→0.35)
+
+    # === ERFOLGSBEDINGUNGEN ===
+    success_conditions:
+      C1_execution:
+        name: "EXECUTION"
+        description: "SPÖ zeigt, dass Systeme funktionieren"
+        probability: 0.60  # Erhöht von 0.55 durch Narrativ-Entwicklung
+        impact_if_fulfilled: "+0.20 auf γ^{Funktion}"
+        update_reason: "Migration/EMRK-Narrativ (B1-B8) liefert konkretes Kommunikationsgerüst"
+
+      C2_consistency:
+        name: "KONSISTENZ"
+        description: "Keine Rückfälle in alte Frames"
+        probability: 0.50  # Erhöht von 0.40 durch modulares Narrativ
+        impact_if_fulfilled: "Frame stabilisiert sich"
+        update_reason: "Baustein-System ermöglicht konsistente Antworten über alle Ebenen"
+
+      C3_time:
+        name: "ZEIT"
+        description: "18-24 Monate für Frame-Aufbau"
+        probability: 0.70  # Unverändert
+        phases:
+          - "1-6 Monate: Frame etablieren"
+          - "7-12 Monate: Erste Beweise liefern"
+          - "13-18 Monate: Frame verstärken"
+          - "19-24 Monate: Frame wird 'natürlich'"
+
+      C4_no_crisis:
+        name: "KEINE EXOGENE KRISE"
+        description: "Keine massive Störung während Aufbauphase"
+        probability: 0.50  # Unverändert
+        risk_events:
+          - "Neue Flüchtlingswelle (>100k)"
+          - "Terroranschlag mit Migration-Bezug"
+          - "Skandale im SPÖ-Bereich"
+          - "Wirtschaftskrise"
+
+    # === JOINT PROBABILITIES (aktualisiert) ===
+    joint_probabilities:
+      all_four: 0.105      # 0.60 × 0.50 × 0.70 × 0.50 (erhöht von 0.077)
+      three_of_four: 0.28  # Erhöht von 0.25
+      two_of_four: 0.38    # Leicht reduziert von 0.40
+      failure: 0.235       # Reduziert von 0.273
+
+    # === SZENARIEN ===
+    scenarios:
+
+      full_success:
+        name: "Vollständiger Erfolg"
+        description: "Alle 4 Bedingungen erfüllt"
+        conditions: "C1 ∧ C2 ∧ C3 ∧ C4"
+        probability: 0.105
+        prediction:
+          spo_share: 0.345
+          confidence_interval_95: [0.312, 0.381]
+          arbeiter_segment: 0.32
+        gamma_funktion: 0.42
+        conclusion: "SPÖ etabliert eigenen Migrations-Frame"
+
+      partial_success:
+        name: "Teilweiser Erfolg"
+        description: "3 von 4 Bedingungen erfüllt"
+        conditions: "3 of 4"
+        probability: 0.28
+        prediction:
+          spo_share: 0.298
+          confidence_interval_95: [0.265, 0.334]
+          arbeiter_segment: 0.27
+        gamma_funktion: 0.32
+        conclusion: "Frame teilweise etabliert, gewisse Resonanz"
+
+      minimal_success:
+        name: "Minimaler Erfolg"
+        description: "2 von 4 Bedingungen erfüllt"
+        conditions: "2 of 4"
+        probability: 0.38
+        prediction:
+          spo_share: 0.252
+          confidence_interval_95: [0.220, 0.288]
+          arbeiter_segment: 0.23
+        gamma_funktion: 0.22
+        conclusion: "Leichte Verbesserung, aber kein Durchbruch"
+
+      failure:
+        name: "Misserfolg"
+        description: "Weniger als 2 Bedingungen erfüllt / Frame kollabiert"
+        conditions: "< 2 of 4"
+        probability: 0.235
+        prediction:
+          spo_share: 0.185
+          confidence_interval_95: [0.152, 0.221]
+          arbeiter_segment: 0.15
+        gamma_funktion: 0.12
+        conclusion: "Strategie scheitert, Status Quo ante"
+
+    # === HAUPT-PROGNOSE ===
+    primary_forecast:
+      scenario_used: "expected_value_weighted"
+
+      point_estimate:
+        spo_share: 0.259  # Gewichteter Erwartungswert
+        formula: "0.105×34.5 + 0.28×29.8 + 0.38×25.2 + 0.235×18.5"
+
+      probability:
+        p_above_30: 0.30   # P(SPÖ > 30%)
+        p_above_25: 0.55   # P(SPÖ > 25%)
+        p_below_20: 0.18   # P(SPÖ < 20%)
+
+      confidence_interval_95: [0.152, 0.381]
+
+      monte_carlo:
+        n_simulations: 10000
+        mean: 0.259
+        std: 0.058
+
+      confidence: "MITTEL"
+
+      uncertainty_drivers:
+        - "Execution-Kapazität der SPÖ (größter Hebel)"
+        - "Interne Kohärenz (Doskozil-Faktor)"
+        - "Exogene Schocks (Flüchtlingskrise, Terror)"
+        - "FPÖ-Performance in Regierung"
+        - "Wirtschaftliche Entwicklung"
+
+    # === VERGLEICH MIT BASELINE ===
+    comparison:
+      de_salienz_strategy:
+        name: "De-Salienzierung (Alternative)"
+        description: "Thema Migration meiden, auf andere Themen setzen"
+        expected_value: 0.278
+        confidence_interval_95: [0.228, 0.332]
+        variance: "niedrig"
+        character: "DEFENSIV"
+
+      neupositionierung_strategy:
+        name: "Neupositionierung (aktuell verfolgt)"
+        description: "Eigenen Migrations-Frame aufbauen via γ^{Funktion}"
+        expected_value: 0.259
+        confidence_interval_95: [0.152, 0.381]
+        variance: "HOCH"
+        character: "OFFENSIV"
+
+      differential:
+        point_estimate: -0.019  # De-Salienz hat höheren EV
+        upside_difference: "+0.049"  # Neupositionierung hat höheres Maximum
+        downside_difference: "-0.076"  # Neupositionierung hat tieferes Minimum
+
+      strategic_implication: |
+        De-Salienz hat höheren Erwartungswert (27.8% vs 25.9%),
+        aber Neupositionierung hat:
+        - Höheres Upside (38.1% vs 33.2%)
+        - Langfristige Resilienz bei nächster Krise
+        - Strukturellen statt taktischen Vorteil
+
+        Die Frage ist nicht "27.8% vs 25.9%"
+        Die Frage ist "Einmal-Optimierung vs. Langfristige Positionierung"
+
+    # === SENSITIVITÄTS-ANALYSE ===
+    sensitivity:
+      most_impactful_parameters:
+        - parameter: "C1 (Execution)"
+          base: 0.60
+          high: 0.75
+          low: 0.45
+          impact_range: "±3.5pp auf SPÖ-Anteil"
+
+        - parameter: "C2 (Konsistenz)"
+          base: 0.50
+          high: 0.65
+          low: 0.35
+          impact_range: "±2.8pp auf SPÖ-Anteil"
+
+        - parameter: "γ^{Funktion}_target"
+          base: 0.35
+          high: 0.45
+          low: 0.25
+          impact_range: "±2.2pp auf SPÖ-Anteil"
+
+      scenario_sensitivity: |
+        Bei C1=0.75 (starke Execution):
+        → P(full_success) steigt auf 0.13
+        → E[SPÖ] steigt auf 27.2%
+
+        Bei C4=0.30 (hohe Krisen-Wahrscheinlichkeit):
+        → P(failure) steigt auf 0.35
+        → E[SPÖ] fällt auf 23.8%
+
+    # === TATSÄCHLICHES ERGEBNIS ===
+    actual_outcome:
+      resolved: false
+      date: null
+      result:
+        spo_share: null
+        rank: null
+      turnout: null
+      source: null
+
+    # === KALIBRIERUNG ===
+    calibration:
+      brier_score: null
+      log_loss: null
+      absolute_error: null
+      direction_correct: null
+      within_ci: null
+
+    # === MODEL UPDATES ===
+    update_triggers:
+      automatic:
+        - "Neue Umfragen (monatlich)"
+        - "Landtagswahlen in AT"
+        - "Regierungsbeteiligung SPÖ oder FPÖ"
+      manual:
+        - "Signifikante exogene Schocks"
+        - "Führungswechsel bei SPÖ"
+        - "Neue Migration-Ereignisse"
+
+    # === METADATEN ===
+    client: "SPÖ"
+    mandate_ref: "PRE-SPO-2026-02-01-001"
+    tags:
+      - austria
+      - election
+      - spo
+      - migration
+      - framing
+      - two-path-model
+
+    related_files:
+      - "data/customers/spo/spo_two_path_model.yaml"
+      - "data/customers/spo/strategie/AXIOME_ordnung_statt_spalten.yaml"
+      - "data/customers/spo/strategie/LEITFADEN_migration_emrk_narrativ_2026-02-02.md"
+      - "data/customers/spo/spo_mandate_preamble.yaml"
+
+    notes: |
+      WICHTIG: Diese Prognose basiert auf dem Two-Path γ_{E×X} Modell,
+      das eine fundamentale Neupositionierung der SPÖ auf dem
+      Migrations-Thema modelliert.
+
+      STRATEGISCHE LOGIK:
+      Die SPÖ kann nicht γ^{Ausschluss} (FPÖ-Territorium) übernehmen,
+      aber γ^{Funktion} (Ordnung durch funktionierende Systeme) aufbauen.
+
+      BABLER-CREDIBILITY:
+      Entscheidender Faktor ist Bablers Biografie (15 Jahre Bürgermeister
+      Traiskirchen, größtes Erstaufnahmezentrum) als Authentizitäts-Anker.
+
+      UPDATE 2026-02-02:
+      Erfolgswahrscheinlichkeiten erhöht durch:
+      - C1: 0.55 → 0.60 (Narrativ-Framework entwickelt)
+      - C2: 0.40 → 0.50 (Modulares Baustein-System)
+      Resultat: E[SPÖ] steigt von 25.1% auf 25.9%
+
+  # ---------------------------------------------------------------------------
+  # FCT-FIN-2026-001: AI-Bubble USA Crash-Wahrscheinlichkeit
+  # ---------------------------------------------------------------------------
+  - id: "FCT-FIN-2026-001"
+
+    # === IDENTIFIKATION ===
+    title: "AI-Bubble USA: Crash-Wahrscheinlichkeit innerhalb 6 Monaten"
+    domain: FIN
+    subdomain: "market_bubble"
+    region: "USA"
+
+    # === ZEITRAHMEN ===
+    dates:
+      forecast_created: "2026-02-04"
+      forecast_updated: "2026-02-04"
+      time_horizon: "2026-08-04"  # 6 Monate
+      event_resolved: null
+
+    # === FRAGE (PRÄZISE DEFINITION) ===
+    question:
+      original: |
+        Gibt es eine AI-Bubble in den USA und wie wahrscheinlich ist es,
+        dass diese Blase in den nächsten 6 Monaten platzt?
+      binary_framing: "Platzt die AI-Bubble innerhalb von 6 Monaten?"
+      direction: "JA = Crash (Mag7 -25% vom ATH), NEIN = Kein Crash"
+
+      resolution_criteria:
+        what_counts_as_yes:
+          - "Magnificent 7 Index fällt >25% vom ATH innerhalb von 3 Monaten"
+          - "NASDAQ-100 fällt >20% vom ATH innerhalb von 3 Monaten"
+          - "Mindestens 2 Mag7-Aktien fallen >40% vom ATH"
+        what_counts_as_no:
+          - "Geordnete Korrektur -10-15% ohne Panik"
+          - "Soft Landing mit Rotation"
+          - "Seitwärtsbewegung"
+        measurement_source:
+          - "Bloomberg Magnificent 7 Index"
+          - "NASDAQ-100 Index"
+          - "S&P 500 Tech Sector"
+
+    # === DIAGNOSE (BUBBLE-SCORE) ===
+    diagnosis:
+      bubble_exists: true
+      bubble_score: 0.823
+      bubble_score_ci: [0.78, 0.87]
+      interpretation: "BLASE (0.70-0.85 = Blase bestätigt)"
+
+      six_indicators:
+        - indicator: "Kindleberger-Minsky Phase"
+          value: "3.5/5 (Euphorie → Distress)"
+          status: "warning"
+        - indicator: "Lamont 4 Horsemen"
+          value: "3.5/4"
+          status: "critical"
+        - indicator: "CFRS (Circular Financing Risk)"
+          value: 0.85
+          status: "critical"
+        - indicator: "Shiller CAPE"
+          value: 40.6
+          status: "critical"
+        - indicator: "Credit Spread Complacency"
+          value: "71 bps (30J-Tief)"
+          status: "warning"
+        - indicator: "Insider Selling"
+          value: "100% (nur Verkäufe)"
+          status: "critical"
+
+    # === MODELL ===
+    model:
+      id: "MOD-FIN-BUBBLE-001"
+      name: "AI Bubble Diagnostic & Prognostic Model (ABDPM)"
+      version: "1.1"
+      type: "Multi-Factor Bubble Model with Trigger-Based Monte Carlo"
+      session_ref: "EBF-S-2026-02-04-FIN-001"
+
+      components:
+        - "Kindleberger-Minsky 5-Phasen-Modell"
+        - "Lamont 4 Horsemen Bubble Detection"
+        - "Circular Financing Risk Score (CFRS)"
+        - "Shiller CAPE Ratio Analysis"
+        - "Credit Spread Complacency Index"
+        - "Insider Selling Indicator"
+
+      formulas:
+        diagnose: |
+          B_score = w₁·Phase + w₂·Lamont + w₃·CFRS + w₄·CAPE + w₅·Complacency + w₆·Insider
+          Gewichte: w₁=0.20, w₂=0.20, w₃=0.20, w₄=0.15, w₅=0.15, w₆=0.10
+        prognose: |
+          P(Crash 6M) = 1 - Π[1 - P(Tᵢ) × P(Crash|Tᵢ)]
+          Mit 8 Triggern: T₁-T₈
+
+    # === TRIGGER-ANALYSE ===
+    triggers:
+      - id: "T1"
+        name: "Circular Financing Collapse"
+        description: "Microsoft-OpenAI oder Nvidia-Startup Kette bricht"
+        p_trigger: 0.35
+        p_crash_given_trigger: 0.90
+        contribution: 0.32
+      - id: "T2"
+        name: "AI Model Failure"
+        description: "GPT-5/Gemini enttäuscht fundamental"
+        p_trigger: 0.15
+        p_crash_given_trigger: 0.70
+        contribution: 0.11
+      - id: "T3"
+        name: "Fed Shock"
+        description: "Unerwartete Zinserhöhung"
+        p_trigger: 0.10
+        p_crash_given_trigger: 0.65
+        contribution: 0.07
+      - id: "T4"
+        name: "Geopolitik"
+        description: "Taiwan/China Eskalation"
+        p_trigger: 0.08
+        p_crash_given_trigger: 0.80
+        contribution: 0.06
+      - id: "T5"
+        name: "Earnings Miss"
+        description: "Mag7 Earnings enttäuschen kollektiv"
+        p_trigger: 0.40
+        p_crash_given_trigger: 0.60
+        contribution: 0.24
+      - id: "T6"
+        name: "IPO Flop"
+        description: "OpenAI IPO scheitert oder enttäuscht"
+        p_trigger: 0.25
+        p_crash_given_trigger: 0.70
+        contribution: 0.18
+      - id: "T7"
+        name: "Credit Blow-Out"
+        description: "Spread-Ausweitung >150bps"
+        p_trigger: 0.12
+        p_crash_given_trigger: 0.55
+        contribution: 0.07
+      - id: "T8"
+        name: "Insider Cascade"
+        description: "Massive koordinierte Insider-Verkäufe"
+        p_trigger: 0.20
+        p_crash_given_trigger: 0.65
+        contribution: 0.13
+
+    # === CIRCULAR FINANCING ANALYSE ===
+    circular_financing:
+      description: |
+        Das "Circular Financing Karussell" ist der Hauptrisikofaktor.
+        Technologieunternehmen investieren gegenseitig ineinander und
+        kaufen dann Produkte/Services voneinander.
+
+      key_flows:
+        - flow: "Microsoft → OpenAI → Azure"
+          amount: "$13B → $12.4B zurück"
+          risk: "Selbstverstärkend"
+        - flow: "Nvidia → 170 AI-Firmen → Nvidia GPUs"
+          amount: "$53B → GPU-Käufe"
+          risk: "Revenue-Inflation"
+        - flow: "Nvidia + Microsoft → Anthropic → Azure"
+          amount: "$15B → $30B Credits"
+          risk: "Kreuzfinanzierung"
+
+      is_ponzi: false
+      ponzi_like_characteristics:
+        - "Selbstverstärkender Kreislauf"
+        - "Abhängig von kontinuierlichem Kapitalzufluss"
+        - "Kollaps bei Unterbrechung möglich"
+
+      key_event: |
+        Nvidia hat $100B Investition in OpenAI im Februar 2026 gestoppt -
+        erstes Warnsignal für Risse im System.
+
+    # === SZENARIEN ===
+    scenarios:
+
+      soft_landing:
+        name: "Soft Landing"
+        description: "Circular hält, Korrektur -10-15%"
+        probability: 0.33
+        conditions:
+          - "Circular Financing bleibt intakt"
+          - "Earnings OK (nicht brillant, aber OK)"
+          - "Fed neutral"
+          - "Keine geopolitischen Schocks"
+        outcome:
+          mag7_change: "-10% bis -15%"
+          duration: "3-6 Monate"
+          recovery: "12-18 Monate"
+
+      orderly_correction:
+        name: "Geordnete Korrektur"
+        description: "Mag7 -25-35%, Rotation in Value"
+        probability: 0.40
+        conditions:
+          - "Einzelne Earnings-Enttäuschungen"
+          - "Partielle Circular-Probleme"
+          - "Rotation statt Panik"
+        outcome:
+          mag7_change: "-25% bis -35%"
+          duration: "3-6 Monate"
+          recovery: "18-24 Monate"
+        is_primary: true
+
+      hard_crash:
+        name: "Harter Crash"
+        description: "Kettenreaktion, Mag7 >-40%"
+        probability: 0.27
+        conditions:
+          - "Circular Collapse (T1 tritt ein)"
+          - "Multiple Trigger gleichzeitig"
+          - "Margin Calls, Liquiditätskrise"
+        outcome:
+          mag7_change: ">-40%"
+          duration: "1-3 Monate (akut)"
+          recovery: "3-5 Jahre"
+
+    # === HAUPT-PROGNOSE ===
+    primary_forecast:
+      point_estimate: 0.672
+      confidence_interval_95: [0.55, 0.75]
+      confidence: "MITTEL-HOCH"
+
+      interpretation: |
+        67% Wahrscheinlichkeit für einen Crash (Mag7 >-25% vom ATH)
+        innerhalb der nächsten 6 Monate.
+
+        Definition "Crash": Magnificent 7 Index fällt >25% vom ATH
+        innerhalb von 3 Monaten.
+
+      sensitivity:
+        main_driver: "T₁ Circular Collapse (32% Einfluss)"
+        second_driver: "T₅ Earnings Miss (24% Einfluss)"
+        third_driver: "T₆ IPO Flop (18% Einfluss)"
+
+      robustness: |
+        Selbst im optimistischen Szenario bleibt P(Crash) > 50%.
+        Ergebnis ist robust unter realistischen Parameter-Variationen.
+
+    # === KRITISCHE FENSTER ===
+    critical_windows:
+      - period: "März-April 2026"
+        risk: "HOCH"
+        trigger: "Q4/FY2025 Earnings"
+      - period: "Mai 2026"
+        risk: "MITTEL"
+        trigger: "Powell-Übergang"
+      - period: "Juni-Juli 2026"
+        risk: "HÖCHSTE"
+        trigger: "OpenAI IPO"
+      - period: "Juli-August 2026"
+        risk: "HOCH"
+        trigger: "Q2 Earnings"
+
+    # === TATSÄCHLICHES ERGEBNIS ===
+    actual_outcome:
+      resolved: false
+      date: null
+      result: null  # "crash" oder "no_crash"
+      mag7_from_ath: null
+      details: null
+      source: null
+
+    # === KALIBRIERUNG ===
+    calibration:
+      brier_score: null
+      log_loss: null
+      direction_correct: null
+      within_ci: null
+
+    # === THEORETISCHE BASIS ===
+    theoretical_basis:
+      - theory: "MS-IB-005"
+        name: "Overconfidence (Malmendier & Tate 2005)"
+        application: "CEO-Investitionsentscheidungen in AI"
+      - theory: "MS-BF-007"
+        name: "Overreaction (DeBondt & Thaler 1985)"
+        application: "Marktreaktion auf AI-Hype"
+      - theory: "MS-BF-006"
+        name: "Momentum (Jegadeesh & Titman 1993)"
+        application: "Selbstverstärkende Kursanstiege"
+      - theory: "Kindleberger (1978)"
+        name: "Manias, Panics, and Crashes"
+        application: "5-Phasen Bubble-Modell"
+      - theory: "Lamont (2024)"
+        name: "4 Horsemen Framework"
+        application: "Bubble-Detection-Kriterien"
+
+    # === METADATEN ===
+    client: "FehrAdvice (intern)"
+    tags:
+      - ai-bubble
+      - usa
+      - tech
+      - magnificent-7
+      - circular-financing
+      - nvidia
+      - openai
+      - microsoft
+      - crash-prediction
+
+    notes: |
+      WICHTIG: Diese Prognose ist eine systematische Analyse basierend auf
+      dem EBF-Framework, nicht eine Anlageempfehlung.
+
+      KERNBEFUNDE:
+      1. JA, ES IST EINE BLASE - 6/6 Indikatoren im Warnsignal-Bereich
+      2. KEIN KLASSISCHES PONZI - aber Circular Financing erzeugt ähnliche Risiken
+      3. TIMING UNSICHER - kritische Monate: März-April, Juni-Juli 2026
+      4. HAUPTRISIKO: CIRCULAR FINANCING - der gestoppte Nvidia-OpenAI Deal ist erstes Warnsignal
+
+      Die gestoppte $100B Nvidia-OpenAI Investition (Feb 2026) ist ein
+      bedeutendes Warnsignal für Risse im Circular Financing System.
+
+# =============================================================================
+# SCHEMA-DEFINITION
+# =============================================================================
+
+_schema:
+  forecast_entry:
+    required:
+      - id
+      - title
+      - domain
+      - dates.forecast_created
+      - dates.event_date
+      - question.binary_framing
+      - primary_forecast.point_estimate
+      - primary_forecast.probability
+    optional:
+      - scenarios
+      - historical_comparisons
+      - client
+      - tags
+      - notes
+
+  calibration_metrics:
+    brier_score:
+      formula: "(probability - outcome)^2"
+      range: "[0, 1]"
+      interpretation: "0 = perfekt, 0.25 = Zufall bei 50/50"
+
+    log_loss:
+      formula: "-[outcome * log(p) + (1-outcome) * log(1-p)]"
+      range: "[0, ∞)"
+      interpretation: "Niedriger = besser, bestraft overconfidence"
+
+    absolute_error:
+      formula: "|predicted - actual|"
+      interpretation: "Direkter Fehler in Prozentpunkten"
+
+# =============================================================================
+# CHANGELOG
+# =============================================================================
+
+_changelog:
+  - version: "1.3"
+    date: "2026-02-04"
+    author: "Claude/EBF"
+    changes:
+      - "FCT-FIN-2026-001: AI-Bubble USA Crash-Wahrscheinlichkeit hinzugefügt"
+      - "Neue Domain FIN (Finanzmarkt-Prognosen) aktiviert"
+      - "Bubble Diagnostic mit 6 Indikatoren (B_score=0.823)"
+      - "Trigger-basierte Prognose mit 8 Crash-Triggern"
+      - "Circular Financing Analyse als Hauptrisikofaktor"
+      - "P(Crash 6M) = 67% [55%-75%]"
+
+  - version: "1.2"
+    date: "2026-02-02"
+    author: "Claude/EBF"
+    changes:
+      - "FCT-POL-2026-002: SPÖ Nationalratswahl 2029 Prognose hinzugefügt"
+      - "Basiert auf Two-Path γ_{E×X} Modell + 10-Axiom Framework"
+      - "Integration mit Migration/EMRK-Narrativ (B1-B8)"
+      - "Aktualisierte Erfolgsbedingungen (C1: 0.60, C2: 0.50)"
+      - "E[SPÖ] = 25.9% (vs. 25.1% ursprünglich)"
+      - "Sensitivitäts-Analyse und Strategie-Vergleich"
+
+  - version: "1.1"
+    date: "2026-01-30"
+    author: "Claude/EBF"
+    changes:
+      - "FCT-GEO-2026-001: Iran-Angriff Prognose hinzugefügt"
+      - "Neue Domain GEO (Geopolitik) hinzugefügt"
+      - "Probability History Struktur für zeitliche Updates"
+      - "Conditional Scenarios für bedingte Wahrscheinlichkeiten"
+      - "Update-Workflow dokumentiert"
+
+  - version: "1.0"
+    date: "2026-01-30"
+    author: "Claude/EBF"
+    changes:
+      - "Initiale Erstellung der Forecast-Registry"
+      - "FCT-POL-2025-001: 10-Millionen-Initiative hinzugefügt"
+      - "FCT-POL-2026-001: SRG-Halbierungsinitiative hinzugefügt"
+      - "Schema und Kalibrierungsmetriken definiert"

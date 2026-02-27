@@ -1,0 +1,92 @@
+# =============================================================================
+# BEATRIX SYNC LOG — Chronologisches Protokoll aller Sync-Events
+# =============================================================================
+#
+# Jeder Eintrag dokumentiert EINE Synchronisation zwischen
+# GitHub (SSOT) und BEATRIX Backend (Railway).
+#
+# GESCHRIEBEN VON:
+#   1. GitHub Action (sync-beatrix.yml) — nach jedem Deploy-Trigger
+#   2. Backend (server.py) — wenn Seeds tatsächlich geladen werden
+#   3. Manuell via: python scripts/log_beatrix_sync.py
+#
+# SCHEMA:
+#   id:               SYNC-{NNN} (fortlaufend)
+#   timestamp:        ISO 8601 UTC
+#   trigger:          push | manual | redeploy | startup
+#   source:           github_action | backend | manual
+#   commit_sha:       Git Commit der den Sync ausgelöst hat
+#   commit_message:   Erste Zeile der Commit-Message
+#   branch:           Branch (normalerweise "main")
+#   files_changed:    Liste der geänderten SSOT-Dateien
+#   seeds_affected:   Betroffene Seeds mit Hash-Vergleich
+#     - path:         Pfad zur Seed-Datei
+#       old_hash:     SHA-256 vor Sync (aus letztem Manifest)
+#       new_hash:     SHA-256 nach Sync
+#       status:       updated | unchanged | new | deleted
+#   deploy:
+#     triggered:      true/false
+#     target:         railway
+#     status:         success | failed | pending | skipped
+#     duration_s:     Dauer in Sekunden (falls messbar)
+#   verification:
+#     manifest_regenerated: true/false
+#     all_hashes_match:     true/false
+#   notes:            Optionale Bemerkungen
+#
+# =============================================================================
+
+version: "1.0"
+last_updated: "2026-02-15"
+
+entries:
+
+  # ── Initialer Eintrag: Auto-Sync Test ──────────────────────────────────────
+
+  - id: "SYNC-001"
+    timestamp: "2026-02-15T13:48:47Z"
+    trigger: "push"
+    source: "github_action"
+    commit_sha: "unknown"
+    commit_message: "Auto-Sync Test — Kommentar in bcm.yaml"
+    branch: "main"
+    files_changed:
+      - "data/knowledge/canonical/bcm.yaml"
+    seeds_affected:
+      - path: "data/knowledge/canonical/bcm.yaml"
+        old_hash: "d9b222a9d84a354577baa333d2196c9e3773bac7222eab3ce63327422238442c"
+        new_hash: "changed_during_test"
+        status: "updated"
+    deploy:
+      triggered: true
+      target: "railway"
+      status: "success"
+      duration_s: null
+    verification:
+      manifest_regenerated: false
+      all_hashes_match: false
+    notes: "Erster Auto-Sync Test. Kommentar wurde danach wieder entfernt."
+
+  - id: "SYNC-002"
+    timestamp: "2026-02-15T14:18:25Z"
+    trigger: "manual"
+    source: "manual"
+    commit_sha: "29337c91"
+    commit_message: "merge: Resolve main merge + cleanup test comments + regenerate manifests"
+    branch: "claude/single-source-of-truth-iHpOF"
+    files_changed:
+      - "data/knowledge/canonical/bcm.yaml"
+    seeds_affected:
+      - path: "data/knowledge/canonical/bcm.yaml"
+        old_hash: "changed_during_test"
+        new_hash: "d9b222a9d84a354577baa333d2196c9e3773bac7222eab3ce63327422238442c"
+        status: "updated"
+    deploy:
+      triggered: false
+      target: "railway"
+      status: "skipped"
+      duration_s: null
+    verification:
+      manifest_regenerated: true
+      all_hashes_match: true
+    notes: "Test-Kommentare entfernt, Manifests regeneriert. Deploy erst nach Merge zu main."

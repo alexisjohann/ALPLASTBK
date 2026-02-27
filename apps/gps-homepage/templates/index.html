@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Preference Survey (GPS) — EBF Integration</title>
+    <style>
+        :root {
+            --trustblue: #024079;
+            --trustbluelight: #549EDE;
+            --trustbluebg: #D4E4F4;
+            --fehrgray: #25212A;
+            --fehrlightgray: #F3F5F7;
+            --white: #ffffff;
+            --accent-patience: #2E86AB;
+            --accent-risk: #E8433E;
+            --accent-posrecip: #48A14D;
+            --accent-negrecip: #E07C24;
+            --accent-altruism: #7B68EE;
+            --accent-trust: #20B2AA;
+            --bar-height: 18px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--fehrgray);
+            background: var(--fehrlightgray);
+            line-height: 1.5;
+        }
+
+        /* --- HEADER --- */
+        header {
+            background: var(--trustblue);
+            color: var(--white);
+            padding: 0;
+        }
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 24px 12px;
+        }
+        .header-top h1 {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .header-top h1 span { font-weight: 300; opacity: 0.85; }
+        .header-badge {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 6px;
+            padding: 6px 14px;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+        .header-sub {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px 16px;
+            font-size: 14px;
+            opacity: 0.85;
+        }
+        nav {
+            background: rgba(0,0,0,0.15);
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            gap: 0;
+        }
+        nav a {
+            display: block;
+            padding: 10px 18px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        nav a:hover, nav a.active {
+            color: var(--white);
+            border-bottom-color: var(--white);
+            background: rgba(255,255,255,0.08);
+        }
+
+        /* --- MAIN --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* --- STATS BAR --- */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 16px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .stat-card .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--trustblue);
+        }
+        .stat-card .stat-label {
+            font-size: 13px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        /* --- SECTIONS --- */
+        .section { margin-bottom: 32px; }
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--trustblue);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--trustbluebg);
+        }
+
+        /* --- TABS --- */
+        .tab-bar {
+            display: flex;
+            gap: 0;
+            background: var(--white);
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: var(--white);
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover { background: var(--fehrlightgray); }
+        .tab-btn.active {
+            color: var(--trustblue);
+            border-bottom-color: var(--trustblue);
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+            background: var(--white);
+            border-radius: 0 0 8px 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .tab-content.active { display: block; }
+
+        /* --- RANKINGS TABLE --- */
+        .controls-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .controls-row select, .controls-row input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: var(--white);
+        }
+        .controls-row select:focus, .controls-row input:focus {
+            outline: none;
+            border-color: var(--trustbluelight);
+            box-shadow: 0 0 0 3px rgba(84,158,222,0.15);
+        }
+        .controls-row label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        thead th {
+            background: var(--trustblue);
+            color: var(--white);
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+        thead th:hover { background: #035099; }
+        thead th .sort-arrow { margin-left: 4px; opacity: 0.5; }
+        thead th.sorted .sort-arrow { opacity: 1; }
+        tbody td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+        }
+        tbody tr:hover { background: var(--fehrlightgray); }
+        tbody tr:nth-child(even) { background: rgba(243,245,247,0.5); }
+        tbody tr:nth-child(even):hover { background: var(--fehrlightgray); }
+
+        .bar-cell {
+            position: relative;
+            min-width: 100px;
+        }
+        .bar-bg {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            height: var(--bar-height);
+            border-radius: 3px;
+            opacity: 0.25;
+        }
+        .bar-value {
+            position: relative;
+            z-index: 1;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .bar-positive { background: var(--trustbluelight); }
+        .bar-negative { background: var(--accent-risk); }
+
+        .rank-badge {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            line-height: 28px;
+            text-align: center;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 12px;
+        }
+        .rank-1 { background: #FFD700; color: #333; }
+        .rank-2 { background: #C0C0C0; color: #333; }
+        .rank-3 { background: #CD7F32; color: #fff; }
+        .rank-other { background: var(--fehrlightgray); color: #555; }
+
+        .country-name {
+            font-weight: 500;
+        }
+        .country-flag {
+            margin-right: 6px;
+        }
+        .region-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            background: var(--trustbluebg);
+            color: var(--trustblue);
+            font-weight: 500;
+        }
+
+        /* --- COMPARISON VIEW --- */
+        .comparison-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        .compare-card {
+            background: var(--fehrlightgray);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .compare-card h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: var(--trustblue);
+        }
+        .compare-bar-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .compare-bar-label {
+            width: 120px;
+            font-size: 13px;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+        .compare-bar-track {
+            flex: 1;
+            height: 24px;
+            background: #ddd;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        .compare-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.4s ease;
+            position: absolute;
+        }
+        .compare-bar-fill.left {
+            right: 50%;
+            border-radius: 4px 0 0 4px;
+        }
+        .compare-bar-fill.right {
+            left: 50%;
+            border-radius: 0 4px 4px 0;
+        }
+        .compare-bar-center {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #999;
+            z-index: 2;
+        }
+        .compare-bar-val {
+            width: 50px;
+            text-align: right;
+            font-size: 13px;
+            font-weight: 600;
+            margin-left: 8px;
+            flex-shrink: 0;
+        }
+
+        /* --- RADAR CHART (CSS) --- */
+        .radar-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .radar-legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .radar-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+        .radar-legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        /* --- CANVAS --- */
+        canvas {
+            max-width: 100%;
+        }
+
+        /* --- INFO BOX --- */
+        .info-box {
+            background: var(--trustbluebg);
+            border-left: 4px solid var(--trustblue);
+            border-radius: 0 8px 8px 0;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .info-box strong { color: var(--trustblue); }
+
+        /* --- PREFERENCE CARDS --- */
+        .pref-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        .pref-card {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border-top: 4px solid;
+        }
+        .pref-card h4 { font-size: 14px; margin-bottom: 8px; }
+        .pref-card p { font-size: 13px; color: #666; }
+        .pref-card .pref-stats {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            background: var(--fehrgray);
+            color: rgba(255,255,255,0.7);
+            padding: 24px;
+            margin-top: 40px;
+            font-size: 13px;
+        }
+        footer .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 24px;
+        }
+        footer a { color: var(--trustbluelight); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .stats-bar { grid-template-columns: repeat(2, 1fr); }
+            .pref-grid { grid-template-columns: 1fr; }
+            .comparison-panel { grid-template-columns: 1fr; }
+            .header-top { flex-direction: column; align-items: flex-start; gap: 8px; }
+            nav ul { overflow-x: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-top">
+        <h1>Global Preference Survey <span>(GPS)</span></h1>
+        <div class="header-badge">EBF INTEGRATED</div>
+    </div>
+    <div class="header-sub">
+        Experimentally validated preference data from 80,000 individuals across 76 countries
+        &mdash; Falk, Becker, Dohmen, Enke, Huffman &amp; Sunde (QJE 2018)
+    </div>
+    <nav>
+        <ul>
+            <li><a href="#" class="active" data-page="home">Home</a></li>
+            <li><a href="#" data-page="rankings">Rankings</a></li>
+            <li><a href="#" data-page="compare">Compare</a></li>
+            <li><a href="#" data-page="about">About</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main>
+    <!-- ===== HOME PAGE ===== -->
+    <div id="page-home" class="page-section">
+        <div class="container">
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <div class="stat-value">76</div>
+                    <div class="stat-label">Countries</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">80,000</div>
+                    <div class="stat-label">Respondents</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">6</div>
+                    <div class="stat-label">Preference Dimensions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">90%</div>
+                    <div class="stat-label">World Population Covered</div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>What is the GPS?</strong> The Global Preference Survey is a globally
+                representative dataset on economic preferences, collected as part of the 2012
+                Gallup World Poll. It measures six fundamental preferences that drive human
+                economic and social behavior: patience, risk taking, positive and negative
+                reciprocity, altruism, and trust.
+            </div>
+
+            <div class="section">
+                <div class="section-title">The Six Preference Dimensions</div>
+                <div class="pref-grid">
+                    <div class="pref-card" style="border-color: var(--accent-patience)">
+                        <h4 style="color: var(--accent-patience)">Patience</h4>
+                        <p>Willingness to delay gratification in exchange for future rewards. Measures time preference and intertemporal choice.</p>
+                        <div class="pref-stats">R&sup2; = 0.52 | GDP corr. = +0.62</div>
+                    </div>
+                    <div class="pref-card" style="border-color: var(--accent-risk)">
+                        <h4 style="color: var(--accent-risk)">Risk Taking</h4>
+                        <p>General willingness to take risks. Captures risk preference across financial, health, and social domains.</p>
+                        <div class="pref-stats">R&sup2; = 0.47 | GDP corr. = -0.31</div>
+                    </div>
+                    <div class="pref-card" style="border-color: var(--accent-posrecip)">
+                        <h4 style="color: var(--accent-posrecip)">Positive Reciprocity</h4>
+                        <p>Tendency to reward kind actions. Measures willingness to return favors and respond to generosity.</p>
+                        <div class="pref-stats">R&sup2; = 0.28 | GDP corr. = +0.15</div>
+                    </div>
+                    <div class="pref-card" style="border-color: var(--accent-negrecip)">
+                        <h4 style="color: var(--accent-negrecip)">Negative Reciprocity</h4>
+                        <p>Tendency to punish unkind actions. Measures willingness to engage in costly punishment of norm violations.</p>
+                        <div class="pref-stats">R&sup2; = 0.30 | GDP corr. = -0.08</div>
+                    </div>
+                    <div class="pref-card" style="border-color: var(--accent-altruism)">
+                        <h4 style="color: var(--accent-altruism)">Altruism</h4>
+                        <p>Unconditional willingness to give to others without expectation of direct return.</p>
+                        <div class="pref-stats">R&sup2; = 0.41 | GDP corr. = +0.42</div>
+                    </div>
+                    <div class="pref-card" style="border-color: var(--accent-trust)">
+                        <h4 style="color: var(--accent-trust)">Trust</h4>
+                        <p>Willingness to assume that other people have good intentions. Foundational for economic cooperation.</p>
+                        <div class="pref-stats">R&sup2; = 0.21 | GDP corr. = +0.54</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Key Findings</div>
+                <div class="info-box">
+                    <strong>Within-country heterogeneity dominates.</strong>
+                    Between-country variation accounts for only 6&ndash;12% of total variation
+                    in preferences, while 88&ndash;94% is within-country variation. This means
+                    individual differences matter far more than national averages &mdash;
+                    consistent with the EBF principle that <em>context transforms parameters</em>.
+                </div>
+                <canvas id="variance-chart" height="200"></canvas>
+            </div>
+
+            <div class="section">
+                <div class="section-title">EBF Framework Integration</div>
+                <div class="info-box">
+                    <strong>GPS &harr; EBF Mapping:</strong> GPS preference dimensions map to
+                    EBF &Psi;-context dimensions and 10C CORE questions. Patience maps to
+                    &Psi;<sub>T</sub> (temporal context), risk taking to &Psi;<sub>C</sub>
+                    (cognitive context), and social preferences (reciprocity, altruism, trust)
+                    to &Psi;<sub>S</sub> (social context). The GPS provides
+                    <strong>anchor parameters (&theta;<sub>A</sub>)</strong> for the Parameter
+                    Context Transformation (PCT).
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== RANKINGS PAGE ===== -->
+    <div id="page-rankings" class="page-section" style="display:none">
+        <div class="container">
+            <div class="section-title">Country Rankings</div>
+
+            <div class="controls-row">
+                <div>
+                    <label>Preference:</label>
+                    <select id="rank-pref">
+                        <option value="patience">Patience</option>
+                        <option value="risktaking">Risk Taking</option>
+                        <option value="posrecip">Positive Reciprocity</option>
+                        <option value="negrecip">Negative Reciprocity</option>
+                        <option value="altruism">Altruism</option>
+                        <option value="trust">Trust</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Region:</label>
+                    <select id="rank-region">
+                        <option value="all">All Regions</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Search:</label>
+                    <input type="text" id="rank-search" placeholder="Country name...">
+                </div>
+            </div>
+
+            <table id="rankings-table">
+                <thead>
+                    <tr>
+                        <th style="width:50px">Rank</th>
+                        <th>Country</th>
+                        <th>Region</th>
+                        <th>Score <span class="sort-arrow">&#9660;</span></th>
+                        <th style="width:200px">Distribution</th>
+                    </tr>
+                </thead>
+                <tbody id="rankings-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== COMPARE PAGE ===== -->
+    <div id="page-compare" class="page-section" style="display:none">
+        <div class="container">
+            <div class="section-title">Country Comparison</div>
+
+            <div class="controls-row">
+                <div>
+                    <label>Country A:</label>
+                    <select id="compare-a"></select>
+                </div>
+                <div>
+                    <label>Country B:</label>
+                    <select id="compare-b"></select>
+                </div>
+            </div>
+
+            <div style="text-align:center; margin: 20px 0;">
+                <canvas id="radar-chart" width="500" height="400"></canvas>
+            </div>
+
+            <div class="radar-legend" id="radar-legend"></div>
+
+            <div class="comparison-panel" id="comparison-detail" style="margin-top: 24px;"></div>
+        </div>
+    </div>
+
+    <!-- ===== ABOUT PAGE ===== -->
+    <div id="page-about" class="page-section" style="display:none">
+        <div class="container">
+            <div class="section-title">About the Global Preference Survey</div>
+
+            <div class="info-box">
+                <strong>Citation:</strong> Falk, A., Becker, A., Dohmen, T., Enke, B.,
+                Huffman, D., &amp; Sunde, U. (2018). Global Evidence on Economic Preferences.
+                <em>Quarterly Journal of Economics</em>, 133(4), 1645&ndash;1692.
+                DOI: <a href="https://doi.org/10.1093/qje/qjy013" target="_blank">10.1093/qje/qjy013</a>
+            </div>
+
+            <div class="section" style="margin-top: 20px">
+                <h3 style="color: var(--trustblue); margin-bottom: 12px;">Survey Methodology</h3>
+                <p style="margin-bottom: 12px;">
+                    The GPS data were collected as part of the 2012 Gallup World Poll, a survey
+                    that covers representative population samples in a large number of countries.
+                    The preference survey module consists of 12 question items measuring six
+                    economic preferences. The module was experimentally validated: survey responses
+                    significantly predict incentivized choice behavior.
+                </p>
+                <p style="margin-bottom: 12px;">
+                    Each preference is measured using a combination of quantitative and qualitative
+                    survey items. For instance, patience is measured via a hypothetical intertemporal
+                    choice (quantitative staircase) and a self-assessment of patience on a 0&ndash;10
+                    scale (qualitative).
+                </p>
+            </div>
+
+            <div class="section">
+                <h3 style="color: var(--trustblue); margin-bottom: 12px;">Coverage</h3>
+                <p style="margin-bottom: 12px;">
+                    The 76 countries in the GPS span all inhabited continents: 15 from the Americas,
+                    25 from Europe, 22 from Asia and Pacific, and 14 from Africa (11 Sub-Saharan).
+                    Together they cover approximately 90% of the world population and global income.
+                    Approximately 1,000 respondents were surveyed per country, totaling about
+                    80,000 individuals.
+                </p>
+            </div>
+
+            <div class="section">
+                <h3 style="color: var(--trustblue); margin-bottom: 12px;">EBF Integration</h3>
+                <p style="margin-bottom: 12px;">
+                    In the Evidence-Based Framework (EBF), GPS data serve as <strong>anchor
+                    parameters</strong> for the Parameter Context Transformation (PCT). The key
+                    insight is that preference parameters are not fixed constants but functions of
+                    context: &theta; = f(&Psi;, 10C).
+                </p>
+                <p style="margin-bottom: 12px;">
+                    The GPS provides country-level baselines that can be transformed to specific
+                    contexts using the PCT equation:
+                    &theta;<sub>B</sub> = &theta;<sub>A</sub> &times; &prod;<sub>i</sub> M(&Delta;&Psi;<sub>i</sub>).
+                </p>
+
+                <table style="margin-top: 16px">
+                    <thead>
+                        <tr>
+                            <th>GPS Dimension</th>
+                            <th>EBF &Psi; Mapping</th>
+                            <th>10C CORE</th>
+                            <th>Parameter Ref</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Patience</td>
+                            <td>&Psi;<sub>T</sub> (Temporal)</td>
+                            <td>WHEN (V)</td>
+                            <td>PAR-GPS-001</td>
+                        </tr>
+                        <tr>
+                            <td>Risk Taking</td>
+                            <td>&Psi;<sub>C</sub> (Cognitive)</td>
+                            <td>READY (AV)</td>
+                            <td>PAR-GPS-002</td>
+                        </tr>
+                        <tr>
+                            <td>Positive Reciprocity</td>
+                            <td>&Psi;<sub>S</sub> (Social)</td>
+                            <td>HOW (B)</td>
+                            <td>PAR-GPS-003</td>
+                        </tr>
+                        <tr>
+                            <td>Negative Reciprocity</td>
+                            <td>&Psi;<sub>S</sub> (Social)</td>
+                            <td>HOW (B)</td>
+                            <td>PAR-GPS-004</td>
+                        </tr>
+                        <tr>
+                            <td>Altruism</td>
+                            <td>&Psi;<sub>S</sub> (Social)</td>
+                            <td>WHAT (C)</td>
+                            <td>PAR-GPS-005</td>
+                        </tr>
+                        <tr>
+                            <td>Trust</td>
+                            <td>&Psi;<sub>S</sub> (Social)</td>
+                            <td>WHO (AAA)</td>
+                            <td>PAR-GPS-006</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <h3 style="color: var(--trustblue); margin-bottom: 12px;">Data Access</h3>
+                <p>
+                    Original GPS data and replication materials are available at:
+                </p>
+                <ul style="margin: 12px 0 12px 24px; line-height: 2;">
+                    <li><a href="https://gps.econ.uni-bonn.de" target="_blank">gps.econ.uni-bonn.de</a> &mdash; Official GPS homepage (University of Bonn)</li>
+                    <li><a href="https://www.briq-institute.org/global-preferences/home" target="_blank">briq-institute.org/global-preferences</a> &mdash; Data download (briq Institute)</li>
+                    <li><a href="https://doi.org/10.1093/qje/qjy013" target="_blank">QJE Paper</a> &mdash; Falk et al. (2018)</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h3 style="color: var(--trustblue); margin-bottom: 12px;">Research Team</h3>
+                <table>
+                    <thead>
+                        <tr><th>Researcher</th><th>Affiliation</th><th>Role</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Armin Falk</td><td>University of Bonn / briq Institute</td><td>Principal Investigator</td></tr>
+                        <tr><td>Anke Becker</td><td>Harvard University</td><td>Co-Investigator</td></tr>
+                        <tr><td>Thomas Dohmen</td><td>University of Bonn / IZA</td><td>Co-Investigator</td></tr>
+                        <tr><td>Benjamin Enke</td><td>Harvard University</td><td>Co-Investigator</td></tr>
+                        <tr><td>David Huffman</td><td>University of Pittsburgh</td><td>Co-Investigator</td></tr>
+                        <tr><td>Uwe Sunde</td><td>University of Munich (LMU)</td><td>Co-Investigator</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="footer-inner">
+        <div>
+            <strong>Global Preference Survey (GPS)</strong><br>
+            Falk, Becker, Dohmen, Enke, Huffman &amp; Sunde (2018)<br>
+            <em>Quarterly Journal of Economics</em>, 133(4), 1645&ndash;1692
+        </div>
+        <div style="text-align: right;">
+            <a href="https://gps.econ.uni-bonn.de" target="_blank">gps.econ.uni-bonn.de</a><br>
+            <a href="https://doi.org/10.1093/qje/qjy013" target="_blank">DOI: 10.1093/qje/qjy013</a><br>
+            EBF Integration &copy; FehrAdvice &amp; Partners AG
+        </div>
+    </div>
+</footer>
+
+<script>
+// ======== DATA ========
+let GPS_DATA = null;
+
+async function loadData() {
+    try {
+        const resp = await fetch('/api/data');
+        GPS_DATA = await resp.json();
+    } catch (e) {
+        // Fallback: try static file
+        try {
+            const resp = await fetch('/static/gps_data.json');
+            GPS_DATA = await resp.json();
+        } catch (e2) {
+            console.error('Failed to load GPS data:', e2);
+            return;
+        }
+    }
+    initApp();
+}
+
+// ======== NAVIGATION ========
+function initNav() {
+    document.querySelectorAll('nav a').forEach(a => {
+        a.addEventListener('click', e => {
+            e.preventDefault();
+            const page = a.dataset.page;
+            document.querySelectorAll('nav a').forEach(x => x.classList.remove('active'));
+            a.classList.add('active');
+            document.querySelectorAll('.page-section').forEach(s => s.style.display = 'none');
+            document.getElementById('page-' + page).style.display = 'block';
+        });
+    });
+}
+
+// ======== RANKINGS ========
+function initRankings() {
+    const countries = GPS_DATA.countries;
+    const regions = [...new Set(countries.map(c => c.region))].sort();
+    const regionSel = document.getElementById('rank-region');
+    regions.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r;
+        opt.textContent = r;
+        regionSel.appendChild(opt);
+    });
+
+    function render() {
+        const pref = document.getElementById('rank-pref').value;
+        const region = document.getElementById('rank-region').value;
+        const search = document.getElementById('rank-search').value.toLowerCase();
+
+        let filtered = countries.slice();
+        if (region !== 'all') filtered = filtered.filter(c => c.region === region);
+        if (search) filtered = filtered.filter(c => c.country.toLowerCase().includes(search));
+
+        filtered.sort((a, b) => b[pref] - a[pref]);
+
+        const maxAbs = Math.max(...filtered.map(c => Math.abs(c[pref])), 0.01);
+        const tbody = document.getElementById('rankings-body');
+        tbody.innerHTML = '';
+
+        filtered.forEach((c, i) => {
+            const rank = i + 1;
+            const val = c[pref];
+            const barWidth = Math.abs(val) / maxAbs * 45;
+            const isPos = val >= 0;
+
+            const tr = document.createElement('tr');
+            const rankClass = rank <= 3 ? 'rank-' + rank : 'rank-other';
+            tr.innerHTML = `
+                <td><span class="rank-badge ${rankClass}">${rank}</span></td>
+                <td class="country-name">${c.country}</td>
+                <td><span class="region-tag">${c.region}</span></td>
+                <td style="font-weight:600; color:${isPos ? 'var(--trustblue)' : 'var(--accent-risk)'}">
+                    ${val > 0 ? '+' : ''}${val.toFixed(2)}
+                </td>
+                <td class="bar-cell">
+                    <div class="bar-bg ${isPos ? 'bar-positive' : 'bar-negative'}"
+                         style="width:${barWidth}%;${isPos ? 'left:50%' : 'right:50%'}"></div>
+                    <div class="compare-bar-center" style="left:50%;position:absolute;top:4px;bottom:4px;width:1px;background:#ccc;"></div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    document.getElementById('rank-pref').addEventListener('change', render);
+    document.getElementById('rank-region').addEventListener('change', render);
+    document.getElementById('rank-search').addEventListener('input', render);
+    render();
+}
+
+// ======== COMPARISON ========
+function initComparison() {
+    const countries = GPS_DATA.countries;
+    const selA = document.getElementById('compare-a');
+    const selB = document.getElementById('compare-b');
+
+    countries.sort((a, b) => a.country.localeCompare(b.country));
+    countries.forEach(c => {
+        const optA = document.createElement('option');
+        optA.value = c.iso;
+        optA.textContent = c.country;
+        selA.appendChild(optA);
+
+        const optB = document.createElement('option');
+        optB.value = c.iso;
+        optB.textContent = c.country;
+        selB.appendChild(optB);
+    });
+
+    // Default: Switzerland vs Germany
+    selA.value = 'CHE';
+    selB.value = 'DEU';
+
+    const prefKeys = ['patience', 'risktaking', 'posrecip', 'negrecip', 'altruism', 'trust'];
+    const prefLabels = ['Patience', 'Risk Taking', 'Pos. Reciprocity', 'Neg. Reciprocity', 'Altruism', 'Trust'];
+    const prefColors = [
+        'var(--accent-patience)', 'var(--accent-risk)', 'var(--accent-posrecip)',
+        'var(--accent-negrecip)', 'var(--accent-altruism)', 'var(--accent-trust)'
+    ];
+    const prefColorHex = ['#2E86AB', '#E8433E', '#48A14D', '#E07C24', '#7B68EE', '#20B2AA'];
+
+    function render() {
+        const cA = countries.find(c => c.iso === selA.value);
+        const cB = countries.find(c => c.iso === selB.value);
+        if (!cA || !cB) return;
+
+        // Radar chart
+        drawRadar(cA, cB, prefKeys, prefLabels, prefColorHex);
+
+        // Legend
+        const legend = document.getElementById('radar-legend');
+        legend.innerHTML = `
+            <div class="radar-legend-item">
+                <div class="radar-legend-dot" style="background:rgba(2,64,121,0.7)"></div>
+                ${cA.country}
+            </div>
+            <div class="radar-legend-item">
+                <div class="radar-legend-dot" style="background:rgba(228,67,62,0.7)"></div>
+                ${cB.country}
+            </div>
+        `;
+
+        // Detail panel
+        const detail = document.getElementById('comparison-detail');
+        let htmlA = `<div class="compare-card"><h3>${cA.country}</h3>`;
+        let htmlB = `<div class="compare-card"><h3>${cB.country}</h3>`;
+
+        prefKeys.forEach((k, i) => {
+            const valA = cA[k];
+            const valB = cB[k];
+            const maxAbs = 1.0;
+            const widthA = Math.abs(valA) / maxAbs * 50;
+            const widthB = Math.abs(valB) / maxAbs * 50;
+
+            const barA = `
+                <div class="compare-bar-row">
+                    <div class="compare-bar-label">${prefLabels[i]}</div>
+                    <div class="compare-bar-track">
+                        <div class="compare-bar-center"></div>
+                        <div class="compare-bar-fill ${valA >= 0 ? 'right' : 'left'}"
+                             style="background:${prefColors[i]};width:${widthA}%;opacity:0.7"></div>
+                    </div>
+                    <div class="compare-bar-val" style="color:${valA >= 0 ? 'var(--trustblue)' : 'var(--accent-risk)'}">
+                        ${valA > 0 ? '+' : ''}${valA.toFixed(2)}
+                    </div>
+                </div>`;
+            const barB = `
+                <div class="compare-bar-row">
+                    <div class="compare-bar-label">${prefLabels[i]}</div>
+                    <div class="compare-bar-track">
+                        <div class="compare-bar-center"></div>
+                        <div class="compare-bar-fill ${valB >= 0 ? 'right' : 'left'}"
+                             style="background:${prefColors[i]};width:${widthB}%;opacity:0.7"></div>
+                    </div>
+                    <div class="compare-bar-val" style="color:${valB >= 0 ? 'var(--trustblue)' : 'var(--accent-risk)'}">
+                        ${valB > 0 ? '+' : ''}${valB.toFixed(2)}
+                    </div>
+                </div>`;
+            htmlA += barA;
+            htmlB += barB;
+        });
+
+        htmlA += '</div>';
+        htmlB += '</div>';
+        detail.innerHTML = htmlA + htmlB;
+    }
+
+    selA.addEventListener('change', render);
+    selB.addEventListener('change', render);
+    render();
+}
+
+// ======== RADAR CHART (Canvas) ========
+function drawRadar(cA, cB, keys, labels, colors) {
+    const canvas = document.getElementById('radar-chart');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+    const cx = W / 2;
+    const cy = H / 2;
+    const R = Math.min(W, H) * 0.35;
+    const n = keys.length;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid
+    for (let ring = 1; ring <= 4; ring++) {
+        const r = R * ring / 4;
+        ctx.beginPath();
+        for (let i = 0; i <= n; i++) {
+            const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+            const x = cx + r * Math.cos(angle);
+            const y = cy + r * Math.sin(angle);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = '#ddd';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+
+    // Axes + labels
+    for (let i = 0; i < n; i++) {
+        const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+        const x = cx + R * Math.cos(angle);
+        const y = cy + R * Math.sin(angle);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = '#ccc';
+        ctx.stroke();
+
+        // Label
+        const lx = cx + (R + 28) * Math.cos(angle);
+        const ly = cy + (R + 28) * Math.sin(angle);
+        ctx.fillStyle = '#333';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(labels[i], lx, ly);
+    }
+
+    // Scale labels
+    ctx.fillStyle = '#999';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'right';
+    for (let ring = 1; ring <= 4; ring++) {
+        const val = -1.0 + ring * 0.5;
+        ctx.fillText(val.toFixed(1), cx - 4, cy - R * ring / 4 + 3);
+    }
+
+    // Plot function
+    function plotCountry(c, color, alpha) {
+        ctx.beginPath();
+        keys.forEach((k, i) => {
+            const val = (c[k] + 1.0) / 2.0; // normalize from [-1,1] to [0,1]
+            const r = R * Math.max(0, Math.min(1, val));
+            const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+            const x = cx + r * Math.cos(angle);
+            const y = cy + r * Math.sin(angle);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.closePath();
+        ctx.fillStyle = color.replace(')', `,${alpha})`).replace('rgb', 'rgba');
+        ctx.fill();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Dots
+        keys.forEach((k, i) => {
+            const val = (c[k] + 1.0) / 2.0;
+            const r = R * Math.max(0, Math.min(1, val));
+            const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+            const x = cx + r * Math.cos(angle);
+            const y = cy + r * Math.sin(angle);
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+        });
+    }
+
+    plotCountry(cA, 'rgb(2,64,121)', 0.15);
+    plotCountry(cB, 'rgb(228,67,62)', 0.15);
+}
+
+// ======== VARIANCE CHART ========
+function drawVarianceChart() {
+    const canvas = document.getElementById('variance-chart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width = canvas.parentElement.clientWidth;
+    const H = canvas.height;
+
+    ctx.clearRect(0, 0, W, H);
+
+    const data = GPS_DATA.key_findings.variance_decomposition;
+    const prefs = ['patience', 'risktaking', 'posrecip', 'negrecip', 'altruism', 'trust'];
+    const labels = ['Patience', 'Risk', 'Pos. Recip.', 'Neg. Recip.', 'Altruism', 'Trust'];
+
+    const barH = 24;
+    const gap = 12;
+    const labelW = 100;
+    const startX = labelW + 10;
+    const barW = W - startX - 60;
+    const startY = 20;
+
+    prefs.forEach((p, i) => {
+        const y = startY + i * (barH + gap);
+        const between = data[p].between_country_pct;
+        const within = data[p].within_country_pct;
+
+        // Label
+        ctx.fillStyle = '#333';
+        ctx.font = '13px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(labels[i], labelW, y + barH / 2);
+
+        // Between bar
+        const bw = barW * between / 100;
+        ctx.fillStyle = '#024079';
+        ctx.fillRect(startX, y, bw, barH);
+
+        // Within bar
+        ctx.fillStyle = '#549EDE';
+        ctx.fillRect(startX + bw, y, barW - bw, barH);
+
+        // Percentage
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(between + '%', startX + 4, y + barH / 2);
+
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'right';
+        ctx.fillText(within + '%', startX + barW - 4, y + barH / 2);
+    });
+
+    // Legend
+    const ly = startY + prefs.length * (barH + gap) + 8;
+    ctx.fillStyle = '#024079';
+    ctx.fillRect(startX, ly, 14, 14);
+    ctx.fillStyle = '#333';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Between-country', startX + 20, ly + 10);
+
+    ctx.fillStyle = '#549EDE';
+    ctx.fillRect(startX + 160, ly, 14, 14);
+    ctx.fillStyle = '#333';
+    ctx.fillText('Within-country', startX + 180, ly + 10);
+}
+
+// ======== INIT ========
+function initApp() {
+    initNav();
+    initRankings();
+    initComparison();
+    drawVarianceChart();
+    window.addEventListener('resize', drawVarianceChart);
+}
+
+document.addEventListener('DOMContentLoaded', loadData);
+</script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+# =============================================================================
+# GOOGLE DRIVE FILE FETCH WORKFLOW
+# =============================================================================
+# Downloads files from Google Drive and commits them to the repository.
+# Handles large files (>25MB) with virus scan bypass via gdown.
+# If PDF: converts to markdown text for paper-texts archive.
+#
+# Triggers:
+#   - Manual: workflow_dispatch
+#   - Push: data/drive-fetch-trigger.yaml (from sandbox without token)
+#   - From sandbox: bash scripts/api.sh drive download <FILE_ID>
+# =============================================================================
+
+name: Fetch Google Drive File
+
+on:
+  workflow_dispatch:
+    inputs:
+      file_id:
+        description: 'Google Drive File ID (from share URL)'
+        required: true
+      output_name:
+        description: 'Output filename (e.g., jep_vol40_winter2026.pdf)'
+        required: false
+        default: ''
+      convert_pdf:
+        description: 'Convert PDF to markdown text'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      split_papers:
+        description: 'Split journal volume into individual papers'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+      target_branch:
+        description: 'Branch to commit results to'
+        required: false
+        default: 'main'
+
+  push:
+    paths:
+      - 'data/drive-fetch-trigger.yaml'
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-drive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_branch || github.ref_name }}
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Read trigger file (push-triggered)
+        id: trigger
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          TRIGGER_FILE="data/drive-fetch-trigger.yaml"
+          if [ ! -f "$TRIGGER_FILE" ]; then
+            echo "No trigger file found"
+            exit 1
+          fi
+          # Parse YAML trigger file
+          FILE_ID=$(grep 'file_id:' "$TRIGGER_FILE" | head -1 | sed "s/.*file_id:[[:space:]]*['\"]*//" | sed "s/['\"].*//")
+          OUTPUT_NAME=$(grep 'output_name:' "$TRIGGER_FILE" | head -1 | sed "s/.*output_name:[[:space:]]*['\"]*//" | sed "s/['\"].*//")
+          CONVERT_PDF=$(grep 'convert_pdf:' "$TRIGGER_FILE" | head -1 | sed "s/.*convert_pdf:[[:space:]]*//" | tr -d "'" | tr -d '"')
+          SPLIT_PAPERS=$(grep 'split_papers:' "$TRIGGER_FILE" | head -1 | sed "s/.*split_papers:[[:space:]]*//" | tr -d "'" | tr -d '"')
+
+          echo "file_id=$FILE_ID" >> $GITHUB_OUTPUT
+          echo "output_name=$OUTPUT_NAME" >> $GITHUB_OUTPUT
+          echo "convert_pdf=${CONVERT_PDF:-true}" >> $GITHUB_OUTPUT
+          echo "split_papers=${SPLIT_PAPERS:-false}" >> $GITHUB_OUTPUT
+
+          echo "📋 Trigger file parsed:"
+          echo "   File ID: $FILE_ID"
+          echo "   Output: $OUTPUT_NAME"
+          echo "   Convert PDF: ${CONVERT_PDF:-true}"
+          echo "   Split papers: ${SPLIT_PAPERS:-false}"
+
+      - name: Set parameters
+        id: params
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "file_id=${{ steps.trigger.outputs.file_id }}" >> $GITHUB_OUTPUT
+            echo "output_name=${{ steps.trigger.outputs.output_name }}" >> $GITHUB_OUTPUT
+            echo "convert_pdf=${{ steps.trigger.outputs.convert_pdf }}" >> $GITHUB_OUTPUT
+            echo "split_papers=${{ steps.trigger.outputs.split_papers }}" >> $GITHUB_OUTPUT
+          else
+            echo "file_id=${{ inputs.file_id }}" >> $GITHUB_OUTPUT
+            echo "output_name=${{ inputs.output_name }}" >> $GITHUB_OUTPUT
+            echo "convert_pdf=${{ inputs.convert_pdf }}" >> $GITHUB_OUTPUT
+            echo "split_papers=${{ inputs.split_papers }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install dependencies
+        run: |
+          pip install gdown pyyaml
+          # For PDF conversion
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
+
+      - name: Download from Google Drive
+        id: download
+        run: |
+          FILE_ID="${{ steps.params.outputs.file_id }}"
+          OUTPUT_NAME="${{ steps.params.outputs.output_name }}"
+
+          mkdir -p data/drive-downloads
+
+          echo "📥 Downloading from Google Drive..."
+          echo "   File ID: $FILE_ID"
+
+          # Use gdown (handles large files + confirmation pages)
+          if [ -n "$OUTPUT_NAME" ]; then
+            gdown "https://drive.google.com/uc?id=$FILE_ID" -O "data/drive-downloads/$OUTPUT_NAME" --fuzzy
+          else
+            gdown "https://drive.google.com/uc?id=$FILE_ID" -O "data/drive-downloads/" --fuzzy
+          fi
+
+          # Find the downloaded file
+          DOWNLOADED=$(ls -t data/drive-downloads/ | head -1)
+          echo "downloaded_file=data/drive-downloads/$DOWNLOADED" >> $GITHUB_OUTPUT
+          echo "✅ Downloaded: $DOWNLOADED"
+
+          # Detect file type
+          FILE_TYPE=$(file -b --mime-type "data/drive-downloads/$DOWNLOADED")
+          echo "file_type=$FILE_TYPE" >> $GITHUB_OUTPUT
+          echo "   Type: $FILE_TYPE"
+          echo "   Size: $(du -h "data/drive-downloads/$DOWNLOADED" | cut -f1)"
+
+      - name: Convert PDF to text
+        id: convert
+        if: ${{ steps.params.outputs.convert_pdf == 'true' && contains(steps.download.outputs.file_type, 'pdf') }}
+        run: |
+          PDF_FILE="${{ steps.download.outputs.downloaded_file }}"
+          BASENAME=$(basename "$PDF_FILE" .pdf)
+          TEXT_FILE="data/drive-downloads/${BASENAME}.txt"
+          MD_FILE="data/drive-downloads/${BASENAME}.md"
+
+          echo "📄 Converting PDF to text..."
+
+          # Extract text with pdftotext (preserves layout)
+          pdftotext -layout "$PDF_FILE" "$TEXT_FILE"
+
+          # Also create a markdown version
+          python3 << 'PYEOF'
+import re
+import sys
+
+input_file = "$TEXT_FILE"
+output_file = "$MD_FILE"
+
+with open(input_file, 'r', encoding='utf-8', errors='replace') as f:
+    text = f.read()
+
+# Clean up common PDF artifacts
+text = re.sub(r'\x0c', '\n---\n', text)  # Page breaks
+text = re.sub(r'[ \t]+\n', '\n', text)    # Trailing whitespace
+text = re.sub(r'\n{4,}', '\n\n\n', text)  # Excessive newlines
+
+with open(output_file, 'w', encoding='utf-8') as f:
+    f.write(text)
+
+print(f"✅ Converted: {output_file}")
+print(f"   Characters: {len(text):,}")
+print(f"   Lines: {text.count(chr(10)):,}")
+PYEOF
+
+          echo "text_file=$TEXT_FILE" >> $GITHUB_OUTPUT
+          echo "md_file=$MD_FILE" >> $GITHUB_OUTPUT
+
+          # Show first 200 lines as preview
+          echo ""
+          echo "📋 Preview (first 50 lines):"
+          head -50 "$TEXT_FILE"
+
+      - name: Split into individual papers
+        id: split
+        if: ${{ steps.params.outputs.split_papers == 'true' }}
+        run: |
+          python3 scripts/fetch_google_drive.py \
+            --split-papers \
+            --input "${{ steps.convert.outputs.md_file || steps.download.outputs.downloaded_file }}" \
+            --output-dir "data/drive-downloads/split/"
+
+      - name: Create download log
+        run: |
+          python3 << 'PYEOF'
+import yaml
+from datetime import datetime
+
+log = {
+    'timestamp': datetime.now().isoformat(),
+    'file_id': '${{ steps.params.outputs.file_id }}',
+    'downloaded_file': '${{ steps.download.outputs.downloaded_file }}',
+    'file_type': '${{ steps.download.outputs.file_type }}',
+            'convert_pdf': '${{ steps.params.outputs.convert_pdf }}' == 'true',
+            'split_papers': '${{ steps.params.outputs.split_papers }}' == 'true',
+            'status': 'success'
+}
+
+log_file = 'data/drive-fetch-log.yaml'
+try:
+    with open(log_file, 'r') as f:
+        logs = yaml.safe_load(f) or {'fetches': []}
+except FileNotFoundError:
+    logs = {'fetches': []}
+
+logs['fetches'].append(log)
+
+with open(log_file, 'w') as f:
+    yaml.dump(logs, f, default_flow_style=False, allow_unicode=True)
+
+print(f"📝 Log updated: {log_file}")
+PYEOF
+
+      - name: Commit results
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          # Add all downloaded/converted files
+          git add data/drive-downloads/ data/drive-fetch-log.yaml
+
+          # Check if there are changes
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          DOWNLOADED=$(basename "${{ steps.download.outputs.downloaded_file }}")
+          git commit -m "feat(drive): Download $DOWNLOADED from Google Drive"
+
+          # Push with retry
+          for i in 1 2 3 4; do
+            git push && break
+            echo "Push failed, retrying in $((2**i))s..."
+            sleep $((2**i))
+            git pull --rebase
+          done
+
+          echo "✅ Results committed and pushed"
+
+      - name: Upload artifact (backup)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: drive-download-${{ steps.params.outputs.file_id }}
+          path: data/drive-downloads/
+          retention-days: 30

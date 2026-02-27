@@ -1,0 +1,97 @@
+# =============================================================================
+# GOOGLE APPS SCRIPT SYNC WORKFLOW
+# =============================================================================
+# Pushes .gs files to Google Apps Script via clasp whenever they change.
+# Also triggers on researcher-scraper-config.json changes (as notification).
+#
+# Required Secrets:
+#   CLASP_TOKEN: JSON string from ~/.clasprc.json (after clasp login)
+#   APPS_SCRIPT_ID: The Script ID from script.google.com project settings
+#
+# One-Time Setup:
+#   1. npm install -g @google/clasp
+#   2. clasp login (opens browser, creates ~/.clasprc.json)
+#   3. Copy content of ~/.clasprc.json → GitHub Secret CLASP_TOKEN
+#   4. Copy Script ID from Apps Script project → GitHub Secret APPS_SCRIPT_ID
+# =============================================================================
+
+name: Sync Apps Script
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/google-apps-script/**/*.gs'
+
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Only show what would be pushed (no actual push)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install clasp
+        run: npm install -g @google/clasp
+
+      - name: Configure clasp credentials
+        run: |
+          echo '${{ secrets.CLASP_TOKEN }}' > ~/.clasprc.json
+          chmod 600 ~/.clasprc.json
+
+      - name: Configure clasp project
+        run: |
+          cd scripts/google-apps-script
+          # Write .clasp.json with actual Script ID from secret
+          cat > .clasp.json << EOF
+          {
+            "scriptId": "${{ secrets.APPS_SCRIPT_ID }}",
+            "rootDir": "."
+          }
+          EOF
+
+      - name: Show files to push
+        run: |
+          echo "=== Files to push to Google Apps Script ==="
+          ls -la scripts/google-apps-script/*.gs
+          echo ""
+          echo "=== Researcher Config (loaded at runtime by Apps Script) ==="
+          cat data/researcher-scraper-config.json | python3 -c "
+          import json, sys
+          cfg = json.load(sys.stdin)
+          print(f'Researchers: {len(cfg[\"researchers\"])}')
+          for r in cfg['researchers']:
+              print(f'  - {r[\"name\"]} ({r[\"folder\"]})')
+          "
+
+      - name: Push to Apps Script
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          cd scripts/google-apps-script
+          clasp push --force
+          echo ""
+          echo "=== Push complete ==="
+          echo "Apps Script updated with latest .gs files."
+          echo "Researcher config is loaded at runtime from GitHub — no push needed for new researchers."
+
+      - name: Dry run summary
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        run: |
+          echo "=== DRY RUN — nothing pushed ==="
+          echo "Would push these files:"
+          ls scripts/google-apps-script/*.gs

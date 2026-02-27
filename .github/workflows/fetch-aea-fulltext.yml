@@ -1,0 +1,197 @@
+# =============================================================================
+# AEA HTML FULL-TEXT FETCH WORKFLOW
+# =============================================================================
+# Fetches full-text articles from aeaweb.org HTML pages (not PDFs).
+# JEP and other AEA journals are open access — HTML is freely available.
+#
+# Approach: Parse HTML article pages → extract text → save as Markdown
+#
+# Triggers:
+#   - Manual: workflow_dispatch
+#   - Push: data/aea-fetch-trigger.yaml
+# =============================================================================
+
+name: Fetch AEA Full-Texts (HTML)
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_doi:
+        description: 'Issue DOI (e.g., 10.1257/jep.40.1)'
+        required: false
+        default: ''
+      dois:
+        description: 'Specific article DOIs (comma-separated)'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Dry run (list articles only)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+      target_branch:
+        description: 'Branch to commit results to'
+        required: false
+        default: 'main'
+
+  push:
+    paths:
+      - 'data/aea-fetch-trigger.yaml'
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-aea-html:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_branch || github.ref_name }}
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Read trigger file (push-triggered)
+        id: trigger
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          TRIGGER_FILE="data/aea-fetch-trigger.yaml"
+          if [ ! -f "$TRIGGER_FILE" ]; then
+            echo "No trigger file found"
+            exit 1
+          fi
+
+          echo "=== Trigger File ==="
+          cat "$TRIGGER_FILE"
+          echo ""
+
+          python3 -c "
+          import yaml, os
+          with open('$TRIGGER_FILE') as f:
+              cfg = yaml.safe_load(f)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              out.write(f'issue_doi={cfg.get(\"issue_doi\", \"\")}\n')
+              out.write(f'dois={cfg.get(\"dois\", \"\")}\n')
+              out.write(f'dry_run={cfg.get(\"dry_run\", False)}\n')
+              out.write(f'description={cfg.get(\"description\", \"\")}\n')
+          "
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests beautifulsoup4 pyyaml
+
+      - name: Set parameters
+        id: params
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            ISSUE_DOI="${{ steps.trigger.outputs.issue_doi }}"
+            DOIS="${{ steps.trigger.outputs.dois }}"
+            DRY_RUN="${{ steps.trigger.outputs.dry_run }}"
+          else
+            ISSUE_DOI="${{ inputs.issue_doi }}"
+            DOIS="${{ inputs.dois }}"
+            DRY_RUN="${{ inputs.dry_run }}"
+          fi
+
+          echo "issue_doi=$ISSUE_DOI" >> $GITHUB_OUTPUT
+          echo "dois=$DOIS" >> $GITHUB_OUTPUT
+          echo "dry_run=$DRY_RUN" >> $GITHUB_OUTPUT
+
+          echo "=== Parameters ==="
+          echo "Issue DOI: $ISSUE_DOI"
+          echo "DOIs: $DOIS"
+          echo "Dry run: $DRY_RUN"
+
+      - name: "Fetch AEA full texts (HTML)"
+        env:
+          FETCH_ISSUE: ${{ steps.params.outputs.issue_doi }}
+          FETCH_DOIS: ${{ steps.params.outputs.dois }}
+          FETCH_DRY_RUN: ${{ steps.params.outputs.dry_run }}
+        run: |
+          echo "=========================================="
+          echo "AEA HTML Full-Text Fetch"
+          echo "=========================================="
+
+          CMD="python scripts/fetch_aea_fulltext.py"
+
+          if [ "$FETCH_DRY_RUN" = "true" ] || [ "$FETCH_DRY_RUN" = "True" ]; then
+            CMD="$CMD --dry-run"
+          fi
+
+          if [ -n "$FETCH_ISSUE" ]; then
+            CMD="$CMD --issue $FETCH_ISSUE"
+          fi
+
+          if [ -n "$FETCH_DOIS" ]; then
+            echo "Running: $CMD --dois <${#FETCH_DOIS} chars>"
+            $CMD --dois "$FETCH_DOIS"
+          else
+            echo "Running: $CMD"
+            $CMD
+          fi
+
+      - name: Show results
+        if: always()
+        run: |
+          echo "=== AEA FETCH LOG ==="
+          if [ -f data/aea-fetch-log.yaml ]; then
+            cat data/aea-fetch-log.yaml
+          else
+            echo "No log generated"
+          fi
+
+          echo ""
+          echo "=== NEW/UPDATED FILES ==="
+          git status --short data/paper-texts/ data/ || true
+
+          echo ""
+          echo "=== WORD COUNTS ==="
+          for f in data/paper-texts/PAP-jep-*.md; do
+            if [ -f "$f" ]; then
+              wc=$(wc -w < "$f")
+              echo "  $f: $wc words"
+            fi
+          done
+
+      - name: Upload log artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aea-fetch-logs
+          path: |
+            data/aea-fetch-log.yaml
+
+      - name: Commit results
+        if: ${{ steps.params.outputs.dry_run != 'true' && steps.params.outputs.dry_run != 'True' }}
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          git add data/paper-texts/ data/aea-fetch-log.yaml 2>/dev/null || true
+
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            CHANGED=$(git diff --staged --name-only | wc -l)
+            git commit -m "feat(fulltext): Fetch $CHANGED AEA full texts via HTML scraping
+
+          Method: HTML parsing from aeaweb.org (not PDF)
+          Issue: ${{ steps.params.outputs.issue_doi }}
+          DOIs: ${{ steps.params.outputs.dois }}
+          Source: aeaweb.org HTML pages (open access)
+
+          https://claude.ai/code/session_01DJGzodmAQQvVx9TXCfW7NE"
+
+            git push
+            echo "Committed and pushed $CHANGED files"
+          fi

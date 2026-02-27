@@ -1,0 +1,525 @@
+# ============================================================================
+# PAPER: The Causal Effects of Youth Cigarette Addiction and Education
+# AUTHORS: Rong Hai, James J. Heckman
+# YEAR: 2022
+# SOURCE: NBER Working Paper 30304
+# DOI: 10.3386/w30304
+# ============================================================================
+# INTEGRATION STATUS: Level 4 - THEORY (Full Analysis)
+# INTEGRATION DATE: 2026-01-30
+# PIP ID: PIP-2026-01-30-006
+# ============================================================================
+
+================================================================================
+ABSTRACT
+================================================================================
+
+This paper develops and estimates a life-cycle model combining the rational
+addiction framework (Becker-Murphy 1988) with human capital investment under
+borrowing constraints (Keane-Wolpin 1997). The model features:
+
+1. BIDIRECTIONAL CAUSALITY: Education ↔ Addiction
+2. ENDOGENOUS DISCOUNT FACTOR: β(q,θ) depends on addiction stock
+3. MULTIPLE CHANNELS: Discount factor, flow utility, monetary costs
+
+Key findings using NLSY97 data (1997-2015):
+- Education causally reduces smoking (8 pp long-run effect)
+- Eliminating smoking increases college attendance by 3 pp
+- 40% excise tax achieves similar education effects
+- Non-cognitive skills are key driver of quitting behavior
+
+================================================================================
+I. MOTIVATION: TWO INTERTWINED QUESTIONS
+================================================================================
+
+QUESTION 1: Does addiction to cigarettes reduce educational attainment?
+QUESTION 2: Does education impact cigarette addiction?
+
+EMPIRICAL OBSERVATIONS (NLSY97):
+
+Figure 1 - Left Panel:
+  Earlier smoking initiation → Less education
+  Age 16 initiation: ~11.5 years schooling
+  Age 22 initiation: ~14 years schooling
+
+Figure 1 - Right Panel:
+  More education → Lower smoking probability
+  10 years schooling: ~45% smoke at age 30
+  18 years schooling: ~10% smoke at age 30
+
+EMPIRICAL CHALLENGES:
+1. SELECTION: Observable and unobservable characteristics jointly determine both
+2. DYNAMIC SELECTION: Preferences evolve based on past choices
+
+SOLUTION: Structural life-cycle model with:
+- Rational addiction (Becker-Murphy) for addiction decisions
+- Human capital investment (Keane-Wolpin) for education decisions
+- Endogenous discount factor connecting both
+
+================================================================================
+II. MODEL STRUCTURE
+================================================================================
+
+TIMING:
+- Agents active from age 15 to 64 (decision period)
+- Retirement from 65 to 80 (consumption only)
+- Schooling choice ends before age 29
+
+CHOICE SET (each period):
+- c_t > 0: Composite good consumption
+- s_{t+1}: Savings (can be negative)
+- d_{q,t} ∈ {0,1}: Smoke or not
+- d_{e,t} ∈ {0,1}: Attend school or not
+- d_{p,t} ∈ {0,1}: Part-time work while in school
+
+--------------------------------------------------------------------------------
+
+RATIONAL ADDICTION (Becker-Murphy 1988):
+
+Addiction Stock Law of Motion:
+  q_t = (1 - δ_q)·q_{t-1} + d_{q,t-1}
+
+Where:
+  - q_t = addiction stock at time t
+  - δ_q ∈ [0,1] = depreciation rate
+  - d_{q,t-1} = smoking decision at t-1
+  - q_{15} = 0 (initial condition)
+
+KEY IMPLICATION:
+  Past smoking affects current utility through addiction stock
+  Creates intertemporal non-separability
+
+--------------------------------------------------------------------------------
+
+ENDOGENOUS DISCOUNT FACTOR:
+
+β(q, e, t, θ) = exp(-φ_{e,t}) · exp(-κ_q · q) · exp(-κ_r + κ_c·θ_c + κ_n·θ_n)
+                ─────────────   ─────────────   ───────────────────────────────
+                survival rate   addiction       endowed discount factor
+                                effect
+
+Components:
+1. exp(-φ_{e,t}): Education-age specific survival rate from CDC mortality data
+   - Higher education → higher survival → more patient
+   - Older age → lower survival → less patient
+
+2. exp(-κ_q · q): Addiction effect on myopia
+   - κ_q ≥ 0: Each unit of addiction increases myopia
+   - Consistent with Chaloupka (1991): addicts more myopic
+
+3. exp(-κ_r + κ_c·θ_c + κ_n·θ_n): Endowed discount factor
+   - κ_r controls level of discount rate
+   - κ_c, κ_n: abilities affect patience (Dohmen et al. 2011)
+
+--------------------------------------------------------------------------------
+
+FLOW UTILITY:
+
+U(c_t, d_t; q_t, e_t, θ, X_t, ε_t) = [c_t^(1-γ) - 1] / (1-γ)
+                                   + u_q(smoking utility)
+                                   + u_e(education utility)
+
+Smoking Utility:
+  u_q = d_{q,t}·(ν_0 + ν_q·q_t + ν_e·e_t + ν_c·θ_c + ν_n·θ_n + ε_{q,t}) + ν_{q2}·q_t²
+
+  - ν_q > 0: Addiction reinforcement (smoking more pleasurable with history)
+  - ν_{q2} < 0: Eventually harmful (concavity)
+  - ν_e: Education effect on smoking utility
+  - ν_c, ν_n: Ability effects on smoking utility
+
+Education Utility:
+  u_e = d_{e,t}·(ξ_p·d_{p,t} + ξ_e·X_t + ξ_c·θ_c + ξ_n·θ_n + ε_{e,t})
+
+  - ξ_p: Part-time work disutility while in school
+  - X_t: Age, previous enrollment, schooling level, parental education
+
+--------------------------------------------------------------------------------
+
+BUDGET CONSTRAINT:
+
+s_{t+1} - s_t·(1 + r(s_t)) = Y_t + T_t + G_t - (c_t + p_t·d_{q,t} + m_{e+1}·d_{e,t})
+─────────────────────────   ───────────────   ─────────────────────────────────────
+      savings change         income side                 expenditure side
+
+Where:
+- r(s): Interest rate (r_b > r_l for borrowing)
+- Y_t: Earnings (Mincer function)
+- T_t: Parental transfers
+- G_t: Government transfers (means-tested)
+- p_t: State-year cigarette price
+- m_{e+1}: Tuition and fees
+
+BORROWING CONSTRAINT:
+  s_{t+1} ≥ S_{t+1}
+
+S_{t+1} = max{-L^g(e_{t+1}, d_{e,t}), -L^s_t(e_{t+1}, θ)}
+
+  - L^g: Maximum government student loan
+  - L^s: Natural borrowing limit (PV of future earnings)
+
+================================================================================
+III. THREE CHANNELS: SMOKING → EDUCATION
+================================================================================
+
+CHANNEL 1: DISCOUNT FACTOR
+  Addiction stock q increases → κ_q·q increases → β decreases
+  Lower β → Less willing to invest in human capital
+  Effect is CUMULATIVE over lifetime
+
+CHANNEL 2: FLOW UTILITY ANTICIPATION
+  If education reduces smoking utility (ν_e < 0):
+  Rational agent anticipates this decline
+  May reduce educational investment to preserve smoking utility
+
+CHANNEL 3: MONETARY COST
+  Cigarette expenditure p_t·d_{q,t} reduces available resources
+  Less money for tuition, fees, or savings for future education
+
+================================================================================
+IV. THREE CHANNELS: EDUCATION → SMOKING
+================================================================================
+
+CHANNEL 1: DISCOUNT FACTOR
+  More education → Higher survival φ_{e,t} → Higher β
+  Higher β → Different smoking decisions (more forward-looking)
+
+CHANNEL 2: FLOW UTILITY
+  Higher education reduces smoking utility (ν_e < 0)
+  Direct effect on smoking choice through preferences
+
+CHANNEL 3: INCOME EFFECT
+  Education increases earnings Y_t
+  Income effect on smoking decisions (can go either way)
+
+CHANNEL 4: BORROWING CONSTRAINTS
+  Schooling and smoking compete for resources
+  Substitution effects between choices
+
+================================================================================
+V. DATA AND ESTIMATION
+================================================================================
+
+DATA: NLSY97 (1997-2015)
+
+Sample:
+- Males born 1982 or later
+- 1,605 individuals
+- Ages 15-33
+- Unbalanced panel
+
+Key Variables:
+- Smoking: Daily smoking (regular smoker)
+- Education: Years of schooling completed
+- Cognitive: ASVAB scores (4 measures)
+- Non-cognitive: Early adverse behaviors + YSR items (6 measures)
+- Parental education: Average years of schooling by parents
+
+Cigarette Prices:
+- State-year specific from CDC
+- Median consumption: 14 cigarettes/day
+- Price expectation: Δp = 0.042 (4.2% annual growth)
+
+--------------------------------------------------------------------------------
+
+ESTIMATION METHOD: Two-Step
+
+STEP 1: Factor Model (MLE)
+  - Extract cognitive and non-cognitive ability factors
+  - 4 continuous measures for cognitive (ASVAB)
+  - 6 discrete measures for non-cognitive (behaviors + YSR)
+  - Allow correlation between factors
+
+STEP 2: Structural Parameters (SMM)
+  - Simulated Method of Moments
+  - 48,150 simulations (30 × 1,605)
+  - 105 targeted moments
+  - 44 parameters estimated
+
+IDENTIFICATION:
+1. State-year cigarette price variation → smoking parameters
+2. Age patterns of initiation → preference shock variance
+3. Auxiliary regression (Becker et al. 1994):
+   d_{q,t} = b_0 + b_p·p_t + b_{-1}·d_{q,t-1} + b_{+1}·d_{q,t+1} + ...
+   - Instrument d_{q,t±1} with price lags/leads
+   - b_{+1}/b_{-1} ratio identifies discount factor effects
+
+================================================================================
+VI. PARAMETER ESTIMATES
+================================================================================
+
+ADDICTION STOCK DEPRECIATION:
+  δ_q = 0.433 (SE: 0.0049)
+  → Addiction depletes in ~2.3 years
+  → Consistent with CDC health improvement timelines
+
+SUBJECTIVE DISCOUNT FACTOR:
+
+  κ_r = 0.0249 (SE: 0.0009)
+  → Implied β = 0.9754 for non-addicts with average abilities
+  → Consistent with Keane-Wolpin (0.9758-0.9922), Johnson (0.97)
+
+  κ_q = 0.00038 (SE: 0.000046)
+  → Each unit addiction reduces β by 0.038%
+  → Cumulative lifetime effect: 0.95% utility loss
+
+  κ_c = 0.0097 (SE: 0.0013)
+  κ_n = 0.0113 (SE: 0.0019)
+  → Higher abilities → more patient (Dohmen et al. 2011)
+
+SMOKING PREFERENCES:
+
+  ν_q = 0.0205 (SE: 0.0014)
+  → One unit addiction stock increases smoking utility
+  → At q=1: equivalent to 32% more consumption for median 18-year-old
+
+  ν_{q2} = -0.0022 (SE: 0.0009)
+  → Weak concavity (harm emerges slowly)
+  → Need q > 9 for disutility to dominate
+
+  ν_e = -0.0048 (SE: 0.0004)
+  → Education reduces smoking utility
+  → 4 years education offsets 1 year smoking (ν_q/ν_e ≈ 4)
+
+  ν_c ≈ 0 (SE: 0.0016)
+  → Cognitive ability has NO direct effect on smoking utility
+
+  ν_n = -0.00816 (SE: 0.002)
+  → Non-cognitive ability REDUCES smoking utility
+  → 1 SD non-cog ≈ 1 year education effect
+  → Self-control and discipline matter!
+
+RISK AVERSION:
+  γ = 2.129
+  → Within standard range for consumption studies
+
+================================================================================
+VII. COUNTERFACTUAL 1: EDUCATION → SMOKING
+================================================================================
+
+EXPERIMENT: Assign +1 year schooling at age 20
+
+SHORT-RUN EFFECT (Age 20):
+  Smoking rate: 18% → 14%
+  Reduction: -4 pp (21%)
+
+LONG-RUN EFFECT (Age 30):
+  Smoking rate: 27% → 19%
+  Reduction: -8 pp (31%)
+
+QUITTERS ANALYSIS:
+  Among age-30 smokers in benchmark: 32% quit with extra education
+
+Who Quits? (Probit analysis)
+  - Initial education: +14.5 pp per year (p < 0.001)
+  - Cognitive ability: +1.4 pp per SD (not significant)
+  - Non-cognitive ability: +28.2 pp per SD (p < 0.001)
+
+KEY INSIGHT:
+  Non-cognitive skills (self-control, discipline) are PRIMARY driver
+  of quitting in response to education. Cognitive skills matter little.
+
+HETEROGENEITY BY ABILITIES:
+  - High ability individuals: Less reduction (less likely to smoke anyway)
+  - Medium ability individuals: LARGEST treatment effects
+  - Policy implication: Target medium-ability youth
+
+================================================================================
+VIII. COUNTERFACTUAL 2: SMOKING → EDUCATION
+================================================================================
+
+EXPERIMENT: Eliminate smoking as a choice (ν_q → -∞)
+
+EFFECT ON COLLEGE ATTENDANCE:
+
+Among benchmark non-college smokers:
+  0% → 9% college attendance (+9 pp)
+
+Among all benchmark smokers:
+  30% → 36% college attendance (+6 pp)
+
+Among entire population:
+  59% → 62% college attendance (+3 pp)
+
+KEY INSIGHT:
+  Without smoking temptation, benefits of non-cognitive ability DECREASE:
+  - Benchmark: Non-cog coefficient on college = 0.501
+  - No smoking: Non-cog coefficient on college = 0.316
+
+  Non-cog is more important for AVOIDING harm than for education itself.
+  Once harm is impossible, cognitive skills become primary driver.
+
+HETEROGENEITY:
+  Largest effects for: High cognitive + Low non-cognitive
+  These individuals have low psychic cost of schooling but are addicted.
+  Without smoking, they choose education.
+
+================================================================================
+IX. COUNTERFACTUAL 3: EXCISE TAX POLICY
+================================================================================
+
+EXPERIMENT: Additional τ% excise tax, revenue redistributed as tuition subsidy
+
+MECHANISM:
+  Price increase → Some would-be smokers don't smoke
+  → Reduced addiction stock → Higher β → More patient
+  → More resources (no cigarette expense)
+  → Higher college attendance
+
+RESULTS BY TAX RATE (among benchmark smokers):
+
+  τ = 0%:   College = 30%, Smoking age 30 = 27%
+  τ = 10%:  College = 30%, Smoking age 30 = 26%
+  τ = 40%:  College = 36%, Smoking age 30 = 24%
+  τ = 100%: College = 41%, Smoking age 30 = 20%
+
+KEY FINDING:
+  40% additional excise tax achieves SAME college rate (36%)
+  among would-be smokers as eliminating smoking entirely!
+
+  Implied price elasticity of daily smoking: -0.28
+  (Consistent with literature range: -0.06 to -1.1)
+
+POPULATION EFFECT (40% tax):
+  College attendance: 59% → 63% (+4 pp)
+  (Slightly higher than eliminating smoking due to tuition subsidy)
+
+WHO QUITS WITH TAX? (Probit analysis)
+  - Initial education: +3 pp per year
+  - Cognitive ability: +6.5 pp per SD (significant!)
+  - Non-cognitive ability: +12.2 pp per SD
+
+  Unlike education intervention, BOTH abilities matter for tax response.
+
+================================================================================
+X. EBF IMPLICATIONS
+================================================================================
+
+1. ENDOGENOUS DISCOUNT FACTOR:
+   EBF should model β as state-dependent, not fixed:
+     β(q, θ, context)
+   Addiction and context affect time preferences endogenously.
+
+2. NON-COGNITIVE > COGNITIVE FOR HARMFUL BEHAVIORS:
+   For interventions targeting harmful behaviors:
+   - Non-cognitive skills are primary moderator
+   - Cognitive skills matter little directly
+   CORE-WHO dimension should distinguish ability types.
+
+3. ABILITY ROLE DEPENDS ON CONTEXT:
+   - With harmful behaviors possible: Non-cog prevents harm
+   - Without harmful behaviors: Cognitive drives outcomes
+   Supports EBF context-dependence (Ψ).
+
+4. NEGATIVE DYNAMIC COMPLEMENTARITY:
+   Addiction creates negative feedback loop:
+     Smoking → Lower β → Less education → More smoking
+   γ can be NEGATIVE in behavioral domains.
+
+5. POLICY SUBSTITUTION:
+   Excise taxes can achieve similar outcomes as impossible interventions.
+   40% tax ≈ eliminating smoking for education outcomes.
+   Structural parameters allow P4 (new policy) analysis.
+
+6. TARGETING BY ABILITY:
+   Medium-ability individuals most responsive to interventions.
+   Policy should not only target low-ability (less responsive).
+
+7. MULTIPLE CHANNELS MATTER:
+   Three channels (β, flow utility, budget) all contribute.
+   Cannot reduce to single mechanism.
+
+================================================================================
+XI. MODEL FIT
+================================================================================
+
+105 TARGETED MOMENTS, 44 PARAMETERS
+
+Average distance: 1.58 × SE of data moments
+
+Life-Cycle Fit:
+  - Mean years smoked by age: Good fit
+  - Smoking initiation rate by age: Captures peak at 16-17, decline after 20
+  - Mean years schooling by age: Good fit
+  - Mean log earnings by age: Good fit
+
+Regression Coefficients Fit:
+  - Smoking participation 2SLS: All within 1.6 SE
+  - Log net worth OLS: Within 0.3 SE
+  - Earnings regression: Good fit
+
+Educational Distribution at Age 30:
+  - High school: Matches well
+  - Some college: Matches well
+  - 4-year college+: Matches well
+
+================================================================================
+XII. LIMITATIONS AND EXTENSIONS
+================================================================================
+
+LIMITATIONS:
+1. Males only (fertility choices excluded)
+2. Cohort-specific (born 1982+, historical period 1997-2015)
+3. Age range limited (15-33 observed)
+4. Cigarettes only (not marijuana, e-cigarettes, alcohol)
+
+SUGGESTED EXTENSIONS:
+1. Intergenerational: How do parental addiction habits transmit?
+2. Race differences: How do channels differ by race?
+3. Other substances: Marijuana, e-cigarettes, opioids
+4. General equilibrium: Labor market effects of addiction reduction
+
+================================================================================
+XIII. SUMMARY
+================================================================================
+
+1. MODEL CONTRIBUTION:
+   First structural model of bidirectional addiction ↔ education causality.
+   Combines Becker-Murphy rational addiction with Keane-Wolpin human capital.
+
+2. KEY INNOVATION:
+   Endogenous discount factor β(q,θ) where addiction increases myopia.
+   Creates feedback loop reducing human capital investment.
+
+3. PARAMETER FINDINGS:
+   - Addiction depreciates in ~2 years (δ_q = 0.43)
+   - β = 0.9754 for non-addicts (consistent with literature)
+   - 0.038% β reduction per unit addiction (cumulative: 0.95% lifetime)
+   - 4 years education offsets 1 year smoking utility
+   - Non-cognitive ≈ 1 year education for smoking reduction
+   - Cognitive has NO direct effect on smoking utility
+
+4. CAUSAL EFFECTS:
+   Education → Smoking: -8 pp at age 30 (31% reduction) from +1 year
+   Smoking → Education: +3 pp college attendance if smoking eliminated
+   40% excise tax achieves similar education effects
+
+5. HETEROGENEITY:
+   Non-cognitive skills drive quitting in response to education.
+   Medium-ability individuals most responsive to policy.
+   Ability role depends on whether harm is possible.
+
+================================================================================
+REFERENCES (Selected)
+================================================================================
+
+Becker, G.S. and Murphy, K.M. (1988). A theory of rational addiction.
+    Journal of Political Economy.
+
+Keane, M.P. and Wolpin, K.I. (1997). The career decisions of young men.
+    Journal of Political Economy.
+
+Keane, M.P. and Wolpin, K.I. (2001). The effect of parental transfers and
+    borrowing constraints on educational attainment. International Economic Review.
+
+Chaloupka, F. (1991). Rational addictive behavior and cigarette smoking.
+    Journal of Political Economy.
+
+Dohmen, T. et al. (2011). Individual risk attitudes: Measurement, determinants
+    and behavioral consequences. Journal of the European Economic Association.
+
+Heckman, J.J. et al. (2018). Returns to education: The causal effects of
+    education on earnings, health, and smoking. Journal of Political Economy.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

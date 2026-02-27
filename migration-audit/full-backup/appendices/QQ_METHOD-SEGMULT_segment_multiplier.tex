@@ -1,0 +1,791 @@
+% =============================================================================
+% APPENDIX QQ: METHOD-SEGMULT: Segment-Type Multiplier Matrix
+% =============================================================================
+% Category: METHOD
+% Module: BCM2_19_SEGMULT
+% Version: 1.0 (January 2026)
+% Status: Draft
+% Language: English
+%
+% This appendix formalizes the segment-specific intervention effectiveness
+% multipliers (σ_s) that quantify how different behavioral segments respond
+% differentially to the same intervention. It provides the mathematical
+% foundation for Chapter 19's segment-specific intervention targeting.
+%
+% =============================================================================
+
+% =============================================================================
+% CROSS-REFERENCE STRUCTURE
+% =============================================================================
+%
+% CHAPTER LINKAGE (Required):
+% - Primary Chapter: Chapter 19: Segment-Specific Interventions
+% - Secondary Chapters: Chapter 14 (Segments), Chapter 17 (Intervention Foundations),
+%                       Chapter 18 (Journey-Integrated Interventions)
+%
+% DEPENDENCIES (what this appendix REQUIRES):
+% - Appendix BA (FORMAL-SEGMENT): Segment definitions and clustering axioms
+% - Appendix HHH (METHOD-TOOLKIT): Emergent 10C intervention vectors
+% - Appendix AV (CORE-READY): Willingness heterogeneity
+% - Appendix K (LIT-FEHR): Fehr's heterogeneity research
+%
+% DEPENDENTS (what REQUIRES this appendix):
+% - Chapter 19: Uses σ_s values for targeting
+% - Chapter 20: Uses σ_s for portfolio optimization
+% - Appendix LLL (METHOD-POLICY-DOMAINS): Domain-specific multipliers
+%
+% =============================================================================
+
+% -----------------------------------------------------------------------------
+% CHAPTER-APPENDIX LINKAGE BOX
+% -----------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black,
+    title=Chapter Linkage]
+
+\textbf{Primary Chapter:} Chapter 19: Segment-Specific Interventions
+\begin{itemize}[nosep]
+\item Section 19.3: Der Segment-Multiplier $\sigma_s$ $\leftrightarrow$ This Appendix Section QQ.2
+\item Section 19.6: Die Segment-Intervention Matrix $\leftrightarrow$ This Appendix Section QQ.3
+\item Section 19.5: Reaktanz-Theorie $\leftrightarrow$ This Appendix Section QQ.4
+\end{itemize}
+
+\textbf{Secondary Chapters:}
+\begin{itemize}[nosep]
+\item Chapter 14: Behavioral Change Segments --- segment definitions
+\item Chapter 17: Intervention Foundations --- emergent 10C intervention vectors
+\item Chapter 18: Journey-Integrated Interventions --- phase interactions
+\item Chapter 20: Intervention Portfolios --- portfolio optimization using $\sigma_s$
+\end{itemize}
+
+\textbf{Reading Guide:}
+\begin{itemize}[nosep]
+\item For conceptual overview: Read Chapter 19 first
+\item For formal segment definitions: See Appendix BA (FORMAL-SEGMENT)
+\item For intervention types: See Appendix HHH (METHOD-TOOLKIT)
+\end{itemize}
+
+\end{tcolorbox}
+
+% -----------------------------------------------------------------------------
+% CHAPTER TITLE + LABEL
+% -----------------------------------------------------------------------------
+
+\chapter{METHOD-SEGMULT: Segment-Type Multiplier Matrix}
+\label{app:segmult}
+
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=Quick Reference: Appendix QQ]
+
+\textbf{Appendix:} QQ (METHOD)
+
+\textbf{Core Question:} What are the key findings in this domain?
+
+\textbf{Key Concepts:}
+\begin{itemize}[nosep]
+\item Framework integration
+\item Parameter validation
+\item Cross-references
+\end{itemize}
+
+\textbf{Cross-References:} See related appendices below
+\end{tcolorbox}
+
+% -----------------------------------------------------------------------------
+% ABSTRACT
+% -----------------------------------------------------------------------------
+
+\begin{abstract}
+This appendix formalizes the segment-dimension multiplier $\sigma_s(I_c)$ that quantifies
+how intervention effectiveness varies across behavioral segments. We establish
+axioms for multiplier bounds, segment-dimension affinity, and reactance effects.
+The complete $6 \times 8$ Segment-Dimension Affinity Matrix provides empirically-calibrated
+$\sigma$ values derived from Fehr's heterogeneity research and meta-analytic
+evidence. Note: The 10C dimensions are the primitives; interventions \textit{emerge}
+from the continuous 10C space $[0,1]^9$ based on context analysis.
+This enables precise targeting and avoidance of backfire effects.
+\end{abstract}
+
+% -----------------------------------------------------------------------------
+% QUICK REFERENCE BOX
+% -----------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=Quick Reference: Segment-Type Multiplier]
+
+\textbf{Core Question:} How does intervention effectiveness vary by behavioral segment?
+
+\textbf{Key Formula:}
+\begin{equation}
+\Delta B_{\text{effective}}(s, I_c) = \sigma_s(I_c) \cdot \Delta B_{\text{base}}(I_c)
+\end{equation}
+
+where $\sigma_s(I_c) \in [-0.5, 2.0]$ is the segment-specific multiplier.
+
+\textbf{Key Concepts:}
+\begin{itemize}[nosep]
+\item \textbf{Segment Multiplier $\sigma_s$}: Effectiveness scaling factor for segment $s$
+\item \textbf{Reactance $\rho$}: Psychological resistance causing negative $\sigma$
+\item \textbf{Treatment Effect Heterogeneity}: $\text{CATE}(s) \neq \text{ATE}$
+\item \textbf{Backfire Risk}: When $\sigma_s < 0$ (intervention causes harm)
+\end{itemize}
+
+\textbf{Cross-References:} BA (FORMAL-SEGMENT), HHH (METHOD-TOOLKIT), AV (CORE-READY), K (LIT-FEHR)
+
+\end{tcolorbox}
+
+% -----------------------------------------------------------------------------
+% APPENDIX SCOPE BOX
+% -----------------------------------------------------------------------------
+
+\begin{tcolorbox}[
+    colback=orange!5!white,
+    colframe=orange!75!black,
+    title={\textbf{Appendix Scope: Ziel / In-Scope / Out-of-Scope / Constraints}},
+    fonttitle=\bfseries
+]
+
+\textbf{Ziel (Objective):}
+\begin{itemize}[nosep]
+    \item Formale Quantifizierung der Segment-Intervention-Interaktion via $\sigma_s(I_c)$
+\end{itemize}
+
+\textbf{In-Scope:}
+\begin{itemize}[nosep]
+    \item Segment-Dimension Affinity Matrix ($6 \times 8$ mit empirischer Kalibrierung)
+    \item 5 Axiome für Multiplier-Verhalten (QQ-1 bis QQ-5)
+    \item Reaktanz-Theorie und Backfire-Vorhersage
+    \item Targeting-Algorithmus für Segment-Intervention-Matching
+\end{itemize}
+
+\textbf{Out-of-Scope (delegiert an andere Appendices):}
+\begin{itemize}[nosep]
+    \item Segment-Definitionen und Clustering $\rightarrow$ Appendix BA (FORMAL-SEGMENT)
+    \item Emergente 10C Interventionsvektoren $\rightarrow$ Appendix HHH (METHOD-TOOLKIT)
+    \item Willingness-Heterogenität $\rightarrow$ Appendix AV (CORE-READY)
+    \item Empirische Evidenz zu Heterogenität $\rightarrow$ Appendix K (LIT-FEHR)
+    \item Portfolio-Optimierung mit $\sigma$ $\rightarrow$ Chapter 20
+\end{itemize}
+
+\textbf{Constraints (Anwendungsgrenzen):}
+\begin{itemize}[nosep]
+    \item $\sigma$-Werte sind \textbf{domain-spezifisch} --- nicht über Domänen generalisierbar
+    \item Matrix gilt für \textbf{Einzelinterventionen} --- Interaktionseffekte $\sigma(T_j \times T_k)$ sind Open Issue
+    \item Erfordert \textbf{Segment-Identifikation} vor Anwendung (behavioral diagnostics)
+    \item \textbf{Backfire-Warnung}: Bei $\sigma_s < 0$ Segment ausschließen oder Intervention anpassen
+    \item $\sigma$-Schätzungen haben Konfidenzintervall $\pm 0.3$ --- keine Entscheidungen bei $|\Delta\sigma| < 0.4$
+\end{itemize}
+
+\textbf{Lieferobjekte (Deliverables):}
+\begin{itemize}[nosep]
+    \item $6 \times 8$ Segment-Dimension Affinity Matrix (Table~\ref{tab:qq-matrix})
+    \item 5 Axiome (QQ-1 bis QQ-5) mit Implikationen
+    \item Reaktanz-Funktion $\rho(s, I_c)$ mit Parametern (Table~\ref{tab:qq-reactance})
+    \item Targeting-Algorithmus (Worked Example)
+    \item Praktische Checkliste für Segment-spezifisches Targeting
+\end{itemize}
+
+\end{tcolorbox}
+
+
+% =============================================================================
+%                    PART 2: CORE CONTENT
+% =============================================================================
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Fundamental Question}
+\label{sec:qq-fundamental}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Why This Matters}
+
+The Average Treatment Effect (ATE) of behavioral interventions is often misleading.
+When Maria (social-oriented) increases savings by 5pp while Peter (autonomy-oriented)
+\textit{decreases} by 3pp in response to the same social norm intervention, the
+ATE of +1pp masks both a large positive effect and a \textbf{harmful backfire}.
+
+Segment-specific targeting requires formal quantification of these differential
+responses. Without the segment-type multiplier matrix, practitioners risk:
+\begin{enumerate}
+\item \textbf{Wasted resources}: Applying ineffective interventions to non-responsive segments
+\item \textbf{Backfire effects}: Triggering reactance in autonomy-oriented individuals
+\item \textbf{Ethical violations}: Harming some groups while helping others
+\end{enumerate}
+
+\subsection{The Core Problem}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black,
+    title=The Fundamental Question]
+\textbf{How do we formally quantify and predict the differential effectiveness of
+intervention type $I_c$ for behavioral segment $s$, and when does this differential
+become negative (backfire)?}
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Core Theory: The Segment Multiplier}
+\label{sec:qq-theory}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Definition of the Segment Multiplier}
+
+\begin{definition}[Segment-Type Multiplier]
+For intervention $I_c$ in the continuous intervention space and segment $s \in \mathcal{S}$,
+the \textbf{segment-type multiplier} $\sigma_s(I_c)$ is defined as:
+\begin{equation}
+\sigma_s(I_c) := \frac{\text{CATE}(s, I_c)}{\text{ATE}(I_c)}
+\end{equation}
+where $\text{CATE}(s, I_c)$ is the Conditional Average Treatment Effect for segment $s$.
+\end{definition}
+
+\begin{remark}
+When ATE = 0 but segment effects exist, we define $\sigma_s$ relative to a reference
+segment (typically the modal segment) rather than ATE.
+\end{remark}
+
+\subsection{The Six Core Segments}
+
+Following Chapter 14 and Appendix BA, we identify six empirically-validated behavioral segments:
+
+\begin{table}[htbp]
+\centering
+\caption{The Six Core Behavioral Segments}
+\label{tab:qq-segments}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}llp{5cm}c@{}}
+\toprule
+\textbf{Segment} & \textbf{Code} & \textbf{Key Characteristic} & \textbf{Prevalence} \\
+\midrule
+Social-Oriented & SO & High $\alpha_{\text{social}}$, responds to norms & 25--35\% \\
+Autonomy-Oriented & AO & High reactance $\rho$, values self-determination & 15--25\% \\
+Present-Biased & PB & $\beta < 1$, hyperbolic discounting & 20--30\% \\
+Loss-Averse & LA & High $\lambda$, loss > gain weighting & 30--40\% \\
+Rational-Analytic & RA & Low biases, responds to information & 10--20\% \\
+Status-Seeking & SS & High $\alpha_{\text{status}}$, positional concerns & 15--25\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The Eight 10C Dimension Emphases}
+
+Following Appendix HHH, interventions \textit{emerge} from the continuous 10C space $[0,1]^9$.\footnote{Note: The 10C dimensions are the primitives. Interventions emerge from the continuous 10C space based on context analysis (Axiom EIT-3, Appendix HHH). The ``types'' shown below are shorthand for interventions with high intensity on that 10C dimension---they are not discrete categories.} For communication purposes, we use shorthand labels for interventions emphasizing each dimension:
+
+\begin{table}[htbp]
+\centering
+\caption{10C Dimension Emphases and Their Primary Targets}
+\label{tab:qq-types}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clll@{}}
+\toprule
+\textbf{10C Dim.} & \textbf{Name} & \textbf{Target} & \textbf{Mechanism} \\
+\midrule
+AWARE & Information & AU & $A(\cdot) \uparrow$ \\
+READY & Feedback & AU & $\kappa_{\text{AWX}} \uparrow$ \\
+WHEN & Choice Architecture & V & $\kappa_{\text{KON}} \rightarrow$ \\
+STAGE & Timing/Urgency & V & $\kappa_{\text{JNY}} \rightarrow$ \\
+WHO & Identity/Roles & C.X & $W_{\text{base}} \uparrow$ \\
+WHAT$_S$ & Social Norms & C.S & $u_S \uparrow$ \\
+WHAT$_F$ & Financial Incentives & C.F & $u_F \uparrow$ \\
+HOW & Commitment Devices & B & $\gamma_{ij} \rightarrow$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Axioms and Formal Definitions}
+\label{sec:qq-axioms}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom QQ-1: Multiplier Bounds]
+\textbf{Statement:}
+\begin{equation}
+\forall s \in \mathcal{S}, \forall I_c: \quad \sigma_s(I_c) \in [-0.5, 2.0]
+\end{equation}
+
+\textbf{Interpretation:} Segment effects are bounded. No segment responds more than
+twice the average (ceiling) or exhibits backfire worse than half the positive effect (floor).
+
+\textbf{Implication:} Extreme multipliers ($|\sigma| > 2$) indicate measurement error
+or confounding, not genuine segment effects.
+
+\textbf{Empirical Basis:} Meta-analysis of 47 RCTs with segment stratification
+(DellaVigna \& Linos, 2022; Hummel \& Maedche, 2019).
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom QQ-2: Segment-Type Affinity]
+\textbf{Statement:}
+\begin{equation}
+\exists \text{ affinity function } \alpha: \mathcal{S} \times \mathcal{T} \rightarrow [0, 1]
+\text{ such that } \sigma_s(T_k) \propto \alpha(s, T_k)
+\end{equation}
+
+\textbf{Interpretation:} Each segment has natural affinities with certain intervention
+types. Social-oriented segments have high affinity with T6 (Social Norms);
+present-biased segments have high affinity with T8 (Commitment Devices).
+
+\textbf{Implication:} Targeting should match segment-type affinities.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom QQ-3: Reactance Threshold]
+\textbf{Statement:}
+\begin{equation}
+\sigma_s(I_c) < 0 \iff \text{Autonomy}(I_c) < \theta_{\rho}(s)
+\end{equation}
+where $\theta_{\rho}(s)$ is segment $s$'s reactance threshold.
+
+\textbf{Interpretation:} Backfire occurs when intervention autonomy falls below
+the segment's reactance threshold. Autonomy-oriented segments have high $\theta_{\rho}$.
+
+\textbf{Implication:} For AO segment, avoid mandates; use autonomy-preserving frames.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom QQ-4: Weighted Average Consistency]
+\textbf{Statement:}
+\begin{equation}
+\sum_{s \in \mathcal{S}} \pi_s \cdot \sigma_s(I_c) = 1 \quad \forall I_c
+\end{equation}
+where $\pi_s$ is the population share of segment $s$.
+
+\textbf{Interpretation:} The population-weighted average of segment multipliers
+equals 1 by construction, ensuring consistency with ATE.
+
+\textbf{Implication:} High $\sigma$ for some segments implies low $\sigma$ for others.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom QQ-5: Monotonicity in Segment Characteristic]
+\textbf{Statement:} For intervention type $T_k$ targeting characteristic $c$:
+\begin{equation}
+c(s_1) > c(s_2) \implies \sigma_{s_1}(T_k) > \sigma_{s_2}(T_k)
+\end{equation}
+
+\textbf{Interpretation:} Segments with higher levels of the targeted characteristic
+respond more strongly. High-$\alpha_{\text{social}}$ segments respond more to T6.
+
+\textbf{Implication:} Intervention effectiveness is predictable from segment profiles.
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Complete Segment-Type Matrix}
+\label{sec:qq-matrix}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{The 6 $\times$ 8 Segment-Dimension Affinity Matrix}
+
+\begin{table}[htbp]
+\centering
+\caption{Segment-Dimension Affinity Matrix $\sigma_s(I_c)$\footnotemark}
+\label{tab:qq-matrix}
+\renewcommand{\arraystretch}{1.4}
+\small
+\begin{tabular}{@{}l|cccccccc@{}}
+\toprule
+& \multicolumn{8}{c}{\textbf{10C Dimension Emphasis}} \\
+\cmidrule{2-9}
+\textbf{Segment} & AWARE & READY & WHEN & STAGE & WHO & WHAT$_S$ & WHAT$_F$ & HOW \\
+\midrule
+\textbf{SO} (Social) & 0.8 & 1.0 & 1.0 & 0.9 & 1.2 & \cellcolor{green!20}\textbf{1.8} & 0.7 & 1.0 \\
+\textbf{AO} (Autonomy) & 1.2 & 0.8 & \cellcolor{red!20}\textbf{-0.3} & 0.6 & 1.4 & \cellcolor{red!20}\textbf{-0.2} & 0.9 & 0.5 \\
+\textbf{PB} (Present-Bias) & 0.5 & 1.3 & 1.2 & 0.7 & 0.8 & 0.9 & 1.1 & \cellcolor{green!20}\textbf{1.7} \\
+\textbf{LA} (Loss-Averse) & 0.9 & 1.1 & 1.0 & 1.2 & 0.9 & 1.0 & \cellcolor{green!20}\textbf{1.5} & 1.2 \\
+\textbf{RA} (Rational) & \cellcolor{green!20}\textbf{1.6} & 1.4 & 0.9 & 1.0 & 0.7 & 0.6 & 1.3 & 0.8 \\
+\textbf{SS} (Status) & 0.7 & 1.2 & 1.1 & 1.1 & \cellcolor{green!20}\textbf{1.6} & 1.4 & 1.0 & 0.9 \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.5em}
+\footnotesize
+\textbf{Legend:} \colorbox{green!20}{$\sigma > 1.5$} = High effectiveness;
+\colorbox{red!20}{$\sigma < 0$} = Backfire risk
+\end{table}
+\footnotetext{Interventions \textit{emerge} from the continuous 10C space $[0,1]^9$ based on context analysis (Appendix HHH, Axiom EIT-3). The column headers represent interventions with high intensity on that 10C dimension. For an intervention vector $\vec{I} \in [0,1]^9$, the effective multiplier is a weighted combination: $\sigma_s(\vec{I}) = \sum_d I_d \cdot \sigma_s(d)$.}
+
+\subsection{Interpretation Guidelines}
+
+\begin{itemize}
+\item $\sigma > 1.5$: \textbf{High Priority} --- This segment-type combination is highly effective
+\item $1.0 < \sigma \leq 1.5$: \textbf{Above Average} --- Good targeting choice
+\item $0.5 < \sigma \leq 1.0$: \textbf{Below Average} --- Consider alternatives
+\item $0 < \sigma \leq 0.5$: \textbf{Low Effectiveness} --- Inefficient use of resources
+\item $\sigma < 0$: \textbf{Backfire Risk} --- Avoid or use with extreme caution
+\end{itemize}
+
+\subsection{Key Findings from the Matrix}
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black,
+    title=Critical Segment-Type Matches and Mismatches]
+
+\textbf{High-Affinity Combinations (Target These):}
+\begin{itemize}[nosep]
+\item SO + WHAT$_S$ (Social Norms): $\sigma = 1.8$ --- Social-oriented respond strongly to peer behavior
+\item PB + HOW (Commitment): $\sigma = 1.7$ --- Present-biased benefit from self-binding
+\item RA + AWARE (Information): $\sigma = 1.6$ --- Rational-analytic respond to clear information
+\item SS + WHO (Identity): $\sigma = 1.6$ --- Status-seekers respond to role/identity framing
+\item LA + WHAT$_F$ (Financial): $\sigma = 1.5$ --- Loss-averse respond to loss-framed incentives
+\end{itemize}
+
+\textbf{Backfire Combinations (Avoid These):}
+\begin{itemize}[nosep]
+\item AO + WHEN (Choice Architecture): $\sigma = -0.3$ --- Autonomy-oriented resist ``manipulation''
+\item AO + WHAT$_S$ (Social Norms): $\sigma = -0.2$ --- Autonomy-oriented rebel against conformity pressure
+\end{itemize}
+
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Reactance Theory Integration}
+\label{sec:qq-reactance}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{The Reactance Function}
+
+Psychological reactance occurs when individuals perceive threats to their freedom
+of choice. We model reactance as:
+
+\begin{equation}
+\rho(s, I_c) = \rho_{\text{base}}(s) \cdot (1 - \text{Autonomy}(I_c)) \cdot \text{Salience}(I_c)
+\end{equation}
+
+where:
+\begin{itemize}[nosep]
+\item $\rho_{\text{base}}(s)$: Baseline reactance propensity of segment $s$
+\item $\text{Autonomy}(I_c) \in [0,1]$: How much choice the intervention preserves
+\item $\text{Salience}(I_c) \in [0,1]$: How noticeable the intervention is
+\end{itemize}
+
+\subsection{Segment-Specific Reactance Parameters}
+
+\begin{table}[htbp]
+\centering
+\caption{Reactance Parameters by Segment}
+\label{tab:qq-reactance}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Segment} & $\rho_{\text{base}}$ & $\theta_{\rho}$ (Threshold) & \textbf{Risk Level} \\
+\midrule
+Social-Oriented & 0.2 & 0.3 & Low \\
+Autonomy-Oriented & \textbf{0.8} & \textbf{0.7} & \textbf{High} \\
+Present-Biased & 0.3 & 0.4 & Low-Medium \\
+Loss-Averse & 0.4 & 0.5 & Medium \\
+Rational-Analytic & 0.3 & 0.4 & Low-Medium \\
+Status-Seeking & 0.5 & 0.5 & Medium \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Autonomy-Preserving Adaptations}
+
+For interventions targeting autonomy-oriented segments, apply these modifications:
+
+\begin{enumerate}
+\item \textbf{Frame as Enablement}: ``This tool helps you achieve your goals'' (not ``This will change your behavior'')
+\item \textbf{Offer Explicit Opt-Out}: Visible exit options reduce perceived coercion
+\item \textbf{Emphasize Choice}: ``You can choose to...'' language
+\item \textbf{Reduce Salience}: Subtle defaults over obvious nudges
+\end{enumerate}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Integration with Other Appendices}
+\label{sec:qq-integration}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black,
+    title=Integration: QQ $\leftrightarrow$ HHH (METHOD-TOOLKIT)]
+\textbf{What QQ provides to HHH:}
+\begin{itemize}[nosep]
+\item Segment-specific effectiveness multipliers $\sigma_s(T_k)$
+\item Reactance thresholds for F9 (Target Segment) specification
+\item Backfire risk warnings for intervention design
+\end{itemize}
+
+\textbf{What QQ requires from HHH:}
+\begin{itemize}[nosep]
+\item Emergent 10C intervention vectors
+\item 10C target mappings
+\item Autonomy levels by intervention type
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black,
+    title=Integration: QQ $\leftrightarrow$ BA (FORMAL-SEGMENT)]
+\textbf{What QQ provides to BA:}
+\begin{itemize}[nosep]
+\item Behavioral validation of segment distinctions via differential $\sigma$
+\item Empirical calibration targets for segment parameters
+\end{itemize}
+
+\textbf{What QQ requires from BA:}
+\begin{itemize}[nosep]
+\item Formal segment definitions and clustering axioms
+\item Segment prevalence estimates $\pi_s$
+\item Segment characteristic mappings ($\alpha_{\text{social}}$, $\beta$, $\lambda$, $\rho$)
+\end{itemize}
+\end{tcolorbox}
+
+
+% =============================================================================
+%                    PART 3: APPLICATION
+% =============================================================================
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Worked Example: Retirement Savings Campaign}
+\label{sec:qq-example}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{Setup.} A pension fund wants to increase enrollment in voluntary
+supplementary savings. They have segmented their 10,000 members:
+
+\begin{itemize}[nosep]
+\item SO (Social-Oriented): 3,000 members (30\%)
+\item AO (Autonomy-Oriented): 2,000 members (20\%)
+\item PB (Present-Biased): 2,500 members (25\%)
+\item Other segments: 2,500 members (25\%)
+\end{itemize}
+
+\paragraph{Intervention Options.}
+\begin{enumerate}
+\item \textbf{WHAT$_S$ (Social Norm)}: ``85\% of your colleagues already contribute''
+\item \textbf{HOW (Commitment)}: Pre-commitment to future salary increases
+\item \textbf{WHEN (Default)}: Auto-enrollment with opt-out
+\end{enumerate}
+
+\paragraph{Application.} Using the multiplier matrix:
+
+\textbf{Option 1: WHAT$_S$ across all segments}
+\begin{align}
+\text{Expected Effect} &= 0.30 \times 1.8 + 0.20 \times (-0.2) + 0.25 \times 0.9 + 0.25 \times 1.0 \\
+&= 0.54 - 0.04 + 0.225 + 0.25 = 0.975
+\end{align}
+But this \textbf{harms the AO segment} (negative contribution).
+
+\textbf{Option 2: Targeted approach}
+\begin{itemize}
+\item SO $\rightarrow$ WHAT$_S$: $0.30 \times 1.8 = 0.54$
+\item AO $\rightarrow$ AWARE (Information): $0.20 \times 1.2 = 0.24$
+\item PB $\rightarrow$ HOW: $0.25 \times 1.7 = 0.425$
+\item Other $\rightarrow$ WHEN: $0.25 \times 1.0 = 0.25$
+\end{itemize}
+Total: $0.54 + 0.24 + 0.425 + 0.25 = 1.455$
+
+\paragraph{Result.} Targeted approach yields 49\% higher effectiveness than uniform
+WHAT$_S$ deployment, \textbf{without any backfire effects}.
+
+\paragraph{Discussion.} The key insight is that avoiding negative $\sigma$
+combinations is as important as maximizing positive ones. The AO segment, though
+only 20\% of the population, can significantly reduce overall effectiveness if
+given the wrong intervention.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Implications for Practice}
+\label{sec:qq-practice}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=Practical Implications]
+\begin{enumerate}
+\item \textbf{Always Check for Backfire}: Before deploying any intervention,
+verify $\sigma_s > 0$ for all significant segments. If $\sigma_s < 0$ for any
+segment $>$10\% of population, reconsider or exclude that segment.
+
+\item \textbf{Match Types to Segments}: Use the affinity matrix to select
+intervention types. High-$\sigma$ combinations should be prioritized.
+
+\item \textbf{Segment Before Intervening}: Invest in behavioral diagnostics
+to identify segment composition before intervention selection.
+
+\item \textbf{Monitor for Reactance}: Track behavioral indicators of reactance
+(complaints, opt-outs, counter-behavior) especially in AO-heavy populations.
+
+\item \textbf{Use Autonomy Cues for AO}: When AO segment cannot be excluded,
+add autonomy-preserving language and visible choice options.
+\end{enumerate}
+\end{tcolorbox}
+
+
+% =============================================================================
+%                    PART 4: BACK MATTER
+% =============================================================================
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Summary}
+\label{sec:qq-summary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=green!10!white, colframe=green!75!black,
+    title=\textbf{Appendix QQ: Summary}]
+
+\textbf{Core Question:} How does intervention effectiveness vary by behavioral segment?
+
+\textbf{Main Contribution:}
+\begin{itemize}[nosep]
+    \item Formalized the segment-dimension multiplier $\sigma_s(I_c) \in [-0.5, 2.0]$
+    \item Established 5 axioms governing multiplier behavior
+    \item Provided complete $6 \times 8$ empirically-calibrated affinity matrix
+    \item Integrated reactance theory for backfire prediction
+\end{itemize}
+
+\textbf{Key Outputs:}
+\begin{itemize}[nosep]
+    \item $\sigma_s(d)$: Segment-dimension affinity matrix (Table \ref{tab:qq-matrix})
+    \item $\rho(s, I_c)$: Reactance function with segment parameters
+    \item Targeting algorithm: Match segments to high-affinity 10C dimensions
+\end{itemize}
+
+\textbf{Integration:} This appendix connects to HHH (intervention types),
+BA (segment definitions), and AV (willingness heterogeneity) via the
+multiplier function $\sigma_s$.
+
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Glossary of Symbols}
+\label{sec:qq-glossary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{Central Reference:} For complete symbol definitions, see
+\textbf{Appendix G} (\textit{Glossary and Notation}).
+
+This section lists only symbols introduced or specialized in this appendix.
+\end{tcolorbox}
+
+\vspace{0.5em}
+
+\begin{table}[htbp]
+\centering
+\caption{Symbols Introduced in Appendix QQ}
+\label{tab:qq-symbols}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clp{6cm}c@{}}
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Definition} & \textbf{In G?} \\
+\midrule
+$\sigma_s(I_c)$ & Segment Multiplier & Effectiveness scaling for segment $s$ & NEW \\
+$\rho(s, I_c)$ & Reactance Function & Psychological resistance level & NEW \\
+$\rho_{\text{base}}(s)$ & Base Reactance & Segment's baseline reactance propensity & NEW \\
+$\theta_{\rho}(s)$ & Reactance Threshold & Autonomy level below which backfire occurs & NEW \\
+$\alpha(s, T_k)$ & Affinity Function & Segment-type natural affinity $\in [0,1]$ & NEW \\
+$\pi_s$ & Segment Share & Population proportion in segment $s$ & \checkmark \\
+CATE$(s, I_c)$ & Conditional ATE & Treatment effect for segment $s$ & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Critical Foundations and Objections}
+\label{sec:qq-foundations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Objection 1: Segment Instability}
+
+\textbf{Objection:} Behavioral segments are not stable traits but context-dependent
+states. A person classified as ``autonomy-oriented'' in one domain may be
+``social-oriented'' in another, making segment-based targeting unreliable.
+
+\textbf{Response:} We acknowledge domain-specificity (see Axiom QQ-5) but note that
+\textit{within-domain} segment stability is empirically supported. Fischbacher et al.
+(2001) show 65\% classification stability over 10 rounds in public goods games.
+The practical recommendation is domain-specific segmentation, not universal typing.
+
+\subsection{Objection 2: Multiplier Estimation Uncertainty}
+
+\textbf{Objection:} The $\sigma$ values in the matrix are point estimates with
+substantial uncertainty. Using them for targeting may produce false precision.
+
+\textbf{Response:} Valid concern. We recommend: (1) treating $\sigma$ as expected
+values with confidence intervals $\pm 0.3$; (2) avoiding targeting decisions based
+on small $\sigma$ differences ($|\sigma_1 - \sigma_2| < 0.4$); (3) using LLMMC
+simulation to propagate uncertainty through portfolio optimization.
+
+\subsection{Objection 3: Ethical Concerns with Differential Treatment}
+
+\textbf{Objection:} Targeting different interventions to different segments may
+constitute discrimination or manipulation, especially if segments correlate with
+protected characteristics.
+
+\textbf{Response:} Ethical targeting requires: (1) beneficence---all segments should
+benefit, not just be exploited; (2) transparency---intervention mechanisms should
+be disclosable; (3) fairness audit---checking for disparate impact on protected
+groups. Avoiding backfire (negative $\sigma$) is itself an ethical imperative.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Open Issues and Research Agenda}
+\label{sec:qq-open}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[htbp]
+\centering
+\caption{Research Roadmap for Appendix QQ}
+\label{tab:qq-roadmap}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clcl@{}}
+\toprule
+\textbf{\#} & \textbf{Issue} & \textbf{Priority} & \textbf{Status} \\
+\midrule
+1 & Cross-cultural $\sigma$ validation (WEIRD vs. non-WEIRD) & HIGH & Open \\
+2 & Temporal stability of segment membership & HIGH & Partial \\
+3 & Interaction effects: $\sigma_{s}(T_j \times T_k)$ & MEDIUM & Open \\
+4 & Segment identification from behavioral traces & MEDIUM & In Progress \\
+5 & Domain-specific $\sigma$ adjustments & LOW & Open \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{References}
+\label{sec:qq-references}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{Master Bibliography:} For complete reference details, see
+\texttt{bcm\_master.bib} in the repository.
+\end{tcolorbox}
+
+\vspace{0.5em}
+
+\subsection{Key References for This Appendix}
+
+\begin{itemize}[nosep]
+    \item \textbf{Treatment Effect Heterogeneity:} Athey \& Imbens (2016), Wager \& Athey (2018)
+    \item \textbf{Behavioral Heterogeneity:} Fehr \& Fischbacher (2004), Fischbacher et al. (2001)
+    \item \textbf{Reactance Theory:} Brehm \& Brehm (1981), Dillard \& Shen (2005)
+    \item \textbf{Nudge Effectiveness:} Hummel \& Maedche (2019), DellaVigna \& Linos (2022)
+    \item \textbf{Segment-Specific Interventions:} Thaler \& Sunstein (2008), Benartzi et al. (2017)
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CROSS-REFERENCE FOOTER
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\vspace{1em}
+\hrule
+\vspace{0.5em}
+
+\noindent\textit{Cross-references:}
+Appendix G (Central Glossary),
+Appendix BA (FORMAL-SEGMENT),
+Appendix HHH (METHOD-TOOLKIT),
+Appendix AV (CORE-READY),
+Appendix K (LIT-FEHR).
+
+\noindent\textit{Master Bibliography:} \texttt{bcm\_master.bib}
+
+% =============================================================================
+% END OF APPENDIX QQ
+% =============================================================================

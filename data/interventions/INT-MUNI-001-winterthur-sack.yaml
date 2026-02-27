@@ -1,0 +1,427 @@
+# =============================================================================
+# EBF INTERVENTION SPECIFICATION
+# =============================================================================
+# ID: INT-MUNI-001
+# Name: Wöchentliche Gratis-Sack-Lieferung Winterthur
+# Version: 1.0
+# Date: 2026-01-24
+# Author: EBF Analysis
+# Reference: Chapter 17, Appendix HHH (METHOD-TOOLKIT)
+# =============================================================================
+
+schema_version: "1.0"
+
+# =============================================================================
+# TIER 1: EMERGENT FIELDS (from 10C)
+# =============================================================================
+
+F1_title:
+  id: "INT-MUNI-001"
+  name: "Wöchentliche Gratis-Sack-Lieferung ('Winterthur liefert')"
+  domain: "municipal"
+  context: "Illegale Müllentsorgung Winterthur"
+
+F2_target_dimension:
+  dimension_10c: "WHEN"
+  delta_target: "κ_KON→"  # Kontextuelle Friction auf 0 reduzieren
+  intervention_vector: "I_WHEN"
+  secondary_vector: "I_AWARE"  # Wöchentliche Erinnerung
+  mechanism_description: |
+    Default Shift: Sack ist bereits da → Nutzung wird zum Default
+    Friction Removal: Kaufhürde eliminiert
+    Salience: Wöchentliche Lieferung = wöchentliche Erinnerung
+
+F2_intervention_type:
+  code: "I_WHEN"
+  name: "Contextual/Choice Architecture"
+  target: "κ_KON"
+  secondary_code: "I_AWARE"
+
+F4_target_structure:
+  level: "IND"  # Individual households
+  aggregation: "direct"
+  unit: "Haushalt"
+  population: "Alle Winterthurer Haushalte (~58,000)"
+
+F5_fepsde_dimension:
+  primary: "E"  # Effort
+  secondary: "P"  # Physical
+  weights:
+    F: 0.1   # Financial (CHF 1 Ersparnis - marginal)
+    E: 0.6   # Effort (Haupttreiber - Kaufhürde weg)
+    P: 0.2   # Physical (Sack wird geliefert)
+    S: 0.1   # Social (Stadt-Signal)
+    D: 0.0
+    X: 0.0
+
+F6_journey_phase:
+  optimal_phases: ["action", "triggered"]
+  phase_affinity:
+    awareness: 0.2
+    triggered: 0.8
+    action: 0.9
+    maintenance: 0.5
+    stable: 0.3
+  interpretation: |
+    Wirkt am stärksten bei Haushalten in 'triggered' (wissen, sollten korrekt
+    entsorgen) und 'action' Phase (versuchen es aktiv).
+
+F12_temporal_scope:
+  scope: "systemic"
+  duration_weeks: null  # Unbefristet
+  persistence: "high"
+  decision_level: "L2"  # Systemische Entscheidung auf Municipal Level
+  habit_formation_weeks: 8
+
+# =============================================================================
+# TIER 2: OPERATIONAL FIELDS
+# =============================================================================
+
+F7_framing:
+  frame_type: "positive"
+  loss_gain_frame: "gain"
+  message_template: "Winterthur liefert – Ihr wöchentlicher Abfallsack kommt direkt zu Ihnen"
+  alternative_frames:
+    reciprocity: "Winterthur investiert in saubere Quartiere. Mit Ihrem korrekten Entsorgen tragen Sie dazu bei."
+    community: "Gemeinsam für ein sauberes Winterthur – Ihr Sack, unsere Stadt."
+
+F8_autonomy:
+  level: "default"
+  reactance_risk: "low"
+  autonomy_cue_required: false
+  rationale: |
+    Es ist ein Geschenk, keine Pflicht. Der Sack kann ignoriert werden.
+    Keine restriktive Komponente → keine Reaktanz erwartet.
+
+F11_side_effects:
+  risk_level: "low"
+  positive_spillovers:
+    - "Reciprocity: Stadt gibt → Bürger kooperiert"
+    - "Salience: Wöchentliche Erinnerung an korrektes Entsorgen"
+    - "City branding: Winterthur als saubere, bürgerfreundliche Stadt"
+    - "Mülltrennung wird salienter (Sack nur für Restmüll)"
+  negative_spillovers:
+    - "Logistikkosten für wöchentliche Lieferung"
+    - "Marginale Umweltbelastung durch Lieferfahrzeuge"
+  crowding_out_risk: []
+
+F14_path_function:
+  primary: "stabilizer"
+  secondary: "amplifier"
+  explanation: |
+    Stabilizer: Verhindert Rückfall in illegales Entsorgen
+    Amplifier: Verstärkt korrektes Verhalten in Action-Phase
+
+F15_repetition:
+  pattern: "continuous"
+  frequency: "weekly"
+  decay_expected: false
+  rationale: "Wöchentliche Lieferung = konstante Intervention"
+
+# =============================================================================
+# TIER 3: INTERFACE FIELDS
+# =============================================================================
+
+F9_target_segment:
+  optimal_segments: ["present_biased", "naifs"]
+  segment_multipliers:
+    present_biased: 1.3   # ✅ Sehr effektiv
+    social_oriented: 0.9
+    autonomy_seeking: 0.6  # ⚠️ Leicht reduziert
+    loss_averse: 1.1
+    sophisticates: 1.0
+    naifs: 1.2            # ✅ Effektiv
+  warnings: []  # Keine negativen σ-Werte
+
+F10_complementarity:
+  synergies:
+    - type: "I_AWARE"
+      gamma: 0.4
+      mechanism: "Sack = wöchentliche Erinnerung verstärkt Kontexteffekt"
+    - type: "I_AWARE_k"
+      gamma: 0.3
+      mechanism: "Implizites Feedback: 'Sack genutzt = richtig gemacht'"
+  conflicts: []
+  crowding_out_warnings: []
+  portfolio_compatibility:
+    - compatible_with: ["I_WHO_o"]  # Soziale Normen-Kampagne
+      note: "Kann mit Norm-Messaging kombiniert werden"
+    - compatible_with: ["I_AWARE_k"]  # Feedback-App
+      note: "App-Reminder verstärkt Wirkung"
+
+# =============================================================================
+# ADMINISTRATIVE FIELDS
+# =============================================================================
+
+F13_evaluation:
+  primary_kpi: "Reduktion illegaler Entsorgung"
+  metrics:
+    - name: "Reinigungskosten öffentlicher Raum"
+      baseline: "Aktuell (zu erheben)"
+      target: "-30% nach 12 Monaten"
+      measurement: "Quartalsweise durch Stadtgärtnerei"
+    - name: "Meldungen illegale Entsorgung"
+      baseline: "Aktuell (zu erheben)"
+      target: "-40% nach 12 Monaten"
+      measurement: "Quartalsweise via Meldesystem"
+    - name: "Müllmenge in öffentlichen Behältern"
+      baseline: "Aktuell (zu erheben)"
+      target: "-25% Haushaltsmüll-Anteil"
+      measurement: "Stichproben-Analysen"
+  secondary_metrics:
+    - "Verkauf zusätzlicher Säcke (zeigt Bedarf > 1/Woche)"
+    - "Bürgerzufriedenheit (Umfrage)"
+
+F16_responsibility:
+  decision_maker: "Stadtrat Winterthur"
+  implementer: "Stadtwerk Winterthur / Entsorgung"
+  approval_required:
+    - "Stadtrat"
+    - "Finanzkommission"
+  stakeholders:
+    - "Quartiervereine"
+    - "Hausverwaltungen"
+
+F17_evidence:
+  literature_sources:
+    - "PAP-sunstein2014nudge"
+    - "johnson2003defaults"
+    - "wien_mistküberl_model"
+  effect_size_estimate: 0.5  # Cohen's d
+  confidence: "medium"
+  epistemic_status: "THR"
+  llmmc_validated: false
+  comparable_interventions:
+    - name: "Wien Mistküberl"
+      context: "Österreich"
+      effect: "Etabliertes System seit Jahrzehnten"
+    - name: "Default Enrollment Studies"
+      context: "Retirement Savings"
+      effect: "d = 0.4-0.8"
+
+F18_system:
+  external_id: null
+  integration_notes: |
+    Könnte mit bestehendem Abfuhrkalender-System verknüpft werden.
+    Lieferung durch Post oder Stadtwerk-Fahrzeuge.
+
+F19_description:
+  mechanism: |
+    Die wöchentliche Lieferung eines Gratis-Sacks eliminiert die Kaufhürde
+    (Friction Removal) und macht korrektes Entsorgen zum Default.
+
+    Der Sack ist bereits da – die Frage ist nicht mehr "soll ich einen kaufen?"
+    sondern "soll ich ihn nutzen?".
+
+    Zusätzlich wirkt die wöchentliche Lieferung als Erinnerung (Salience)
+    und das Geschenk aktiviert Reciprocity-Normen.
+
+  rationale: |
+    Die Diagnose zeigt, dass der Haupttreiber illegaler Entsorgung NICHT
+    Kosten (CHF 1/Sack), sondern Effort Aversion und Present Bias sind.
+
+    Diese Intervention adressiert beide Treiber direkt:
+    - Effort Aversion → Friction Removal (kein Kaufen mehr)
+    - Present Bias → Default Shift (Sack ist schon da)
+
+  behavioral_mechanisms:
+    - name: "Endowment Effect"
+      description: "'Mein Sack' → will ihn nutzen, nicht verschwenden"
+    - name: "Salience"
+      description: "Wöchentliche Lieferung = wöchentliche Erinnerung"
+    - name: "Friction Removal"
+      description: "Kaufhürde eliminiert"
+    - name: "Default Shift"
+      description: "Von Opt-in zu Opt-out"
+    - name: "Reciprocity"
+      description: "Stadt gibt → Bürger fühlt Verpflichtung"
+
+F20_status:
+  current: "planned"
+  created: "2026-01-24"
+  updated: "2026-01-24"
+  author: "EBF Analysis"
+  research_status: "Cost data validated via web research"
+  next_steps:
+    - "Detaillierte Logistik-Offerten einholen (Post, Stadtwerk)"
+    - "Pilotprojekt in einem Quartier (z.B. Altstadt) für 6 Monate"
+    - "Baseline-Erhebung: Hauskehricht-Anteil in Pilot-Kübeln messen"
+    - "Vergleich mit aktuellen Massnahmen (Kampagne, Kontrollen)"
+
+# =============================================================================
+# COST-BENEFIT ESTIMATE (Research-Based, 2026-01-24)
+# =============================================================================
+# Sources:
+# - Stadt Winterthur Littering-Statistik
+# - SRF News (Okt 2024): Kampagne illegale Abfallentsorgung
+# - Kanton Thurgau: Entsorgungskosten pro Tonne
+
+cost_benefit:
+  # ---------------------------------------------------------------------------
+  # CURRENT COSTS (Status Quo)
+  # ---------------------------------------------------------------------------
+  status_quo:
+    littering_total:
+      annual_chf: 1950000
+      calculation: "CHF 18.50 × 105,000 Einwohner"
+      source: "Stadt Winterthur"
+      note: "Nur Einsammeln, ohne Entsorgung und Kampagnen"
+
+    additional_costs:
+      disposal_chf: 200000
+      campaigns_chf: 100000
+      note: "Nicht in Littering-Zahl enthalten"
+
+    total_annual_chf: 2250000
+
+    hauskehricht_share:
+      average_percent: 30
+      hotspot_percent: 50
+      source: "Stadt Winterthur (SRF, Okt 2024)"
+      addressable_costs_chf: 675000  # 30% × 2,250,000
+
+  # ---------------------------------------------------------------------------
+  # INTERVENTION COSTS
+  # ---------------------------------------------------------------------------
+  costs:
+    sack_production:
+      per_unit_chf: 0.10
+      households: 58000
+      weeks_per_year: 52
+      annual_chf: 301600
+
+    logistics_scenarios:
+      minimal:
+        method: "Detailhandel-Abholung (Coop/Migros)"
+        annual_chf: 50000
+        note: "Nur Admin-Kosten"
+      mittel:
+        method: "Post-Beilage"
+        annual_chf: 200000
+        note: "Mit regulärer Post"
+      maximal:
+        method: "Stadtwerk-Lieferung"
+        annual_chf: 400000
+        note: "Eigene Fahrzeuge"
+
+    total_scenarios:
+      minimal_chf: 350000
+      mittel_chf: 500000
+      maximal_chf: 700000
+
+  # ---------------------------------------------------------------------------
+  # BENEFIT ESTIMATES
+  # ---------------------------------------------------------------------------
+  benefits:
+    reduced_cleaning:
+      addressable_base_chf: 675000  # Hauskehricht-Anteil
+      expected_reduction_percent: 30
+      expected_savings_chf: 202500
+
+    non_monetarizable:
+      - "Lebensqualität (saubere Quartiere)"
+      - "Stadt-Image (Tourismus, Zuzug)"
+      - "Gerechtigkeit (faire Kostenverteilung)"
+      - "Reciprocity-Effekt (Bürgerbindung)"
+
+  # ---------------------------------------------------------------------------
+  # BREAK-EVEN ANALYSIS
+  # ---------------------------------------------------------------------------
+  break_even_analysis:
+    scenario_pessimistic:
+      assumption: "30% Reduktion, nur Hauskehricht"
+      savings_chf: 202500
+      intervention_cost_chf: 500000
+      net_annual_chf: -297500
+      verdict: "Netto-Kosten, aber Image-Gewinn"
+
+    scenario_realistic:
+      assumption: "40% Reduktion + moderate Spillover"
+      savings_chf: 350000
+      intervention_cost_chf: 500000
+      net_annual_chf: -150000
+      verdict: "Fast kostenneutral"
+
+    scenario_optimistic:
+      assumption: "50% Reduktion + Spillover auf anderes Littering"
+      savings_chf: 600000
+      intervention_cost_chf: 500000
+      net_annual_chf: 100000
+      verdict: "Netto-Gewinn"
+
+    break_even_reduction_percent: 74
+    note: |
+      Break-Even bei 74% Reduktion des Hauskehrichts in öffentlichen Kübeln.
+      Intervention primär aus Lebensqualitäts- und Gerechtigkeitsgründen
+      zu rechtfertigen, nicht aus reinen Kostenersparnissen.
+
+  # ---------------------------------------------------------------------------
+  # COMPARISON: CURRENT WINTERTHUR MEASURES (2025)
+  # ---------------------------------------------------------------------------
+  current_measures:
+    campaign_2024:
+      name: "Hauskehricht ist Privatsache"
+      start: "Oktober 2024"
+      type: "I_AWARE (Information)"
+      expected_effect: "Gering (nur Awareness)"
+
+    measures_2025:
+      - name: "Mehr Kontrollen durch Umweltpolizei"
+        type: "Sanktion"
+        cost: "Personalkosten"
+        expected_effect: "Begrenzt (schwer durchsetzbar)"
+      - name: "Kleinere Kübel-Öffnungen"
+        type: "I_WHEN (Friction)"
+        cost: "Einmalig"
+        expected_effect: "Verlagerung, nicht Lösung"
+      - name: "Bussen CHF 50"
+        type: "I_WHAT_F (Financial Penalty)"
+        cost: "Durchsetzung teuer"
+        expected_effect: "Abschreckung gering bei niedriger Entdeckung"
+
+    assessment: |
+      Aktuelle Massnahmen adressieren primär Awareness und Sanktionen.
+      Keiner adressiert den Kern-Treiber: Effort Aversion + Present Bias.
+      Die Gratis-Sack-Intervention wäre komplementär und adressiert Root Cause.
+
+# =============================================================================
+# COMPLEMENTARY INTERVENTIONS (Portfolio)
+# =============================================================================
+
+portfolio_recommendations:
+  recommended_additions:
+    - id: "INT-MUNI-002"
+      name: "Abfuhr-Reminder App"
+      target: "I_AWARE_k"
+      synergy_gamma: 0.3
+      rationale: "Adressiert H3 (Timing-Friction)"
+
+    - id: "INT-MUNI-003"
+      name: "QR-Code auf Sack → Abfuhrkalender"
+      target: "I_AWARE"
+      synergy_gamma: 0.2
+      rationale: "Verknüpft Sack mit Information"
+
+    - id: "INT-MUNI-004"
+      name: "Danke-Winterthur Botschaft auf Sack"
+      target: "I_WHO_o"
+      synergy_gamma: 0.15
+      rationale: "Aktiviert soziale Normen"
+
+  not_recommended:
+    - type: "I_WHAT_F"
+      reason: "Finanzielle Anreize nicht nötig bei CHF 1/Sack"
+    - type: "Sanktionen verstärken"
+      reason: "Schwer durchsetzbar, kann Reaktanz auslösen"
+
+# =============================================================================
+# VALIDATION
+# =============================================================================
+
+validation:
+  schema_compliant: true
+  required_fields_complete: true
+  phase_affinity_valid: true  # action: 0.9 > 0.5
+  segment_warnings_complete: true  # Keine negativen σ
+  crowding_out_documented: true  # Keine Konflikte
+  hierarchy_consistent: true  # systemic → L1+

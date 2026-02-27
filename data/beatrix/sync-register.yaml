@@ -1,0 +1,311 @@
+# =============================================================================
+# BEATRIX SYNC REGISTER — Alle Sync-Kanäle zwischen den 3 Repos
+# =============================================================================
+#
+# SSOT für: Welche Daten fliessen wohin, wie, und wann?
+#
+# Dieses Register definiert REGELN (was KANN synchronisiert werden).
+# Das Sync-Log (sync-log.yaml) protokolliert EVENTS (was WURDE synchronisiert).
+#
+# 3-Repo-Architektur:
+#   [A] complementarity-context-framework  (dieses Repo — EBF Knowledge Layer)
+#   [B] bea-lab-upload                     (Railway Backend — FastAPI/Python)
+#   [C] bea-lab-frontend                   (Vercel Frontend — Vanilla JS)
+#
+# Created: 2026-02-15
+# Version: 1.0
+# =============================================================================
+
+version: "1.0"
+last_updated: "2026-02-15"
+
+# =============================================================================
+# REPOS
+# =============================================================================
+
+repos:
+  A:
+    name: "complementarity-context-framework"
+    org: "FehrAdvice-Partners-AG"
+    role: "EBF Knowledge Layer (SSOT)"
+    platform: "GitHub"
+    url: "https://github.com/FehrAdvice-Partners-AG/complementarity-context-framework"
+
+  B:
+    name: "bea-lab-upload"
+    org: "FehrAdvice-Partners-AG"
+    role: "Backend API (FastAPI)"
+    platform: "Railway"
+    url: "https://bea-lab-upload-production.up.railway.app"
+    deploy_time_s: 100
+    railway_env_id: "36f908e9-278e-4073-a8d0-743e7a8dd5c7"
+    railway_svc_id: "14a62e50-1e02-4b3f-a76f-982a565cace4"
+
+  C:
+    name: "bea-lab-frontend"
+    org: "FehrAdvice-Partners-AG"
+    role: "Frontend SPA"
+    platform: "Vercel"
+    url: "https://www.bea-lab.io"
+    deploy_time_s: 30
+
+# =============================================================================
+# SYNC CHANNELS
+# =============================================================================
+
+channels:
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # CHANNEL 1: SSOT Seeds → Railway Backend
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "CH-001"
+    name: "SSOT Seed Sync"
+    description: "Kanonische Wissensbasis-Dateien → BEATRIX Knowledge Base"
+    direction: "A → B"
+    source:
+      repo: "A"
+      paths:
+        - "data/knowledge/canonical/**"
+        - "docs/frameworks/10C-CORE-Framework.md"
+        - "docs/frameworks/core-framework-definition.yaml"
+    target:
+      repo: "B"
+      destination: "PostgreSQL (documents table) + Vector DB (Voyage AI)"
+    trigger:
+      type: "push"
+      branch: "main"
+      workflow: ".github/workflows/sync-beatrix.yml"
+    mechanism:
+      type: "github_action"
+      steps:
+        - "Detect changed files (git diff)"
+        - "Trigger Railway redeploy (GraphQL API)"
+        - "Regenerate seed-manifest.yaml"
+        - "Log to sync-log.yaml"
+        - "Commit [skip ci]"
+    registry: "data/beatrix/ssot-seed-registry.yaml"
+    manifest: "data/beatrix/seed-manifest.yaml"
+    verification:
+      method: "sha256_hash_comparison"
+      script: "python scripts/generate_seed_manifest.py --check"
+    log: "data/beatrix/sync-log.yaml"
+    seeds_count: 19
+    status: "active"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # CHANNEL 2: KB-Seeds — DEPRECATED seit 2026-02-15
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "CH-002"
+    name: "KB-Seed Upload (DEPRECATED)"
+    description: |
+      DEPRECATED seit 2026-02-15 (v2.0 Konsolidierung).
+      KB-Seeds wurden nach data/knowledge/canonical/ migriert.
+      Alle Inhalte fliessen jetzt ueber CH-001 (SSOT Seed Sync).
+    direction: "A → B"
+    source:
+      repo: "A"
+      paths:
+        - "data/beatrix/kb-seed/KB-*.md"
+    status: "deprecated"
+    deprecated_date: "2026-02-15"
+    deprecated_reason: "Konsolidiert in CH-001. KB-Seeds → canonical/ migriert."
+    migration_target: "CH-001"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # CHANNEL 3: Claude Code Deep Path (Q&A)
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "CH-003"
+    name: "Claude Code Deep Path"
+    description: "BEATRIX-Fragen → Claude Code → Antwort als Issue-Kommentar"
+    direction: "B → A → B"
+    source:
+      repo: "B"
+      trigger_via: "GitHub Issue (label: beatrix-question)"
+    target:
+      repo: "A"
+      destination: "Issue comment (Antwort)"
+    trigger:
+      type: "issue_label"
+      label: "beatrix-question"
+      workflow: ".github/workflows/claude.yml"
+    mechanism:
+      type: "github_action"
+      steps:
+        - "BEATRIX Backend erstellt GitHub Issue"
+        - "GitHub Action startet Claude Code"
+        - "Claude liest Repo-Daten (theory-catalog, case-registry, etc.)"
+        - "Claude schreibt Antwort als Issue-Kommentar"
+        - "Backend liest Kommentar und zeigt User"
+    verification:
+      method: "issue_comment_exists"
+    status: "active"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # CHANNEL 4: Frontend Dual-Push
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "CH-004"
+    name: "Frontend Dual-Push"
+    description: "Frontend-Code in beide Repos synchron halten"
+    direction: "C → B (backup)"
+    source:
+      repo: "C"
+      paths:
+        - "index.html"
+        - "assets/**"
+    target:
+      repo: "B"
+      destination: "frontend/ Verzeichnis (Backup)"
+    trigger:
+      type: "manual"
+      method: "Push zu BEIDEN Repos bei Frontend-Änderungen"
+    mechanism:
+      type: "dual_git_push"
+      steps:
+        - "Änderung in bea-lab-frontend committen"
+        - "Push zu bea-lab-frontend (Vercel auto-deploy)"
+        - "Gleiche Änderung in bea-lab-upload/frontend/ committen"
+        - "Push zu bea-lab-upload (Railway auto-deploy)"
+    verification:
+      method: "manual_diff"
+      note: "Sicherstellen dass beide Repos identisch sind"
+    learning_ref: "L007"
+    status: "active"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # CHANNEL 5: Intra-Repo Sync (BibTeX ↔ YAML ↔ LaTeX)
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "CH-005"
+    name: "Internal Data Consistency"
+    description: "BibTeX ↔ YAML ↔ LaTeX Konsistenz innerhalb dieses Repos"
+    direction: "A → A"
+    source:
+      repo: "A"
+      paths:
+        - "bibliography/bcm_master.bib"
+        - "data/theory-catalog.yaml"
+        - "data/paper-references/**"
+    target:
+      repo: "A"
+      destination: "Gleiche Dateien (bidirektional)"
+    trigger:
+      type: "pre_commit"
+      hook: ".claude/hooks/pre-commit.sh"
+    mechanism:
+      type: "scripts"
+      scripts:
+        - script: "scripts/sync_bib_to_lit.py"
+          direction: "BibTeX → LIT-Appendices"
+        - script: "scripts/sync_bib_use_for_to_yaml.py"
+          direction: "BibTeX use_for → paper-references YAML"
+        - script: "scripts/sync_yaml_use_for_to_bib.py"
+          direction: "paper-references YAML → BibTeX use_for"
+        - script: "scripts/sync_theory_to_bib.py"
+          direction: "theory-catalog → BibTeX theory_support"
+        - script: "scripts/sync_content_level.py"
+          direction: "Paper content → integration levels"
+        - script: "scripts/sync_model_papers.py"
+          direction: "model-registry ↔ paper links"
+    verification:
+      method: "pre_commit_validation"
+      scripts:
+        - "scripts/validate_bibtex_yaml_consistency.py"
+        - "scripts/validate_referential_integrity.py"
+    status: "active"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # CHANNEL 6: Seed Manifest (Hash Registry)
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: "CH-006"
+    name: "Manifest Freshness Check"
+    description: "Backend prüft ob lokale Seeds aktuell sind (Hash-Vergleich)"
+    direction: "A → B (read-only)"
+    source:
+      repo: "A"
+      paths:
+        - "data/beatrix/seed-manifest.yaml"
+    target:
+      repo: "B"
+      destination: "In-Memory Hash-Vergleich"
+    trigger:
+      type: "on_demand"
+      method: "Backend ruft Manifest via GitHub API ab"
+    mechanism:
+      type: "github_api_fetch"
+      steps:
+        - "Backend holt seed-manifest.yaml von GitHub"
+        - "Vergleicht stored_hash mit manifest sha256"
+        - "Bei Differenz: Seed neu laden"
+    verification:
+      method: "sha256_hash_comparison"
+      script: "python scripts/generate_seed_manifest.py --remote --check"
+    status: "active"
+
+# =============================================================================
+# SYNC MATRIX (Übersicht)
+# =============================================================================
+#
+#   Quelle →    │ Railway [B]  │ Vercel [C]   │ Intern [A]
+# ──────────────┼──────────────┼──────────────┼──────────────
+#  GitHub [A]   │ CH-001 (auto)│ —            │ CH-005 (pre-commit)
+#               │ CH-006 (api) │              │
+#               │ [CH-002 DEP] │              │
+# ──────────────┼──────────────┼──────────────┼──────────────
+#  Railway [B]  │ —            │ —            │ CH-003 (issue)
+# ──────────────┼──────────────┼──────────────┼──────────────
+#  Vercel [C]   │ CH-004 (man) │ —            │ —
+# ──────────────┴──────────────┴──────────────┴──────────────
+
+# =============================================================================
+# SECRETS (benötigt für Sync)
+# =============================================================================
+
+secrets:
+  - name: "RAILWAY_API_TOKEN"
+    used_by: ["CH-001"]
+    scope: "Railway GraphQL API"
+    stored_in: "GitHub Secrets"
+
+  - name: "ANTHROPIC_API_KEY"
+    used_by: ["CH-003"]
+    scope: "Claude API für Deep Path"
+    stored_in: "GitHub Secrets + Railway Env"
+
+  - name: "GITHUB_TOKEN"
+    used_by: ["CH-001", "CH-003", "CH-006"]
+    scope: "Git operations + API access"
+    stored_in: "GitHub Secrets (auto)"
+
+# =============================================================================
+# HEALTH CHECK COMMANDS
+# =============================================================================
+
+health_checks:
+  - channel: "CH-001"
+    command: "python scripts/generate_seed_manifest.py --check"
+    expected: "All seeds up to date"
+
+  # CH-002: DEPRECATED (keine Health Checks mehr)
+
+  - channel: "CH-005"
+    command: "python scripts/validate_bibtex_yaml_consistency.py"
+    expected: "Score >= 85%"
+
+  - channel: "CH-006"
+    command: "python scripts/generate_seed_manifest.py --remote --check"
+    expected: "Remote hashes match local"
+
+# =============================================================================
+# ANLEITUNG
+# =============================================================================
+#
+# Neuen Sync-Kanal hinzufügen:
+#   1. Neuen Eintrag unter `channels:` mit eindeutiger CH-ID
+#   2. source, target, trigger, mechanism definieren
+#   3. verification-Methode angeben
+#   4. Health-Check Command hinzufügen
+#   5. Sync Matrix Kommentar aktualisieren
+#
+# Kanal deaktivieren:
+#   → status: "inactive" setzen + Begründung in notes
+#
+# =============================================================================

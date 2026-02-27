@@ -1,0 +1,625 @@
+% =============================================================================
+% APPENDIX VB: METHOD-PAPERQA: Paper Integration Quality Assurance
+% =============================================================================
+% Module: BCM2_METHOD_QA
+% Version: 1.0 (February 2026)
+% Status: Final
+%
+% Defines the quality assurance workflow for paper integration, including
+% the 13-component validation checklist, compliance thresholds, and the
+% 6-Factor Framework for CORE integration decisions.
+%
+% RELATIONSHIP TO BM: Appendix BM defines the 2D Classification System
+% (Content Level x Integration Level). This appendix (VB) provides the
+% operational QA procedures for ensuring integration quality.
+%
+% =============================================================================
+
+% =============================================================================
+% CROSS-REFERENCE STRUCTURE
+% =============================================================================
+%
+% CHAPTER LINKAGE (Required):
+% - Primary Chapter: CLAUDE.md (Framework Documentation)
+% - Secondary Chapters: Quality Assurance Workflows
+%
+% DEPENDENCIES (what this appendix REQUIRES):
+% - Appendix BBB (CORE-WHERE): Parameter values
+% - Appendix MS (REF-MODELSPACE): Theory catalog
+% - Data: paper-references/*.yaml, case-registry.yaml
+%
+% DEPENDENTS (what REQUIRES this appendix):
+% - All paper integration workflows
+% - Quality assurance processes
+% - LIT-* appendices
+%
+% =============================================================================
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black,
+    title=Chapter Linkage]
+
+\textbf{Primary Reference:} CLAUDE.md Section ``/integrate-paper''
+
+\textbf{Related Workflows:}
+\begin{itemize}[nosep]
+\item Evidence Integration Pipeline (EIP)
+\item Level 5 Paper Integration Workflow
+\item 6-Factor Framework for CORE Integration
+\end{itemize}
+
+\textbf{Validation Script:} \texttt{scripts/validate\_level5\_integration.py}
+
+\end{tcolorbox}
+
+\chapter{METHOD-PAPERQA: Paper Integration Quality Assurance}
+\label{app:paperqa}
+
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=Quick Reference: Appendix VB]
+
+\textbf{Appendix:} VB (METHOD-PAPERQA)
+
+\textbf{Core Question:} How do we ensure quality in paper integration?
+
+\textbf{Companion Appendix:} BM (METHOD-PAPERINT) defines 2D Classification; this appendix provides QA procedures.
+
+\textbf{Key Concepts:}
+\begin{itemize}[nosep]
+\item 13-Component Validation System
+\item 5 Integration Levels (MINIMAL $\rightarrow$ FULL)
+\item ATOMIC ID RULE (Paper-YAML as SSOT)
+\item 6-Factor Framework for CORE Integration
+\end{itemize}
+
+\textbf{Cross-References:} BBB (WHERE), MS (Theory Catalog), LIT-* Appendices
+\end{tcolorbox}
+
+\begin{abstract}
+This appendix defines the standardized Paper Integration Workflow for the
+Evidence-Based Framework (EBF). It specifies five integration levels
+(MINIMAL to FULL), the 13-component validation system, compliance thresholds,
+and the 6-Factor Framework for deciding CORE appendix integration. The workflow
+ensures consistent, high-quality paper integration with full traceability.
+\end{abstract}
+
+
+\begin{tcolorbox}[
+    colback=orange!5!white,
+    colframe=orange!75!black,
+    title={\textbf{Appendix Scope: Ziel / In-Scope / Out-of-Scope / Constraints}},
+    fonttitle=\bfseries
+]
+
+\textbf{Ziel (Objective):}
+\begin{itemize}[nosep]
+    \item Define standardized workflow for paper integration at all quality levels
+\end{itemize}
+
+\textbf{In-Scope:}
+\begin{itemize}[nosep]
+    \item 5 Integration Levels (MINIMAL, STANDARD, CASE, THEORY, FULL)
+    \item 13-Component Validation Checklist
+    \item Compliance Thresholds per Level
+    \item 6-Factor Framework for CORE Integration Decisions
+    \item ATOMIC ID RULE (Paper-YAML as Single Source of Truth)
+\end{itemize}
+
+\textbf{Out-of-Scope (delegiert an andere Appendices):}
+\begin{itemize}[nosep]
+    \item Parameter values $\rightarrow$ Appendix BBB (CORE-WHERE)
+    \item Theory definitions $\rightarrow$ Appendix MS (REF-MODELSPACE)
+    \item Case structures $\rightarrow$ Case Registry (data/case-registry.yaml)
+\end{itemize}
+
+\textbf{Constraints (Anwendungsgrenzen):}
+\begin{itemize}[nosep]
+    \item Requires existing Paper-YAML infrastructure
+    \item Compliance thresholds are minimum requirements, not targets
+    \item 6-Factor Framework applies only to Level 4+ integrations
+\end{itemize}
+
+\textbf{Lieferobjekte (Deliverables):}
+\begin{itemize}[nosep]
+    \item 13-Component Checklist (Table~\ref{tab:13-components})
+    \item Compliance Threshold Matrix (Table~\ref{tab:compliance-thresholds})
+    \item 6-Factor Decision Framework (Table~\ref{tab:6-factor})
+    \item Worked Example: Bénabou et al. (2024)
+\end{itemize}
+
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Fundamental Question}
+\label{sec:paperint-fundamental}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Why This Matters}
+
+The EBF framework integrates 2,500+ scientific papers. Without a standardized
+integration workflow, paper quality varies, cross-references become inconsistent,
+and the framework loses its scientific rigor.
+
+\subsection{The Core Problem}
+
+Different papers require different integration depths. A working paper with
+a single parameter estimate requires minimal integration, while a foundational
+paper introducing a new theory category requires comprehensive integration
+across all EBF components.
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black,
+    title=The Fundamental Question]
+\textbf{How do we ensure consistent, traceable, and appropriate-depth integration
+of scientific papers into the EBF framework?}
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Five Integration Levels}
+\label{sec:paperint-levels}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[htbp]
+\centering
+\caption{Paper Integration Levels}
+\label{tab:integration-levels}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clcl@{}}
+\toprule
+\textbf{Level} & \textbf{Name} & \textbf{Components} & \textbf{Typical Use Case} \\
+\midrule
+1 & MINIMAL & 1-2 & Working paper, single citation \\
+2 & STANDARD & 3-5 & Peer-reviewed with theory support \\
+3 & CASE & 6-8 & Field study with case registry entry \\
+4 & THEORY & 9-11 & Paper extending existing theory \\
+5 & FULL & 12-13 & Foundational paper, new domain \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Level 1: MINIMAL}
+
+\textbf{Components:} BibTeX entry only.
+
+\textbf{Time:} $\sim$5 minutes.
+
+\textbf{Use when:} Paper provides single citation, no parameter extraction needed.
+
+\subsection{Level 2: STANDARD}
+
+\textbf{Components:} BibTeX + theory\_support + use\_for fields.
+
+\textbf{Time:} $\sim$15 minutes.
+
+\textbf{Use when:} Peer-reviewed paper supports existing EBF theories.
+
+\subsection{Level 3: CASE}
+
+\textbf{Components:} Level 2 + Case Registry entry.
+
+\textbf{Time:} $\sim$25 minutes.
+
+\textbf{Use when:} Paper contains worked example suitable for case registry.
+
+\subsection{Level 4: THEORY}
+
+\textbf{Components:} Level 3 + Paper-YAML + Theory Catalog entry + LIT-Appendix.
+
+\textbf{Time:} $\sim$45 minutes.
+
+\textbf{Use when:} Paper extends or refines existing EBF theory.
+
+\subsection{Level 5: FULL}
+
+\textbf{Components:} All 13 components including CORE appendix integration.
+
+\textbf{Time:} $\sim$90 minutes.
+
+\textbf{Use when:} Foundational paper introducing new concepts, domains, or paradigms.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The 13-Component Validation System}
+\label{sec:paperint-components}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom PINT-1: Component Completeness]
+\textbf{Statement:} A paper at Level $L$ is complete if and only if all
+components required for that level are present and validated.
+
+\textbf{Interpretation:} Partial integration creates inconsistencies;
+completeness at each level ensures traceability.
+
+\textbf{Implication:} Papers should not be marked as integrated until
+all level-appropriate components are verified.
+\end{tcolorbox}
+
+\begin{table}[htbp]
+\centering
+\caption{13-Component Validation Checklist}
+\label{tab:13-components}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clccccc@{}}
+\toprule
+\textbf{\#} & \textbf{Component} & \textbf{L1} & \textbf{L2} & \textbf{L3} & \textbf{L4} & \textbf{L5} \\
+\midrule
+1 & Paper-YAML exists & -- & -- & -- & $\star$ & $\star$ \\
+2 & Full text archived & -- & -- & -- & $\star$ & $\star$ \\
+3 & Content level $\geq$ L1 & -- & $\circ$ & $\circ$ & $\star$ & $\star$ \\
+4 & BibTeX entry & $\star$ & $\star$ & $\star$ & $\star$ & $\star$ \\
+5 & theory\_support field & -- & $\star$ & $\star$ & $\star$ & $\star$ \\
+6 & use\_for field & -- & $\star$ & $\star$ & $\star$ & $\star$ \\
+7 & Case Registry entry & -- & -- & $\star$ & $\star$ & $\star$ \\
+8 & Chapter-Appendix mapping & -- & -- & -- & $\star$ & $\star$ \\
+9 & Theory Catalog entry & -- & -- & -- & $\circ$ & $\star$ \\
+10 & Parameter Registry & -- & -- & -- & $\circ$ & $\star$ \\
+11 & LIT-Appendix integration & -- & -- & -- & $\star$ & $\star$ \\
+12 & CORE-Appendix cross-ref & -- & -- & -- & -- & $\star$ \\
+13 & 10C dimension mapping & -- & -- & -- & -- & $\star$ \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\small
+\item $\star$ = Required, $\circ$ = Optional, -- = Not applicable
+\end{tablenotes}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Compliance Thresholds}
+\label{sec:paperint-compliance}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom PINT-2: Threshold Enforcement]
+\textbf{Statement:} Paper integration at Level $L$ requires compliance score
+$C(L) \geq T(L)$ where $T(L)$ is the threshold for level $L$.
+
+\textbf{Interpretation:} Higher integration levels require stricter compliance.
+
+\textbf{Implication:} Papers below threshold must complete missing components
+before being marked as integrated at that level.
+\end{tcolorbox}
+
+\begin{table}[htbp]
+\centering
+\caption{Compliance Thresholds by Integration Level}
+\label{tab:compliance-thresholds}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clcc@{}}
+\toprule
+\textbf{Level} & \textbf{Name} & \textbf{Threshold} & \textbf{Interpretation} \\
+\midrule
+3 & CASE & $\geq 60\%$ & Minimum for case-level integration \\
+4 & THEORY & $\geq 75\%$ & Required for theory extensions \\
+5 & FULL & $\geq 85\%$ & Required for foundational papers \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Validation Command:}
+\begin{verbatim}
+python scripts/validate_level5_integration.py PAP-{bibtex_key}
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The ATOMIC ID RULE}
+\label{sec:paperint-atomic}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom PINT-3: ATOMIC ID RULE]
+\textbf{Statement:} The Paper-YAML file (\texttt{data/paper-references/PAP-\{key\}.yaml})
+is the Single Source of Truth (SSOT) for all paper metadata.
+
+\textbf{Interpretation:} All other references (BibTeX, LIT-Appendix, Case Registry)
+must derive from and be consistent with the Paper-YAML.
+
+\textbf{Implication:} When updating paper information, always update the
+Paper-YAML first, then propagate changes to dependent files.
+\end{tcolorbox}
+
+\subsection{ID Format}
+
+\begin{equation}
+\text{Paper-ID} = \texttt{PAP-}\{\text{firstauthor}\}\_\{\text{year}\}\_\{\text{shortname}\}
+\end{equation}
+
+\textbf{Examples:}
+\begin{itemize}[nosep]
+\item \texttt{PAP-benabou\_2024\_ends\_means}
+\item \texttt{PAP-fehr\_1999\_inequity}
+\item \texttt{PAP-kahneman\_1979\_prospect}
+\end{itemize}
+
+\subsection{SSOT Hierarchy}
+
+\begin{enumerate}
+\item \textbf{Paper-YAML} (authoritative) $\rightarrow$ All metadata
+\item \textbf{Paper-Text} (archival) $\rightarrow$ Full text in Markdown
+\item \textbf{BibTeX} (derived) $\rightarrow$ Citation data only
+\item \textbf{Case Registry} (derived) $\rightarrow$ Links via paper\_id
+\item \textbf{LIT-Appendix} (derived) $\rightarrow$ References Paper-YAML
+\end{enumerate}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The 6-Factor Framework for CORE Integration}
+\label{sec:paperint-6factor}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom PINT-4: CORE Integration Decision]
+\textbf{Statement:} A paper should extend a CORE appendix if and only if
+at least 3 of the 6 factors evaluate to ``Yes'' AND factor F1 (Structural Novelty)
+evaluates to ``Yes''.
+
+\textbf{Interpretation:} CORE appendices should only be modified when
+a paper introduces genuinely new structural components, not mere applications.
+
+\textbf{Implication:} Most papers (even Level 5) will have cross-references
+to CORE appendices but will not modify them.
+\end{tcolorbox}
+
+\begin{table}[htbp]
+\centering
+\caption{6-Factor Framework for CORE Integration}
+\label{tab:6-factor}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clp{5cm}cc@{}}
+\toprule
+\textbf{\#} & \textbf{Factor} & \textbf{Question} & \textbf{Yes} & \textbf{No} \\
+\midrule
+F1 & Structural Novelty & Does paper introduce NEW component/dimension? & Extend & Reference \\
+F2 & Axiom Contribution & Does paper enable NEW axiom? & Formulate & Support \\
+F3 & Dimensionality & Does CORE-space dimension change? & Extend & Same \\
+F4 & Parameter vs Structure & Is contribution structural or parametric? & CORE & WHERE \\
+F5 & Universality & Does contribution apply GENERALLY? & CORE & LIT/DOMAIN \\
+F6 & Mechanism & Does paper explain NEW mechanism? & CORE & Application \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Decision Tree}
+
+\begin{verbatim}
+Paper P to integrate into CORE-X?
+│
+├── F1: New structural component for X?
+│   ├── NO → Cross-reference only
+│   └── YES ──┐
+│             │
+│             ├── F5: Applies universally (not domain-specific)?
+│             │   ├── NO → LIT/DOMAIN appendix, cross-ref to CORE
+│             │   └── YES ──┐
+│             │             │
+│             │             └── Extend CORE-X with:
+│             │                 • New component/dimension
+│             │                 • New axiom (if F2=YES)
+│             │                 • Cross-reference to LIT for details
+│             │
+│             └── Parameter values → WHERE (BBB), not CORE-X
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Worked Example: Bénabou, Falk \& Henkel (2024)}
+\label{sec:paperint-example}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Paper Overview}
+
+\textbf{Title:} ``Ends versus Means: Kantians, Utilitarians, and Moral Decisions''
+
+\textbf{Key Finding:} No stable moral types---cross-context correlation $r_{\text{EVM}} \approx 0$.
+
+\textbf{Target Level:} Level 4 (THEORY)
+
+\subsection{Component Completion Progress}
+
+\begin{table}[htbp]
+\centering
+\caption{Integration Progress: PAP-benabou\_2024\_ends\_means}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}clcc@{}}
+\toprule
+\textbf{\#} & \textbf{Component} & \textbf{Initial} & \textbf{Final} \\
+\midrule
+1 & Paper-YAML exists & \checkmark & \checkmark \\
+2 & Full text archived & \checkmark & \checkmark \\
+3 & Content level $\geq$ L1 & \checkmark & \checkmark \\
+4 & BibTeX entry & \checkmark & \checkmark \\
+5 & theory\_support field & \checkmark & \checkmark \\
+6 & use\_for field & \checkmark & \checkmark \\
+7 & Case Registry entry & $\times$ & \checkmark \\
+8 & Chapter-Appendix mapping & $\times$ & \checkmark \\
+9 & Theory Catalog entry & \checkmark & \checkmark \\
+10 & Parameter Registry & \checkmark & \checkmark \\
+11 & LIT-Appendix integration & $\times$ & \checkmark \\
+\midrule
+& \textbf{Compliance Score} & \textbf{15.4\%} & \textbf{84.6\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{6-Factor Analysis}
+
+\begin{table}[htbp]
+\centering
+\caption{6-Factor Analysis: Bénabou et al. (2024)}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}clcl@{}}
+\toprule
+\textbf{\#} & \textbf{Factor} & \textbf{Value} & \textbf{Reasoning} \\
+\midrule
+F1 & Structural Novelty & NO & Uses existing $\theta = f(\Psi)$ framework \\
+F2 & Axiom Contribution & NO & Supports existing PCT axioms \\
+F3 & Dimensionality & NO & No new dimensions \\
+F4 & Parameter vs Structure & Parameter & $r_{\text{EVM}} \approx 0$ is a parameter \\
+F5 & Universality & YES & General moral reasoning finding \\
+F6 & Mechanism & NO & Confirms context-dependence mechanism \\
+\midrule
+& \textbf{Decision} & \multicolumn{2}{l}{Cross-reference to CORE, no extension} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Result:} Paper integrated at Level 4 with:
+\begin{itemize}[nosep]
+\item Case CAS-903 in Case Registry
+\item Axiom RB-11 in LIT-BENABOU appendix
+\item Cross-references to CORE-WHEN (V), CORE-HOW (B), CORE-AWARE (AU)
+\item Parameters PAR-MR-001 to PAR-MR-004 in Parameter Registry
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Quality Assurance Integration}
+\label{sec:paperint-qa}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=Practical Implications]
+\begin{enumerate}
+\item \textbf{Always validate before marking complete:} Run
+      \texttt{validate\_level5\_integration.py} for Level 4+ papers.
+\item \textbf{Follow PDCA cycle:} Plan components, Do integration,
+      Check compliance, Act on gaps.
+\item \textbf{Document in Lessons Learned:} Record workflow insights
+      in \texttt{quality/lessons\_learned.md}.
+\item \textbf{Update checklist:} Track Level 4+ integrations in
+      \texttt{quality/checklist.md}.
+\end{enumerate}
+\end{tcolorbox}
+
+\subsection{PDCA Cycle for Paper Integration}
+
+\begin{enumerate}
+\item \textbf{Plan:} Determine target level, identify required components
+\item \textbf{Do:} Complete each component in order
+\item \textbf{Check:} Run validation script, verify compliance $\geq$ threshold
+\item \textbf{Act:} Fix gaps, document lessons learned
+\end{enumerate}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Summary}
+\label{sec:paperint-summary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=green!10!white, colframe=green!75!black,
+    title=\textbf{Appendix VB: Summary}]
+
+\textbf{Core Question:} How do we systematically integrate papers into EBF?
+
+\textbf{Main Contribution:}
+\begin{itemize}[nosep]
+    \item 5-level integration system (MINIMAL $\rightarrow$ FULL)
+    \item 13-component validation checklist
+    \item 6-Factor Framework for CORE integration decisions
+    \item ATOMIC ID RULE for traceability
+\end{itemize}
+
+\textbf{Key Outputs:}
+\begin{itemize}[nosep]
+    \item Compliance thresholds: L3 $\geq 60\%$, L4 $\geq 75\%$, L5 $\geq 85\%$
+    \item Validation script: \texttt{validate\_level5\_integration.py}
+\end{itemize}
+
+\textbf{Integration:} This appendix connects to BBB (WHERE) for parameters,
+MS (Theory Catalog) for theories, and all LIT-* appendices for literature.
+
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Glossary of Symbols}
+\label{sec:paperint-glossary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{Central Reference:} For complete symbol definitions, see
+\textbf{Appendix G} (Glossary).
+\end{tcolorbox}
+
+\begin{table}[htbp]
+\centering
+\caption{Symbols Introduced in Appendix VB}
+\label{tab:paperint-symbols}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clp{6cm}c@{}}
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Definition} & \textbf{Status} \\
+\midrule
+$L$ & Integration Level & Paper integration depth (1--5) & NEW \\
+$C(L)$ & Compliance Score & Percentage of components completed & NEW \\
+$T(L)$ & Threshold & Minimum compliance for level $L$ & NEW \\
+$r_{\text{EVM}}$ & Cross-EVM Correlation & Avg. correlation across moral contexts & $\checkmark$ \\
+$\theta$ & Deontological Weight & Weight on rule-following vs. outcomes & $\checkmark$ \\
+$\Psi$ & Context Vector & 8-dimensional context specification & $\checkmark$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Open Issues and Research Agenda}
+\label{sec:paperint-open}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[htbp]
+\centering
+\caption{Research Roadmap for Paper Integration}
+\label{tab:paperint-roadmap}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clcl@{}}
+\toprule
+\textbf{\#} & \textbf{Issue} & \textbf{Priority} & \textbf{Status} \\
+\midrule
+1 & Automated compliance scoring & HIGH & Implemented \\
+2 & Pre-commit hook integration & HIGH & Implemented \\
+3 & Paper queue management & MEDIUM & Implemented \\
+4 & Cross-database consistency checks & MEDIUM & Planned \\
+5 & Automated LIT-appendix sync & LOW & Partial \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{References}
+\label{sec:paperint-references}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{Master Bibliography:} See \texttt{bibliography/bcm\_master.bib}
+\end{tcolorbox}
+
+\subsection{Key References for This Appendix}
+
+\begin{itemize}[nosep]
+    \item \textbf{Paper Integration:} CLAUDE.md Section ``/integrate-paper''
+    \item \textbf{Quality Assurance:} \texttt{quality/checklist.md}
+    \item \textbf{Lessons Learned:} \texttt{quality/lessons\_learned.md}
+\end{itemize}
+
+\nocite{bcm_master}
+
+\vspace{1em}
+\hrule
+\vspace{0.5em}
+
+\noindent\textit{Cross-references:}
+Appendix G (Glossary),
+Appendix BBB (CORE-WHERE),
+Appendix MS (Theory Catalog),
+Appendix RB (LIT-BENABOU).
+
+\noindent\textit{Master Bibliography:} \texttt{bibliography/bcm\_master.bib}
+
+% =============================================================================
+% END OF APPENDIX VB
+% =============================================================================

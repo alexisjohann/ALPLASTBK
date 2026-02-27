@@ -1,0 +1,10 @@
+---
+paper_id: PAP-sutter2009gender
+doi: 10.1007/s10683-009-9217-9
+source: unpaywall_html
+fetch_date: 2026-02-18
+word_count: 278
+has_references: False
+---
+
+Gender pairing and bargaining—Beware the same sex! item 1 out of 1 return to search results Author M. Sutter R. Bosman M.G. Kocher F. van Winden Year 2009 Title Gender pairing and bargaining—Beware the same sex! Journal Experimental Economics Volume | Issue number 12 | 3 Pages (from-to) 318-331 Document type Article Faculty Faculty of Economics and Business (FEB) Institute Amsterdam School of Economics Research Institute (ASE-RI) Abstract We study the influence of gender and gender pairing on economic decision making in an experimental two-person bargaining game where the other party’s gender is known to both actors. We find that (1) gender per se has no significant effect on behavior, whereas (2) gender pairing systematically affects behavior. In particular, we observe much more competition and retaliation and, thus, lower efficiency when the bargaining partners have the same gender than when they have the opposite gender. These findings are consistent with predictions from evolutionary psychology. Implications of our results for real-world organizations are discussed. URL go to publisher's site Link Link Language Undefined/Unknown Persistent Identifier https://hdl.handle.net/11245/1.318423 Downloads Final peer-reviewed manuscript (postprint) (Accepted author manuscript) Disclaimer/Complaints regulations If you believe that digital publication of certain material infringes any of your rights or (privacy) interests, please let the Library know, stating your reasons. In case of a legitimate complaint, the Library will make the material inaccessible and/or remove it from the website. Please Ask the Library , or send a letter to: Library of the University of Amsterdam, Secretariat, Singel 425, 1012 WP Amsterdam, The Netherlands. You will be contacted as soon as possible. Print Print this page Share Share via email Share on facebook Share on linkedin Share on twitter

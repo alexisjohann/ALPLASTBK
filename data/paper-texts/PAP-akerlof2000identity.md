@@ -1,0 +1,1812 @@
+# 
+
+THE
+QUARTERLY JOURNAL
+OF ECONOMICS
+Vol. CXV Issue 3
+August 2000
+ECONOMICS AND IDENTITY*
+GEORGE A. AKERLOF AND RACHEL E. KRANTON
+This paper considers how identity, a person’s sense of self, affects economic
+outcomes. We incorporate the psychology and sociology of identity into an economic
+model of behavior. In the utility function we propose, identity is associated with
+different social categories and how people in these categories should behave. We
+then construct a simple game-theoretic model showing how identity can affect
+individual interactions. The paper adapts these models to gender discrimination in
+the workplace, the economics of poverty and social exclusion, and the household
+division of labor. In each case, the inclusion of identity substantively changes
+conclusions of previous economic analysis.
+I. INTRODUCTION
+This paper introduces identity—a person’s sense of self—into
+economic analysis. Identity can account for many phenomena that
+current economics cannot well explain. It can comfortably resolve,
+for example, why some women oppose ‘‘women’s rights,’’ as seen in
+microcosm when Betty Friedan was ostracized by fellow suburban
+* The authors especially wish to thank Abdeslam Maghraoui for his contin-
+ued help and insights and Michael Ash, Jennifer Eichberger, and Cyd Fremmer for
+invaluable research assistance. Henry Aaron, William Dickens, Claudia Goldin,
+Edward Glaeser, Lawrence Katz, Robert Merton, Anand Swamy, and an anony-
+mous referee made extensive comments on earlier drafts for which the authors are
+particularly grateful. They also thank Robert Akerlof, Abhijit Banerjee, Kaushik
+Basu, Paul Beaudry, Samuel Bowles, Robert Boyd, Gary Burtless, Alessandra
+Casella, Catherine Eckel, Stuart Elliott, Gary Fields, Pierre Fortin, James Foster,
+Richard Harris, Victoria Hattam, Peter Howett, Aurora Jackson, Kevin Lang,
+George Loewenstein, Glenn Loury, Michael Kremer, David Laibson, Janet Pack,
+Matthew Rabin, Francisco Rodriguez, Paul Romer, Eric Verhoogen, Eric Wanner,
+Kent Weaver, Robin Wells, Janet Yellen, and Peyton Young for help and comments.
+George Akerlof is grateful to the Canadian Institute for Advanced Research, the
+MacArthur Foundation, the Brookings Institution, and the National Science
+Foundation, under research grant number SBR 97-09250, for financial support.
+Rachel Kranton expresses her gratitude to the Russell Sage Foundation where she
+was a Visiting Scholar for 1997–1998.
+2000 by the President and Fellows of Harvard College and the Massachusetts Institute of
+Technology.
+The Quarterly Journal of Economics, August 2000
+715
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+716
+QUARTERLY JOURNAL OF ECONOMICS
+housewives for writing The Feminine Mystique. Other problems
+such as ethnic and racial conflict, discrimination, intractable
+labor disputes, and separatist politics all invite an identity-based
+analysis. Because of its explanatory power, numerous scholars in
+psychology, sociology, political science, anthropology, and history
+have adopted identity as a central concept. This paper shows how
+identity can be brought into economic analysis, allowing a new
+view of many economic problems.1
+We incorporate identity into a general model of behavior and
+then demonstrate how identity influences economic outcomes.
+Specifically, we consider gender discrimination in the labor mar-
+ket, the household division of labor, and the economics of social
+exclusion and poverty. In each case, our analysis yields predic-
+tions, supported by existing evidence, that are different from
+those of existing economic models. The Conclusion indicates many
+other realms where identity almost surely matters.
+Our identity model of behavior begins with social difference.
+Gender, a universally familiar aspect of identity, illustrates. There
+are two abstract social categories, ‘‘man’’ and ‘‘woman.’’ These
+categories are associated with different ideal physical attributes
+and prescribed behaviors. Everyone in the population is assigned
+a gender category, as either a ‘‘man’’ or a ‘‘woman.’’ Following
+the behavioral prescriptions for one’s gender affirms one’s self-
+image, or identity, as a ‘‘man’’ or as a ‘‘woman.’’2 Violating the
+prescriptions evokes anxiety and discomfort in oneself and in
+1. Previous economic literature on identity includes Folbre [1994] who
+discusses the importance of gender identity for collective action that preserves
+male privilege. Our general model of utility allows for this outcome, as well as
+many other sources of gender inequality. Sen [1985] mentions identity as an
+influence on goal achievement, but does not incorporate identity into a utility
+function or models of specific economic settings. ‘‘Identity’’ also has other connota-
+tions: Landa [1994] and Kevane [1994] consider how identity, defined as member-
+ship in a particular group, affects economic transactions when individual members
+are subject to group sanctions. Bowles and Gintis [1997] likewise consider
+cooperation within a community.
+2. We use the word prescriptions rather than norms because previous usage in
+economics has given the latter term connotations that would be misleading in the
+context of this paper. Here, agents follow prescriptions, for the most part, to
+maintain their self-concepts. In contrast, in much of the economics literature, a
+norm is obeyed because failure to do so results in punishment (e.g., Akerlof [1976],
+Kandori [1992], and Cole, Mailath, and Postlewaite [1992]). Other authors,
+however, see norms as something similar to our prescriptions. In Montgomery’s
+[1997] game-theoretic model of social roles, agents adopt strategies that norms
+assign their roles because otherwise they ‘‘would not recognize themselves.’’ Elster
+[1989] writes that social norms are sustained by strong feelings of embarrassment,
+anxiety, and guilt suffered from violating them. Huang and Wu [1994] also
+consider social norms sustained by people’s emotions, which in the view of this
+paper would result from a person’s sense of self.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 717
+others. Gender identity, then, changes the ‘‘payoffs’’ from different
+actions.
+This modeling of identity is informed by a vast body of
+research on the salience of social categories for human behavior
+and interaction. We present in the next section a series of
+examples of identity-related behavior. These examples, and other
+evidence, indicate that (1) people have identity-based payoffs
+derived from their own actions; (2) people have identity-based
+payoffs derived from others’ actions; (3) third parties can generate
+persistent changes in these payoffs; and (4) some people may
+choose their identity, but choice may be proscribed for others.
+The concept of identity expands economic analysis for at least
+four corresponding reasons.
+First, identity can explain behavior that appears detrimental.
+People behave in ways that would be considered maladaptive or
+even self-destructive by those with other identities. The reason for
+this behavior may be to bolster a sense of self or to salve a
+diminished self-image.
+Second, identity underlies a new type of externality. One
+person’s actions can have meaning for and evoke responses in
+others. Gender again affords an example. A dress is a symbol of
+femininity. If a man wears a dress, this may threaten the identity
+of other men. There is an externality, and further externalities
+result if these men make some response.
+Third, identity reveals a new way that preferences can be
+changed. Notions of identity evolve within a society and some in
+the society have incentives to manipulate them. Obvious ex-
+amples occur in advertising (e.g., Marlboro ads). As we shall
+explore, there are many other cases, including public policies,
+where changing social categories and associated prescriptions
+affects economic outcomes.
+Fourth, because identity is fundamental to behavior, choice of
+identity may be the most important ‘‘economic’’ decision people
+make. Individuals may—more or less consciously—choose who
+they want to be. Limits on this choice may also be the most
+important determinant of an individual’s economic well-being.
+Previous economic analyses of, for example, poverty, labor supply,
+and schooling have not considered these possibilities.
+Our analysis proceeds as follows. In the next section we
+propose a general utility function that incorporates identity as a
+motivation for behavior. It introduces the vocabulary and theoreti-
+cal framework used throughout the paper. This section also
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+718
+QUARTERLY JOURNAL OF ECONOMICS
+justifies our inclusion of identity in a utility function, presenting a
+series of examples of identity-related behavior. Section III then
+constructs a prototype game-theoretic model of identity that
+mirrors standard psychological theory. This model of two social
+categories—Green and Red—contains the essential elements of
+social differentiation, identity, and economic interaction. Sections
+IV, V, and VI consider gender discrimination in the labor market,
+the economics of poverty and social exclusion, and the household
+division of labor, respectively. Section VII concludes and indicates
+directions for future research.
+II. UTILITY FUNCTION AND EVIDENCE OF
+IDENTITY-RELATED BEHAVIOR
+This section proposes a utility function that incorporates
+identity as a motivation for behavior. We draw on extensive work
+in psychology and discuss specific examples of behavior that
+support our framework.
+A. A Utility Function with Identity
+In our utility function, identity is based on social categories,
+C. Each person j has an assignment of people to these categories,
+cj, so that each person has a conception of her own categories and
+that of all other people.3 Prescriptions P indicate the behavior
+appropriate for people in different social categories in different
+situations. The prescriptions may also describe an ideal for each
+category in terms of physical characteristics and other attributes.
+Categories may also have higher or lower social status. We use the
+word identity to describe both a person’s self-image as well as her
+assigned categories.
+Gender identity, as indicated earlier, could be formalized as
+follows. There is a set of categories C, ‘‘man’’ and ‘‘woman,’’ where
+men have higher social status than women. cj describes j’s own
+gender category as well as j’s assignment for everyone else in the
+population. P associates to each category basic physical and other
+characteristics that constitute the ideal man or woman as well as
+specifies behavior in different situations according to gender. E.g.,
+the ideal woman is female, thin, and should always wear a dress;
+3. An individual j’s mapping of another individual k into categories need not
+correspond to k’s own mapping. In addition, social categories need not be mutually
+exclusive, and an individual may be mapped into several social categories (e.g.,
+individual j is both a ‘‘woman’’ and a ‘‘professional’’).
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 719
+the ideal man is male, muscular, and should never wear a dress,
+except perhaps on Halloween.
+We propose the following utility function:
+(1) Uj Uj(aj,a j,Ij).
+Utility depends on j’s identity or self-image Ij, as well as on the
+usual vectors of j’s actions, aj, and others’ actions, a j. Since aj
+and a j determine j’s consumption of goods and services, these
+arguments and Uj(·) are sufficient to capture the standard econom-
+ics of own actions and externalities.
+Following our discussion above, we propose the following
+representation of Ij:
+(2) Ij Ij(aj,a j;cj, j,P).
+A person j’s identity Ij depends, first of all, on j’s assigned social
+categories cj. The social status of a category is given by the
+function Ij(·), and a person assigned a category with higher social
+status may enjoy an enhanced self-image. Identity further de-
+pends on the extent to which j’s own given characteristics j
+match the ideal of j’s assigned category, indicated by the prescrip-
+tions P.4 Finally, identity depends on the extent to which j’s own
+and others’ actions correspond to prescribed behavior indicated by
+P. We call increases or decreases in utility that derive from Ij,
+gains or losses in identity.5
+In the simplest case, an individual j chooses actions to
+maximize utility (1), taking as given cj, j, and P and the actions of
+others. We use the verb ‘‘choose’’ advisedly. We do not presume one
+way or another that people are aware of their own motivations, as
+in standard utility theory which is agnostic as to whether an
+individual shopper is aware or not of the reasons for her choices.6
+Beyond actions, to some extent an individual may also choose
+the category assignment cj. Social categories may be more or less
+ascriptive, and in general, the individual is likely to have some
+4. In the case of a category with high (low) social status, a person j may gain
+when own characteristics are close to (far from) from the ideal.
+5. Since an individual’s self-concept may be formed by seeing oneself through
+the eyes of others [Gleitman 1996, p. 343], these gains or losses may also depend on
+how others interpret i’s actions. The opinions of others may be revealed through
+actions a j; the individual may also care about others’ categorizations c j.
+6. Sen [1997] makes the analogy that light does not know that it is
+minimizing distance, but behaves as if it does. This notion follows Friedman’s
+[1953] dicta for the methodology of positive economics. Whether or not j con-
+sciously realizes she is maximizing a utility function such as (1), she does so
+nevertheless. In our setting, in particular, the motivations for behavior may be
+unconscious.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+720
+QUARTERLY JOURNAL OF ECONOMICS
+choice over identity, as indeed people may even have some choice
+over their gender. Again, this ‘‘choice’’ may be more or less
+conscious.
+Individual actions may also affect the prescriptions P, the set
+of social categories C, as well as the status of different categories
+reflected in Ij(·). With respect to gender, for example, status
+differences between men and women have diminished over time,
+and prescribed behavior and physical ideals have changed. Gen-
+der categories themselves have become varied and complex. There
+may be no universal agreement about social categories and
+prescriptions. Indeed, they are the subject of much debate and
+controversy.
+B. Psychology and Experiments on Group Identification
+The prominence of identity in psychology suggests that
+economists should consider identity as an argument in utility
+functions. Psychologists have long posited a self or ‘‘ego’’ as a
+primary force of individual behavior. They have further associated
+an individual’s sense of self to the social setting; identity is bound
+to social categories; and individuals identify with people in some
+categories and differentiate themselves from those in others.7
+While experiments in social psychology do not show the
+existence of a ‘‘self’’ or this identification per se, they do demon-
+strate that even arbitrary social categorizations affect behavior.8
+Consider the Robbers Cave experiment. In its initial week, two
+groups of boys at a summer camp in Oklahoma were kept apart.
+During this period, the boys developed norms of behavior and
+identities as belonging to their group. When they met for a
+tournament in the second week, the eleven-year-old equivalent of
+war broke out, with name-calling, stereotyping, and fighting.
+Later experiments show that competition is not necessary for
+group identification and even the most minimal group assignment
+can affect behavior. ‘‘Groups’’ form by nothing more than random
+assignment of subjects to labels, such as even or odd. Subjects are
+more likely to give rewards to those with the same label than to
+those with other labels, even when choices are anonymous and
+have no impact on own payoffs. Subjects also have higher opinions
+of members of their own group.
+7. For discussion of the ‘‘self,’’ see Thomas [1996], Breger [1974], or Gleitman
+[1996]. For a review of the social psychology of identity, see Brown [1986] and
+Wetherell [1996], and especially the work of Tajfel and Turner [1979].
+8. For discussion of social psychology experiments, see Brown [1986, pp.
+541–566] and Wetherell [1996, pp. 203–216].
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 721
+Our modeling of identity exactly parallels these experiments.
+In the experiments, as in our utility function (1), there are social
+categories; there is an assignment of subjects to those social
+categories; finally, subjects have in mind some form of assignment-
+related prescriptions, else rewards would not depend on group
+assignment.
+C. Examples of Identity-Related Behavior
+We next present a set of ‘‘real-world’’ examples of four
+different ways, outlined in the introduction and formalized in our
+utility function, that identity may influence behavior.
+Our first set demonstrates that people have identity-related
+payoffs from their own actions. The impact of an action aj on
+utility Uj depends in part on its effect on identity Ij.
+Self-Mutilation. The first of these examples is perhaps the
+most dramatic: people mutilate their own or their children’s
+bodies as an expression of identity. Tattooing, body-piercing (ear,
+nose, navel, etc.), hair conking, self-starvation, steroid abuse,
+plastic surgery, and male and female circumcision all yield
+physical markers of belonging to more or less explicit social
+categories and groups.9 In terms of our utility function, these
+practices transform an individual’s physical characteristics to
+match an ideal.10 The mutilation may occur because people
+believe it leads to pecuniary rewards and interactions such as
+marriage. But the tenacity and defense of these practices indicate
+the extent to which belonging relies on ritual, and people have
+internalized measures of beauty and virtue.11
+Gender and Occupations. Female trial lawyer, male nurse,
+woman Marine—all conjure contradictions. Why? Because trial
+9. See Khatibi [1986] for analysis of how marking the body, by circumcision
+and tribal tattoos, marks the self.
+10. An alternative explanation is that these practices are signals of some
+unobserved economically relevant attribute. However, it is hard to imagine why
+individual costs of these signals would be correlated with these attributes.
+11. In a study of sexuality in rural Egypt, Khattab [1996] reports that women
+consider female circumcision a beautifying practice. It accentuates the difference
+between the sexes: ‘‘We don’t want to look like a man with a protruding organ’’ [p.
+20]. Bumiller [1990] reports an example of female defense of female self-sacrifice.
+Both men and women journeyed to pay their respects after a young woman
+committed sati in a Rajasthani village in 1987. Sati is the practice of the widow
+burning to death on her husband’s funeral pyre. One devotee expressed her
+admiration: ‘‘If I had known she was going to do this I would have touched her feet.
+Now I will give her a place in my house and worship her every day.’’ This respect is
+no less diminished by admirers’ doubts that they would have had the same courage
+or by their ignorance of the pressure on the widow from her in-laws.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+722
+QUARTERLY JOURNAL OF ECONOMICS
+lawyers are viewed as masculine, nurses as feminine, and a
+Marine as the ultimate man. People in these occupations but of
+the opposite sex often have ambiguous feelings about their work.
+In terms of our utility function, an individual’s actions do not
+correspond to gender prescriptions of behavior. A revealing study
+in this regard is Pierce’s [1995] participant-observer research on
+the legal profession.12 Female lawyers thought of themselves as
+women, yet being a good lawyer meant acting like a man. Lawyers
+were told in training sessions to act like ‘‘Rambo’’ and to ‘‘take no
+prisoners.’’ In the office, trial attorneys who did not ‘‘win big’’ were
+described as ‘‘having no balls.’’ Intimidation of witnesses was
+‘‘macho blasts against the other side.’’ A Christmas skit about two
+partners dramatized the gender conflict:
+[O]ne secretary dressed up as Rachel and another dressed up as
+Michael. The secretary portraying Michael . . . ran around the stage barking
+orders and singing, ‘‘I’m Michael Bond, I’m such a busy man. I’m such a busy
+man.’’ The other secretary followed suit by barking orders and singing, ‘‘I’m
+Rachel Rosen, I’m such a busy man, I mean woman. I’m such a busy man, I
+mean woman. . . .’’ Michael responded to the spoof in stride. . . . Rachel, on
+the other hand, was very upset [Pierce, 1995, p. 130].
+Female lawyers expressed their ambivalence in many discus-
+sions. ‘‘Candace,’’ another partner, told Pierce: ‘‘I had forgotten
+how much anger I’ve buried over the years about what happened
+to the woman who became a lawyer. . . . To be a lawyer, some-
+where along the way, I made a decision that it meant acting like a
+man. To do that I squeezed the female part of me into a box, put on
+the lid, and tucked it away’’ [Pierce 1995, p. 134].
+Alumni Giving. Charitable contributions may yield a ‘‘warm
+glow’’ [Andreoni 1989], but how do people choose one organization
+over another? Charity to the organization with the highest
+marginal return would maximize its economic impact. Yet, at least
+for higher education, contributions may well reflect identity.
+Graduates give to their own alma mater. Alumni giving could
+enhance the value of a degree by maintaining an institution’s
+reputation. But this explanation suffers from the collective action
+problem. And it does not account for student loyalty and identifica-
+tion with an institution, as expressed in such lyrics as ‘‘For God,
+for country, and for Yale.’’
+12. For a study of nurses and Marines, see Williams [1989].
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 723
+Mountaineering. Why do people climb mountains? Loewen-
+stein [1998] argues that facing the extreme discomfort and danger
+of mountaineering enhances an individual’s sense of self.
+Our second set of examples demonstrates that people have
+identity-related payoffs from others’ actions. The effect of an
+action a j on utility includes an impact on Ij.
+Gender and Occupations. A woman working in a ‘‘man’s’’ job
+may make male colleagues feel less like ‘‘men.’’ To allay these
+feelings, they may act to affirm their masculinity and act against
+female coworkers. In her study of coal handlers in a power plant,
+Padavic [1991] interpreted the behavior of her male coworkers in
+this way. On one occasion, they picked her up, tossed her back and
+forth, and attempted to push her onto the coal conveyer belt
+(jokingly, of course). In the case of another worker, no one trained
+her, no one helped her, and when she asked for help, she was
+refused assistance that would have been routine for male
+coworkers.13
+To further assay the reasons for such behavior, we took a
+random-sample telephone survey relating a vignette about a
+female carpenter at a construction company who was ‘‘baited and
+teased’’ by a male coworker. We see in Table I that among the six
+possible explanations, 84 percent of the respondents said it was
+‘‘somewhat likely,’’ ‘‘likely,’’ or ‘‘very likely’’ that the male worker
+behaved in this way because he felt less masculine.14 This
+explanation was one of the most popular, and more than three-
+quarters of the respondents thought that a woman in a man’s job
+‘‘frequently’’ or ‘‘almost always’’ faces such treatment.
+Manhood and Insult. For a man, an action may be viewed as
+an insult which, if left unanswered, impugns his masculinity. As
+in the example above, an action a j impacts Ij which may be
+countered by an action aj. Psychologists Nisbett and Cohn [1996]
+have detected such identity concerns in experiments at the
+13. Levine [1997] also found that men often refused to train women and
+sabotaged their work. In addition, women in men’s jobs were subject to sexual
+innuendo. For a collection of such examples see Schultz [1998].
+14. Differences in response by gender were negligible. The survey included
+three other vignettes, two of which described a man (woman) contemplating a
+switch to a predominantly female (male) occupation. Responses indicate that
+gender could be of concern in such a decision. The responses were uninformative,
+however, when the switch was otherwise undesirable so that any gender conflict
+would be moot. Responses to the last vignette strongly suggest that identity
+considerations are a major reason for taking the time to vote. Our sample was half
+male, half female, and 60 percent college graduates.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+724
+QUARTERLY JOURNAL OF ECONOMICS
+TABLE I
+VIGNETTE CONCERNING HARASSMENT AND EVALUATION OF POSSIBLE EXPLANATIONS
+Vignette: Paul is a carpenter for a construction company. The company has just
+hired Christine, its first female carpenter, for 3 dollars less per hour than it
+pays Paul and the other carpenters. On Christine’s first day of work, Paul and
+two of his coworkers bait and tease Christine, making it difficult for her to do
+her job.
+Try to imagine why Paul behaved as he did. Rate each of the following explana-
+tions for Paul’s behavior as not-at-all likely, not likely, somewhat likely, likely,
+or very likely.
+Explanation
+Fraction
+somewhat
+likely, likely,
+or very likelya,b
+Average
+score c
+Paul put Christine down because he is afraid that by
+hiring a woman the company can lower his wage.
+Paul put Christine down because he does not feel that
+it is fair that Christine is getting a lower wage.
+Paul put Christine down because he feels less mascu-
+line when a woman is doing the same job.
+Paul put Christine down because he feels he and his
+friends will not be able to joke around if a woman is
+present.
+Paul put Christine down because he is afraid that
+other men will tease him if a woman is doing the
+same job.
+Paul put Christine down because he is afraid that
+people will think that his job requires less skill if a
+woman is doing the same job.
+Paul put Christine down because he is afraid that if
+he does not, then his male coworkers will start to
+tease him.
+Paul put Christine down because he feels that it is
+wrong for women to work in a man’s job.
+.36
+(.06)
+.13
+(.04)
+.84
+(.04)
+.84
+(.04)
+.76
+(.05)
+.64
+(.06)
+.80
+(.05)
+.77
+(.05)
+2.5
+(.12)
+1.7
+(.12)
+3.4
+(.12)
+3.6
+(.12)
+3.3
+(.13)
+2.9
+(.12)
+3.4
+(.13)
+3.2
+(.14)
+a. Sample size is 70 households. Households were selected randomly from the Fremont, CA phonebook.
+b. Standard errors are in parentheses.
+c. Average with not-at-all likely 1, not likely 2, somewhat likely 3, likely 4, very likely 5.
+University of Michigan. These experiments, they argue, reveal
+remnants of the white antebellum Southern ‘‘culture of honor’’ in
+disparate reactions to insult of males from the U. S. South and
+North.15 Their experiments involved variations of the following
+15. For a description of this ‘‘culture of honor,’’ see also Butterfield [1995].
+‘‘Gentlemen’’ reacted to insult by engaging in duels. Those of lower class fought
+with hands and fists with no holds barred, so that fights extended to such
+extremities as eyes, ears, and nose.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 725
+scenario: an associate of the experimenters bumped subjects in
+the hallway as they made their way to the experiment. Rather
+than apologizing, the associate called the subject ‘‘asshole.’’ In-
+sulted Southerners were more likely than insulted Northerners
+and control Southerners to fill in subsequent word-completion
+tests with aggressive words (for example, g-un rather than f-un)
+and had raised cortisol levels.
+Most revealing that the insult affected identity, insulted
+Southerners were also more likely to fear that the experimenter
+had a low opinion of their masculinity. They will probably never
+meet the experimenter or the hallway accomplice again; their
+encounter in the experiment is otherwise anonymous. Their
+concern about the experimenter then can only be a concern about
+how they feel about themselves, about their own sense of identity,
+as perceived through the ‘‘mirror of the opinions and expectations
+of others’’ [Gleitman 1996, p. 343]. We see the same psychology in
+other examples.
+Changing Groups or Violating Prescriptions. Because of j’s
+identification with others, it may affect j’s identity when another
+person in j’s social category violates prescriptions or becomes a
+different person.16 A common response is scorn and ostracism,
+which distances oneself from the maverick and affirms one’s own
+self-image. Such behavior occurs daily in school playgrounds,
+where children who behave differently are mocked and taunted.
+Those who seek upward mobility are often teased by their peers,
+as in A Hope in the Unseen [Suskind 1998], which describes Cedric
+Jennings’ progress from one of Washington’s most blighted high
+schools to Brown University. The book opens with Cedric in the
+high-school chemistry lab, escaping the catcalls of the crowd at an
+awards assembly. Those who try to change social categories and
+prescriptions may face similar derision because the change may
+devalue others’ identity, as for the housewives in Betty Friedan’s
+suburb.
+Our third set of examples demonstrates that to some extent
+people choose their identity; that is, cj may be partially a choice.
+Many women in the United States can choose either to be a career
+woman or a housewife (see Gerson [1986]). Parents often choose a
+school—public versus private, secular versus parochial—to influ-
+16. the next section.
+We discuss the psychology of identification and its implications further in
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+726
+QUARTERLY JOURNAL OF ECONOMICS
+ence a child’s self-image, identification with others, and behav-
+ior.17 The choice of where to live at college can both reflect and
+change how students think of themselves. Fraternities, sororities,
+African-American, or other ‘‘theme’’-oriented dorms are all associ-
+ated with social groups, self-images, and prescribed behavior.18
+The list can continue. The choice for an immigrant to become a
+citizen is not only a change in legal status but a change in identity.
+The decision is thus often fraught with ambivalence, anxiety, and
+even guilt.
+Identity ‘‘choice,’’ however, is very often limited. In a society
+with racial and ethnic categories, for example, those with nondis-
+tinguishing physical features may be able to ‘‘pass’’ as a member of
+another group. But others will be constrained by their appear-
+ance, voice, or accent.
+Our fourth set of examples demonstrates the creation and
+manipulation of social categories C and prescriptions P.19
+Advertising. Advertising is an obvious attempt to manipu-
+late prescriptions. Marlboro and Virginia Slims advertisements,
+for example, promote an image of the ideal man or woman
+complete with the right cigarette.20
+Professional and Graduate Schools. Graduate and profes-
+sional programs try to mold students’ behavior through a change
+in identity. As a ‘‘one-L’’ Harvard Law School student said: ‘‘ ‘They
+are turning me into someone else. They’re making me different’ ’’
+[Turow 1977, p. 73]. In medicine, theology, the military, and the
+doctorate, a title is added to a graduate’s name, suggesting the
+change in person.
+Political Identity. Politics is often a battle over identity.21
+Rather than take preferences as given, political leaders and
+17. Catholic schools in the United States at the end of the nineteenth century
+were a bridge between immigrants’ old European identities and their new
+American selves [Bryk, Lee, and Holland 1993, p. 27]. Muslim schools, whose
+enrollment is currently growing, are partly refuges from public school systems, but
+parents also choose them to instill in their children a Muslim identity and respect
+for behavioral prescriptions, and to counter what many view as a distorted image
+of Muslims and Islam in America [Sachs 1998].
+18. For an anthropological study of identity, fraternities, and prescriptions for
+brothers’ behavior, see Sanday [1990].
+19. The social evolution and construction of group distinctions and social
+categories is the subject of much research. For a survey, see Wetherell [1996, pp.
+219–227].
+20. See de Grazia’s [1996] volume for historical studies of advertising and
+other influences on gender and consumption.
+21. For theory and analysis of political identity, see Norton [1988].
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 727
+activists often strive to change a population’s preferences through
+a change in identity or prescriptions.22 Again, examples abound.
+Fascist and populist leaders are infamous for their rhetoric
+fostering racial and ethnic divisions, with tragic consequences.
+Symbolic acts and transformed identities spur revolutions. The
+ringing of the Liberty Bell called on the colonists’ identities as
+Americans. Gandhi’s Salt March sparked an Indian national
+identity. The French Revolution changed subjects into citizens,
+and the Russian Revolution turned them into comrades.
+III. ECONOMICS AND IDENTITY: A PROTOTYPE MODEL
+In this section we construct a prototype model of economic
+interaction in a world where identity is based on social difference.
+In addition to the usual tastes, utility from actions will also
+depend on identity. Identity will depend on two social categories—
+Green and Red—and the correspondence of own and others’
+actions to behavioral prescriptions for their category.
+A. A Prototype Model
+We begin with standard economic motivations for behavior.
+There are two possible activities, Activity One and Activity Two.
+There is a population of individuals each of whom has a taste for
+either Activity One or Two. If a person with a taste for Activity
+One (Two) undertakes Activity One (Two), she earns utility V. An
+individual who chooses the activity that does not match her taste
+earns zero utility. In a standard model of utility maximization,
+each person would engage in the activity corresponding to her
+taste.
+We next construct identity-based preferences. We suppose
+that there are two social categories, Green and Red. We assume
+the simplest division of the population into categories; all persons
+think of themselves and others as Green.23 We add simple
+behavioral prescriptions: a Green should engage in Activity One
+(in contrast to Reds who engage in Activity Two). Anyone who
+chooses Activity Two is not a ‘‘true’’ Green—she would lose her
+22. Romer [1994] has considered the possibility that politicians can manipu-
+late voters’ emotions, in particular their ‘‘anger,’’ and thereby affect political
+outcomes.
+23. Of course, it is possible that not everyone thinks of herself as Green. We
+discuss the possibility of different identities and other extensions to the model
+below.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+728
+QUARTERLY JOURNAL OF ECONOMICS
+Green identity. This loss in identity entails a reduction in utility of
+Is, where the subscript s stands for ‘‘self.’’ In addition, there are
+identity externalities. If an i and j are paired, Activity Two on the
+part of i diminishes j’s Green identity. j has a loss in utility Io,
+where the subscript o denotes ‘‘other.’’ After i has committed
+Activity Two, j may ‘‘respond.’’ The response restores j’s identity
+at a cost c, while entailing a loss to i in amount L.24
+Figure I represents an interaction between an individual
+with a taste for Activity One (‘‘Person One’’) and an individual
+with a taste for Activity Two (‘‘Person Two’’). Person One chooses
+an activity first.25
+This model can be expressed by ideas central to the psycho-
+dynamic theory of personality, found in almost any psychology
+text.26 In personality development, psychologists agree on the
+importance of internalization of rules for behavior. Freud called
+this process the development of the superego. Modern scholars
+disagree with Freud on the importance of psychosexual factors in
+an individual’s development, but they agree on the importance of
+anxiety that a person experiences when she violates her internal-
+ized rules. One’s identity, or ego, or self, must be constantly
+‘‘defended against anxiety in order to limit disruption and main-
+tain a sense of unity’’ [Thomas 1996, p. 284]. In terms of our model,
+Person Two’s internalization of prescriptions causes her to suffer a
+loss in utility of Is if she chooses Activity Two. To avoid this
+anxiety, she may refrain from that activity.
+Identification is a critical part of this internalization process:
+a person learns a set of values (prescriptions) such that her
+actions should conform with the behavior of some people and
+contrast with that of others. If Person One has internalized
+prescriptions via such identifications, another person’s violation
+of the prescriptions will cause anxiety for Person One.27 In our
+model, this anxiety is modeled as a loss in utility of Io. Person
+One’s response, in our language, restores her identity, and in
+terms of the psychology textbook relieves her anxiety and main-
+24. In Rabin’s [1993] theory of fairness, agents are willing to pay to be ‘‘mean’’
+to those who are ‘‘mean’’ to them. The similarity is probably no coincidence. A likely
+reason for such a response is preservation of self-image.
+25. Since Person One never chooses Activity Two in a subgame perfect
+equilibrium, we suppress this branch of the tree.
+26. See, for example, Gleitman [1996, Chapter 17], Thomas [1996], and
+Breger [1974].
+27. The violation arouses emotions that Person One has repressed in the
+process of internalizing the behavioral rules. The psychoanalytic theory, then,
+suggests unconscious motivations for behavior.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 729
+FIGURE I
+Game Tree of Interaction between Person One and Person Two
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+730
+QUARTERLY JOURNAL OF ECONOMICS
+tains her sense of unity. Person One no longer loses Io, although
+she does incur c.28
+B. Equilibrium Outcomes
+There are four possible subgame perfect outcomes of the game
+in Figure I.
+(i) Person One deters Person Two from engaging in Activity
+Two, when c Io and Is V Is L.
+(ii) Person One responds but does not deter Person Two from
+engaging in Activity Two, when c Io and Is L V.
+(iii) Person One does not respond, and Person Two engages in
+Activity Two, when c Io and Is V.
+(iv) Person Two does not engage in Activity Two regardless of
+Person One’s response, when Is V.
+This simple model affords three lessons. First, as discussed
+earlier, the model establishes the connection between economic
+interactions and the psychology of identity, especially the implica-
+tions of identification. Second, the model allows a comparative
+static analysis on identity-related parameters. Finally, the elemen-
+tary assumptions of the model suggest extensions that entail
+greater realism and further implications of identity for economic
+interaction.
+C. Comparative Statics
+Comparative statics show how traditional economic policies
+can affect behavior in this setting. For example, a ‘‘tax’’ T on the
+response to Activity Two will affect the equilibrium outcome in
+case (i). For a sufficiently high tax (T Io c), Person One’s
+response to Activity Two is no longer credible, and Person Two will
+switch from Activity One to Activity Two. This policy benefits
+Person Two at the expense of Person One. Total utility changes
+from V to 2V Is Io, a positive change if V exceeds Is Io.29 A
+policy with the opposite effect is a tax on Activity Two itself. This
+policy would benefit Person One at the expense of Person Two in
+cases (ii) and (iii). In the first (second) case, a tax in excess of V
+Is L (V Is) induces Person Two to desist from Activity Two.
+This policy would increase total utility, in the first case, if V
+28. Another basis for the model is the psychology of cognitive dissonance.
+When Person Two engages in Activity Two, she challenges the validity of Person
+One’s beliefs, and Person One suffers from cognitive dissonance. To remove this
+dissonance, Person One may act against Person Two.
+29. Of course, such a ‘‘welfare analysis’’ is subject to the usual caveats
+concerning interpersonal comparisons and the measurability of utility.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 731
+c Is L, and, in the second case, if V Io Is. Finally, policies
+may change the prescriptions themselves. A rhetorical campaign,
+for example, may make Activity Two more loathsome to Greens,
+leading to higher values of Is and Io and greater conformity to the
+prescriptions. Of course, a different campaign could have the
+opposite effect.
+These policies are identity examples of the conflict of the
+Paretian Liberal [Sen 1970]. It is not possible to protect Person
+One against the externalities caused by Person Two’s choice of
+Activity Two and at the same time protect Person Two from
+Person One’s response. There is a conflict between protecting
+individuals who engage in certain activities and suppressing
+these same activities that may cause others discomfort and
+anxiety.
+D. Extensions to the Model and the Definition of ‘‘Situations’’
+Different assumptions about identity, pairings, and informa-
+tion all yield potentially interesting extensions to the model. As in
+the basic model, individual behavior would depend on what
+sociologists would call the ‘‘situation’’—who is matched with
+whom and in what context.30 In the basic model, everyone shared
+the same identity and prescriptions, but there could be, more
+realistically, many identities among the population. Activities
+One and Two could have different meanings for different people.
+For example, by choosing Activity Two, a person could affirm her
+identity as a Red. People could also choose—more or less con-
+sciously—their identities as well as their activities. These choices
+could depend on the probability of different matchings, or situa-
+tions.31 We will explore this possibility below in our study of
+poverty and social exclusion.
+Furthermore, pairings need not be exogenous, nor tastes and
+prescriptions known. In fact, much conflict occurs because people
+with different prescriptions or identities come into contact. To
+avoid conflict and losses in utility, people may want to match with
+those who share the same identity or for whom actions have the
+same meaning. Thus, the matching process itself—the ‘‘situa-
+30. When an individual’s identity is associated with multiple social catego-
+ries, the ‘‘situation’’ could determine, for example, which categories are most
+salient.
+31. Choice could also depend on frequency of certain actions. Kuran [1998]
+considers ethnically symbolic activities in a model where people care about
+belonging to an ethnic group. When greater overall resources are devoted to an
+ethnic activity, an individual’s marginal utility from this activity can increase,
+leading to an ‘‘ethnification’’ cascade.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+732
+QUARTERLY JOURNAL OF ECONOMICS
+tions’’ in which agents find themselves—can be endogenous,
+driven by prescriptions and identities. We will see this outcome
+below in our first, and perhaps most obvious application.
+IV. IDENTITY , GENDER, AND ECONOMICS IN THE WORKPLACE
+An identity theory of gender in the workplace expands the
+economic analysis of occupational segregation. As recently as
+1970, two-thirds of the United States’ female or male labor force
+would have had to switch jobs to achieve occupational parity. This
+measure of occupational segregation remained virtually un-
+changed since the beginning of the century. Yet, in twenty years,
+from 1970 to 1990, this figure declined to 53 percent.32 An identity
+model points to changes in societal notions of male and female as a
+major cause.
+The model we propose captures the ‘‘auras of gender’’ [Goldin
+1990a] that have pervaded the labor market. Occupations are
+associated with the social categories ‘‘man’’ and ‘‘woman,’’ and
+individual payoffs from different types of work reflect these
+gender associations. This model can explain patterns of occupa-
+tional segregation that have eluded previous models. It also
+directly captures the consequences of the women’s movement and
+affords a new economic interpretation of sex discrimination law.
+Identity also provides a microfoundation for earlier models.
+The ‘‘distaste’’ of men for working with women, as in the crudest
+adaptations of racial discrimination models [Becker 1971; Arrow
+1972], can be understood as due to loss in male identity when
+women work in a man’s job. Similarly women’s assumed lower
+desire for labor force participation (as in Mincer and Polachek
+[1974], Bulow and Summers [1986], and Lazear and Rosen [1990])
+can be understood as the result of their identity as homemakers.33
+A. The Model34
+There are two social categories, ‘‘men’’ and ‘‘women,’’ with
+prescriptions of appropriate activities for each. A firm wishes to
+32. See Goldin [1990a, Chapter 3] for historical measures of occupational
+segregation. See Blau, Simpson, and Anderson [1998], who use Census Bureau
+three-digit classifications of occupations, for 1970–1990 figures.
+33. In Bergmann [1974], male employers are averse to hiring women for
+particular jobs and may collude to keep women out of high paying occupations,
+reserving the gains for other males. In our theory, the source of occupational
+segregation is empirically motivated—the maintenance of gender identity on the
+part of employees.
+34. An appendix with complete specification of the model is available from the
+authors upon request.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 733
+hire labor to perform a task. By the initial prescriptions, this task
+is appropriate only for men; it is a ‘‘man’s job.’’ Relative to a
+‘‘woman’s job,’’ women lose identity in amount Is by performing
+such work.35 In this situation, male coworkers suffer a loss Io.36
+They may relieve their anxiety by taking action against women
+coworkers,37 reducing everyone’s productivity.
+To avoid these productivity losses, the firm may change
+gender-job associations at a cost. The firm is likely to create a
+‘‘woman’s job’’ alongside the ‘‘man’s job,’’ rather than render the
+whole task gender neutral, when a new job description can
+piggyback on existing notions of male and female.38 A well-known
+historical example illustrates. In the nineteenth century, Horace
+Mann (as Secretary of Education for Massachusetts) transformed
+elementary school teaching into a woman’s job, arguing that
+women were ‘‘more mild and gentle,’’ ‘‘of purer morals,’’ with
+‘‘stronger parental impulses.’’39 Secondary school teaching and
+school administration remained jobs for men.
+The model also indicates why gender-job associations may
+persist. If associations are sectorwide or economywide, and not
+firm-specific, perfectly competitive firms will underinvest in new
+job categories. Benefits would accrue to other firms. In the
+absence of market power or technological change, a shift in social
+attitudes and legal intervention would be necessary for changes in
+employment patterns.
+The model easily extends to the decision to participate in the
+labor force. If women’s identity is enhanced by work inside the
+home, they will have lower labor force attachment than men.
+Historically, female labor force participation rates, relative to
+male rates, have been both lower and more cyclically variable.
+B. Implications for Labor Market Outcomes
+This identity model explains employment patterns arising
+from associations between gender and type of work. These pat-
+35. Blau and Ferber [1986, Chapter 7] also discuss the ‘‘psychic costs’’
+incurred by a woman (man) working in a job requiring ‘‘masculine’’ (‘‘feminine’’)
+traits.
+36. Goldin [1990b] considers a model where men lose ‘‘status’’ when women
+work on their jobs because the jobs are revealed to be less difficult or physically
+demanding.
+37. We have already seen such emotions and behavior in Pierce’s [1995] law
+firm and Padavic’s [1991] power plant. Schultz [1998] relates a plethora of similar
+cases.
+38. A firm with market power will earn a further bonus from occupational
+segregation in the form of wage discrimination.
+39. See quotation of Mann in Sugg [1978, p. 74], and other Annual Reports by
+Mann.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+734
+QUARTERLY JOURNAL OF ECONOMICS
+terns go beyond what can be explained by women’s assumed lower
+labor force attachment as in Mincer and Polachek [1974], where
+women work in occupations that require little investment in
+firm-specific human capital.40
+In our model, women will dominate jobs whose requirements
+match construed female attributes and inferior social status; men
+eschew them. Historically, three occupations illustrate: secretar-
+ies (97.8 percent female in 197041) have often been called ‘‘office
+wives,’’ and elements of sexuality are inscribed in the working
+relationship (boss male, secretary female) [MacKinnon 1979;
+Pringle 1988]. Secretaries are expected to serve their bosses, with
+deference, and to be attentive to their personal needs [Davies
+1982; Kanter 1977; Pierce 1996]. Elementary school teachers
+(83.9 percent female), in contrast to secondary school teachers
+(49.6 percent female), are supposed to care for young children.
+Nurses (97.3 percent female) are supposed to be tender and care
+for patients, as well as be deferential to doctors [Fisher 1995;
+Williams 1989].
+In our model, women do not enter male professions because of
+gender associations. Historically, many male professions have
+required similar levels of education and training to female
+professions and could have been amenable to part-time and
+intermittent work. Contrast nursing and teaching with account-
+ing and law. All require college degrees and certification, and
+sometimes have tenure and experience-based pay. Only the very
+top of these professions have required continuity in employment
+and full-time work.
+Rhetoric surrounding job shifts from male to female further
+demonstrates the salience of gender-job associations. The recruit-
+ment of women into ‘‘men’s jobs’’ during World War II, for example,
+was accompanied by official propaganda and popular literature
+picturing women taking on factory work without loss of femininity
+[Milkman 1987; Honey 1984; Pierson 1986]. In addition, the jobs
+40. The empirical evidence for this human capital explanation is mixed (see
+Blau, Simpson, and Anderson [1998] for review). Other theories based on low
+workplace attachment of women include Lazear and Rosen [1990], where occupa-
+tional segregation is a form of statistical discrimination; workers in the male
+occupations, i.e., with high labor force attachment, are targets for promotion, and
+those in the female occupations are not. In Bulow and Summers [1986], primary-
+sector firms must pay women higher wage premiums to prevent them from
+shirking because women are more likely to quit their jobs. These firms, therefore,
+prefer hiring men to women.
+41. See Blau, Simpson, and Anderson [1998, Appendix A-1] for these and
+following figures. All figures here are for 1970.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 735
+were portrayed as temporary; only the wartime emergency ex-
+cused the violation of the usual gender prescriptions.
+C. Effects of the Women’s Movement
+The model gives a theoretical structure for how the women’s
+movement may have impacted the labor market. The movement’s
+goals included reshaping societal notions of femininity (and
+masculinity) and removing gender associations from tasks, both
+in the home and in the workplace. In the model, such changes
+would decrease women’s gains (men’s losses) in identity from
+homemaking, and decrease the identity loss Is of women (men)
+working in traditionally men’s (women’s) jobs, as well as the
+accompanying externalities Io. These shifts would increase wom-
+en’s labor force participation and lead to a convergence of male
+and female job tenure rates. More women (men) would work in
+previously male (female) jobs.
+All these outcomes are observed coincidental with and follow-
+ing the women’s movement.42 Gender-job associations diminished,
+reflected in changes in language (e.g., firemen became firefight-
+ers). In 1998 the median job tenure of employed women over 25
+was 0.4 years lower than that of men; in 1968 that gap had been
+3.3 years.43 Changes in sex composition within occupations ac-
+counted for the major share of decline in occupational segregation
+from 1970–1990 [Blau, Simpson, and Anderson, 1998]. Of the 45
+three-digit Census occupations that were 0.0 percent female in
+1970, only one (supervisors: brickmasons, stonemasons, and tile
+setters) was less than 1 percent female twenty years later.44 Many
+incursions of females into male-dominated professions were very
+large. Consider again accounting and law. In 1970 (1990) females
+were 24.6 (52.7) percent of auditors and accountants, and 4.5
+(24.5) percent of lawyers. Not only did the proportion of women in
+men’s jobs increase, but so did the proportion of men in women’s
+jobs (albeit much less dramatically).45 Of the triumvirate of
+42. The Feminine Mystique was published in 1963, and the National Organi-
+zation for Women was founded in 1966.
+43. 3.8 years for men versus 3.4 for women in 1998 [United States Depart-
+ment of Labor, 1998]; 7.1 years for men versus 3.8 for women in 1968. [Source:
+calculation from Table A, U. S. Department of Labor, Special Labor Force Report
+112, Job Tenure of Workers, January 1968.] The figures for the two years are not
+strictly comparable; in 1968 the question asked for the time elapsed since the
+beginning of the current job, in 1998 since the current employer. Median male job
+tenure has also been considerably affected by shifts in the age distribution of the
+workforce, both because of demographic shifts and also early retirement.
+44. Source: Blau, Simpson, and Anderson [1998, Appendix A-1].
+45. See Blau, Simpson, and Anderson [1998, Table 3 and Appendix A-1].
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+736
+QUARTERLY JOURNAL OF ECONOMICS
+explanations for such increases—technology, endowments, and
+tastes—elimination makes tastes the leading suspect, since there
+was no dramatic change in technology or endowments that would
+have caused such increased mixing on the job.46 Legal initiatives
+discussed next reflect such changes in tastes.
+D. Gender-Job Associations and Sex Discrimination Law
+Legal interpretations of sex discrimination correspond to
+earlier economic models as well as our own. Title VII of the Civil
+Rights Act of 1964 makes it unlawful for an employer to discrimi-
+nate ‘‘against any individual . . . with respect to . . . compensation,
+terms, conditions . . . of employment’’ or ‘‘to [adversely] limit,
+segregate, or classify his employees . . . because of . . . sex.’’47 At its
+most basic, this law prohibits a discriminatory exercise of ‘‘tastes’’
+against women (analogous to Becker [1971] and Arrow [1972]).
+Courts also interpret Title VII as outlawing statistical discrimina-
+tion by sex or criteria correlated with sex, even when women on
+average lack a desirable job qualification. Discriminatory hiring
+because of women’s presumed lower workplace attachment, as in
+Lazear and Rosen [1990], was precisely the issue addressed in
+Phillips v. Martin-Marietta.48
+Our model, where sex discrimination occurs because jobs
+have gender associations, corresponds to a wider interpretation of
+Title VII. This interpretation is at the forefront of current legal
+debate and is supported by a number of precedents. In Diaz v. Pan
+American World Airways,49 the Court outlawed sex bans in hiring.
+The airline originally pleaded for their prohibition of male flight
+attendants because women were better at ‘‘the nonmechanical
+aspects of the job.’’ But this association of gender with the job was
+disallowed on appeal since feminine traits were deemed irrelevant
+to the ‘‘primary function or services offered’’ (cited in MacKinnon
+[1979, p. 180]). Price Waterhouse v. Hopkins50 set a precedent for
+workers already hired. The plaintiff had been denied a partner-
+ship after negative evaluations for her masculine deportment.
+The Supreme Court ruled that ‘‘an employer who objects to
+46. Computers are used intensively in few of the occupations with major
+changes in mix.
+47. 42 U.S.C. §§ 2000e–2000e17 [1982], Sections 703(a)(1) and 703(a)(2).
+48. 442 F. 2d 385 (5th Cir. 1971), cert. denied, 404 U.S. 950 (1971). Griggs v.
+Duke Power, 401 U.S. 424 (1971), a race discrimination case, is an important
+precedent outlawing test results and other criteria correlated with race or gender
+as employment screens.
+49. 442 F.2d 385 (5th Cir.) cert. denied, 404 U. S. 950 (1971).
+50. 490 U. S. 228 (1989).
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 737
+aggressiveness in women but whose positions require this trait
+places women in an intolerable and impermissible Catch 22’’
+(cited in Wurzburg and Klonoff [1997, p. 182]). Cases have also
+involved harassment of women working in men’s jobs as, in the
+terminology of our model, male coworkers protect themselves
+from loss of identity Io. Berkman v. City of New York51 reinstated a
+firefighter who had been dismissed because of substandard work
+performance. The Court ruled that the interference and harass-
+ment by her male coworkers made it impossible for her to perform
+her job adequately [Schultz 1998, p. 1770]. This expansive inter-
+pretation of a ‘‘hostile work environment,’’ a category of sexual
+harassment which is in turn a category of sex discrimination, has
+been exceptional. Judges have viewed sexual desire as an essen-
+tial element of sexual harassment. However, Schultz [1998] and
+Franke [1995] argue that any harassment derived from gender
+prescriptions has discriminatory implications (as depicted in our
+model) and are thus violations of Title VII.
+V. IDENTITY AND THE ECONOMICS OF EXCLUSION AND POVERTY
+This section will consider identity and behavior in poor and
+socially excluded communities. In an adaptation of the previous
+model of Greens and Reds, people belonging to poor, socially
+excluded groups will choose their identity. Greens identify with
+the dominant culture, while those with Red identity reject it and
+the subordinate position assigned to those of their ‘‘race,’’ class, or
+ethnicity.52 From the point of view of those with Green identities,
+Reds are often making bad economic decisions; they might even be
+described as engaging in self-destructive behavior. Taking drugs,
+joining a gang, and becoming pregnant at a young age are possible
+signs of a Red identity. This aspect of behavior has not been
+explored in previous models, but it is implicit in Wilson’s account
+of black ghetto poverty [1987, 1996]. It also is implicit in every
+51. 580 F. Supp. 226 (E.D.N.Y. 1983), aff’d, 755 F. 2d 913 (2d Cir. 1985).
+Berkman followed the expansive view in McKinney v. Dole, 765 F. 2d 1129 (D.C.
+Cir. 1985), that ‘‘any harassment or unequal treatment of an employee or group of
+employees that would not occur but for the sex of the employee or employees may, if
+sufficiently patterned or pervasive, comprise an illegal condition of employment
+under Title VII’’ (cited in Schultz [1998, p. 1733]).
+52. Much literature on identity and social exclusion argues that dominant
+groups define themselves vis-a`-vis ‘‘other(s),’’ and members of the dominant
+(excluded) groups benefit (lose)—materially and psychologically—from the differ-
+entiation. For discussion of different approaches to the study of social difference
+and racism, see Wetherell [1996].
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+738
+QUARTERLY JOURNAL OF ECONOMICS
+study that finds significant dummy variables for ‘‘race,’’ after
+adjustment for other measures of socioeconomic status. The
+Green/Red model of this section offers an explanation for the
+significance of such dummy variables. Furthermore, it yields a
+less monolithic view of poverty than current economic theories
+that emphasize conformity (e.g., Akerlof [1997] and Brock and
+Durlauf [1995]).
+A. Motivation for Model
+Our model reflects the many ethnographic accounts of ‘‘oppo-
+sitional’’ identities in poor neighborhoods. MacLeod’s [1987] study
+of teenagers in a Boston area housing project, for example,
+contrasts the murderous and alcoholic Hallway Hangers to their
+obedient and athletic peers, the Brothers. In Learning to Labour
+Willis [1977] describes the antagonism between the unruly ‘‘lads’’
+and the dutiful ‘‘earholes’’ in a working-class English secondary
+school. Similarly, Whyte’s [1943] description of Boston’s Italian
+North End circa 1940 contrasts the Corner Boys to the College
+Boys. Yet earlier, turn-of-the century accounts of the Irish in the
+United States contrast the ‘‘lace curtain’’ Irish of poor districts to
+their neighbors (see, e.g., Miller [1985]).
+Our model further evokes the psychological effects of social
+exclusion in the colonial experience analyzed by Bhabha [1983]
+and Fanon [1967], and in the context of African-Americans in the
+United States by Anderson [1990], Baldwin [1962], Clark [1965],
+DuBois [1965], Frazier [1957], Hannerz [1969], Rainwater [1970],
+Wilson [1987, 1996], and others. In these settings, individuals
+from particular groups can never fully fit the ideal type, the ideal
+‘‘Green,’’ of the dominant culture. Some in excluded groups may
+try to ‘‘pass’’ or integrate with the dominant group, but they do so
+with ambivalence and limited success.53 A series of autobiogra-
+phies tells of the pain and anger of discovering that one is not
+really ‘‘Green.’’ Former New York Times editor Mel Watkins [1998]
+titles the chapter on his freshman year at Colgate as ‘‘stranger in
+a strange land.’’ Gandhi [1966], Fanon [1967], Fulwood [1996],
+Staples [1994], and Rodriguez [1982] all relate strikingly similar
+experiences of perceived or real rejection and alienation. This
+social exclusion may create a conflict: how to work within the
+dominant culture without betraying oneself. As Jill Nelson [1993,
+53. Indeed, the word passing itself is pejorative and evokes a penumbra of
+reactions to being other than one’s ‘‘true’’ self.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 739
+p. 10] explains her exhaustion after a long day of interviewing for
+a job at The Washington Post:
+I’ve also been doing the standard Negro balancing act when it comes to
+dealing with white folks, which involves sufficiently blurring the edges of my
+being so that they don’t feel intimidated, while simultaneously holding on to
+my integrity. There is a thin line between Uncle-Tomming and Mau-Mauing.
+To fall off that line can mean disaster. On one side lies employment and
+self-hatred; on the other, the equally dubious honor of unemployment with
+integrity.
+These reactions, it must be emphasized, reflect how dominant
+groups define themselves by the exclusion of others. The creation
+and evolution of such social differences are the subject of much
+historical research. Said [1978] documents the emergence of the
+Western idea of the ‘‘Oriental,’’ a concept that had significant
+implications for colonialism. In the United States Roediger [1991]
+and other historians show how workers of European descent in
+the nineteenth century increasingly were defined as ‘‘white.’’ Prior
+to Emancipation, this identity evoked the contrast between white
+freedom and African-American enslavement. In the model we
+construct, the key interaction is between such social differences
+and the adoption of oppositional identities by those in excluded
+groups.
+Lack of economic opportunity may also contribute to the
+choice of an oppositional identity. Wilson [1987, 1996] underscores
+the relation between the decline in remunerative unskilled jobs,
+the loss of self-respect by men who cannot support their families,
+and the rise in inner city crime and drug abuse. This process is
+illustrated in microcosm by ‘‘Richard’’ in Tally’s Corner [Liebow
+1967]. Unable to find decent-paying work, he abandoned his
+family and joined Tally’s group of idlers on the street corner. By
+adopting a different identity, Richard no longer suffered the guilt
+of a failed provider.54
+Red activities have negative pecuniary externalities. Rich-
+ard’s wife and children had to find alternative means of support.
+The prime goal of the ‘‘lads’’ in Willis’ secondary school was to get a
+‘‘laff,’’ through vandalism, picking fights, and returning drunk to
+school from the local pub. Running a school with lads is difficult.
+The situation corresponds to the externalities in Be´nabou’s [1993,
+1996] models of high schooling costs in poor neighborhoods.
+54. See Montgomery [1994] for an interpretation of Richard’s behavior in
+terms of cognitive dissonance.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+740
+QUARTERLY JOURNAL OF ECONOMICS
+Further externalities accrue from drug dealing, crime, and other
+‘‘pathological’’ behavior.
+In our model, there are also identity-based externalities. A
+Red is angered by a Green’s complicity with the dominant culture,
+while a Green is angered by a Red’s ‘‘breaking the rules.’’ Again
+consider Willis’ lads and earholes. As the lads define themselves in
+contrast to the earholes, the earholes define themselves in con-
+trast to the lads. The earholes are even more proestablishment
+than the teachers—feeling that the teachers should be stricter.
+The lads, in turn, bait the earholes. This situation is just one
+(relatively tame) example of how interaction between the two
+groups generates antagonism on both sides.
+B. Identity Model of Poverty and Social Exclusion
+As in the prototype model, there are two activities, One and
+Two. Activity One can be thought of as ‘‘working’’ and Activity Two
+as ‘‘not working.’’ There is a large community, normalized to size
+one, of individuals. The economic return to Activity One for
+individual i is vi which we assume is uniformly distributed
+between zero and one, to reflect heterogeneity in the population
+and to ensure interior solutions. The economic return to Activity
+Two is normalized to zero.
+As for identity, there are two social categories, Green and
+Red. A Green suffers a loss in identity r, representing the extent to
+which someone from this community is not accepted by the
+dominant group in society. Those with the less adaptive Red
+identity do not suffer this loss. Behavioral prescriptions say that
+Greens (Reds) should engage in Activity One (Two). Thus, a Green
+(Red) loses identity from Activity Two (One) in amount Is
+G(Is
+R).55
+Because Reds reject the dominant Green culture, they are also
+likely to have lower economic returns to Activity One than
+Greens.56 A Red individual i will only earn vi a from Activity
+One, as well as suffer the loss Is
+R. There are also identity
+externalities when Greens and Reds meet. A Green (Red) suffers a
+loss Io
+G(Io
+R). In addition, Reds who have chosen Activity Two
+55. We discuss below the possibility of a Red identity where individuals can
+both reject the dominant culture and at the same time do not lose Is
+R from Activity
+One.
+56. Wilson [1996, Chapter 5] documents the difficulties that employers
+perceive in hiring employees from the inner city. From the vantage point of our
+model, it does not matter whether the perceived problems, parameterized by a,
+reflect real differences in productivity or those that are merely imagined because of
+the mismatch of the employers’ and the employees’ attitudes.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 741
+impose a pecuniary externality k on those who have chosen
+Activity One.
+Each person i chooses an identity and activity, given the
+choices of everyone else in the community. We assume that people
+cannot modify their identity or activity for each individual
+encounter. Rather, individuals choose an identity and activity to
+maximize expected payoffs, given the probabilities of encounters
+with Greens who choose Activity One, Greens who choose Two,
+Reds who choose One, and Reds who choose Two.
+C. Equilibria and Interpretation
+Equilibria of this model show how social interaction within
+the community and social exclusion from the dominant group
+determine the prevalence of Red identities and Activity Two
+behavior.57 An All-Green Equilibrium (everyone is Green and
+engages in Activity One) exists, if and only if the loss in Green
+identity, r, from exclusion from the dominant group is smaller
+than the difficulty of being Red in a community of Greens, Io
+R.
+Figure II shows this condition in the area above the 45° line from
+the origin. For higher levels of r, equilibria must involve some in
+the community adopting a Red identity. The nonexistence of the
+All-Green equilibrium reveals a difference in the predictions of
+this model and previous models of behavior in poor neighbor-
+hoods. Here, social exclusion (r 0) will lead some people in the
+community to adopt an oppositional identity and Activity Two
+behavior, even in the absence of conformity-generating externali-
+ties (i.e., Io
+R Io
+G k 0).
+In a Mixed Equilibrium of our model, some in the community
+choose Activity One and a Green identity, but others choose
+Activity Two and Red identities. This equilibrium arises for
+intermediate levels of r (in the area between the two upward-
+sloping lines in Figure II).
+The equilibrium adoption of Red identities and Activity Two
+behavior captures the self-destructive behavior of the underclass
+central to sociological study, but contrary to standard economic
+thinking. Rainwater [1970, p. 3] summarized his classic study of
+ghetto poverty: ‘‘white cupidity creates structural conditions
+highly inimical to basic social adaptation to which Negroes adapt
+57. Full analysis of the model is available from the authors upon request. In
+the analysis we make the simplifying assumption that Is
+G k so that any-
+one who chooses a Green identity will choose Activity One. We also assume
+that all parameters are strictly positive and less than unity and that Is
+R a k 1.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+742
+QUARTERLY JOURNAL OF ECONOMICS
+FIGURE II
+Equilibria in Model of Poverty and Social Exclusion
+This figure shows ranges of parameter values for three different equilibria:
+All-Green where everyone is Green and chooses Activity One; Mixed where
+Greens choose Activity One and Reds choose Activity Two; All-Red where
+everyone is Red and some choose Activity One and others choose Activity Two.
+by social and personal responses which serve to sustain the
+individual in his punishing world but also to generate aggressive-
+ness toward the self and others which results in suffering directly
+inflicted by Negroes on themselves and on others.’’ While Activity
+One is maximizing to someone with a Green identity, it is not
+maximizing to someone with a Red identity. The ‘‘self-destructive’’
+Red behavior is not the result of individual ‘‘irrationality,’’ but
+instead derives from low economic endowments and a high degree
+of social exclusion.
+Comparative statics of the mixed equilibrium captures Wil-
+son’s [1987, 1996] analysis of ghetto poverty. An out-migration of
+the middle class (those with high returns vi in the model) will
+result in further adoption of Red identities among the remaining
+population. Also, when work disappears, there will be a downward
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 743
+shift in distribution of payoffs from Activity One. This shift will
+also increase the incidence of Activity Two and Red identities.
+In an All-Red Equilibrium, some individuals choose Activity
+One and conform with the dominant group in terms of economic
+behavior, but all choose an oppositional Red identity. This equilib-
+rium arises when a high loss from being Green in an all-Red
+community, Io
+G, complements high levels of social exclusion, r (in
+the area to the right of the vertical line in Figure II).58 This
+equilibrium is also achieved with a low value of Is
+R and, thus,
+provides an interpretation of social movements that may arise
+from exclusion. Some separatist leaders, such as Malcolm X and
+Louis Farrakhan, have advanced an oppositional Red identity but
+at the same time have tried to change associated prescriptions,
+resulting in a lower Is
+R. In these movements, Activity One does not
+imply complicity with the dominant group. Rather, self-restraint,
+education, and employment are a means for individual advance-
+ment and community liberation.
+D. Further Lessons from the Model
+The model and its solution also afford interpretations of
+policies designed to reduce poverty and the effects of social
+exclusion.
+First, the model indicates why residential Job Corps pro-
+grams may succeed while other training programs fail [Stanley,
+Katz, and Krueger 1998]. According to the model, taking trainees
+out of their neighborhoods would eliminate, at least for a time, the
+negative effects of interaction with those with Red identities.
+Moreover, being in a different location may reduce a trainee’s
+direct loss r from being Green and pursuing Activity One. That is,
+this loss may be both individual-specific and situational, and
+leaving a poor neighborhood is likely to generate a lower r than
+otherwise. In a somewhat controlled experiment, the U. S. govern-
+ment tried to save money with JOBSTART, which preserved many
+of the features of Job Corps except the expensive housing of
+trainees. Follow-up studies of JOBSTART show little or no
+improvement in employment or earnings.59
+58. It overlaps the regions of other equilibria because this condition is
+independent of Io
+R, unlike those for the above equilibria where a Red would suffer
+the loss from interacting with Greens.
+59. The Center for Employment and Training in San Jose was the one
+remarkable exception.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+744
+QUARTERLY JOURNAL OF ECONOMICS
+Second, the model affords an interpretation of different
+education initiatives for minority students. Like Job Corps, the
+Central Park East Secondary School (CPESS) in East Harlem
+may succeed because it separates Green students from Red
+students. Students, for example, must apply to the school, indicat-
+ing their and their parents’ willingness to adopt its rules (see
+Fliegel [1993] and Meier [1995] for this and other details).
+Another interpretation of CPESS and other successes (e.g., Comer
+[1980] in New Haven) parallels the logic of the all-Red equilibrium
+where some people nonetheless pursue Activity One. The schools
+take measures to reduce the loss in identity of Red students, Is
+R, in
+activities such as learning Standard English.60 Delpit’s [1995]
+award-winning book Other People’s Children proposes numerous
+ways to reduce the alienation that minority students may experi-
+ence in school.
+Finally, the model illuminates a set of issues in the affirma-
+tive action debate. Much of this debate concerns the success or
+failure of specific programs (see, e.g., Dickens and Kane [1996]).
+Yet, more is at stake. The rhetoric and symbolism of affirmative
+action may affect the level of social exclusion r. On the one hand,
+Loury [1995] argues that portraying African-Americans as vic-
+tims, a portrayal necessary to retain affirmative action programs,
+is costly to blacks. In terms of the model, such rhetoric will
+increase r and the adoption of Red identities. On the other hand,
+affirmative action will decrease r, to the extent it is seen as an
+apology for previous discrimination and an invitation for black
+admission to the dominant culture. Reversal of affirmative action
+would negate this effect. To cite a recent example, our analysis
+suggests that removing affirmative action admissions criteria at
+the University of California and University of Texas Law Schools
+could have behavioral implications that far exceed the impact on
+applicants.
+The identity model of exclusion, then, explains why legal
+equality may not be enough to eliminate racial disparities.61 If
+60. Ogbu [1997] and Delpit [1995] find that African-American students in
+poor neighborhoods may be ambivalent about learning Standard English, whose
+use may be construed as ‘‘acting white.’’
+61. We see this distinction in the different conclusions of two recent studies of
+U. S. race relations. Thernstrom and Thernstrom [1997] urge an end to affirmative
+action, making the case that attitudes of whites toward blacks as well as the legal
+opportunities for blacks have changed since The American Dilemma [Myrdal
+1944]. In contrast, Shipler [1997] points out the many ways in which African-
+Americans and whites feel uncomfortable with each other and how blacks are still
+seen as different and not fully accepted.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 745
+African-Americans choose to be Red because of exclusion and if
+whites perpetuate such exclusions, even in legal ways, there can
+be a permanent equilibrium of racial inequality. The negative
+externalities and their consequences, however, would disappear
+when the community is fully integrated into the dominant cul-
+ture, so that r a 0, and everyone in the community adopts a
+Green identity. This, of course, is the American ideal of the
+melting pot, or the new ideal of a mosaic where difference can be
+maintained within the dominant culture.
+VI. IDENTITY AND THE ECONOMICS OF THE HOUSEHOLD
+An identity model of the household, unlike previous models,
+predicts an asymmetric division of labor between husbands and
+wives. Theories based on comparative advantage (e.g., Becker
+[1965] and Mincer [1962]) predict that whoever works more
+outside the home will work less inside the home, whether it be the
+husband or the wife. Yet, the data we present below indicate a
+gender asymmetry. When a wife works more hours outside the
+home, she still undertakes a larger share of the housework.
+Hochschild’s [1990] study The Second Shift reveals the de-
+tails of such asymmetries. One of the couples in her study found
+an ingenious way to share the housework. ‘‘Evan Holt,’’ a furni-
+ture salesman, took care of the lower half of the house (i.e., the
+basement and his tools). His wife ‘‘Nancy,’’ a full-time licensed
+social worker, took care of the upper half. She took care of the
+child. He took care of the dog.
+Quantitative evidence from Hochschild’s sample and our data
+analysis suggest that the Holts conform to a national pattern.
+Figure III shows the low average of husbands’ share of housework
+and its low elasticity with respect to their share of outside work
+hours. The figure plots shares of housework reported by married
+men62 in the Panel Study of Income Dynamics,63 as computed from
+62. Men’s reports of housework shares matched almost exactly women’s
+reports in Preston’s [1997] study of 1700 scientists.
+63. The unit of observation is a couple-year for the years 1983 to 1992.
+Couples were included in a given year, if they were married, neither member was
+retired, neither member was disabled, the couple had positive work hours, positive
+earnings, and positive hours of housework. In addition, they were only included if
+there were complete data from both members on earnings, work hours, housework
+hours, and number of children. The final sample had slightly more than 29,000
+couple-years of observations. We define a husband’s share of housework, hswk, as
+his share of the total performed by the couple. Thus, we capture the division of
+labor even in households that hire outside workers. We estimate the following
+Tobit equation: hswk a i 1,2,3[b1ihi b2ihi
+2 b3ihi
+3 b4ihi
+4] error, where hi
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+746
+QUARTERLY JOURNAL OF ECONOMICS
+FIGURE III
+Husbands’ Share of Housework Hours versus Their Share of Outside Work Hours
+answers to the question(s): ‘‘About how much time do you (your
+wife) spend on housework in an average week? I mean time spent
+cooking, cleaning, and doing other work around the house?’’ The
+intent of the question was to exclude child care. The figure plots
+men’s share of housework as a fourth-order polynomial of their
+share of outside hours, for households by age of youngest child.
+When men do all the outside work, they contribute on average
+about 10 percent of housework. But as their share of outside work
+falls, their share of housework rises to no more than 37 percent. As
+shown in the figure the presence of children of different ages
+is the husband’s share of outside hours worked if in group i. The summation (i
+1,2,3) runs over three types of household: with no children or youngest child over
+age 13, with youngest child 0 to 5, and with youngest child 6 to 13. Controls were
+included for age of husband, and wife relative to population average, log of total
+income, and also total hours of housework. Results were robust to different
+specifications and estimators, and substitution of share of earnings for share of
+hours worked. The equations and confidence intervals are available upon request.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 747
+makes a small difference to the function.64 Similar results obtain
+when the independent variable is shares of income rather than
+shares of outside work hours.
+Existing theories do not predict this asymmetry. Consider the
+following variant based on comparative advantage. Husband and
+wife both have the same utility function, which is increasing in
+quantity of a household public good that derives from their joint
+labor.65 Utility is decreasing in own labor inputs in outside and
+home production.66 We assume equal bargaining power, so that
+each marriage partner enjoys the same level of utility.67 With this
+framework, returns to specialization explain the observed divi-
+sion of labor when a wife has a comparative advantage in home
+production. Women who put in less than half of the outside work
+hours put in more than half the housework, as seen in the
+right-hand side of the graph of Figure III. But this model is
+inconsistent with the left-hand side of the graph.
+Identity considerations can explain the high shares of house-
+work of wives who undertake a large share of outside work hours.
+Add to the above model two social categories, ‘‘men’’ and ‘‘women.’’
+Prescriptions dictate that ‘‘men’’ should not do ‘‘women’s work’’ in
+the home and ‘‘men’’ should earn more than their wives. Hochs-
+child’s interviews suggest that many men, and some women, hold
+these prescriptions. In the amended model, the husband loses
+identity when he does housework and when his wife earns more
+than half the household income. Equality of utility is restored
+when the wife undertakes more housework than her husband.
+Hochschild reports that in the ‘‘Tanagawa’’ household, for ex-
+ample, ‘‘Nina’’ earned more than half the family income, but she
+64. Hersch and Stratton [1994] use the PSID to study whether husbands’
+higher wage incomes account for their lower shares of housework. The estimation
+here, in contrast, evaluates the asymmetry in the relationship between husbands’
+share of income and their shares of housework, and wives’ shares of income and
+housework.
+65. The public goods aspect of a marriage follows Lundberg and Pollak [1993],
+where the contributions of each spouse are in ‘‘separate spheres’’ that reflect
+gender roles. The first bargaining models of the household are due to Manser and
+Brown [1980] and McElroy and Horney [1981].
+66. Utility of the wife is Uf Uf ( g,hf
+h,hf
+o), where g is the household public
+good, produced by both home and outside labor, hf
+h is the wife’s hours of house-
+work, and hf
+o is her outside work. The husband’s utility function is, similarly,
+Um Um( g,hm
+h ,hm
+o ), where Uf and Um are assumed to be the same functions.
+67. We assume that a household maximizes the sum of utilities subject to the
+condition Uf Um. When bargaining power derives from earning capabilities and
+control of financial resources, as assumed by Hersch and Stratton [1994] and
+others, it only reinforces the conclusion that whoever works more outside the home
+works less inside.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+748
+QUARTERLY JOURNAL OF ECONOMICS
+worked more than ‘‘Peter’’ at home to assuage his unease with the
+situation. Eventually, she quit her job.
+VII. CONCLUSION
+This paper considers how identity affects economic outcomes.
+Following major themes in psychology and sociology, identity in
+our models is based on social difference. A person’s sense of self is
+associated with different social categories and how people in these
+categories should behave. This simple extension of the utility
+function could greatly expand our understanding of economic
+outcomes. In a world of social difference, one of the most impor-
+tant economic decisions that an individual makes may be the type
+of person to be. Limits on this choice would also be critical
+determinants of economic behavior, opportunity, and well-being.
+Identity affects economic behavior in our models through four
+avenues. First, identity changes the payoffs from one’s own
+actions. We capture this possibility by a value Is in our models. In
+our study of gender in the workplace, for example, a woman
+working in a ‘‘man’s’’ job suffers a loss in utility, affecting the labor
+supply. Second, identity changes the payoffs of others’ actions. We
+capture this externality by a value Io in our models. A ‘‘Red’’ in our
+poverty model, for example, is harmed by a member of his own
+community who complies with the dominant culture. Third, the
+choice, or lack thereof, of different identities affects an individual’s
+economic behavior. In our poverty model, while individuals could
+choose between Green or Red, they could never be a ‘‘true’’ Green.
+The greater the extent of this social exclusion, the greater the
+possibility of equilibria in which individuals eschew remunerative
+activities. Finally, the social categories and behavioral prescrip-
+tions can be changed, affecting identity-based preferences. This
+possibility expanded the scope of employment policy in our model
+of gender in the workplace and of education policy in our study of
+social exclusion.
+This paper has only scratched the surface of the economic
+implications of identity. A first tack in future research would be
+continued analysis of particular settings. Identity is likely to
+affect economic outcomes, for example, in areas of political
+economy, organizational behavior, demography, the economics of
+language, violence, education, consumption and savings behavior,
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 749
+retirement decisions, and labor relations.68 As in this paper,
+models that incorporate well-documented existing social catego-
+ries and prescriptions could yield new results. A second tack in
+this agenda is comparative, examining identity across space and
+time.69 Researchers, for example, could consider why notions of
+‘‘class’’ or ‘‘race’’ vary across countries; why might gender and
+racial integration vary across industries; what might explain the
+rise and fall of ethnic tensions. Such comparative studies would
+be a fruitful way to explore the formation of identity-based
+preferences.70
+In peroration, this paper explores how to incorporate identity
+into economic models of behavior. Many standard psychological
+and sociological concepts—self-image, ideal type, in-group and
+out-group, social category, identification, anxiety, self-destruction,
+self-realization, situation—fit naturally in our framework, allow-
+ing an expanded analysis of economic outcomes. This framework
+is then perhaps one way to incorporate many different nonpecuni-
+ary motivations for behavior into economic reasoning, with consid-
+erable generality and a common theme.
+UNIVERSITY OF CALIFORNIA AT BERKELEY AND THE BROOKINGS INSTITUTION
+UNIVERSITY OF MARYLAND AT COLLEGE PARK
+REFERENCES
+Akerlof, George A., ‘‘The Economics of Caste and of the Rat Race and Other Woeful
+Tales,’’ Quarterly Journal of Economics, XC (November, 1976), 599–617.
+, ‘‘Social Distance and Social Decisions,’’ Econometrica, LXV (September
+1997), 1005–1027.
+Altenbaugh, Richard J., The Teacher’s Voice: A Social History of Teaching in
+Twentieth-Century America (London: The Falmer Press, 1992).
+Anderson, Elijah, StreetWise: Race, Class, and Change in an Urban Community
+(Chicago: University of Chicago Press, 1990).
+Andreoni, James, ‘‘Giving with Impure Altruism: Applications to Charity and
+Ricardian Equivalence,’’ Journal of Political Economy, XCVII (December
+1989), 1447–1458.
+68. See a previous version of the paper for short versions of many of these
+applications.
+69. We are grateful to an anonymous referee for this list of comparative
+studies.
+70. Some scholars have studied the formation of identity-based preferences
+from principles of optimization. Theories of evolutionary psychology, for example,
+posit that hostility toward ‘‘outsiders’’ might be inherent to human nature as a
+result of an evolutionary process; survival depends on cooperation with insiders
+and hostility toward outsiders. Another functional explanation of identity derives
+from social cognition theory: stereotypes summarize information and compensate
+for human beings’ limited cognitive abilities. (See Wetherell [1998, pp. 186–197]
+for review.) These theories, however, may find it difficult to accommodate the
+complexity of social categories and prescriptions and the variety of social catego-
+ries across societies and across time.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+750
+QUARTERLY JOURNAL OF ECONOMICS
+Arrow, Kenneth J., ‘‘Models of Job Discrimination’’ and ‘‘Some Mathematical
+Models of Race Discrimination in the Labor Market,’’ in Anthony H. Pascal,
+ed., Racial Discrimination in Economic Life (Lexington, MA: D. C. Heath,
+1972).
+Baldwin, James, The Fire Next Time (New York: The Dial Press, 1962).
+Becker, Gary S., ‘‘A Theory of the Allocation of Time,’’ Economic Journal, LXXV
+(September 1965), 493–517.
+, The Economics of Discrimination, second edition (Chicago: University of
+Chicago Press, 1971).
+Be´nabou, Roland, ‘‘Workings of a City: Location, Education, and Production,’’
+Quarterly Journal of Economics, CVIII (August 1993), 619–652.
+, ‘‘Heterogeneity, Stratification, and Growth: Macroeconomic Implications of
+Community Structure and School Finance,’’ American Economic Review,
+LXXXVI (June 1996), 584–609.
+Bergmann, Barbara R., ‘‘Occupational Segregation, Wages and Profits When
+Employers Discriminate by Race or Sex,’’ Eastern Economics Journal, I (1974),
+103–110.
+Bhabha, Homi, ‘‘Difference, Discrimination, and the Discourse of Colonialism,’’ in
+The Politics of Theory, F. Barker, ed. (London: Colchester, 1983).
+Blau, Francine D., and Marianne A. Ferber, The Economics of Women, Men, and
+Work (Englewood Cliffs, NJ, Prentice-Hall, 1986).
+Blau, Francine D., Patricia Simpson, and DeborahAnderson, ‘‘Continuing Progress?
+Trends in Occupational Segregation in the United States over the 1970’s and
+1980’s,’’ NBER Working Paper No. 6716, 1998.
+Bowles, Samuel, and Herbert Gintis, ‘‘Optimal Parochialism: The Dynamics of
+Trust and Exclusion in Communities,’’ mimeo, University of Massachusetts at
+Amherst, 1997.
+Breger, Louis, From Instinct to Identity: The Development of Personality (Engle-
+wood Cliffs, NJ: Prentice-Hall, 1974).
+Brock, William A., and Steven N. Durlauf, ‘‘Discrete Choice with Social Interac-
+tions I: Theory,’’ NBER Working Paper No. 5291, 1995.
+Brown, Roger W., Social Psychology: The Second Edition (New York: The Free
+Press, 1986).
+Bryk, Anthony S., Valerie E. Lee, and Peter B. Holland, Catholic Schools and the
+Common Good (Cambridge, MA: Harvard University Press, 1993).
+Bulow, Jeremy I., and Lawrence H. Summers, ‘‘A Theory of Dual Labor Markets
+withApplication to Industrial Policy, Discrimination and Keynesian Unemploy-
+ment,’’ Journal of Labor Economics, IV (July 1986), 376–415.
+Bumiller, Elisabeth, May You Be the Mother of a Hundred Sons: A Journey Among
+the Women of India (New York: Random House, 1990).
+Butterfield, Fox, All God’s Children: The Bosket Family and the American
+Tradition of Violence (New York: Avon Books, 1995).
+Clark, Kenneth, Dark Ghetto (New York: Harper & Row, 1965).
+Cole, Harold L., George J. Mailath, and Andrew Postlewaite, ‘‘Social Norms,
+Savings Behavior and Growth,’’ Journal of Political Economy, C (December
+1992), 1092–1125.
+Comer, James P., School Power: Implications of an Intervention Project (New York:
+The Free Press, 1980).
+Davies, Margery, Women’s Place Is at the Typewriter: Office Work and Office
+Workers, 1870–1930 (Philadelphia, PA: Temple University Press, 1982).
+Davis, Fred, The Nursing Profession: Five Sociological Essays (New York: John
+Wiley & Sons, 1966).
+de Grazia, Victoria, The Sex of Things: Gender and Consumption in Historical
+Perspective (Berkeley: University of California Press, 1996).
+Delpit, Lisa, Other People’s Children: Cultural Conflict in the Classroom (New
+York: The New Press, 1995).
+Dickens, William T., and Thomas J. Kane, ‘‘Racial and Ethnic Preference in
+College Admissions,’’ Brookings Policy Brief No. 9 (Washington, DC: The
+Brookings Institution, November 1996).
+DuBois, William E., The Souls of Black Folk (Greenwich, CT: Fawcett Publica-
+tions, 1965).
+Elster, Jon, The Cement of Society: A Study of Social Order (Cambridge: Cam-
+bridge University Press, 1989).
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 751
+Fanon, Frantz, Black Skin, White Masks (New York: Grove Press, 1967).
+Fisher, Sue, Nursing Wounds: Nurse Practitioners/Doctors/Women Patients/And
+the Negotiation of Meaning (New Brunswick, NJ: Rutgers University Press,
+1995).
+Fliegel, Seymour, Miracle in East Harlem: The Fight for Choice in Public
+Education (New York: Random House, 1993).
+Folbre, Nancy, Who Pays for the Kids: Gender and the Structures of Constraint
+(New York: Routledge, 1994).
+Franke, Katherine M., ‘‘The Central Mistake of Sex Discrimination Law: The
+Disaggregation of Sex from Gender,’’ University of Pennsylvania Law Review,
+CXLIV (November 1995), 1–99.
+Frazier, Franklin, The Black Bourgeoisie: The Rise of the New Middle Class in the
+United States (New York: The Free Press, 1957).
+Friedman, Milton, Essays in Positive Economics (Chicago: University of Chicago
+Press, 1953).
+Fulwood III, Sam, Waking from the Dream: My Life in the Black Middle Class (New
+York: Doubleday, 1996).
+Gandhi, Mohandas, Autobiography (London: Jonathon Cape, 1966).
+Gerson, Kathleen, Hard Choices: How Women Decide about Work, Career, and
+Motherhood (Berkeley, CA: University of California Press, 1986).
+Gleitman, Henry, Basic Psychology (New York: Norton, 1996).
+Goldin, Claudia, Understanding the Gender Gap: An Economic History of Ameri-
+can Women (New York: Oxford University Press, 1990a).
+, ‘‘A Pollution Theory of Discrimination,’’ mimeo, Harvard University, 1990b.
+Goodson, Ivor F., and Andy Hargreaves, Teachers’ Professional Lives (London: The
+Falmer Press, 1996).
+Hannerz, Ulf, Soulside: Inquiries into Ghetto Culture and Community (New York:
+Columbia University Press, 1969).
+Hersch, Joni, and Leslie S. Stratton, ‘‘Housework, Wages, and the Division of
+Housework Time for Employed Spouses,’’ American Economic Association
+Papers and Proceedings, LXXXIV (May 1994), 120–125.
+Hochschild, Arlie, with Anne Machung, The Second Shift (New York: Avon, 1990).
+Honey, Maureen, Creating Rosie the Riveter: Class, Gender, and Propaganda
+during World War II (Amherst: University of Massachusetts Press, 1984).
+Huang, Peter H., and Ho Mou Wu, ‘‘More Order without Law: A Theory of Social
+Norms and Organizational Cultures,’’ Journal of Law, Economics, & Organi-
+zation, X (October 1994), 390–406.
+Kandori, Michihiro, ‘‘Social Norms and Community Enforcement,’’ Review of
+Economic Studies, LXIX (January 1992), 63–80.
+Kanter, Rosabeth Moss, Men and Women of the Corporation (New York: Basic
+Books, 1977).
+Kevane, Michael, ‘‘Can There Be an ‘Identity Economics’?’’ mimeo, Harvard
+Academy for International and Area Studies, 1994.
+Khatibi, Abdelkebir, La Blessure du Nom Propre (Paris: Denoe ¨l, 1986).
+Khattab, Hind, ‘‘Women’s Perceptions of Sexuality in Rural Giza,’’ Reproductive
+Health Working Group, The Population Council, Monographs in Reproductive
+Health No. 1, 1996.
+Kuran, Timur, ‘‘Ethnic Norms and Their Transformation through Reputation
+Cascades,’’ Journal of Legal Studies, XXVII (Summer 1998, Part 2), 623–659.
+Landa, Janet T., Trust, Ethnicity, and Identity: Beyond the New Institutional
+Economics of Trading Networks (Ann Arbor: University of Michigan Press,
+1994).
+Lazear, Edward P., and Sherwin Rosen, ‘‘Male-Female Wage Differentials in Job
+Ladders,’’ Journal of Labor Economics, VIII (January 1990), S106–S123.
+Levine, Judith A., ‘‘It’s a Man’s Job, or So They Say: The Production of Sex
+Segregation in Occupations,’’ mimeo, Department of Sociology, Northwestern
+University, 1995.
+Liebow, Elliott, Tally’s Corner: A Study of Negro Streetcorner Men (Boston:
+Little-Brown, 1967).
+Loewenstein, George, ‘‘Because It Is There: The Challenge of Mountaineering . . .
+for Utility Theory,’’ mimeo, Carnegie Mellon University, 1998.
+Loury, Glenn C., One by One from the Inside Out (New York: The Free Press, 1995).
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+752
+QUARTERLY JOURNAL OF ECONOMICS
+Lundberg, Shelly, and Robert A. Pollak, ‘‘Separate Spheres Bargaining and the
+Marriage Market,’’ Journal of Political Economy, CI (December 1993), 988–
+1010.
+MacKinnon, Catharine A., Sexual Harassment of Working Women (New Haven,
+CT: Yale University Press, 1979).
+MacLeod, Jay, Ain’t No Makin’ It: Leveled Aspirations in a Low-Income Neighbor-
+hood (Boulder, CO: Westview Press, 1987).
+Manser, Marilyn, and Murray Brown, ‘‘Marriage and Household Decision Making:
+A Bargaining Analysis,’’ International Economic Review, XXI (February 1980),
+31–44.
+Mason, Karen Oppenheim, ‘‘Commentary: Strober’s Theory of Occupational Sex
+Segregation,’’ Chapter 9 in Barbara Reskin, ed., Sex Segregation in the
+Workplace (Washington, DC: National Academy Press, 1984).
+McElroy, Marjorie B., and Mary Jean Horney, ‘‘Nash Bargained Household
+Decisions,’’ International Economic Review, XXII (June 1981), 559–583.
+Meier, Deborah, The Power of Their Ideas: Lessons for America from a Small
+School in Harlem (Boston, MA: Beacon Press, 1995).
+Milkman, Ruth, Gender at Work: The Dynamics of Job Segregation by Sex during
+World War II (Urbana: University of Illinois Press, 1987).
+Miller, Kerby A., ‘‘Assimilation and Alienation: Irish Emigrants’ Responses to
+Industrial America,’’ in P. J. Drudy, ed., The Irish in America: Emigration,
+Assimilation and Impact (Cambridge, UK: Cambridge University Press,
+1985).
+Mincer, Jacob, and Solomon Polachek, ‘‘Family Investments in Human Capital:
+Earnings of Women,’’ Journal of Political Economy, LXXXII (March 1974),
+S76–S108.
+Mincer, Jacob, ‘‘Labor Force Participation of Married Women: A Study of Labor
+Supply,’’ in Aspects of Labor Economics, Conference No. 14 of the Universities-
+National Bureau Committee for Economic Research (Princeton, NJ: Princeton
+University Press, 1962).
+Montgomery, James D., ‘‘Revisiting Tally’s Corner: Mainstream Norms, Cognitive
+Dissonance and Underclass Behavior,’’ Rationality and Society, VI (1994),
+462–488.
+, ‘‘Towards a Role-Theoretic Conception of Embeddedness,’’ mimeo, London
+School of Economics, 1997.
+Mottus, Jane E., New York Nightingales: The Emergence of the Nursing Profession
+at Bellevue and New York Hospital 1850–1920 (Ann Arbor: University of
+Michigan Press, 1981).
+Myrdal, Gunnar, An American Dilemma: The Negro Problem and American
+Democracy (New York: Harper and Row, 1944).
+Nelson, Jill, Volunteer Slavery: An Authentic Negro Experience (New York:
+Penguin, 1993).
+Nisbett, Richard E., and Dov Cohen, Culture of Honor: The Psychology of Violence
+in the South (Boulder, CO: Westview Press, 1996).
+Norton, Anne, Reflections on Political Identity (Baltimore, MD: The Johns Hopkins
+University Press, 1988).
+Ogbu, John U., ‘‘Beyond Language: Ebonics, Proper English and Identity in a
+Black American Speech Community,’’ mimeo, University of California at
+Berkeley, Department of Anthropology, 1997.
+Okuno-Fujiwara, M., and Andrew Postlewaite, ‘‘Social Norms and Random
+Matching Games,’’ Games and Economic Behavior, IX (April 1995), 79–109.
+Padavic, Irene, ‘‘The Re-Creation of Gender in a Male Workplace,’’ Symbolic
+Interaction, XIV (1991), 279–294.
+Pierce, Jennifer, Gender Trials: Emotional Lives in Contemporary Law Firms
+(Berkeley: University of California Press, 1995).
+Pierson, Ruth Roach, They’re Still Women After All: The Second World War and
+Canadian Womanhood (Toronto: McClelland and Stewart, 1989).
+Preston, Anne, ‘‘Sex, Kids, and Commitment to the Workplace: Employers,
+Employees, and the Mommy Track,’’ Russell Sage Foundation Working Paper
+No. 123, 1997.
+Pringle, Rosemary, Secretaries Talk: Sexuality, Power and Work (New York: Verso,
+1988).
+Rabin, Matthew, ‘‘Incorporating Fairness into Game Theory and Economics,’’
+American Economic Review, LXXXIII (December 1993), 1281–1302.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from
+ECONOMICS AND IDENTITY 753
+Rainwater, Lee, Behind Ghetto Walls: Black Families in a Federal Slum (Chicago,
+IL: Aldine, 1970).
+Reskin, Barbara, and Patricia Roos, eds., Job Queues, Gender Queues: Explaining
+Women’s Inroads Into Male Occupations (Philadelphia, PA: Temple University
+Press, 1990).
+Rodriguez, Richard, Hunger of Memory: The Education of Richard Rodriguez (New
+York: Bantam, 1982).
+Roediger, David R., The Wages of Whiteness (New York: Verso Press, 1991).
+Romer, Paul M., ‘‘Preferences, Promises, and the Politics of Enlightenment,’’
+mimeo, University of California at Berkeley, December, 1994.
+Sachs, Susan, ‘‘Muslim Schools in U. S. a Voice for Identity,’’ The New York Times,
+November 10, 1998, A1.
+Said, Edward W., Orientalism (New York: Random House, 1978).
+Sanday, Peggy Reeves, Fraternity Gang Rape: Sex, Brotherhood, and Privilege on
+Campus (New York: New York University Press, 1990).
+Schultz, Vicki, ‘‘Reconceptualizing Sexual Harassment,’’ Yale Law Journal, CVII
+(April 1998), 1683–1805.
+Sen, Amartya K., ‘‘The Impossibility of a Paretian Liberal,’’ Journal of Political
+Economy, LXXVIII (January 1970), 152–157.
+, ‘‘Goals, Commitment, and Identity,’’ Journal of Law, Economics, and
+Organization, I (Fall 1985), 341–355.
+, ‘‘Maximization and the Act of Choice,’’ Econometrica, LXV (July 1997),
+745–779.
+Shipler, David, A Country of Strangers: Blacks and Whites in America (New York:
+Knopf, 1997).
+Stanley, Marcus, Lawrence Katz, and Alan Krueger, ‘‘Impacts of Employment
+Programs: The American Experience,’’ mimeo, Harvard University, 1998.
+Staples, Brent, Parallel Time: Growing Up in Black and White (New York:
+Pantheon, 1994).
+Stinnett, T. M., Professional Problems of Teachers (New York: Macmillan, 1968).
+Strober, Myra, ‘‘Toward a General Theory of Occupational Sex Segregation: The
+Case of Public School Teaching,’’ Chapter 8 in Barbara Reskin, ed., Sex
+Segregation in the Workplace (Washington: National Academy Press, 1984).
+Sugg, Redding S., Motherteacher: The Feminization of American Education
+(Charlottesville: University of Virginia Press, 1978).
+Suskind, Ron, A Hope in the Unseen (New York: Broadway, 1998).
+Tajfel, Henri, and John Turner, ‘‘An Integrative Theory of Intergroup Conflict,’’ in
+The Social Psychology of Intergroup Relations, William G. Austin and Stephen
+Worchel, eds. (Monterey, CA: Wadsworth, 1979).
+Thernstrom, Stephan, and Abigail Thernstrom, America in Black and White: One
+Nation, Indivisible (New York: Simon and Schuster, 1997).
+Thomas, Kerry, ‘‘The Defensive Self:APsychodynamic Perspective,’’in Understand-
+ing the Self, Richard Stevens, ed. (Thousand Oaks, CA: SAGE Publications,
+1996).
+Turow, Scott, One L (New York: Warner Books, 1977).
+Watkins, Mel, Dancing With Strangers: A Memoir (New York: Simon and Schuster,
+1998).
+Wetherell, Margaret, ‘‘Group Conflict and the Social Psychology of Racism,’’ in
+Group Conflict and the Psychology of Racism, Margaret Wetherell, ed.
+(Thousand Oaks, CA: SAGE Publications, 1996).
+Whyte, William Foote, Street Corner Society: The Social Structure of an Italian
+Slum (Chicago: University of Chicago Press, 1943).
+Williams, Christine, Gender Differences at Work: Women and Men in Nontradi-
+tional Occupations (Berkeley: University of California Press, 1989).
+Willis, Paul R., Learning to Labour: How Working Class Kids Get Working Class
+Jobs (Westmead, Farnborough, Hants., UK: Saxon House, 1977).
+Wilson, William J., The Truly Disadvantaged (Chicago, IL: University of Chicago
+Press, 1987).
+, When Work Disappears: The World of the New Urban Poor (New York: Knopf,
+1996).
+Wurzburg, Lynne A., and Robert H. Klonoff, in Hope Landrine and Elizabeth A.
+Klonoff, eds. Discrimination Against Women: Prevalence, Consequences, Rem-
+edies, (Thousand Oaks, CA: SAGE Publications, 1997), pp. 175–195.
+at Wofford College, Sandor Teszler Library on August 30, 2013 http://qje.oxfordjournals.org/ Downloaded from

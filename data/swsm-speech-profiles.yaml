@@ -1,0 +1,869 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# SWSM SPEECH PROFILES
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Profile für gesprochene Sprache - Präsentationen, Vorträge, Podcasts, etc.
+#
+# Gesprochene Sprache unterscheidet sich fundamental von geschriebener:
+# - Kürzere Sätze (kognitive Last für Zuhörer)
+# - Mehr Wiederholung (keine Rückspul-Möglichkeit)
+# - Prosodische Elemente (Tempo, Pausen, Betonung)
+# - Füllwörter und Diskursmarker
+# - Interaktivität (rhetorische Fragen, Publikumsansprache)
+#
+# Verwendung:
+#   generate_speech(content, genre="keynote", speaker="fehr")
+#   generate_transcript(audio, output="speech_profile")
+#
+# Referenz: Appendix SW (METHOD-SWSM)
+# ═══════════════════════════════════════════════════════════════════════════
+
+metadata:
+  version: "1.0.0"
+  created: "2026-01-29"
+  description: "SWSM Speech Profiles - Spoken Language Parameters"
+  ssot: "appendices/SW_METHOD-SWSM_scientific_writing_structure_model.tex"
+  related:
+    genre_profiles: "data/swsm-genre-profiles.yaml"
+    author_profiles: "data/swsm-author-profiles.yaml"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SPEECH PARAMETER SCHEMA
+# ═══════════════════════════════════════════════════════════════════════════
+
+parameter_schema:
+  description: "Parameter für gesprochene Sprache"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # θ_PROSODY: Prosodische Parameter
+  # ─────────────────────────────────────────────────────────────────────────
+  theta_prosody:
+    speaking_rate:
+      type: float
+      unit: words_per_minute
+      range: [80, 200]
+      description: "Sprechgeschwindigkeit"
+      typical_values:
+        slow_deliberate: 100
+        conversational: 130
+        presentation: 150
+        fast_excited: 180
+
+    pause_frequency:
+      type: float
+      unit: pauses_per_minute
+      description: "Pausen für Betonung/Verständnis"
+
+    pause_duration:
+      short:
+        type: float
+        unit: seconds
+        range: [0.1, 0.5]
+      long:
+        type: float
+        unit: seconds
+        range: [0.5, 3.0]
+
+    pitch_variation:
+      type: float
+      range: [0, 1]
+      description: "0=monoton, 1=stark variierend"
+
+    volume_variation:
+      type: float
+      range: [0, 1]
+      description: "Dynamik für Betonung"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # θ_FLUENCY: Flüssigkeits-Parameter
+  # ─────────────────────────────────────────────────────────────────────────
+  theta_fluency:
+    filler_frequency:
+      type: float
+      unit: per_minute
+      description: "ähm, also, na ja, etc."
+      target_range:
+        minimal: 0.5
+        natural: 2.0
+        excessive: 5.0
+
+    filler_types:
+      type: distribution
+      categories:
+        - filled_pause     # "ähm", "äh"
+        - discourse_marker # "also", "na ja", "quasi"
+        - hedging         # "sozusagen", "gewissermassen"
+        - intensifier     # "wirklich", "tatsächlich"
+
+    restart_frequency:
+      type: float
+      unit: per_minute
+      description: "Satzabbrüche und Neustarts"
+
+    self_correction:
+      type: float
+      unit: per_minute
+      description: "Korrekturen während des Sprechens"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # θ_STRUCTURE: Strukturelle Parameter für Rede
+  # ─────────────────────────────────────────────────────────────────────────
+  theta_structure:
+    sentence_length:
+      type: float
+      unit: words
+      range: [5, 20]
+      description: "Kürzer als geschrieben!"
+
+    repetition_rate:
+      type: float
+      range: [0, 1]
+      description: "Absichtliche Wiederholung für Betonung"
+
+    signposting_frequency:
+      type: float
+      unit: per_minute
+      description: "'Erstens...', 'Zum Schluss...'"
+
+    rhetorical_questions:
+      type: float
+      unit: per_minute
+      description: "Fragen an Publikum (ohne Antwort-Erwartung)"
+
+    audience_address:
+      type: float
+      unit: per_minute
+      description: "'Sie werden sich fragen...', 'Stellen Sie sich vor...'"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # θ_INTERACTION: Interaktions-Parameter
+  # ─────────────────────────────────────────────────────────────────────────
+  theta_interaction:
+    direct_address:
+      type: float
+      range: [0, 1]
+      description: "Direkte Ansprache des Publikums"
+
+    inclusive_we:
+      type: float
+      unit: per_100_words
+      description: "'Wir alle kennen...', 'Gemeinsam...'"
+
+    call_response:
+      type: boolean
+      description: "Interaktive Elemente einbauen?"
+
+    humor_frequency:
+      type: float
+      unit: per_minute
+      description: "Witz, Ironie, Anekdote"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SPEECH GENRE PROFILES
+# ═══════════════════════════════════════════════════════════════════════════
+
+speech_genres:
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ACADEMIC LECTURE
+  # ─────────────────────────────────────────────────────────────────────────
+  academic_lecture:
+    metadata:
+      name: "Academic Lecture"
+      description: "University lecture for students"
+      duration_minutes: [45, 90]
+      audience: "Students, graduate level"
+
+    theta_prosody:
+      speaking_rate: 130
+      pause_frequency: 8
+      pitch_variation: 0.4
+      volume_variation: 0.3
+
+    theta_fluency:
+      filler_frequency: 1.5
+      restart_frequency: 0.5
+
+    theta_structure:
+      sentence_length: 12
+      repetition_rate: 0.25
+      signposting_frequency: 2.0
+      rhetorical_questions: 1.5
+      audience_address: 0.5
+
+    theta_interaction:
+      direct_address: 0.3
+      inclusive_we: 2.0
+      call_response: false
+      humor_frequency: 0.3
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # KEYNOTE PRESENTATION
+  # ─────────────────────────────────────────────────────────────────────────
+  keynote:
+    metadata:
+      name: "Keynote Presentation"
+      description: "Conference keynote speech"
+      duration_minutes: [30, 60]
+      audience: "Mixed professionals"
+
+    theta_prosody:
+      speaking_rate: 140
+      pause_frequency: 10
+      pitch_variation: 0.6
+      volume_variation: 0.5
+
+    theta_fluency:
+      filler_frequency: 0.8
+      restart_frequency: 0.2
+
+    theta_structure:
+      sentence_length: 10
+      repetition_rate: 0.35
+      signposting_frequency: 3.0
+      rhetorical_questions: 2.5
+      audience_address: 1.5
+
+    theta_interaction:
+      direct_address: 0.6
+      inclusive_we: 4.0
+      call_response: true
+      humor_frequency: 0.8
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # TED-STYLE TALK
+  # ─────────────────────────────────────────────────────────────────────────
+  ted_talk:
+    metadata:
+      name: "TED-Style Talk"
+      description: "Inspiring public talk"
+      duration_minutes: [12, 18]
+      audience: "General public"
+
+    theta_prosody:
+      speaking_rate: 150
+      pause_frequency: 12
+      pitch_variation: 0.7
+      volume_variation: 0.6
+
+    theta_fluency:
+      filler_frequency: 0.3
+      restart_frequency: 0.1
+
+    theta_structure:
+      sentence_length: 8
+      repetition_rate: 0.40
+      signposting_frequency: 4.0
+      rhetorical_questions: 3.0
+      audience_address: 2.0
+
+    theta_interaction:
+      direct_address: 0.8
+      inclusive_we: 5.0
+      call_response: true
+      humor_frequency: 1.2
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # PODCAST INTERVIEW
+  # ─────────────────────────────────────────────────────────────────────────
+  podcast:
+    metadata:
+      name: "Podcast Interview"
+      description: "Conversational audio interview"
+      duration_minutes: [30, 90]
+      audience: "General interested"
+
+    theta_prosody:
+      speaking_rate: 145
+      pause_frequency: 6
+      pitch_variation: 0.5
+      volume_variation: 0.4
+
+    theta_fluency:
+      filler_frequency: 2.5
+      restart_frequency: 1.0
+
+    theta_structure:
+      sentence_length: 10
+      repetition_rate: 0.15
+      signposting_frequency: 1.0
+      rhetorical_questions: 1.0
+      audience_address: 0.3
+
+    theta_interaction:
+      direct_address: 0.2
+      inclusive_we: 2.5
+      call_response: false
+      humor_frequency: 0.5
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # BOARD PRESENTATION
+  # ─────────────────────────────────────────────────────────────────────────
+  board_presentation:
+    metadata:
+      name: "Board Presentation"
+      description: "Executive briefing"
+      duration_minutes: [15, 30]
+      audience: "C-Level executives"
+
+    theta_prosody:
+      speaking_rate: 125
+      pause_frequency: 12
+      pitch_variation: 0.3
+      volume_variation: 0.2
+
+    theta_fluency:
+      filler_frequency: 0.5
+      restart_frequency: 0.1
+
+    theta_structure:
+      sentence_length: 9
+      repetition_rate: 0.20
+      signposting_frequency: 4.0
+      rhetorical_questions: 0.5
+      audience_address: 0.8
+
+    theta_interaction:
+      direct_address: 0.4
+      inclusive_we: 3.0
+      call_response: false
+      humor_frequency: 0.1
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # POLITICAL SPEECH (Parteitag, Kundgebung, Wahlkampf)
+  # ─────────────────────────────────────────────────────────────────────────
+  political_speech:
+    metadata:
+      name: "Political Speech"
+      description: "Politische Rede (Parteitag, Kundgebung, Wahlkampf)"
+      duration_minutes: [10, 60]
+      audience: "Parteimitglieder, Wähler, Öffentlichkeit"
+
+    theta_prosody:
+      speaking_rate: 145
+      pause_frequency: 8
+      pitch_variation: 0.70
+      volume_variation: 0.65
+
+    theta_fluency:
+      filler_frequency: 0.8
+      restart_frequency: 0.3
+
+    theta_structure:
+      sentence_length: 8
+      repetition_rate: 0.45
+      signposting_frequency: 3.0
+      rhetorical_questions: 4.0
+      audience_address: 5.0
+
+    theta_interaction:
+      direct_address: 1.5
+      inclusive_we: 12.0
+      call_response: true
+      humor_frequency: 0.4
+
+    characteristics:
+      key_features:
+        - "Hohe emotionale Intensität"
+        - "Starke Wiederholung (Anaphern)"
+        - "Klare Freund-Feind-Rhetorik"
+        - "Appell an gemeinsame Werte"
+      typical_patterns:
+        - "Liebe Freundinnen und Freunde..."
+        - "Wir werden... Wir werden... Wir werden..."
+        - "Das ist UNSER Land!"
+        - "Gemeinsam schaffen wir das!"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # WORKSHOP FACILITATION
+  # ─────────────────────────────────────────────────────────────────────────
+  workshop:
+    metadata:
+      name: "Workshop Facilitation"
+      description: "Interactive workshop"
+      duration_minutes: [60, 240]
+      audience: "Participants"
+
+    theta_prosody:
+      speaking_rate: 140
+      pause_frequency: 8
+      pitch_variation: 0.5
+      volume_variation: 0.4
+
+    theta_fluency:
+      filler_frequency: 1.5
+      restart_frequency: 0.5
+
+    theta_structure:
+      sentence_length: 8
+      repetition_rate: 0.30
+      signposting_frequency: 5.0
+      rhetorical_questions: 2.0
+      audience_address: 3.0
+
+    theta_interaction:
+      direct_address: 0.8
+      inclusive_we: 6.0
+      call_response: true
+      humor_frequency: 0.6
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SPEAKER PROFILES
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Wie unterscheidet sich der Sprechstil vom Schreibstil?
+# - Fehr schreibt formal → spricht auch strukturiert, aber wärmer
+# - Thaler schreibt locker → spricht noch lockerer, mehr Humor
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+speaker_profiles:
+
+  fehr:
+    metadata:
+      name: "Ernst Fehr"
+      status: "ESTIMATED"
+      typical_contexts: ["academic_lecture", "keynote", "board_presentation"]
+      style_description: "Strukturiert, präzise, Schweizer Deutsch-Akzent, ruhig"
+
+    theta_prosody:
+      speaking_rate: 125
+      pause_frequency: 10
+      pitch_variation: 0.35
+      volume_variation: 0.25
+
+    theta_fluency:
+      filler_frequency: 1.0
+      filler_types:
+        filled_pause: 0.30
+        discourse_marker: 0.40
+        hedging: 0.20
+        intensifier: 0.10
+
+    theta_structure:
+      sentence_length: 14
+      repetition_rate: 0.20
+      signposting_frequency: 2.5
+      rhetorical_questions: 1.0
+
+    theta_interaction:
+      direct_address: 0.3
+      inclusive_we: 3.0
+      humor_frequency: 0.2
+
+    characteristics:
+      strengths:
+        - "Klare Struktur"
+        - "Präzise Formulierungen"
+        - "Ruhige Autorität"
+      patterns:
+        - "Beginnt mit Forschungsfrage"
+        - "Daten vor Interpretation"
+        - "Vorsichtige Schlussfolgerungen"
+
+  thaler:
+    metadata:
+      name: "Richard Thaler"
+      status: "ESTIMATED"
+      typical_contexts: ["ted_talk", "podcast", "keynote"]
+      style_description: "Locker, humorvoll, Storyteller, Chicagoer Akzent"
+
+    theta_prosody:
+      speaking_rate: 155
+      pause_frequency: 8
+      pitch_variation: 0.65
+      volume_variation: 0.55
+
+    theta_fluency:
+      filler_frequency: 1.5
+      filler_types:
+        filled_pause: 0.20
+        discourse_marker: 0.35
+        hedging: 0.15
+        intensifier: 0.30
+
+    theta_structure:
+      sentence_length: 9
+      repetition_rate: 0.35
+      signposting_frequency: 2.0
+      rhetorical_questions: 3.0
+
+    theta_interaction:
+      direct_address: 0.7
+      inclusive_we: 5.0
+      humor_frequency: 1.5
+
+    characteristics:
+      strengths:
+        - "Mitreissende Geschichten"
+        - "Einprägsame Pointen"
+        - "Selbstironie"
+      patterns:
+        - "Beginnt mit Anekdote"
+        - "Humor zur Auflockerung"
+        - "Praktische Takeaways"
+
+  kahneman:
+    metadata:
+      name: "Daniel Kahneman"
+      status: "ESTIMATED"
+      typical_contexts: ["academic_lecture", "ted_talk", "podcast"]
+      style_description: "Nachdenklich, methodisch, israelischer Akzent, warm"
+
+    theta_prosody:
+      speaking_rate: 120
+      pause_frequency: 12
+      pitch_variation: 0.45
+      volume_variation: 0.35
+
+    theta_fluency:
+      filler_frequency: 2.0
+      filler_types:
+        filled_pause: 0.35
+        discourse_marker: 0.30
+        hedging: 0.25
+        intensifier: 0.10
+
+    theta_structure:
+      sentence_length: 12
+      repetition_rate: 0.30
+      signposting_frequency: 2.0
+      rhetorical_questions: 2.0
+
+    theta_interaction:
+      direct_address: 0.5
+      inclusive_we: 4.0
+      humor_frequency: 0.4
+
+    characteristics:
+      strengths:
+        - "Tiefe Reflexion"
+        - "System 1/2 Analogien"
+        - "Persönliche Ehrlichkeit"
+      patterns:
+        - "Fragt 'Was denken Sie?'"
+        - "Gibt eigene Fehler zu"
+        - "Baut langsam auf"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ANDREAS BABLER - Politischer Redner (SPÖ)
+  # ─────────────────────────────────────────────────────────────────────────
+  babler:
+    metadata:
+      name: "Andreas Babler"
+      affiliation: "SPÖ (Sozialdemokratische Partei Österreichs)"
+      role: "Parteivorsitzender seit 2023"
+      status: "ESTIMATED"
+      typical_contexts: ["political_speech", "keynote", "podcast"]
+      style_description: "Leidenschaftlich, arbeiterverbunden, emotional, österreichischer Dialekt"
+      background: "Bürgermeister von Traiskirchen, Gewerkschafter"
+
+    theta_prosody:
+      speaking_rate: 155
+      pause_frequency: 6
+      pitch_variation: 0.75
+      volume_variation: 0.70
+      emphasis_frequency: 2.5
+      notes: "Steigert Tempo bei emotionalen Passagen, markante Pausen vor Schlüsselbegriffen"
+
+    theta_fluency:
+      filler_frequency: 1.2
+      filler_types:
+        filled_pause: 0.15        # Wenig "äh"
+        discourse_marker: 0.45    # "Also", "Ja", "Schauen Sie"
+        hedging: 0.10             # Wenig Abschwächung
+        intensifier: 0.30         # "Wirklich", "Absolut"
+      restart_frequency: 0.4
+      notes: "Relativ flüssig, gelegentliche Selbstkorrekturen bei komplexen Themen"
+
+    theta_structure:
+      sentence_length: 7
+      repetition_rate: 0.50
+      signposting_frequency: 3.5
+      rhetorical_questions: 4.5
+      audience_address: 6.0
+      anaphora_frequency: 3.0     # "Wir werden... Wir werden... Wir werden..."
+      tricolon_frequency: 2.0     # Dreigliedrige Aufzählungen
+      notes: "Sehr kurze, schlagkräftige Sätze. Starke Wiederholungsstrukturen."
+
+    theta_interaction:
+      direct_address: 2.0
+      inclusive_we: 15.0          # Extrem hoch - Solidaritäts-Fokus
+      humor_frequency: 0.3
+      applause_pause: 2.5         # Pausen für Applaus
+      call_response: true
+      anecdote_frequency: 1.5
+      notes: "Starke Publikumseinbindung, 'Liebe Freundinnen und Freunde'"
+
+    theta_vocabulary:
+      formality: 0.35             # Informell, volksnah
+      technical_density: 0.03    # Wenig Fachbegriffe
+      emotional_words: 0.12       # Hoch
+      value_words: 0.15           # "Gerechtigkeit", "Solidarität", "Würde"
+      dialect_markers: 0.08       # Österreichische Färbung
+
+    characteristics:
+      strengths:
+        - "Authentische Emotionalität"
+        - "Klare, einfache Sprache"
+        - "Starke Identifikation mit Arbeiterschaft"
+        - "Mitreissende Energie"
+        - "Einprägsame Wiederholungen"
+      weaknesses:
+        - "Kann zu emotional wirken"
+        - "Manchmal zu lange Reden"
+        - "Wenig differenzierte Argumentstruktur"
+      patterns:
+        - "Beginnt mit 'Liebe Freundinnen und Freunde'"
+        - "Dreigliedrige Steigerungen (Trikolon)"
+        - "Kontrastiert 'Wir' vs 'Die da oben'"
+        - "Endet mit Appell zur Einheit"
+        - "Verwendet persönliche Geschichten aus Traiskirchen"
+
+    signature_phrases:
+      opening:
+        - "Liebe Freundinnen und Freunde!"
+        - "Genossinnen und Genossen!"
+      emphasis:
+        - "Das muss uns klar sein!"
+        - "Und das sage ich ganz deutlich:"
+        - "Ohne Wenn und Aber!"
+      solidarity:
+        - "Gemeinsam sind wir stark!"
+        - "Schulter an Schulter!"
+        - "Das ist UNSERE Bewegung!"
+      contrast:
+        - "Während die einen... müssen die anderen..."
+        - "Die Frage ist nicht ob, sondern für wen!"
+      closing:
+        - "Glück auf!"
+        - "Freundschaft!"
+
+    comparison:
+      vs_fehr:
+        similarity: 0.25
+        difference: "Fehr: akademisch-strukturiert. Babler: emotional-populär."
+      vs_thaler:
+        similarity: 0.45
+        difference: "Beide storytelling-orientiert, aber Babler politischer, weniger humorvoll."
+      vs_kahneman:
+        similarity: 0.20
+        difference: "Kahneman: reflektiv-analytisch. Babler: aktionistisch-mobilisierend."
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # DONALD TRUMP - Politischer Redner (USA)
+  # ─────────────────────────────────────────────────────────────────────────
+  trump:
+    metadata:
+      name: "Donald Trump"
+      affiliation: "Republican Party (USA)"
+      role: "45. & 47. US-Präsident"
+      status: "ESTIMATED"
+      typical_contexts: ["political_speech", "rally", "press_conference"]
+      style_description: "Einfach, repetitiv, superlativ-reich, stream-of-consciousness"
+      linguistic_studies:
+        - "Flesch-Kincaid Grade Level: 4-6 (sehr einfach)"
+        - "Liu & Lei (2018): Linguistic analysis of Trump speeches"
+        - "Ahmadian et al. (2017): Grandiose narcissism in political language"
+
+    theta_prosody:
+      speaking_rate: 135
+      pause_frequency: 10
+      pitch_variation: 0.55
+      volume_variation: 0.60
+      emphasis_frequency: 3.5
+      notes: "Markante Betonungen auf Schlüsselwörtern, dramatische Pausen vor Pointen"
+
+    theta_fluency:
+      filler_frequency: 2.5
+      filler_types:
+        filled_pause: 0.15
+        discourse_marker: 0.25
+        hedging: 0.05             # Sehr wenig - spricht sehr sicher
+        intensifier: 0.55         # Extrem hoch - "very", "tremendously"
+      restart_frequency: 1.8     # Häufige Selbstunterbrechungen
+      tangent_frequency: 2.0     # Stream-of-consciousness Abschweifungen
+      notes: "Häufige Selbstunterbrechungen und Themenwechsel mid-sentence"
+
+    theta_structure:
+      sentence_length: 6
+      repetition_rate: 0.65      # Extrem hoch - Kernbotschaft wiederholen
+      signposting_frequency: 1.5
+      rhetorical_questions: 2.5
+      audience_address: 8.0
+      anaphora_frequency: 4.0    # "We will... We will... We will..."
+      tricolon_frequency: 3.0
+      list_structures: 4.0       # "Number one... Number two..."
+      notes: "Sehr kurze Sätze. Extreme Wiederholung. Einfache Struktur."
+
+    theta_interaction:
+      direct_address: 3.0
+      inclusive_we: 8.0
+      self_reference: 25.0       # Extrem hoch - "I", "me", "my"
+      humor_frequency: 0.8       # Meist auf Kosten anderer
+      applause_pause: 3.0
+      call_response: true
+      nickname_usage: 2.0        # "Crooked Hillary", "Sleepy Joe"
+      notes: "Starke Ich-Bezogenheit, Publikumsinteraktion, Spitznamen"
+
+    theta_vocabulary:
+      formality: 0.20            # Sehr informell
+      reading_level: 4.5         # 4th-5th grade (Flesch-Kincaid)
+      technical_density: 0.01    # Fast keine Fachbegriffe
+      superlative_frequency: 0.08  # "best", "greatest", "tremendous"
+      emotional_words: 0.10
+      negation_frequency: 0.06   # "disaster", "horrible", "terrible"
+      credibility_markers: 0.04  # "believe me", "frankly", "honestly"
+
+    characteristics:
+      strengths:
+        - "Extrem einfache, verständliche Sprache"
+        - "Hoher Wiedererkennungswert"
+        - "Starke emotionale Resonanz"
+        - "Einprägsame Slogans und Branding"
+        - "Effektive Publikumsinteraktion"
+      weaknesses:
+        - "Mangelnde inhaltliche Tiefe"
+        - "Faktische Inkonsistenzen"
+        - "Abschweifungen und Tangenten"
+        - "Polarisierende Rhetorik"
+      patterns:
+        - "Beginnt oft mit Selbstlob"
+        - "Superlative für alles ('the best', 'tremendous')"
+        - "Kontrast: 'Wir' vs 'Die' (Eliten, Medien, etc.)"
+        - "Wiederholung als Verstärkung"
+        - "Spitznamen für Gegner"
+        - "Abschweifungen mit 'by the way'"
+        - "Endet mit Slogan"
+
+    signature_phrases:
+      opening:
+        - "Thank you, thank you very much."
+        - "It's so great to be here."
+        - "We love you, [City]!"
+      superlatives:
+        - "The best. The absolute best."
+        - "Tremendous. Absolutely tremendous."
+        - "Nobody knows more about X than me."
+        - "Like you've never seen before."
+      credibility:
+        - "Believe me."
+        - "Frankly..."
+        - "To be honest with you..."
+        - "A lot of people are saying..."
+        - "Everyone knows it."
+      contrast:
+        - "They don't want you to know..."
+        - "The fake news media..."
+        - "The radical left..."
+      closing:
+        - "Make America Great Again!"
+        - "We will win, win, win!"
+        - "Thank you, I love you all!"
+
+    comparison:
+      vs_babler:
+        similarity: 0.55
+        difference: "Beide populistisch, aber Trump selbstbezogener, Babler kollektivistischer."
+      vs_fehr:
+        similarity: 0.10
+        difference: "Gegensätzliche Stile: einfach vs. komplex, emotional vs. analytisch."
+      vs_obama:
+        similarity: 0.25
+        difference: "Obama: eloquent, nuanciert. Trump: einfach, direkt, repetitiv."
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SPEECH VS WRITING COMPARISON
+# ═══════════════════════════════════════════════════════════════════════════
+
+speech_writing_comparison:
+  description: "Systematische Unterschiede Sprechen vs. Schreiben"
+
+  general_differences:
+    sentence_length:
+      writing: 16-24
+      speech: 8-14
+      reason: "Kognitive Last für Zuhörer"
+
+    repetition:
+      writing: 0.05
+      speech: 0.20-0.40
+      reason: "Keine Rückspul-Möglichkeit"
+
+    hedging:
+      writing: 0.08-0.15
+      speech: 0.03-0.08
+      reason: "Sprechende wirken sicherer"
+
+    first_person:
+      writing: 1-5
+      speech: 5-15
+      reason: "Mehr persönliche Verbindung"
+
+    formality:
+      writing: 0.70
+      speech: 0.45
+      reason: "Gesprochene Sprache ist informeller"
+
+  author_specific:
+    fehr:
+      writing_sentence_length: 16.2
+      speech_sentence_length: 14.0
+      delta: -2.2
+
+    thaler:
+      writing_sentence_length: 9.8
+      speech_sentence_length: 9.0
+      delta: -0.8
+
+    kahneman:
+      writing_sentence_length: 14.5
+      speech_sentence_length: 12.0
+      delta: -2.5
+
+# ═══════════════════════════════════════════════════════════════════════════
+# GENERATION GUIDELINES
+# ═══════════════════════════════════════════════════════════════════════════
+
+generation:
+  description: "Guidelines für Speech-Generierung"
+
+  oral_markers:
+    signposting:
+      - "Erstens..."
+      - "Zweitens..."
+      - "Zum Schluss..."
+      - "Kommen wir nun zu..."
+      - "Das bringt mich zu..."
+
+    audience_engagement:
+      - "Stellen Sie sich vor..."
+      - "Kennen Sie das?"
+      - "Was würden Sie tun?"
+      - "Hand aufs Herz..."
+
+    repetition_patterns:
+      - "X. Ich wiederhole: X."
+      - "Das ist wichtig, also nochmal: X."
+      - "X. Merken Sie sich das: X."
+
+    transitions:
+      - "Nun gut..."
+      - "Also..."
+      - "Schauen wir mal..."
+      - "Jetzt wird's interessant..."
+
+  avoid_in_speech:
+    - "cf."
+    - "ibid."
+    - "et al. (2024)"
+    - Lange eingebettete Relativsätze
+    - Komplexe Nominalisierungen
+    - Passiv-Ketten
+
+  formatting:
+    script_format:
+      pause_marker: "[PAUSE]"
+      emphasis_marker: "*word*"
+      slide_cue: "[SLIDE]"
+      gesture_cue: "[GESTURE: describe]"

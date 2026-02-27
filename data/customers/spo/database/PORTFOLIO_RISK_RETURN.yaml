@@ -1,0 +1,664 @@
+# ============================================================================
+# SPÖ INTERVENTION PORTFOLIO - RISK/RETURN ANALYSIS
+# ============================================================================
+# Projekt-ID: PRJ-SPO-2026-STRATEGIE
+# Erstellt: 2026-02-03
+# Version: 1.0
+#
+# METHODIK: EBF Portfolio Optimization (Markowitz + Komplementarität)
+# REFERENZ: Appendix B (CORE-HOW), Chapter 15 (Portfolio Theory)
+# ============================================================================
+
+metadata:
+  version: "1.0"
+  erstellt: "2026-02-03"
+  methodik: "EBF-IPO (Intervention Portfolio Optimization)"
+
+  # Grundannahmen
+  assumptions:
+    risk_free_rate: 0.0    # r_f = 0 (keine sichere Alternative)
+    time_horizon: "6 Monate"  # Legislaturperiode-Segment
+    rebalancing: "monatlich"
+
+# ============================================================================
+# EBENE 1: RISK-RETURN PROFILE PRO INTERVENTION
+# ============================================================================
+#
+# μ (mu):     Expected Return = Durchschnittlicher Impact [0-1]
+# σ (sigma):  Risk = Standardabweichung des Impacts [0-1]
+# β (beta):   Backfire Risk = Wahrscheinlichkeit negativer Reaktion [0-1]
+# ρ (rho):    Segment-Reichweite = Anteil Segmente mit positivem Impact [0-1]
+#
+# Sharpe Ratio = μ / σ (da r_f = 0)
+# Adjusted Return = μ × ρ × (1 - β)
+# ============================================================================
+
+interventions:
+
+  # --------------------------------------------------------------------------
+  # CLUSTER: SPITALSTOURISTEN
+  # --------------------------------------------------------------------------
+  INT-SPIT-001:
+    name: "Frame-Wettbewerb"
+    cluster_origin: "ANF-2026-01-27-001"
+
+    return_profile:
+      mu: 0.52              # 52% Impact (höchster im Cluster)
+      sigma: 0.15           # Moderate Unsicherheit
+      beta: 0.05            # Sehr niedriges Backfire-Risiko
+      rho: 0.85             # 85% der Segmente positiv
+
+    derived_metrics:
+      sharpe_ratio: 3.47    # μ/σ = 0.52/0.15
+      adjusted_return: 0.42 # μ × ρ × (1-β) = 0.52 × 0.85 × 0.95
+      risk_adjusted_rank: 1
+
+    segment_sensitivity:
+      wechselwaehler: { impact: 0.55, variance: 0.12 }
+      oevp_enttaeuschte: { impact: 0.60, variance: 0.10 }
+      fpoe_sympathisanten: { impact: 0.15, variance: 0.25 }
+      spoe_basis: { impact: 0.65, variance: 0.08 }
+      progressive: { impact: 0.45, variance: 0.15 }
+      politikverdrossene: { impact: 0.40, variance: 0.20 }
+
+  INT-SPIT-002:
+    name: "Medienvertrauen nutzen"
+    cluster_origin: "ANF-2026-01-27-001"
+
+    return_profile:
+      mu: 0.28
+      sigma: 0.18           # Höhere Unsicherheit (medienabhängig)
+      beta: 0.08
+      rho: 0.70
+
+    derived_metrics:
+      sharpe_ratio: 1.56
+      adjusted_return: 0.18
+      risk_adjusted_rank: 8
+
+  INT-SPIT-003:
+    name: "Soziale Ansteckung"
+    cluster_origin: "ANF-2026-01-27-001"
+
+    return_profile:
+      mu: 0.15
+      sigma: 0.22           # Hohe Unsicherheit (netzwerkabhängig)
+      beta: 0.03
+      rho: 0.75
+
+    derived_metrics:
+      sharpe_ratio: 0.68
+      adjusted_return: 0.11
+      risk_adjusted_rank: 14
+
+  INT-SPIT-004:
+    name: "Zahlen-Offensive"
+    cluster_origin: "ANF-2026-01-27-001"
+
+    return_profile:
+      mu: 0.05              # Fakten allein nur 5%!
+      sigma: 0.08
+      beta: 0.02
+      rho: 0.90
+
+    derived_metrics:
+      sharpe_ratio: 0.63
+      adjusted_return: 0.04
+      risk_adjusted_rank: 16
+
+    note: "NUR in Kombination mit Frame-Interventionen verwenden!"
+
+  # --------------------------------------------------------------------------
+  # CLUSTER: SOG (SOCIAL MEDIA)
+  # --------------------------------------------------------------------------
+  INT-SOG-001:
+    name: "Kinderschutz-Norm"
+    cluster_origin: "ANF-2026-01-30-001"
+
+    return_profile:
+      mu: 0.45
+      sigma: 0.10           # Sehr stabil (universelle Norm)
+      beta: 0.02
+      rho: 0.95             # Fast alle Segmente positiv
+
+    derived_metrics:
+      sharpe_ratio: 4.50    # Höchster Sharpe Ratio!
+      adjusted_return: 0.42
+      risk_adjusted_rank: 2
+
+  INT-SOG-002:
+    name: "Plattform-Verantwortung"
+    cluster_origin: "ANF-2026-01-30-001"
+
+    return_profile:
+      mu: 0.32
+      sigma: 0.14
+      beta: 0.10            # Leichtes Zensur-Frame-Risiko
+      rho: 0.80
+
+    derived_metrics:
+      sharpe_ratio: 2.29
+      adjusted_return: 0.23
+      risk_adjusted_rank: 6
+
+  INT-SOG-003:
+    name: "Ordnung-Frame"
+    cluster_origin: "ANF-2026-01-30-001"
+
+    return_profile:
+      mu: 0.15
+      sigma: 0.12
+      beta: 0.05
+      rho: 0.85
+
+    derived_metrics:
+      sharpe_ratio: 1.25
+      adjusted_return: 0.12
+      risk_adjusted_rank: 11
+
+    note: "Verstärkt andere INTs - Komplementarität beachten!"
+
+  INT-SOG-004:
+    name: "Autonomie-Frame für Jugend"
+    cluster_origin: "ANF-2026-01-30-001"
+
+    return_profile:
+      mu: 0.08
+      sigma: 0.25           # HOHE Unsicherheit bei Jugend
+      beta: 0.35            # HOHES Reaktanz-Risiko wenn falsch eingesetzt
+      rho: 0.30             # Nur für Jugendsegment
+
+    derived_metrics:
+      sharpe_ratio: 0.32
+      adjusted_return: 0.02
+      risk_adjusted_rank: 15
+
+    warning: "⚠️ NUR bei 14-25-Jährigen UND ohne Kinderschutz-Elemente!"
+    conditional_return:
+      wenn_korrekt_eingesetzt:
+        mu: 0.40
+        beta: 0.05
+        sharpe_ratio: 2.67
+
+  # --------------------------------------------------------------------------
+  # CLUSTER: EMRK
+  # --------------------------------------------------------------------------
+  INT-EMRK-001:
+    name: "Killer-Zahlen Push"
+    cluster_origin: "ANF-2026-02-02-001"
+
+    return_profile:
+      mu: 0.38
+      sigma: 0.12
+      beta: 0.03
+      rho: 0.90
+
+    derived_metrics:
+      sharpe_ratio: 3.17
+      adjusted_return: 0.33
+      risk_adjusted_rank: 3
+
+  INT-EMRK-002:
+    name: "Ordnung-Frame"
+    cluster_origin: "ANF-2026-02-02-001"
+
+    return_profile:
+      mu: 0.22
+      sigma: 0.10
+      beta: 0.05
+      rho: 0.85
+
+    derived_metrics:
+      sharpe_ratio: 2.20
+      adjusted_return: 0.18
+      risk_adjusted_rank: 7
+
+  INT-EMRK-003:
+    name: "Rechtsstaat-Werte"
+    cluster_origin: "ANF-2026-02-02-001"
+
+    return_profile:
+      mu: 0.20
+      sigma: 0.15
+      beta: 0.08
+      rho: 0.60             # Polarisiert leicht
+
+    derived_metrics:
+      sharpe_ratio: 1.33
+      adjusted_return: 0.11
+      risk_adjusted_rank: 10
+
+  INT-EMRK-004:
+    name: "FPÖ-Seilschaft Entlarvung"
+    cluster_origin: "ANF-2026-02-02-001"
+
+    return_profile:
+      mu: 0.12
+      sigma: 0.30           # SEHR hohe Unsicherheit
+      beta: 0.45            # HOHES Backfire-Risiko bei Wechselwählern!
+      rho: 0.35             # Nur bei Basis positiv
+
+    derived_metrics:
+      sharpe_ratio: 0.40
+      adjusted_return: 0.02
+      risk_adjusted_rank: 13
+
+    warning: "⚠️ POLARISIEREND! NUR Basis-Events!"
+    conditional_return:
+      bei_basis_events:
+        mu: 0.35
+        beta: 0.05
+        rho: 0.90
+        sharpe_ratio: 2.33
+
+  # --------------------------------------------------------------------------
+  # CLUSTER: GESUNDHEIT
+  # --------------------------------------------------------------------------
+  INT-GESUND-001:
+    name: "Ökonomie-Push"
+    cluster_origin: "ANF-2026-02-03-002"
+
+    return_profile:
+      mu: 0.21
+      sigma: 0.08
+      beta: 0.02
+      rho: 0.92
+
+    derived_metrics:
+      sharpe_ratio: 2.63
+      adjusted_return: 0.19
+      risk_adjusted_rank: 4
+
+  INT-GESUND-002:
+    name: "Zahlen-Offensive"
+    cluster_origin: "ANF-2026-02-03-002"
+
+    return_profile:
+      mu: 0.21
+      sigma: 0.10
+      beta: 0.03
+      rho: 0.88
+
+    derived_metrics:
+      sharpe_ratio: 2.10
+      adjusted_return: 0.18
+      risk_adjusted_rank: 5
+
+  INT-GESUND-003:
+    name: "Public Health Frame"
+    cluster_origin: "ANF-2026-02-03-002"
+
+    return_profile:
+      mu: 0.20
+      sigma: 0.12
+      beta: 0.02
+      rho: 0.95             # Höchste Reichweite - funktioniert überall!
+
+    derived_metrics:
+      sharpe_ratio: 1.67
+      adjusted_return: 0.19
+      risk_adjusted_rank: 9
+
+  INT-GESUND-004:
+    name: "Persönliche Geschichten"
+    cluster_origin: "ANF-2026-02-03-002"
+
+    return_profile:
+      mu: 0.17
+      sigma: 0.18           # Hohe Varianz (geschichtenabhängig)
+      beta: 0.05
+      rho: 0.70
+
+    derived_metrics:
+      sharpe_ratio: 0.94
+      adjusted_return: 0.11
+      risk_adjusted_rank: 12
+
+# ============================================================================
+# EBENE 2: COVARIANCE MATRIX (γ-Werte)
+# ============================================================================
+#
+# γ(i,j) ∈ [-1, +1]
+# +1.0 = Perfekte Synergie (immer zusammen einsetzen)
+# +0.5 = Moderate Synergie
+#  0.0 = Unabhängig
+# -0.5 = Moderate Crowding-Out
+# -1.0 = Vollständiges Crowding-Out (nie zusammen)
+# ============================================================================
+
+covariance_matrix:
+
+  # Symmetrische Matrix - nur oberes Dreieck angegeben
+  # Format: [INT_i, INT_j]: γ
+
+  # INTRA-CLUSTER: Spitalstouristen
+  - pair: ["INT-SPIT-001", "INT-SPIT-002"]
+    gamma: 0.6
+    reason: "Frame + Medien verstärken sich"
+
+  - pair: ["INT-SPIT-001", "INT-SPIT-003"]
+    gamma: 0.4
+    reason: "Frame + Soziale Ansteckung moderat"
+
+  - pair: ["INT-SPIT-001", "INT-SPIT-004"]
+    gamma: 0.8
+    reason: "Frame + Zahlen STARK synergistisch"
+    note: "Zahlen BRAUCHEN Frame!"
+
+  - pair: ["INT-SPIT-002", "INT-SPIT-004"]
+    gamma: 0.5
+    reason: "Medien transportieren Zahlen"
+
+  # INTRA-CLUSTER: SOG
+  - pair: ["INT-SOG-001", "INT-SOG-002"]
+    gamma: 0.7
+    reason: "Kinderschutz + Plattform-Verantwortung konsistent"
+
+  - pair: ["INT-SOG-001", "INT-SOG-003"]
+    gamma: 0.5
+    reason: "Kinderschutz + Ordnung moderat"
+
+  - pair: ["INT-SOG-001", "INT-SOG-004"]
+    gamma: -0.8
+    reason: "Kinderschutz + Autonomie-Frame KONFLIKT bei Jugend!"
+    warning: "⚠️ NIE zusammen in Jugend-Kommunikation!"
+
+  - pair: ["INT-SOG-002", "INT-SOG-004"]
+    gamma: 0.3
+    reason: "Plattform-Verantwortung + Autonomie neutral"
+
+  # INTRA-CLUSTER: EMRK
+  - pair: ["INT-EMRK-001", "INT-EMRK-002"]
+    gamma: 0.75
+    reason: "Killer-Zahlen + Ordnung-Frame STARK synergistisch"
+
+  - pair: ["INT-EMRK-001", "INT-EMRK-003"]
+    gamma: 0.3
+    reason: "Zahlen + Werte verschiedene Register"
+
+  - pair: ["INT-EMRK-001", "INT-EMRK-004"]
+    gamma: 0.2
+    reason: "Zahlen + FPÖ-Seilschaft unabhängig"
+
+  - pair: ["INT-EMRK-002", "INT-EMRK-003"]
+    gamma: 0.5
+    reason: "Ordnung + Werte moderat kompatibel"
+
+  - pair: ["INT-EMRK-003", "INT-EMRK-004"]
+    gamma: -0.4
+    reason: "Werte + Angriff inkonsistent"
+    warning: "Nicht in derselben Rede!"
+
+  # INTRA-CLUSTER: Gesundheit
+  - pair: ["INT-GESUND-001", "INT-GESUND-002"]
+    gamma: 0.85
+    reason: "Ökonomie + Zahlen SEHR STARK synergistisch"
+
+  - pair: ["INT-GESUND-001", "INT-GESUND-003"]
+    gamma: 0.6
+    reason: "Ökonomie + Public Health konsistent"
+
+  - pair: ["INT-GESUND-001", "INT-GESUND-004"]
+    gamma: 0.5
+    reason: "Ökonomie + Geschichten moderat"
+
+  - pair: ["INT-GESUND-002", "INT-GESUND-003"]
+    gamma: 0.7
+    reason: "Zahlen + Public Health stark"
+
+  - pair: ["INT-GESUND-003", "INT-GESUND-004"]
+    gamma: 0.65
+    reason: "Public Health + Geschichten emotional konsistent"
+
+  # CROSS-CLUSTER: Wichtige Synergien
+  - pair: ["INT-SPIT-001", "INT-EMRK-002"]
+    gamma: 0.9
+    reason: "Ordnung-Frame ÜBERGREIFEND stark!"
+    synergy_id: "SYN-001"
+
+  - pair: ["INT-SPIT-001", "INT-GESUND-001"]
+    gamma: 0.6
+    reason: "Frame + Ökonomie konsistent"
+
+  - pair: ["INT-SPIT-004", "INT-GESUND-002"]
+    gamma: 0.95
+    reason: "4,8%/2,75% Statistik IDENTISCH wiederverwendbar"
+    synergy_id: "SYN-002"
+
+  - pair: ["INT-SOG-001", "INT-GESUND-003"]
+    gamma: 0.7
+    reason: "Schutz der Schwächsten thematisch"
+    synergy_id: "SYN-003"
+
+  - pair: ["INT-EMRK-001", "INT-GESUND-002"]
+    gamma: 0.65
+    reason: "Beide Zahlen-basiert"
+
+  # CROSS-CLUSTER: Wichtige Konflikte
+  - pair: ["INT-EMRK-004", "INT-GESUND-001"]
+    gamma: -0.3
+    reason: "Angriff + Ökonomie verschiedene Register"
+
+  - pair: ["INT-EMRK-003", "INT-GESUND-001"]
+    gamma: -0.2
+    reason: "Werte + Ökonomie leicht inkonsistent"
+
+# ============================================================================
+# EBENE 3: OPTIMALE CLUSTER (via Korrelations-Analyse)
+# ============================================================================
+#
+# Clustering-Methodik: Hierarchical Clustering auf γ-Matrix
+# Threshold für Cluster-Zugehörigkeit: γ > 0.5
+# ============================================================================
+
+optimal_clusters:
+
+  # CLUSTER A: "Ordnung & Fakten" (Wechselwähler-optimiert)
+  cluster_A:
+    name: "Ordnung & Fakten"
+    zielgruppe_primaer: "Wechselwähler, ÖVP-Enttäuschte"
+
+    members:
+      - INT-SPIT-001   # Frame-Wettbewerb
+      - INT-SPIT-004   # Zahlen-Offensive
+      - INT-EMRK-001   # Killer-Zahlen
+      - INT-EMRK-002   # Ordnung-Frame
+      - INT-GESUND-001 # Ökonomie
+      - INT-GESUND-002 # Zahlen
+
+    internal_gamma_avg: 0.72
+
+    portfolio_metrics:
+      combined_mu: 0.31      # Gewichteter Durchschnitt
+      combined_sigma: 0.08   # Diversifikation senkt Risiko!
+      combined_sharpe: 3.88  # Höher als einzelne INTs!
+      combined_beta: 0.03
+
+    deployment:
+      sequenz: "INT-EMRK-001 → INT-SPIT-001 → INT-GESUND-001"
+      timing: "Immer zusammen, gleicher Auftritt"
+
+  # CLUSTER B: "Schutz & Werte" (Basis-optimiert)
+  cluster_B:
+    name: "Schutz & Werte"
+    zielgruppe_primaer: "SPÖ-Basis, Progressive, Grüne"
+
+    members:
+      - INT-SOG-001    # Kinderschutz
+      - INT-SOG-002    # Plattform-Verantwortung
+      - INT-EMRK-003   # Rechtsstaat-Werte
+      - INT-GESUND-003 # Public Health
+      - INT-GESUND-004 # Persönliche Geschichten
+
+    internal_gamma_avg: 0.58
+
+    portfolio_metrics:
+      combined_mu: 0.26
+      combined_sigma: 0.10
+      combined_sharpe: 2.60
+      combined_beta: 0.04
+
+    deployment:
+      sequenz: "INT-SOG-001 → INT-GESUND-003 → INT-EMRK-003"
+      timing: "Emotional aufbauend"
+
+  # CLUSTER C: "Mobilisierung" (Basis-exklusiv)
+  cluster_C:
+    name: "Mobilisierung"
+    zielgruppe_primaer: "SPÖ-Kernwähler, Aktivisten"
+
+    members:
+      - INT-EMRK-004   # FPÖ-Seilschaft
+
+    internal_gamma_avg: 1.0  # Nur ein Member
+
+    portfolio_metrics:
+      combined_mu: 0.35      # Bei korrektem Einsatz!
+      combined_sigma: 0.15
+      combined_sharpe: 2.33
+      combined_beta: 0.05    # Bei korrektem Einsatz
+
+    deployment:
+      sequenz: "Standalone"
+      timing: "NUR Parteitage, Gewerkschaft, Aktivisten-Events"
+      warning: "⚠️ NIEMALS mit Cluster A mischen bei Wechselwählern!"
+
+  # CLUSTER D: "Jugend" (Spezial)
+  cluster_D:
+    name: "Jugend-Ansprache"
+    zielgruppe_primaer: "14-25-Jährige"
+
+    members:
+      - INT-SOG-004    # Autonomie-Frame
+
+    internal_gamma_avg: 1.0
+
+    portfolio_metrics:
+      combined_mu: 0.40      # Bei korrektem Einsatz
+      combined_sigma: 0.15
+      combined_sharpe: 2.67
+      combined_beta: 0.05
+
+    deployment:
+      sequenz: "Standalone"
+      timing: "Social Media (TikTok, Instagram), Jugend-Events"
+      warning: "⚠️ NIEMALS Cluster B Elemente (Kinderschutz) beimischen!"
+
+# ============================================================================
+# EBENE 4: INTER-CLUSTER KOMPLEMENTARITÄT
+# ============================================================================
+#
+# Γ(Cluster_i, Cluster_j) = Aggregierte Komplementarität
+# Berechnung: Durchschnitt aller paarweisen γ zwischen Cluster-Members
+# ============================================================================
+
+inter_cluster_complementarity:
+
+  - pair: ["cluster_A", "cluster_B"]
+    Gamma: 0.45
+    interpretation: "Moderat kompatibel"
+    deployment_rule: |
+      Sequentiell einsetzbar.
+      A zuerst bei Wechselwählern, dann B bei Basis.
+      Nicht im selben Auftritt mischen.
+
+  - pair: ["cluster_A", "cluster_C"]
+    Gamma: -0.15
+    interpretation: "Leicht konfliktär"
+    deployment_rule: |
+      STRIKTE TRENNUNG!
+      A für öffentliche Kommunikation.
+      C nur für interne Basis-Events.
+      Niemals am selben Tag/Event.
+
+  - pair: ["cluster_A", "cluster_D"]
+    Gamma: 0.20
+    interpretation: "Schwach kompatibel"
+    deployment_rule: |
+      Getrennte Kanäle.
+      A für traditionelle Medien.
+      D für Social Media Jugend.
+
+  - pair: ["cluster_B", "cluster_C"]
+    Gamma: 0.35
+    interpretation: "Moderat kompatibel"
+    deployment_rule: |
+      Bei Basis-Events kombinierbar.
+      B als Hauptframe, C als Verstärkung.
+
+  - pair: ["cluster_B", "cluster_D"]
+    Gamma: -0.40
+    interpretation: "Konfliktär!"
+    deployment_rule: |
+      STRIKTE TRENNUNG!
+      Kinderschutz (B) löst Reaktanz bei Jugend (D) aus.
+      Niemals in Jugend-Kommunikation kombinieren.
+
+  - pair: ["cluster_C", "cluster_D"]
+    Gamma: 0.10
+    interpretation: "Weitgehend unabhängig"
+    deployment_rule: |
+      Verschiedene Zielgruppen, kein Konflikt.
+      Können parallel laufen.
+
+# ============================================================================
+# OPTIMALES GESAMTPORTFOLIO
+# ============================================================================
+
+optimal_portfolio:
+
+  name: "SPÖ Kommunikations-Portfolio Q1-Q2 2026"
+
+  # Gewichtung nach Zielgruppen-Priorität
+  allocation:
+    cluster_A: 0.45    # 45% - Wechselwähler-Fokus
+    cluster_B: 0.30    # 30% - Basis-Pflege
+    cluster_C: 0.15    # 15% - Mobilisierung
+    cluster_D: 0.10    # 10% - Jugend-Ansprache
+
+  # Aggregierte Metriken
+  portfolio_metrics:
+    expected_return: 0.29
+    portfolio_sigma: 0.07
+    portfolio_sharpe: 4.14   # Diversifikation zahlt sich aus!
+    max_drawdown_risk: 0.12
+
+  # Effizienz-Analyse
+  efficiency:
+    diversification_benefit: "+18% Sharpe vs. beste Einzelintervention"
+    risk_reduction: "-53% σ vs. undiversifiziert"
+
+  # Deployment-Kalender
+  deployment_calendar:
+    week_1_2: "Cluster A dominant (TV, Print)"
+    week_3_4: "Cluster A + B parallel (verschiedene Kanäle)"
+    week_5_6: "Cluster C (Parteitage), D (Social Media)"
+    ongoing: "Cluster A als Backbone"
+
+# ============================================================================
+# REBALANCING TRIGGERS
+# ============================================================================
+
+rebalancing_triggers:
+
+  - trigger: "Neue Umfragedaten"
+    action: "μ und β aller INTs neu schätzen"
+    frequency: "wöchentlich"
+
+  - trigger: "Medien-Event (Skandal, Krise)"
+    action: "Cluster C hochfahren wenn FPÖ-bezogen"
+
+  - trigger: "Backfire bei INT"
+    action: "Sofort aus aktivem Portfolio entfernen, β neu schätzen"
+
+  - trigger: "Neue ANF hinzugefügt"
+    action: "Neue INTs bewerten, Cluster-Zuordnung prüfen, γ-Matrix erweitern"
+
+# ============================================================================
+# CHANGELOG
+# ============================================================================
+
+changelog:
+  - datum: "2026-02-03"
+    version: "1.0"
+    aenderung: "Initiale Risk-Return-Analyse für 16 INTs, 4 Cluster, Inter-Cluster γ"

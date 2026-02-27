@@ -1,0 +1,98 @@
+name: Update README on Major Changes
+
+on:
+  push:
+    paths:
+      # Neue Appendices
+      - 'appendices/*.tex'
+      - '!appendices/00_*'
+      # Neue Chapters
+      - 'chapters/*.tex'
+      - '!chapters/00_*'
+      # Bibliography aktualisiert
+      - 'bibliography/bcm_master.bib'
+      # AI-Kontext geändert
+      - 'CLAUDE.md'
+      # Skills aktualisiert
+      - '.claude/commands/**'
+    branches:
+      - main
+      - claude/**
+
+jobs:
+  update-on-changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install PyYAML
+
+      - name: Detect changed file type
+        id: detect
+        run: |
+          git diff HEAD~1 HEAD --name-only > changed_files.txt
+
+          if grep -q "appendices/.*\.tex" changed_files.txt; then
+            echo "type=appendix" >> $GITHUB_OUTPUT
+          elif grep -q "chapters/.*\.tex" changed_files.txt; then
+            echo "type=chapter" >> $GITHUB_OUTPUT
+          elif grep -q "bcm_master.bib" changed_files.txt; then
+            echo "type=bibliography" >> $GITHUB_OUTPUT
+          elif grep -q "CLAUDE.md" changed_files.txt; then
+            echo "type=claude" >> $GITHUB_OUTPUT
+          elif grep -q ".claude/commands" changed_files.txt; then
+            echo "type=skills" >> $GITHUB_OUTPUT
+          else
+            echo "type=other" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update README statistics
+        run: |
+          python scripts/update_readme_stats.py
+
+      - name: Add commit message prefix
+        id: commit_msg
+        run: |
+          case "${{ steps.detect.outputs.type }}" in
+            appendix)
+              echo "msg=docs(appendix): Update README - new appendix added" >> $GITHUB_OUTPUT
+              ;;
+            chapter)
+              echo "msg=docs(chapter): Update README - new chapter added" >> $GITHUB_OUTPUT
+              ;;
+            bibliography)
+              echo "msg=docs(bibliography): Update README - bibliography updated" >> $GITHUB_OUTPUT
+              ;;
+            claude)
+              echo "msg=docs(claude): Update README - CLAUDE.md changed" >> $GITHUB_OUTPUT
+              ;;
+            skills)
+              echo "msg=docs(skills): Update README - skills/commands updated" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "msg=docs: Update README statistics" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+      - name: Commit and push changes
+        run: |
+          if ! git diff --quiet; then
+            git config --local user.email "claude@fehradvice.com"
+            git config --local user.name "Claude (Automated)"
+            git add README.md docs/README.md chapters/README.md appendices/README.md
+            git commit -m "${{ steps.commit_msg.outputs.msg }}"
+            git push
+          fi

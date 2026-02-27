@@ -1,0 +1,856 @@
+# =============================================================================
+# ALPLA CHURN INTERVENTION MODEL
+# =============================================================================
+# Version: 1.0
+# Date: 2026-01-19
+# Purpose: Bayesian model for testing interventions and updating with field data
+#
+# Structure:
+# 1. Model Specification (EBF-based)
+# 2. Prior Distributions (Literature + LLMMC)
+# 3. Intervention Effects
+# 4. Update Mechanism
+# 5. Prediction & Simulation
+# =============================================================================
+
+metadata:
+  model_name: "ALPLA Churn Intervention Model (ACIM)"
+  version: "1.0"
+  created: "2026-01-19"
+  ebf_version: "10C"
+  registry_id: "FFF-ALPLA-CHURN-001"
+
+  purpose: |
+    Bayesian model that:
+    1. Predicts churn reduction from interventions (a priori)
+    2. Updates predictions with field experiment data (posterior)
+    3. Enables scenario testing and sensitivity analysis
+    4. Supports optimal intervention selection
+
+  references:
+    - "BBB: Parameter Estimation Methodology"
+    - "AN: LLM Monte Carlo"
+    - "HHH: Intervention Toolkit"
+    - "EEE: Model Design Workflow"
+
+# =============================================================================
+# TEIL 1: MODELL-SPEZIFIKATION (EBF-basiert)
+# =============================================================================
+
+model_specification:
+  name: "EBF Churn Model"
+
+  # ---------------------------------------------------------------------------
+  # Kerngleichungen
+  # ---------------------------------------------------------------------------
+  equations:
+    # Stage 1: Potential Utility
+    potential_utility:
+      formula: "U^pot_i = Σ_d ω_d · U_d,i + Σ_{d,d'} γ_{dd'} · U_d,i · U_{d',i}"
+      description: "Gesamtnutzen aus allen FEPSDE-Dimensionen mit Interaktionen"
+
+    # Stage 2: Effective Utility (filtered by Awareness)
+    effective_utility:
+      formula: "U^eff_i = A_i · U^pot_i"
+      description: "Wahrgenommener Nutzen nach Awareness-Filter"
+
+    # Stage 3: Stay Probability
+    stay_probability:
+      formula: "P(Stay)_i = σ(β · (U^eff_i - θ_i))"
+      description: "Logistische Funktion für Verbleibs-Wahrscheinlichkeit"
+      sigma: "σ(x) = 1 / (1 + exp(-x))"
+
+    # Stage 4: Churn Rate
+    churn_rate:
+      formula: "Churn_p = 1 - (1/N_p) · Σ_i P(Stay)_i"
+      description: "Werk-Churn als Aggregat individueller Entscheidungen"
+
+    # Intervention Effect
+    intervention_effect:
+      formula: "ΔU_d = Σ_j δ_{j,d} · I_j · (1 + Σ_{j'} γ_{jj'} · I_{j'})"
+      description: "Additive + multiplikative Interventionseffekte"
+
+  # ---------------------------------------------------------------------------
+  # Variablen-Definitionen
+  # ---------------------------------------------------------------------------
+  variables:
+    # Outcome
+    Y:
+      name: "Churn Rate"
+      type: "continuous"
+      range: [0, 1]
+      unit: "proportion"
+
+    # Predictors (FEPSDE Dimensions)
+    U_F:
+      name: "Financial Utility"
+      components: ["wage_competitiveness", "skill_pay_premium", "benefits"]
+
+    U_E:
+      name: "Emotional Utility"
+      components: ["recognition", "feedback", "respect"]
+
+    U_P:
+      name: "Physical Utility"
+      components: ["workload", "ergonomics", "schedule"]
+
+    U_S:
+      name: "Social Utility"
+      components: ["team_cohesion", "communication", "belonging"]
+
+    U_D:
+      name: "Development Utility"
+      components: ["career_path", "skill_variety", "learning"]
+
+    U_X:
+      name: "Existential Utility"
+      components: ["job_security", "meaning", "identity"]
+
+    # Interventions (binary indicators)
+    I:
+      I1: "Job Rotation"
+      I2: "Career Pathway"
+      I3: "Skill-Based Pay"
+      I4: "Workload Management"
+      I5: "Autonomy Enhancement"
+      I6: "Recognition Program"
+      I7: "Onboarding Improvement"
+      I8: "Team Restructuring"
+
+    # Context (Ψ)
+    Psi:
+      psi_1: "Economic (Unemployment, Wage Competition)"
+      psi_2: "Social (Team Culture)"
+      psi_3: "Temporal (Seasonality, Trends)"
+      psi_4: "Spatial (Urban/Rural, Plant Type)"
+      psi_5: "Institutional (Union, Certifications)"
+      psi_6: "Cultural (Change History)"
+
+# =============================================================================
+# TEIL 2: PRIOR DISTRIBUTIONS
+# =============================================================================
+
+priors:
+  description: |
+    Prior-Verteilungen aus drei Quellen:
+    1. Meta-Analysen und Literatur (starke Priors)
+    2. LLMMC-Schätzungen (moderate Priors)
+    3. Domain-Experten (informative Priors)
+
+    Format: distribution(parameters) | source | confidence
+
+  # ---------------------------------------------------------------------------
+  # FEPSDE Dimension Weights (ω)
+  # ---------------------------------------------------------------------------
+  omega:
+    description: "Gewichte der Utility-Dimensionen für Blue Collar Churn"
+
+    omega_F:
+      prior: "Beta(5, 15)"
+      mean: 0.25
+      sd: 0.09
+      source: "Meta-Analysis Wage-Turnover Studies"
+      confidence: "high"
+
+    omega_E:
+      prior: "Beta(3, 17)"
+      mean: 0.15
+      sd: 0.08
+      source: "Recognition & Engagement Literature"
+      confidence: "medium"
+
+    omega_P:
+      prior: "Beta(2, 18)"
+      mean: 0.10
+      sd: 0.07
+      source: "Ergonomics & Workload Studies"
+      confidence: "medium"
+
+    omega_S:
+      prior: "Beta(3, 17)"
+      mean: 0.15
+      sd: 0.08
+      source: "Team Cohesion Literature"
+      confidence: "medium"
+
+    omega_D:
+      prior: "Beta(5, 15)"
+      mean: 0.25
+      sd: 0.09
+      source: "Career Development & Turnover Meta-Analysis"
+      confidence: "high"
+
+    omega_X:
+      prior: "Beta(2, 18)"
+      mean: 0.10
+      sd: 0.07
+      source: "Job Security Studies"
+      confidence: "low"
+
+    constraint: "Σ ω_d = 1 (Dirichlet normalization)"
+
+  # ---------------------------------------------------------------------------
+  # Intervention Effects (δ)
+  # ---------------------------------------------------------------------------
+  delta:
+    description: "Direkter Effekt jeder Intervention auf Churn (%-Reduktion)"
+
+    delta_INT1:
+      name: "Job Rotation Effect"
+      prior: "Normal(6.5, 2.0)"
+      range: [3, 12]
+      unit: "pp reduction"
+      source: "Hackman & Oldham (1976); Job Design Meta-Analysis"
+      confidence: "medium"
+      mechanisms:
+        - "Reduces monotony → +Development"
+        - "Cross-training → +Physical variety"
+
+    delta_INT2:
+      name: "Career Pathway Effect"
+      prior: "Normal(5.0, 1.8)"
+      range: [2, 10]
+      unit: "pp reduction"
+      source: "Internal Mobility Literature; Heckman Skill Formation"
+      confidence: "medium"
+      mechanisms:
+        - "Clear progression → +Development"
+        - "Hope for future → +Existential"
+
+    delta_INT3:
+      name: "Skill-Based Pay Effect"
+      prior: "Normal(4.0, 1.5)"
+      range: [1, 8]
+      unit: "pp reduction"
+      source: "Compensation & Turnover Studies"
+      confidence: "high"
+      mechanisms:
+        - "Higher wages → +Financial"
+        - "Skill recognition → +Development"
+
+    delta_INT4:
+      name: "Workload Management Effect"
+      prior: "Normal(3.0, 1.2)"
+      range: [1, 6]
+      unit: "pp reduction"
+      source: "Work Stress Literature"
+      confidence: "medium"
+      mechanisms:
+        - "Less overwork → +Physical"
+        - "Better balance → +Emotional"
+
+    delta_INT5:
+      name: "Autonomy Enhancement Effect"
+      prior: "Normal(4.0, 1.5)"
+      range: [2, 8]
+      unit: "pp reduction"
+      source: "Self-Determination Theory; Autonomy Studies"
+      confidence: "medium"
+      mechanisms:
+        - "More control → +Development"
+        - "Trust signal → +Emotional"
+
+    delta_INT6:
+      name: "Recognition Program Effect"
+      prior: "Normal(2.0, 1.0)"
+      range: [0.5, 4]
+      unit: "pp reduction"
+      source: "Ariely Recognition Studies; Engagement Literature"
+      confidence: "high"
+      mechanisms:
+        - "Acknowledgment → +Emotional"
+        - "Belonging → +Social"
+
+    delta_INT7:
+      name: "Onboarding Improvement Effect"
+      prior: "Normal(3.0, 1.5)"
+      range: [1, 6]
+      unit: "pp reduction (new hires)"
+      source: "Onboarding Meta-Analysis"
+      confidence: "medium"
+      mechanisms:
+        - "Better integration → +Social"
+        - "Clearer expectations → +Emotional"
+
+    delta_INT8:
+      name: "Team Restructuring Effect"
+      prior: "Normal(3.0, 1.5)"
+      range: [1, 6]
+      unit: "pp reduction"
+      source: "Team Dynamics Literature"
+      confidence: "low"
+      mechanisms:
+        - "Better fit → +Social"
+        - "Reduced conflict → +Emotional"
+
+  # ---------------------------------------------------------------------------
+  # Intervention Complementarity (γ)
+  # ---------------------------------------------------------------------------
+  gamma_interventions:
+    description: "Interaction effects between interventions"
+
+    positive_interactions:
+      gamma_12:
+        pair: [INT1, INT2]
+        prior: "Normal(0.35, 0.15)"
+        mechanism: "Rotation shows career paths"
+
+      gamma_23:
+        pair: [INT2, INT3]
+        prior: "Normal(0.40, 0.15)"
+        mechanism: "Career + Pay reinforce development"
+
+      gamma_56:
+        pair: [INT5, INT6]
+        prior: "Normal(0.25, 0.12)"
+        mechanism: "Autonomy + Recognition = Empowerment"
+
+      gamma_17:
+        pair: [INT1, INT7]
+        prior: "Normal(0.20, 0.10)"
+        mechanism: "Rotation in onboarding speeds integration"
+
+    negative_interactions:
+      gamma_38:
+        pair: [INT3, INT8]
+        prior: "Normal(-0.45, 0.15)"
+        mechanism: "Too much change simultaneously"
+
+      gamma_58:
+        pair: [INT5, INT8]
+        prior: "Normal(-0.30, 0.12)"
+        mechanism: "Team structure must be stable for autonomy"
+
+  # ---------------------------------------------------------------------------
+  # Context Modifiers (κ)
+  # ---------------------------------------------------------------------------
+  kappa_context:
+    description: "How context modifies intervention effectiveness"
+
+    kappa_unemployment:
+      variable: "L1_unemployment"
+      effect_on: "δ_INT2, δ_INT3"
+      prior: "Normal(0.15, 0.08)"
+      direction: "positive"
+      interpretation: "Higher unemployment → career interventions more valued"
+
+    kappa_wage_competition:
+      variable: "L4_mfg_wage"
+      effect_on: "δ_INT3"
+      prior: "Normal(0.20, 0.10)"
+      direction: "positive"
+      interpretation: "Higher local wages → skill pay more important"
+
+    kappa_plant_size:
+      variable: "S2_employees"
+      effect_on: "δ_INT1, δ_INT2"
+      prior: "Normal(0.10, 0.05)"
+      direction: "positive"
+      interpretation: "Larger plants → more rotation/career options"
+
+    kappa_tenure:
+      variable: "P2_avg_tenure"
+      effect_on: "δ_INT5"
+      prior: "Normal(0.18, 0.08)"
+      direction: "positive"
+      interpretation: "Higher tenure → more ready for autonomy"
+
+    kappa_buyin:
+      variable: "M5_intervention_buyin"
+      effect_on: "all_delta"
+      prior: "Normal(0.25, 0.10)"
+      direction: "positive"
+      interpretation: "Management buy-in amplifies all interventions"
+
+  # ---------------------------------------------------------------------------
+  # Baseline Churn Parameters
+  # ---------------------------------------------------------------------------
+  baseline:
+    churn_intercept:
+      prior: "Normal(22, 5)"
+      unit: "percent"
+      source: "ALPLA current average"
+
+    threshold_theta:
+      prior: "Normal(0.5, 0.15)"
+      interpretation: "Decision threshold for leaving"
+
+    sensitivity_beta:
+      prior: "Gamma(3, 1)"
+      interpretation: "Steepness of stay probability curve"
+
+  # ---------------------------------------------------------------------------
+  # Time Constants (τ)
+  # ---------------------------------------------------------------------------
+  tau:
+    description: "Time to reach steady state effect (weeks)"
+
+    tau_INT1:
+      prior: "Gamma(8, 1)"
+      mean: 8
+      interpretation: "Rotation effects materialize in ~8 weeks"
+
+    tau_INT2:
+      prior: "Gamma(16, 2)"
+      mean: 16
+      interpretation: "Career effects take ~16 weeks"
+
+    tau_INT3:
+      prior: "Gamma(24, 3)"
+      mean: 24
+      interpretation: "Pay effects take ~24 weeks (evaluation cycles)"
+
+    tau_INT6:
+      prior: "Gamma(4, 0.5)"
+      mean: 4
+      interpretation: "Recognition effects fast (~4 weeks)"
+
+# =============================================================================
+# TEIL 3: INTERVENTION EFFECT MODEL
+# =============================================================================
+
+intervention_model:
+  # ---------------------------------------------------------------------------
+  # Effect Decomposition
+  # ---------------------------------------------------------------------------
+  effect_decomposition:
+    formula: |
+      ΔChurn_p = Σ_j δ_j · I_j · Fit_j(p) · A_j(p) · (1 + Σ_{j'≠j} γ_{jj'} · I_{j'})
+
+      where:
+      - δ_j = Base effect of intervention j
+      - I_j = 1 if intervention j is active, 0 otherwise
+      - Fit_j(p) = Intervention fit score for plant p (from IFI)
+      - A_j(p) = Awareness/Implementation quality at plant p
+      - γ_{jj'} = Interaction effect between interventions
+
+    components:
+      direct_effect:
+        formula: "δ_j · I_j"
+        description: "Main effect of intervention"
+
+      fit_modifier:
+        formula: "Fit_j(p) ∈ [0.5, 1.5]"
+        description: "Plant-specific fit multiplier from IFI scores"
+        calculation: "Fit = 0.5 + (IFI_score / 100)"
+
+      awareness_modifier:
+        formula: "A_j(p) ∈ [0.3, 1.0]"
+        description: "Implementation quality modifier"
+        factors:
+          - "Communication quality"
+          - "Management engagement"
+          - "Employee participation"
+
+      synergy_effect:
+        formula: "1 + Σ γ_{jj'} · I_{j'}"
+        description: "Multiplicative synergy from combined interventions"
+
+  # ---------------------------------------------------------------------------
+  # Bundle Effects
+  # ---------------------------------------------------------------------------
+  bundle_effects:
+    bundle_A_rotation:
+      interventions: [INT1, INT2, INT6]
+      expected_direct: "δ_1 + δ_2 + δ_6 = 6.5 + 5.0 + 2.0 = 13.5pp"
+      synergy_boost: "1 + γ_12 = 1.35"
+      expected_total: "13.5 × 0.9 = ~12.2pp (accounting for diminishing returns)"
+      range_95: "[8, 16]pp"
+
+    bundle_B_career:
+      interventions: [INT2, INT7, INT6]
+      expected_direct: "δ_2 + δ_7 + δ_6 = 5.0 + 3.0 + 2.0 = 10.0pp"
+      synergy_boost: "1 + γ_27 = 1.15"
+      expected_total: "10.0 × 0.85 = ~8.5pp"
+      range_95: "[5, 12]pp"
+
+    bundle_C_technical:
+      interventions: [INT3, INT4, INT6]
+      expected_direct: "δ_3 + δ_4 + δ_6 = 4.0 + 3.0 + 2.0 = 9.0pp"
+      synergy_boost: "1.10"
+      expected_total: "9.0 × 0.80 = ~7.2pp"
+      range_95: "[4, 10]pp"
+
+    bundle_D_autonomy:
+      interventions: [INT5, INT6]
+      expected_direct: "δ_5 + δ_6 = 4.0 + 2.0 = 6.0pp"
+      synergy_boost: "1 + γ_56 = 1.25"
+      expected_total: "6.0 × 0.95 = ~5.7pp"
+      range_95: "[3, 8]pp"
+
+    bundle_E_minimal:
+      interventions: [INT6, INT7]
+      expected_direct: "δ_6 + δ_7 = 2.0 + 3.0 = 5.0pp"
+      synergy_boost: "1.05"
+      expected_total: "5.0 × 0.75 = ~3.8pp"
+      range_95: "[2, 6]pp"
+
+# =============================================================================
+# TEIL 4: BAYESIAN UPDATE MECHANISM
+# =============================================================================
+
+bayesian_update:
+  description: |
+    Das Modell wird durch Felddaten aktualisiert mittels Bayes' Theorem:
+    P(θ|Data) ∝ P(Data|θ) · P(θ)
+
+    Posterior = Likelihood × Prior
+
+  # ---------------------------------------------------------------------------
+  # Update Schedule
+  # ---------------------------------------------------------------------------
+  update_schedule:
+    T0_baseline:
+      timing: "Pre-intervention"
+      data_collected:
+        - "Churn_baseline (12M rolling)"
+        - "All context variables (S, L, O, P, M, K, R, T)"
+        - "Survey baselines (K1-K5, M4-M5)"
+      updates: "None (establish priors)"
+
+    T1_early:
+      timing: "Month 3"
+      data_collected:
+        - "Implementation fidelity scores"
+        - "Early churn signals"
+        - "Engagement metrics"
+      updates:
+        - "A (Awareness) parameters"
+        - "τ (Time constants) - preliminary"
+
+    T2_midpoint:
+      timing: "Month 6"
+      data_collected:
+        - "Churn_6M (rolling)"
+        - "Survey wave 2"
+        - "Intervention dosage metrics"
+      updates:
+        - "δ (Intervention effects) - preliminary"
+        - "κ (Context modifiers)"
+        - "Fit modifier calibration"
+
+    T3_endpoint:
+      timing: "Month 12"
+      data_collected:
+        - "Churn_12M (primary outcome)"
+        - "Survey wave 3"
+        - "Full cost data"
+      updates:
+        - "δ (Final intervention effects)"
+        - "γ (Interaction effects)"
+        - "ω (Dimension weights)"
+        - "Full posterior distributions"
+
+  # ---------------------------------------------------------------------------
+  # Likelihood Function
+  # ---------------------------------------------------------------------------
+  likelihood:
+    distribution: "Normal"
+    formula: |
+      Churn_observed ~ Normal(Churn_predicted, σ_obs)
+
+      where:
+      Churn_predicted = Churn_baseline - ΔChurn(Interventions, Context, Time)
+      σ_obs = Observation error (estimated)
+
+    observation_error:
+      prior: "InvGamma(3, 2)"
+      interpretation: "Measurement uncertainty in churn rates"
+      expected: "~2-3 pp"
+
+  # ---------------------------------------------------------------------------
+  # Conjugate Updates (where applicable)
+  # ---------------------------------------------------------------------------
+  conjugate_updates:
+    delta_effects:
+      prior: "Normal(μ_0, σ_0²)"
+      likelihood: "Normal(y|δ, σ²)"
+      posterior: "Normal(μ_n, σ_n²)"
+      formulas:
+        precision_update: "1/σ_n² = 1/σ_0² + n/σ²"
+        mean_update: "μ_n = σ_n² · (μ_0/σ_0² + Σy_i/σ²)"
+
+    omega_weights:
+      note: "Use Dirichlet-Multinomial conjugacy for dimension weights"
+
+  # ---------------------------------------------------------------------------
+  # MCMC Settings (for non-conjugate updates)
+  # ---------------------------------------------------------------------------
+  mcmc_settings:
+    algorithm: "NUTS (No-U-Turn Sampler)"
+    implementation: "PyMC or Stan"
+    chains: 4
+    warmup: 1000
+    samples: 2000
+    target_accept: 0.95
+
+    diagnostics:
+      - "R-hat < 1.01"
+      - "ESS > 400"
+      - "No divergences"
+      - "Posterior predictive checks"
+
+# =============================================================================
+# TEIL 5: PREDICTION & SIMULATION
+# =============================================================================
+
+prediction:
+  # ---------------------------------------------------------------------------
+  # Point Predictions
+  # ---------------------------------------------------------------------------
+  point_prediction:
+    formula: |
+      E[ΔChurn_p | INT, Ψ] = Σ_j E[δ_j] · I_j · E[Fit_j(p)] · E[A_j] · (1 + Σ γ_jj' · I_j')
+
+    example:
+      plant: "US-006 St. Peters 1"
+      interventions: [INT1, INT2, INT6]
+      calculation: |
+        δ_1 = 6.5, δ_2 = 5.0, δ_6 = 2.0
+        Fit_1 = 1.22, Fit_2 = 1.02, Fit_6 = 1.00
+        A = 0.85 (good implementation expected)
+        γ_12 = 0.35
+
+        ΔChurn = 0.85 × [6.5×1.22 + 5.0×1.02 + 2.0×1.00] × (1 + 0.35×1)
+               = 0.85 × [7.93 + 5.10 + 2.00] × 1.35
+               = 0.85 × 15.03 × 1.35
+               = 17.2 × 0.75 (diminishing returns)
+               ≈ 12.9 pp reduction
+
+        Expected Churn: 28% → 15.1%
+
+  # ---------------------------------------------------------------------------
+  # Uncertainty Quantification
+  # ---------------------------------------------------------------------------
+  uncertainty:
+    method: "Monte Carlo Propagation"
+
+    procedure: |
+      For n_sim = 10,000 simulations:
+        1. Draw δ_j ~ Prior(δ_j) for all j
+        2. Draw γ_jj' ~ Prior(γ_jj') for all pairs
+        3. Draw κ ~ Prior(κ) for context effects
+        4. Compute ΔChurn_sim
+
+      Output: Distribution of ΔChurn
+
+    credible_intervals:
+      50_pct: "Median ± 0.67 × SD"
+      80_pct: "Median ± 1.28 × SD"
+      95_pct: "Median ± 1.96 × SD"
+
+  # ---------------------------------------------------------------------------
+  # Scenario Analysis
+  # ---------------------------------------------------------------------------
+  scenarios:
+    optimistic:
+      description: "Best-case: High fit, good implementation, strong synergies"
+      parameters:
+        delta_multiplier: 1.2
+        fit_multiplier: 1.3
+        awareness: 0.95
+      expected_reduction: "+25% vs. base"
+
+    base:
+      description: "Expected case: Average fit and implementation"
+      parameters:
+        delta_multiplier: 1.0
+        fit_multiplier: 1.0
+        awareness: 0.80
+      expected_reduction: "Base case"
+
+    conservative:
+      description: "Worst-case: Poor fit, weak implementation"
+      parameters:
+        delta_multiplier: 0.7
+        fit_multiplier: 0.8
+        awareness: 0.60
+      expected_reduction: "-35% vs. base"
+
+    no_synergy:
+      description: "Interventions don't interact"
+      parameters:
+        gamma_all: 0
+      expected_reduction: "-15% vs. base (no synergy boost)"
+
+  # ---------------------------------------------------------------------------
+  # Sensitivity Analysis
+  # ---------------------------------------------------------------------------
+  sensitivity:
+    tornado_variables:
+      - variable: "delta_INT1"
+        range: [3, 10]
+        impact: "high"
+
+      - variable: "delta_INT2"
+        range: [2, 8]
+        impact: "high"
+
+      - variable: "gamma_12"
+        range: [0.1, 0.6]
+        impact: "medium"
+
+      - variable: "Awareness"
+        range: [0.5, 1.0]
+        impact: "very high"
+
+      - variable: "M5_buyin"
+        range: [2.5, 5.0]
+        impact: "high"
+
+    one_at_a_time:
+      method: "Vary each parameter ±20% holding others at mean"
+
+    global_sensitivity:
+      method: "Sobol indices"
+      first_order: "Main effect of each parameter"
+      total_order: "Including interactions"
+
+# =============================================================================
+# TEIL 6: MODEL VALIDATION
+# =============================================================================
+
+validation:
+  # ---------------------------------------------------------------------------
+  # Pre-Experiment Validation
+  # ---------------------------------------------------------------------------
+  pre_experiment:
+    face_validity:
+      - "Expert review of prior distributions"
+      - "Comparison with meta-analysis results"
+      - "LLMMC cross-validation"
+
+    structural_validity:
+      - "Model equations match EBF framework"
+      - "All parameters identified"
+      - "No logical contradictions"
+
+    sensitivity_checks:
+      - "Reasonable predictions across parameter range"
+      - "No extreme sensitivity to single parameters"
+      - "Stable under Monte Carlo variation"
+
+  # ---------------------------------------------------------------------------
+  # Post-Experiment Validation
+  # ---------------------------------------------------------------------------
+  post_experiment:
+    predictive_accuracy:
+      metric: "RMSE of predicted vs. observed churn reduction"
+      target: "< 3 pp"
+
+    calibration:
+      metric: "Coverage of 95% CI"
+      target: "~95% of observations within CI"
+
+    discrimination:
+      metric: "Correlation of predicted rankings with observed"
+      target: "r > 0.7"
+
+    bayesian_metrics:
+      - "Bayes Factor (model vs. null)"
+      - "LOO-CV (Leave-One-Out Cross-Validation)"
+      - "WAIC (Widely Applicable Information Criterion)"
+
+  # ---------------------------------------------------------------------------
+  # Model Comparison
+  # ---------------------------------------------------------------------------
+  model_comparison:
+    baseline_model:
+      name: "Simple Average Effect"
+      formula: "ΔChurn = mean(δ) × n_interventions"
+
+    full_model:
+      name: "EBF with Context and Synergies"
+      formula: "Full ACIM specification"
+
+    comparison_metric: "ΔIC (AIC or BIC difference)"
+    expected: "Full model preferred if ΔIC > 10"
+
+# =============================================================================
+# TEIL 7: IMPLEMENTATION NOTES
+# =============================================================================
+
+implementation:
+  # ---------------------------------------------------------------------------
+  # Python Implementation
+  # ---------------------------------------------------------------------------
+  python:
+    file: "models/alpla_churn_model.py"
+    dependencies:
+      - "numpy"
+      - "scipy"
+      - "pymc>=5.0"
+      - "arviz"
+      - "pandas"
+
+    classes:
+      - "ALPLAChurnModel: Main model class"
+      - "PriorSpecification: Prior distributions"
+      - "BayesianUpdater: Update mechanism"
+      - "Simulator: Monte Carlo simulation"
+      - "Validator: Model validation"
+
+  # ---------------------------------------------------------------------------
+  # Usage Example
+  # ---------------------------------------------------------------------------
+  usage_example: |
+    from models.alpla_churn_model import ALPLAChurnModel
+
+    # Initialize model with priors
+    model = ALPLAChurnModel()
+
+    # Predict for a plant
+    plant_data = load_plant_data("US-006")
+    interventions = ["INT1", "INT2", "INT6"]
+
+    prediction = model.predict(
+        plant=plant_data,
+        interventions=interventions,
+        n_simulations=10000
+    )
+
+    print(f"Expected Churn Reduction: {prediction.mean:.1f}pp")
+    print(f"95% CI: [{prediction.ci_95[0]:.1f}, {prediction.ci_95[1]:.1f}]pp")
+
+    # Update with field data (after experiment)
+    field_data = load_field_results()
+    model.update(field_data)
+
+    # Get posterior predictions
+    posterior_prediction = model.predict_posterior(plant_data, interventions)
+
+# =============================================================================
+# ZUSAMMENFASSUNG
+# =============================================================================
+
+summary:
+  model_type: "Hierarchical Bayesian Churn Reduction Model"
+
+  key_features:
+    - "EBF 10C compliant structure"
+    - "8 intervention effects with interactions"
+    - "6 FEPSDE utility dimensions"
+    - "Context-dependent modifiers"
+    - "Bayesian updating from field data"
+    - "Full uncertainty quantification"
+
+  expected_outputs:
+    a_priori:
+      - "Point predictions per plant × intervention bundle"
+      - "95% credible intervals"
+      - "Sensitivity rankings"
+      - "Optimal intervention selection"
+
+    a_posteriori:
+      - "Updated effect estimates"
+      - "Validated intervention rankings"
+      - "ROI calculations"
+      - "Generalization to new plants"
+
+  next_steps:
+    1: "Implement Python model class"
+    2: "Run a priori simulations for all 17 plants"
+    3: "Generate pre-registration predictions"
+    4: "Execute field experiment"
+    5: "Update model with results"
+    6: "Publish updated parameters to BBB"

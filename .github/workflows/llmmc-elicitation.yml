@@ -1,0 +1,147 @@
+name: LLMMC Elicitation (GPT-4o Measurement)
+
+on:
+  push:
+    paths:
+      - 'data/llmmc-draws/.trigger'
+  workflow_dispatch:
+    inputs:
+      param_id:
+        description: 'Parameter ID (e.g., PAR-BEH-001). Leave empty for all behavioral.'
+        required: false
+        default: ''
+      all_behavioral:
+        description: 'Run all 17 behavioral parameters?'
+        required: false
+        default: true
+        type: boolean
+      n_draws:
+        description: 'Number of MC draws per parameter'
+        required: false
+        default: '15'
+        type: choice
+        options:
+          - '5'
+          - '10'
+          - '15'
+          - '25'
+          - '50'
+      model:
+        description: 'OpenAI model (measurement instrument)'
+        required: false
+        default: 'gpt-4o'
+        type: choice
+        options:
+          - gpt-4o
+          - gpt-4o-mini
+      temperature:
+        description: 'Sampling temperature (higher = more variance)'
+        required: false
+        default: '0.8'
+        type: choice
+        options:
+          - '0.6'
+          - '0.8'
+          - '1.0'
+
+jobs:
+  elicitation:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install openai numpy pyyaml scipy
+
+      - name: Read trigger config (push-triggered)
+        id: trigger
+        if: github.event_name == 'push'
+        run: |
+          if [ -f data/llmmc-draws/.trigger ]; then
+            echo "config<<EOF" >> $GITHUB_OUTPUT
+            cat data/llmmc-draws/.trigger >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            # Parse YAML-like trigger file
+            PARAM_ID=$(grep '^param_id:' data/llmmc-draws/.trigger | awk '{print $2}' || echo '')
+            N_DRAWS=$(grep '^n_draws:' data/llmmc-draws/.trigger | awk '{print $2}' || echo '15')
+            MODEL=$(grep '^model:' data/llmmc-draws/.trigger | awk '{print $2}' || echo 'gpt-4o')
+            TEMP=$(grep '^temperature:' data/llmmc-draws/.trigger | awk '{print $2}' || echo '0.8')
+            ALL_BEH=$(grep '^all_behavioral:' data/llmmc-draws/.trigger | awk '{print $2}' || echo 'true')
+            echo "param_id=${PARAM_ID}" >> $GITHUB_OUTPUT
+            echo "n_draws=${N_DRAWS}" >> $GITHUB_OUTPUT
+            echo "model=${MODEL}" >> $GITHUB_OUTPUT
+            echo "temperature=${TEMP}" >> $GITHUB_OUTPUT
+            echo "all_behavioral=${ALL_BEH}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set run parameters
+        id: params
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "param_id=${{ steps.trigger.outputs.param_id }}" >> $GITHUB_OUTPUT
+            echo "n_draws=${{ steps.trigger.outputs.n_draws || '15' }}" >> $GITHUB_OUTPUT
+            echo "model=${{ steps.trigger.outputs.model || 'gpt-4o' }}" >> $GITHUB_OUTPUT
+            echo "temperature=${{ steps.trigger.outputs.temperature || '0.8' }}" >> $GITHUB_OUTPUT
+            echo "all_behavioral=${{ steps.trigger.outputs.all_behavioral || 'true' }}" >> $GITHUB_OUTPUT
+          else
+            echo "param_id=${{ inputs.param_id }}" >> $GITHUB_OUTPUT
+            echo "n_draws=${{ inputs.n_draws }}" >> $GITHUB_OUTPUT
+            echo "model=${{ inputs.model }}" >> $GITHUB_OUTPUT
+            echo "temperature=${{ inputs.temperature }}" >> $GITHUB_OUTPUT
+            echo "all_behavioral=${{ inputs.all_behavioral }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run elicitation (single parameter)
+        if: steps.params.outputs.param_id != ''
+        env:
+          OPENAI_API_KEY: ${{ secrets.CHAT_GPT_KEY }}
+        run: |
+          python scripts/llmmc_elicitation.py \
+            --param "${{ steps.params.outputs.param_id }}" \
+            --n-draws ${{ steps.params.outputs.n_draws }} \
+            --model "${{ steps.params.outputs.model }}" \
+            --temperature ${{ steps.params.outputs.temperature }}
+
+      - name: Run elicitation (all behavioral parameters)
+        if: steps.params.outputs.param_id == '' && steps.params.outputs.all_behavioral == 'true'
+        env:
+          OPENAI_API_KEY: ${{ secrets.CHAT_GPT_KEY }}
+        run: |
+          python scripts/llmmc_elicitation.py \
+            --all-behavioral \
+            --n-draws ${{ steps.params.outputs.n_draws }} \
+            --model "${{ steps.params.outputs.model }}" \
+            --temperature ${{ steps.params.outputs.temperature }}
+
+      - name: Run E4-E5 post-processing (calibration + validation)
+        run: |
+          python scripts/llmmc_postprocess.py \
+            --draws-dir data/llmmc-draws \
+            --output-dir outputs/llmmc-reports
+
+      - name: Commit results (draws + calibrated + report)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/llmmc-draws/ outputs/llmmc-reports/
+          if git diff --cached --quiet; then
+            echo "No new results to commit"
+          else
+            MODEL="${{ steps.params.outputs.model }}"
+            N_DRAWS="${{ steps.params.outputs.n_draws }}"
+            TEMP="${{ steps.params.outputs.temperature }}"
+            git commit -m "data(llmmc): E1-E5 pipeline $(date +%Y-%m-%d) [model=${MODEL}, n=${N_DRAWS}, T=${TEMP}]"
+            git push
+          fi

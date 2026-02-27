@@ -1,0 +1,420 @@
+# =============================================================================
+# 8D → SLIDE ARCHITECTURE MAPPING
+# =============================================================================
+# Basiert auf Appendix CCC (METHOD-DOCTYPE) und DDD (REF-DOCTYPE)
+# Axiome DT-5 und DT-6: Struktur emergiert aus 8D-Koordinaten
+#
+# Version: 1.0
+# Date: January 2026
+# =============================================================================
+
+metadata:
+  name: "8D to Slide Architecture Mapping"
+  version: "1.0"
+  created: "2026-01-26"
+  based_on:
+    - "appendices/CCC_METHOD-DOCTYPE.tex"
+    - "appendices/DDD_REF-DOCTYPE.tex"
+
+# =============================================================================
+# ZIELGRUPPEN-PROFILE (Presets)
+# =============================================================================
+
+audience_profiles:
+
+  board:
+    name: "Board / C-Level"
+    description: "Verwaltungsrat, CEO, CFO - strategische Entscheidungsträger"
+    profile_8d:
+      D1_knowledge: 0.4      # Nicht technisch
+      D2_proximity: 0.3      # Fern vom Fachgebiet
+      D3_scope: 0.85         # Strategisch/gesellschaftlich
+      D4_time: 0.2           # Wenig Zeit
+      D5_goal: "G2"          # Handlung auslösen
+      D6_context: 0.9        # Extern, formal
+      D7_emotion: 0.4        # Eher sachlich, aber Stories
+      D8_persistence: 0.6    # Wird archiviert
+
+  management:
+    name: "Management"
+    description: "Geschäftsleitung, Abteilungsleiter"
+    profile_8d:
+      D1_knowledge: 0.5
+      D2_proximity: 0.5
+      D3_scope: 0.7
+      D4_time: 0.35
+      D5_goal: "G2"
+      D6_context: 0.8
+      D7_emotion: 0.35
+      D8_persistence: 0.65
+
+  team:
+    name: "Projektteam"
+    description: "Fachleute, Projektmitarbeiter"
+    profile_8d:
+      D1_knowledge: 0.7
+      D2_proximity: 0.7
+      D3_scope: 0.5
+      D4_time: 0.55
+      D5_goal: "G1"          # Informieren
+      D6_context: 0.6
+      D7_emotion: 0.25
+      D8_persistence: 0.7
+
+  science:
+    name: "Wissenschaft"
+    description: "Forscher, Konferenz, Paper"
+    profile_8d:
+      D1_knowledge: 0.9
+      D2_proximity: 0.85
+      D3_scope: 0.6
+      D4_time: 0.8
+      D5_goal: "G1"
+      D6_context: 0.95
+      D7_emotion: 0.15
+      D8_persistence: 0.95
+
+  client:
+    name: "Kunde (extern)"
+    description: "Externer Kunde, Präsentation vor Ort"
+    profile_8d:
+      D1_knowledge: 0.45
+      D2_proximity: 0.4
+      D3_scope: 0.6
+      D4_time: 0.4
+      D5_goal: "G3"          # Überzeugen
+      D6_context: 0.85
+      D7_emotion: 0.5
+      D8_persistence: 0.5
+
+# =============================================================================
+# SLIDE-ANZAHL (Axiom DT-5a)
+# =============================================================================
+
+slide_count_rules:
+  # D4 (Zeit) → Anzahl Slides
+  by_D4:
+    - range: [0.0, 0.2]
+      slides: [5, 7]
+      description: "Sehr wenig Zeit (Board)"
+
+    - range: [0.2, 0.4]
+      slides: [8, 12]
+      description: "Wenig Zeit (Management)"
+
+    - range: [0.4, 0.6]
+      slides: [12, 18]
+      description: "Moderate Zeit (Team)"
+
+    - range: [0.6, 0.8]
+      slides: [18, 25]
+      description: "Viel Zeit (Wissenschaft)"
+
+    - range: [0.8, 1.0]
+      slides: [25, 40]
+      description: "Sehr viel Zeit (Archiv)"
+
+# =============================================================================
+# SLIDE-TYPEN NACH ZIEL (Axiom DT-5b)
+# =============================================================================
+
+slide_types_by_goal:
+
+  G1_informieren:
+    description: "Ziel: Wissen vermitteln"
+    required_slides:
+      - TITLE
+      - EXECUTIVE_SUMMARY
+      - DATA_CHART
+      - SOURCES
+    optional_slides:
+      - METHODOLOGY
+      - BULLET_LIST
+      - BACKUP
+    slide_flow: ["TITLE", "EXECUTIVE_SUMMARY", "DATA_CHART*", "METHODOLOGY?", "SOURCES"]
+
+  G2_handeln:
+    description: "Ziel: Handlung auslösen"
+    required_slides:
+      - TITLE
+      - EXECUTIVE_SUMMARY
+      - IMPLICATIONS
+      - CALL_TO_ACTION
+    optional_slides:
+      - DATA_CHART
+      - COMPARISON
+      - SOURCES
+    slide_flow: ["TITLE", "EXECUTIVE_SUMMARY", "DATA_CHART?", "IMPLICATIONS", "CALL_TO_ACTION", "SOURCES?"]
+
+  G3_ueberzeugen:
+    description: "Ziel: Überzeugen"
+    required_slides:
+      - TITLE
+      - EXECUTIVE_SUMMARY
+      - DATA_CHART
+      - COMPARISON
+      - CALL_TO_ACTION
+    optional_slides:
+      - QUOTE
+      - IMPLICATIONS
+      - SOURCES
+    slide_flow: ["TITLE", "EXECUTIVE_SUMMARY", "DATA_CHART*", "COMPARISON", "IMPLICATIONS?", "CALL_TO_ACTION", "SOURCES?"]
+
+  G4_unterhalten:
+    description: "Ziel: Unterhalten (selten für EBF)"
+    required_slides:
+      - TITLE
+      - QUOTE
+    optional_slides:
+      - DATA_CHART
+      - BULLET_LIST
+    slide_flow: ["TITLE", "QUOTE*", "DATA_CHART?"]
+
+# =============================================================================
+# TEXT-KOMPLEXITÄT (Axiom DT-7)
+# =============================================================================
+
+text_complexity_rules:
+
+  by_D1:
+    # D1 = Wissen der Zielgruppe
+    - range: [0.0, 0.3]
+      level: "simple"
+      settings:
+        font_sizes:
+          title: 44
+          body: 22
+          caption: 16
+        max_words_per_slide: 40
+        bullet_depth: 1
+        formulas: "none"
+        jargon: "none"
+        flesch_kincaid_max: 8
+
+    - range: [0.3, 0.6]
+      level: "moderate"
+      settings:
+        font_sizes:
+          title: 40
+          body: 20
+          caption: 14
+        max_words_per_slide: 60
+        bullet_depth: 2
+        formulas: "simplified"
+        jargon: "explained"
+        flesch_kincaid_max: 12
+
+    - range: [0.6, 0.8]
+      level: "advanced"
+      settings:
+        font_sizes:
+          title: 36
+          body: 18
+          caption: 12
+        max_words_per_slide: 90
+        bullet_depth: 2
+        formulas: "standard"
+        jargon: "allowed"
+        flesch_kincaid_max: 14
+
+    - range: [0.8, 1.0]
+      level: "expert"
+      settings:
+        font_sizes:
+          title: 32
+          body: 16
+          caption: 11
+        max_words_per_slide: 120
+        bullet_depth: 3
+        formulas: "full"
+        jargon: "expected"
+        flesch_kincaid_max: 18
+
+# =============================================================================
+# GRAFIK/TEXT BALANCE (Axiom DT-8)
+# =============================================================================
+
+content_balance_rules:
+
+  by_D7:
+    # D7 = Emotion (0=sachlich, 1=emotional)
+    - range: [0.0, 0.3]
+      style: "data_heavy"
+      balance:
+        charts_ratio: 0.6
+        text_ratio: 0.3
+        whitespace_ratio: 0.1
+      preferences:
+        chart_types: ["bar", "line", "table"]
+        use_icons: false
+        use_illustrations: false
+
+    - range: [0.3, 0.5]
+      style: "balanced"
+      balance:
+        charts_ratio: 0.45
+        text_ratio: 0.4
+        whitespace_ratio: 0.15
+      preferences:
+        chart_types: ["bar", "pie", "line"]
+        use_icons: true
+        use_illustrations: false
+
+    - range: [0.5, 0.7]
+      style: "visual"
+      balance:
+        charts_ratio: 0.35
+        text_ratio: 0.35
+        whitespace_ratio: 0.3
+      preferences:
+        chart_types: ["pie", "infographic"]
+        use_icons: true
+        use_illustrations: true
+
+    - range: [0.7, 1.0]
+      style: "story"
+      balance:
+        charts_ratio: 0.2
+        text_ratio: 0.4
+        whitespace_ratio: 0.4
+      preferences:
+        chart_types: ["infographic", "timeline"]
+        use_icons: true
+        use_illustrations: true
+        use_quotes: true
+
+# =============================================================================
+# SLIDE-ARCHITEKTUR GENERIERUNG
+# =============================================================================
+
+architecture_generator:
+
+  algorithm: |
+    1. Lade 8D-Profil (aus audience_profile oder custom)
+    2. Bestimme slide_count aus D4
+    3. Bestimme slide_types aus D5 (Ziel)
+    4. Bestimme text_complexity aus D1
+    5. Bestimme content_balance aus D7
+    6. Generiere slide_sequence:
+       a. Starte mit required_slides aus D5
+       b. Füge optional_slides hinzu bis slide_count erreicht
+       c. Priorisiere nach D3 (Scope): hoch → mehr Implikationen
+    7. Für jeden Slide: Wende text_complexity und content_balance an
+
+  # Beispiel-Output für "board" Profil
+  example_output:
+    audience: "board"
+    slide_count: 7
+    text_complexity: "simple"
+    content_balance: "balanced"
+    slide_sequence:
+      - type: "TITLE"
+        index: 1
+        content_sources: ["session.question", "session.author", "session.date"]
+        graphics: ["title_illustration"]
+
+      - type: "EXECUTIVE_SUMMARY"
+        index: 2
+        content_sources: ["session.key_finding_main", "session.kpis"]
+        graphics: []
+
+      - type: "DATA_CHART"
+        index: 3
+        content_sources: ["model.cognitive_hierarchy"]
+        graphics: ["cognitive_hierarchy_bar"]
+        title: "Cognitive Hierarchy"
+
+      - type: "DATA_CHART"
+        index: 4
+        content_sources: ["model.example_results"]
+        graphics: ["v_n_decay_line"]
+        title: "Verständnis nach Komplexität"
+
+      - type: "IMPLICATIONS"
+        index: 5
+        content_sources: ["session.implications"]
+        graphics: ["icons"]
+        title: "Was bedeutet das für Sie?"
+
+      - type: "CALL_TO_ACTION"
+        index: 6
+        content_sources: ["session.main_recommendation", "session.action_items"]
+        graphics: []
+
+      - type: "SOURCES"
+        index: 7
+        content_sources: ["session.sources", "session.contact"]
+        graphics: []
+
+# =============================================================================
+# SESSION-DATEN MAPPING
+# =============================================================================
+
+session_data_mapping:
+
+  # Woher kommen die Inhalte für jeden Content-Type?
+  content_sources:
+
+    session.question:
+      source: "output-registry.yaml"
+      path: "content_summary.question"
+      fallback: "model-registry.yaml → question_template"
+
+    session.author:
+      source: "model-building-session.yaml"
+      path: "author"
+      fallback: "FehrAdvice & Partners AG"
+
+    session.date:
+      source: "output-registry.yaml"
+      path: "created"
+      format: "dd. MMMM YYYY"
+
+    session.key_finding_main:
+      source: "output-registry.yaml"
+      path: "content_summary.key_findings[0]"
+      max_words: 20
+
+    session.kpis:
+      source: "model-registry.yaml"
+      paths:
+        - "cognitive_hierarchy.median_level"
+        - "validation.confidence"
+        - "sensitivity.main_drivers[0]"
+      format: "table"
+
+    session.implications:
+      source: "session-report.md"
+      section: "Praktische Implikationen"
+      max_items: 4
+      max_words_per_item: 8
+
+    session.main_recommendation:
+      source: "session-report.md"
+      section: "Schlussfolgerungen"
+      max_words: 25
+
+    session.sources:
+      source: "model-registry.yaml"
+      path: "theory_basis.primary + theory_basis.secondary"
+      format: "citation_list"
+
+    model.cognitive_hierarchy:
+      source: "model-registry.yaml"
+      path: "cognitive_hierarchy.distribution"
+
+    model.example_results:
+      source: "model-registry.yaml"
+      path: "example_results.situations"
+
+    model.sensitivity:
+      source: "model-registry.yaml"
+      path: "sensitivity.main_drivers"
+
+    model.formula:
+      source: "model-registry.yaml"
+      path: "functional_form.formula"
+
+    model.variables:
+      source: "model-registry.yaml"
+      path: "variables"

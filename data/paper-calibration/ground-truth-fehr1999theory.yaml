@@ -1,0 +1,345 @@
+paper_key: "fehr1999theory"
+source: "fulltext_ground_truth"
+
+S1_research_question:
+  value: "Can a single model of self-centered inequity aversion explain the puzzling coexistence of 'fair' behavior in bilateral bargaining, 'competitive/unfair' outcomes in market games, cooperation in public goods games with punishment, and defection in public goods games without punishment?"
+  confidence: HIGH
+  page_reference: "Abstract, Section I Introduction"
+
+S2_methodology:
+  value: "Formal theoretical model with calibration against existing experimental evidence"
+  details: "Develops a utility function incorporating self-centered inequity aversion with two parameters (alpha for disadvantageous inequality, beta for advantageous inequality). Derives equilibrium predictions via game theory (subgame perfect equilibrium) for ultimatum games, market games with proposer/responder competition, public good games with and without punishment, dictator games, and gift exchange games. Calibrates population distribution of preference parameters against aggregate experimental data from multiple published studies."
+  study_type: "theoretical_with_calibration"
+  design: "Formal model building with analytical equilibrium derivations and cross-game prediction validation"
+  confidence: HIGH
+  page_reference: "Sections II-VI"
+
+S3_sample:
+  N: "not_applicable"
+  population: "Theoretical model calibrated against existing experimental data from multiple studies (Roth et al. 1991, Fehr and Gaechter 1996, Isaac and Walker 1988, etc.)"
+  note: "No new experiments conducted. Calibration data drawn from ultimatum, market, and public goods experiments across multiple countries (Jerusalem, Ljubljana, Pittsburgh, Tokyo, Zurich, among others)."
+  confidence: HIGH
+  page_reference: "Sections III-VI"
+
+S4_findings:
+  main_result: "A model of self-centered inequity aversion with heterogeneous preferences explains the coexistence of fair and competitive outcomes across different economic environments. The key insight is that the economic environment (market structure, punishment opportunities) determines whether fair or selfish types dominate equilibrium behavior."
+  parameters:
+    # Core utility function parameters
+    - symbol: "alpha_i"
+      name: "Disadvantageous inequity aversion"
+      definition: "Weight on disutility from others earning more than player i"
+      constraint: "alpha_i >= beta_i"
+      context: "Utility function: U_i(x) = x_i - (alpha_i/(n-1)) * sum max{x_j - x_i, 0} - (beta_i/(n-1)) * sum max{x_i - x_j, 0}"
+      source_section: "Section II, Equation (1)"
+      confidence: HIGH
+
+    - symbol: "beta_i"
+      name: "Advantageous inequity aversion"
+      definition: "Weight on disutility from player i earning more than others"
+      constraint: "0 <= beta_i < 1"
+      interpretation: "beta_i = 0.5 means indifferent between keeping $1 and giving $1 to disadvantaged other; beta_i >= 1 ruled out as implausible (willing to destroy own money to reduce advantage)"
+      context: "Utility function: same as alpha_i"
+      source_section: "Section II, Equation (1)"
+      confidence: HIGH
+
+    # Population distribution of alpha (Table III)
+    - symbol: "alpha_population_distribution"
+      name: "Population distribution of disadvantageous inequity aversion"
+      values:
+        - fraction: 0.30
+          alpha: 0.0
+          acceptance_threshold_s_prime: 0.0
+          type: "selfish"
+        - fraction: 0.30
+          alpha: 0.5
+          acceptance_threshold_s_prime: 0.25
+          type: "moderate"
+        - fraction: 0.30
+          alpha: 1.0
+          acceptance_threshold_s_prime: 0.333
+          type: "fair"
+        - fraction: 0.10
+          alpha: 4.0
+          acceptance_threshold_s_prime: 0.444
+          type: "strongly_fair"
+      context: "Calibrated from ultimatum game rejection data across multiple studies"
+      source_section: "Section V, Table III"
+      confidence: HIGH
+
+    # Population distribution of beta (Table III)
+    - symbol: "beta_population_distribution"
+      name: "Population distribution of advantageous inequity aversion"
+      values:
+        - fraction: 0.30
+          beta: 0.0
+          optimal_offer_s_star: 0.333
+        - fraction: 0.30
+          beta: 0.25
+          optimal_offer_s_star: 0.444
+        - fraction: 0.40
+          beta: 0.6
+          optimal_offer_s_star: 0.5
+      context: "Calibrated from ultimatum game offer data"
+      source_section: "Section V, Table III"
+      confidence: HIGH
+
+    # Population averages (computed from Table III)
+    - symbol: "alpha_mean"
+      value: 0.85
+      context: "Population average: 0.30*0 + 0.30*0.5 + 0.30*1.0 + 0.10*4.0 = 0.85"
+      source_section: "Key Equations Summary (derived from Table III)"
+      confidence: HIGH
+
+    - symbol: "beta_mean"
+      value: 0.315
+      context: "Population average: 0.30*0 + 0.30*0.25 + 0.40*0.6 = 0.315"
+      source_section: "Key Equations Summary (derived from Table III)"
+      confidence: HIGH
+
+    # Acceptance threshold function
+    - symbol: "s_prime_alpha"
+      name: "Ultimatum game acceptance threshold"
+      formula: "s'(alpha) = alpha / (1 + 2*alpha)"
+      properties: "Increasing and strictly concave in alpha; converges to 0.5 as alpha -> infinity"
+      example_values:
+        - alpha: 0.333
+          threshold: 0.2
+        - alpha: 0.5
+          threshold: 0.25
+        - alpha: 0.75
+          threshold: 0.3
+        - alpha: 1.0
+          threshold: 0.333
+        - alpha: 4.0
+          threshold: 0.444
+      source_section: "Section III.A, Proposition 1"
+      confidence: HIGH
+
+    # Equilibrium offer conditions
+    - symbol: "s_star_proposer"
+      name: "Optimal proposer offer in ultimatum game"
+      conditions:
+        - condition: "beta_1 > 0.5"
+          offer: 0.5
+        - condition: "beta_1 = 0.5"
+          offer: "[s'(alpha_2), 0.5]"
+        - condition: "beta_1 < 0.5"
+          offer: "s'(alpha_2)"
+      source_section: "Section III.A, Proposition 1"
+      confidence: HIGH
+
+    # Public good game parameters
+    - symbol: "a"
+      name: "Marginal per capita return (MPCR) to public good"
+      constraint: "1/n < a < 1"
+      context: "Public goods game: x_i = y - g_i + a * sum(g_j)"
+      source_section: "Section IV"
+      confidence: HIGH
+
+    # Cooperation condition
+    - symbol: "cooperation_condition_no_punishment"
+      name: "Condition for full defection equilibrium"
+      formula: "k/(n-1) > a/2 where k = number of players with a + beta_i < 1"
+      interpretation: "If enough selfish players exist relative to MPCR, unique equilibrium is zero contributions"
+      source_section: "Section IV, Proposition 4(b)"
+      confidence: HIGH
+
+    # Empirical regularities from ultimatum game data
+    - symbol: "ultimatum_offer_distribution"
+      name: "Distribution of ultimatum game offers"
+      values:
+        - range: "[0.4, 0.5]"
+          fraction: "0.60-0.80"
+          note: "Vast majority of offers"
+        - range: "< 0.2"
+          fraction: 0.03
+          note: "Very rare"
+        - range: "> 0.5"
+          fraction: "~0"
+          note: "Virtually no offers above 0.5"
+      context: "Robust across countries, stake sizes, and experimental procedures"
+      source_section: "Section III.A, experimental regularities (i)-(iv)"
+      confidence: HIGH
+
+    # Public good game without punishment
+    - symbol: "defection_rate_no_punishment"
+      value: 0.73
+      context: "In the final period of n-person cooperation games (n >= 3) without punishment, 73 percent of all subjects choose g_i = 0"
+      source_section: "Section IV, Table II"
+      confidence: HIGH
+
+    # Public good game with punishment
+    - symbol: "cooperation_rate_with_punishment"
+      value: 0.80
+      context: "Roughly 80 percent cooperates fully in the game with punishment (Fehr and Gaechter 1996)"
+      source_section: "Section IV"
+      confidence: HIGH
+
+    # Market competition result
+    - symbol: "competitive_equilibrium_probability"
+      value: 0.83
+      context: "With five responders, probability at least one has alpha_i = 0 is 1 - 0.7^5 = 83%, enabling competitive equilibrium"
+      source_section: "Section V"
+      confidence: HIGH
+
+    # Public good with punishment cooperation probability
+    - symbol: "cooperation_equilibrium_probability"
+      value: 0.611
+      context: "For Table III distribution, probability that a randomly drawn group of four players meets conditions for cooperation is 61.1 percent"
+      source_section: "Section V"
+      confidence: HIGH
+
+  key_findings:
+    - "Inequity aversion with heterogeneous preferences explains both fair outcomes in ultimatum games and competitive outcomes in market games using a single model"
+    - "The economic environment determines which preference type (fair or selfish) is decisive for equilibrium behavior"
+    - "In market games with proposer competition, any distribution of alpha and beta yields the competitive outcome (Proposition 2) - a single selfish player can force all others to behave selfishly"
+    - "In market games with responder competition, competitive outcomes emerge with high probability because only one selfish responder is needed (Proposition 3)"
+    - "In public goods games without punishment, 73% of subjects choose zero contributions in the final period"
+    - "In public goods games with punishment, roughly 80% of subjects cooperate fully - a small group of conditional cooperative enforcers can sustain full cooperation"
+    - "A single player with sufficiently high alpha_i is enough to enforce efficient contributions by all other players through punishment"
+    - "The model explains gift exchange (wage-effort positive correlation) through inequity-averse workers choosing higher effort when wages create advantageous inequality"
+    - "Linear model has limitations for dictator game predictions; concave disadvantageous inequality aversion needed for interior dictator offers"
+    - "Competition renders fairness considerations irrelevant if and only if none of the competing players can punish the monopolist by destroying surplus"
+    - "Fairness plays a smaller role in goods markets than in labor markets because workers can vary effort to affect relative payoffs"
+  confidence: HIGH
+
+S5_validity:
+  internal: HIGH
+  reasoning: "Formally rigorous game-theoretic model with clear axioms and analytical equilibrium derivations. Internal consistency maintained across all game types. Parameter restrictions (alpha_i >= beta_i, 0 <= beta_i < 1) are well-motivated theoretically and empirically."
+  external: HIGH
+  reasoning: "Model successfully explains behavioral patterns across multiple well-replicated experimental paradigms (ultimatum, dictator, market, public goods, gift exchange games) and across multiple countries (Jerusalem, Ljubljana, Pittsburgh, Tokyo). A single distribution of preference parameters (Table III) generates consistent predictions across diverse strategic environments."
+  replication_status: "foundational_study_extensively_replicated"
+  limitations:
+    - "Linear utility function cannot explain interior offers in dictator games; concave extension needed"
+    - "Does not explicitly model intentions (unlike Rabin 1993), though intentions can be captured implicitly"
+    - "Cannot explain the evolution of play over time; focuses on stable behavioral patterns after several periods"
+    - "Self-centered inequity aversion: players do not care about inequity among other players"
+    - "Reference group assumed to be all players in the experiment; may not hold in all contexts"
+    - "Purely outcome-based model; does not distinguish between intentional and unintentional inequality"
+    - "Players with beta_i < 0 (status-seeking) are excluded, though they have virtually no impact on equilibrium"
+    - "Assumed homogeneous reference point (egalitarian outcome); in reality reference points may vary"
+  confidence: HIGH
+  page_reference: "Sections VII, VIII"
+
+S6_reproducibility:
+  data_available: false
+  note: "Theoretical paper. No new experimental data collected. Calibration based on published experimental results from Roth et al. (1991), Fehr and Gaechter (1996), Isaac and Walker (1988), and others."
+  code_available: false
+  model_fully_specified: true
+  equations_complete: true
+  parameter_distribution_complete: true
+  note_reproducibility: "All equations, propositions, and proofs are fully specified. The calibrated distribution (Table III) is explicitly stated. Model predictions can be analytically derived from the given utility function."
+  confidence: HIGH
+  page_reference: "Sections II-V"
+
+measurement_contexts:
+  - parameter: "alpha_i (disadvantageous inequity aversion)"
+    value_distribution: "30% alpha=0, 30% alpha=0.5, 30% alpha=1.0, 10% alpha=4.0"
+    mean: 0.85
+    psi_conditions:
+      Psi_I: "laboratory_experiment_ultimatum_game"
+      Psi_S: "anonymous_bilateral_bargaining_equal_initial_roles"
+      Psi_K: "multi-country_calibration (Jerusalem, Ljubljana, Pittsburgh, Tokyo, various Western labs)"
+      Psi_C: "university_students_random_role_assignment"
+      Psi_E: "varying_stake_sizes_fixed_pie"
+    measurement_method: "Inferred from ultimatum game rejection thresholds: s'(alpha) = alpha/(1+2*alpha)"
+    calibration_source: "Multiple ultimatum game studies (Roth et al. 1991, Guth et al. 1982, Camerer and Thaler 1995, Roth 1995)"
+    confidence: HIGH
+
+  - parameter: "beta_i (advantageous inequity aversion)"
+    value_distribution: "30% beta=0, 30% beta=0.25, 40% beta=0.6"
+    mean: 0.315
+    psi_conditions:
+      Psi_I: "laboratory_experiment_ultimatum_game"
+      Psi_S: "anonymous_bilateral_bargaining_proposer_role"
+      Psi_K: "multi-country_calibration"
+      Psi_C: "university_students"
+    measurement_method: "Inferred from ultimatum game offer distribution: 60-80% of offers in [0.4, 0.5], only 3% below 0.2"
+    calibration_source: "Multiple ultimatum game studies"
+    confidence: HIGH
+
+  - parameter: "defection_rate_no_punishment"
+    value: 0.73
+    psi_conditions:
+      Psi_I: "voluntary_contribution_mechanism_no_punishment_final_period"
+      Psi_S: "n-person_group_n>=3_anonymous"
+      Psi_K: "laboratory_experiments_various_countries"
+      Psi_T: "final_period_of_repeated_game"
+    measurement_method: "Fraction of subjects choosing g_i = 0 in final period"
+    calibration_source: "Public goods experiments (Isaac and Walker 1988, 1991; Fehr and Gaechter 1996; Table II)"
+    confidence: HIGH
+
+  - parameter: "cooperation_rate_with_punishment"
+    value: 0.80
+    psi_conditions:
+      Psi_I: "voluntary_contribution_mechanism_with_costly_punishment_opportunity"
+      Psi_S: "n-person_group_anonymous_with_individual_punishment_decisions"
+      Psi_K: "laboratory_experiment"
+    measurement_method: "Fraction of subjects contributing fully when punishment is available"
+    calibration_source: "Fehr and Gaechter (1996)"
+    confidence: HIGH
+
+  - parameter: "ultimatum_offer_range"
+    value_range: "[0.4, 0.5] for 60-80% of offers"
+    psi_conditions:
+      Psi_I: "ultimatum_game_take_it_or_leave_it"
+      Psi_S: "anonymous_bilateral_one-shot_or_repeated_with_strangers"
+      Psi_K: "robust_across_countries_cultures_stake_sizes"
+      Psi_E: "various_stake_sizes_from_small_to_several_months_income"
+    measurement_method: "Fraction of total surplus offered to responder"
+    calibration_source: "Thaler 1988, Guth and Tietz 1990, Camerer and Thaler 1995, Roth 1995, Kachelmeier and Shehata 1992"
+    confidence: HIGH
+
+  - parameter: "market_competitive_outcome"
+    value: "s = 1 (all surplus to responder) in proposer competition; s = 0 in responder competition"
+    psi_conditions:
+      Psi_I: "competitive_market_game_with_multiple_proposers_or_responders"
+      Psi_S: "n_competing_players_on_one_side_of_market"
+      Psi_K: "laboratory_market_experiments"
+    measurement_method: "Equilibrium share offered/accepted"
+    note: "Competitive pressure forces even inequity-averse players to behave selfishly"
+    calibration_source: "Smith and Williams 1990, Roth et al. 1991, Kachelmeier and Shehata 1992"
+    confidence: HIGH
+
+  - parameter: "gift_exchange_wage_effort_correlation"
+    value: "positive_and_significant"
+    psi_conditions:
+      Psi_I: "gift_exchange_game_with_effort_choice_after_wage_offer"
+      Psi_S: "employer_worker_bilateral_with_competing_workers"
+      Psi_K: "laboratory_experiment"
+    measurement_method: "Correlation between offered wage and chosen effort level"
+    calibration_source: "Fehr, Kirchsteiger, and Riedl (1993)"
+    note: "Explained by inequity-averse workers raising effort when high wage creates advantageous inequality"
+    confidence: HIGH
+
+  - parameter: "social_comparison_loss_aversion"
+    value: "alpha_i >= beta_i (strict for most individuals)"
+    psi_conditions:
+      Psi_I: "social_comparison_with_known_reference_group"
+      Psi_S: "pairwise_or_group_payoff_comparison"
+      Psi_C: "ordinal_ranking_of_payoff_distributions"
+    measurement_method: "Ordinal ranking of unequal payoff distributions (Loewenstein, Thompson, and Bazerman 1989)"
+    note: "Robust finding that disadvantageous inequality hurts more than advantageous inequality, analogous to loss aversion in prospect theory"
+    calibration_source: "Loewenstein, Thompson, and Bazerman (1989), supported by Tversky and Kahneman (1991)"
+    confidence: HIGH
+
+content_level: "L3"
+integration_level: "I4"
+evidence_tier: 1
+journal: "Quarterly Journal of Economics"
+year: 1999
+authors: "Ernst Fehr, Klaus M. Schmidt"
+doi: "10.1162/003355399556151"
+
+ebf_integration:
+  theory_id: "MS-SP-001"
+  parameter_registry_ids:
+    - "PAR-BEH-012 (alpha)"
+    - "PAR-BEH-013 (beta)"
+  case_registry_id: "CAS-876"
+  core_10c_mapping:
+    WHAT: "Utility includes social component via inequity aversion (S-dimension: u_S)"
+    HOW: "Complementarity gamma for social interactions; fairness norms interact multiplicatively with competitive environment"
+    WHO: "Heterogeneous population: 30% selfish (alpha=0, beta=0), 30% moderate, 30% fair, 10% strongly fair"
+    AWARE: "Social comparison operates partly automatically; subjects compare own payoff to all others in reference group"
+    WHEN: "Context determines whether fair or selfish types dominate: Psi_market (competitive) vs Psi_bilateral (bargaining) vs Psi_punishment (cooperation with enforcement)"

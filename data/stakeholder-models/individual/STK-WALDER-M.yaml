@@ -1,0 +1,853 @@
+# =============================================================================
+# INDIVIDUAL STAKEHOLDER BEHAVIORAL MODEL
+# =============================================================================
+# Subject:     Marc Walder (CEO & Managing Partner, Ringier AG)
+# Model ID:    STK-WALDER-M
+# Model Ref:   MOD-022 (Executive Decision Prediction Model)
+# Version:     0.1 (Initial — LLMMC Prior, no empirical calibration yet)
+# Created:     2026-02-13
+# Created by:  EBF-S-2026-02-13-ORG-001 (RMS Strategy Session)
+# Status:      PRIOR (not yet calibrated with observations)
+#
+# PURPOSE:
+#   Predict P(approve | proposal) for Marc Walder decisions at Ringier/RMS.
+#   Enable Ladina (RMS Strategy) to optimize proposal framing and timing.
+#
+# CALIBRATION:
+#   Every observed decision (approve/reject/modify) updates posterior.
+#   See calibration_log at bottom of file.
+#
+# FALSIFIABILITY:
+#   Model generates testable predictions. If prediction accuracy < 60%
+#   after 10+ observations, model structure must be revised.
+#
+# =============================================================================
+
+---
+
+metadata:
+  id: "STK-WALDER-M"
+  model_ref: "MOD-022"
+  name: "Marc Walder Executive Decision Model"
+  subject:
+    full_name: "Marc Walder"
+    role: "CEO & Managing Partner"
+    organization: "Ringier AG"
+    tenure_start: 2012
+    equity_stake: 0.10  # 10% shareholder since 2018
+    board_seats:
+      - "Ringier AG (CEO)"
+      - "Sportradar (Board Member)"
+      - "digitalswitzerland (Founder & Chairman)"
+  version: "0.1"
+  status: "prior"  # prior | calibrating | validated | revised
+  created: "2026-02-13"
+  last_updated: "2026-02-13"
+  validation:
+    total_observations: 0
+    correct_predictions: 0
+    accuracy: null
+    brier_score: null
+    next_review: "after 5 observations"
+
+# =============================================================================
+# BIOGRAPHY-DERIVED BEHAVIORAL MARKERS
+# =============================================================================
+# These are NOT parameters but contextual priors that inform parameter choice.
+# Each marker has a behavioral hypothesis that can be tested.
+
+biography_markers:
+  - marker: "ex_tennis_pro"
+    period: "1984-1991 (ATP Tour)"
+    behavioral_hypothesis: "Competition framing activates approach motivation"
+    implication: "Frame proposals as 'winning against competitors' not 'avoiding decline'"
+    confidence: 0.75
+
+  - marker: "autodidact"
+    period: "School dropout → Journalist → CEO"
+    behavioral_hypothesis: "Higher need for external validation (Festinger, 1954)"
+    implication: "Reference prestigious benchmarks (Axel Springer, Schibsted, NYT)"
+    confidence: 0.70
+
+  - marker: "deal_maker_identity"
+    period: "2012-present"
+    behavioral_hypothesis: "Transactional utility > process utility"
+    implication: "Present proposals as 'deals' with clear counterparty, not as 'initiatives'"
+    confidence: 0.80
+
+  - marker: "transformation_narrative"
+    period: "2012-present (4 phases)"
+    behavioral_hypothesis: "Sunk cost commitment to transformation narrative (Arkes & Blumer 1985)"
+    implication: "Never frame as 'pivot' or 'correction' — always as 'next phase'"
+    confidence: 0.85
+
+  - marker: "equity_stakeholder"
+    period: "2018-present (10%)"
+    behavioral_hypothesis: "Principal-agent alignment but also loss aversion on equity value"
+    implication: "EBITDA-negative proposals need strong narrative compensation"
+    confidence: 0.80
+
+  - marker: "political_proximity"
+    period: "2020-present (Berset/Corona, digitalswitzerland)"
+    behavioral_hypothesis: "Status utility from political access (Positionsgut, Frank 1985)"
+    implication: "Proposals that increase political relevance get bonus"
+    confidence: 0.70
+
+# =============================================================================
+# 10C CORE PROFILE (Individual Instance)
+# =============================================================================
+
+ten_c_profile:
+
+  # --------------------------------------------------------------------------
+  # WHO: Welfare Level & Decision Authority
+  # --------------------------------------------------------------------------
+  who:
+    welfare_level: "L3"  # Highest strategic level
+    decision_authority: 0.95  # Near-total for RMS strategy (Board = final)
+    decision_style: "top_down_fast"  # Tennis-reflex, not chess
+    delegation_pattern:
+      delegates_execution: true
+      delegates_direction: false
+      delegates_narrative: false  # CRITICAL: he controls the story
+
+  # --------------------------------------------------------------------------
+  # WHAT: Utility Function U_MW
+  # --------------------------------------------------------------------------
+  what:
+    # THE CORE MODEL:
+    # U_MW = Σ αᵢ · uᵢ(x)
+    # Subject to: U_FIN(x) ≥ θ_EBITDA (necessary condition)
+    #
+    # FORMAL:
+    # U_MW(x) = α_NAR·u_NAR(x) + α_STA·u_STA(x) + α_FIN·u_FIN(x)
+    #           + α_LEG·u_LEG(x) + α_CON·u_CON(x)
+    #
+    # WHERE:
+    # u_NAR(x) = headline_power(x) · zeitgeist_fit(x) · stage_impact(x)
+    # u_STA(x) = peer_recognition(x) · network_access(x) · relative_position(x)
+    # u_FIN(x) = ΔEBITDA(x) · digital_share_impact(x)
+    # u_LEG(x) = historical_significance(x) · transformation_continuity(x)
+    # u_CON(x) = authority_preserved(x) · narrative_control(x)
+
+    utility_dimensions:
+      NAR_narrative:
+        weight: 0.30  # PAR-EXE-001
+        description: "Transformations-Narrativ, Headline-Tauglichkeit, Bühnen-Wirkung"
+        sub_components:
+          headline_power:
+            description: "Kann man damit eine SPEAK-Keynote füllen?"
+            scale: "[0,1]"
+            examples:
+              high: "'RMS schliesst KI-Deal mit OpenAI' → 0.95"
+              medium: "'RMS lanciert Bündel-Abo' → 0.70"
+              low: "'RMS optimiert CRM-Datenbank' → 0.15"
+          zeitgeist_fit:
+            description: "Passt zum aktuellen Tech/KI-Zeitgeist?"
+            scale: "[0,1]"
+            current_zeitgeist: "AI-driven company (2025-2027)"
+            previous: ["platform (2020-2024)", "tech company (2016-2020)", "digital transformation (2012-2016)"]
+          stage_impact:
+            description: "Funktioniert auf internationaler Bühne (Davos, DLD, SXSW)?"
+            scale: "[0,1]"
+
+      STA_status:
+        weight: 0.25  # PAR-EXE-002
+        description: "Statusgewinn durch politische Nähe, Peer-Anerkennung, Netzwerkzugang"
+        sub_components:
+          peer_recognition:
+            description: "Anerkennung durch CEO-Peers (Döpfner, Supino, Wanner)"
+            reference_group: ["Mathias Döpfner (Axel Springer)", "Felix Supino (TX Group)", "Peter Wanner (CH Media)", "Kristin Skogen Lund (Schibsted)"]
+          network_access:
+            description: "Zugang zu politischer/wirtschaftlicher Elite"
+            key_networks: ["digitalswitzerland (250 CEOs)", "WEF Davos", "Bundeshaus"]
+          relative_position:
+            description: "Besser als andere Schweizer Medienchefs? (Positionsgut)"
+            mechanism: "Frank (1985): Status = relative position, not absolute level"
+
+      FIN_financial:
+        weight: 0.20  # PAR-EXE-003
+        description: "EBITDA-Impact, Digital-Anteil, Marge"
+        role: "necessary_condition"  # NOT primary driver, but must be ≥ threshold
+        threshold:
+          EBITDA_minimum: "≥ CHF 100M"  # Below this, narrative collapses
+          digital_share_minimum: 0.75  # Below 75%, 'tech company' narrative fails
+          margin_minimum: 0.12  # Below 12%, cost pressure dominates
+        loss_aversion:
+          lambda_EBITDA_decline: 3.5  # PAR-EXE-006
+          lambda_EBITDA_gain: 1.0
+          asymmetry_note: "Reacts 3.5x stronger to EBITDA threats than opportunities"
+        sub_components:
+          delta_EBITDA:
+            description: "Net EBITDA impact of proposal"
+            scale: "CHF millions"
+          digital_share_impact:
+            description: "Does proposal increase digital revenue share?"
+            scale: "[-1,+1] percentage points"
+
+      LEG_legacy:
+        weight: 0.15  # PAR-EXE-004
+        description: "Historische Bedeutung, Nachhaltigkeit der Transformation"
+        sub_components:
+          historical_significance:
+            description: "Will this be in the history books?"
+            scale: "[0,1]"
+          transformation_continuity:
+            description: "Extends (not contradicts) the 14-year transformation"
+            scale: "[-1,+1]"
+            critical_note: "Negative values trigger Endowment Effect (Thaler 1980)"
+        endowment_effect:
+          description: "Overvalues own past decisions by ~40%"
+          lambda_own_strategy: 1.4  # PAR-EXE-007
+          implication: "Never frame as 'correction' — always as 'evolution'"
+
+      CON_control:
+        weight: 0.10  # PAR-EXE-005
+        description: "Entscheidungs-Autorität, Narrativ-Kontrolle"
+        sub_components:
+          authority_preserved:
+            description: "Does proposal require giving up decision control?"
+            scale: "[0,1]"
+            threat_examples:
+              - "Fusion mit TX unter TX-Führung → CON = 0.0"
+              - "JV mit gleichberechtigtem Partner → CON = 0.3"
+              - "Interne Reorganisation unter MW → CON = 1.0"
+          narrative_control:
+            description: "Can MW control how this is communicated?"
+            scale: "[0,1]"
+
+    # CONSTRAINT: The financial threshold
+    financial_constraint:
+      type: "necessary_condition"
+      formula: "U_FIN(x) ≥ θ_EBITDA"
+      description: |
+        Financial utility is NOT the primary driver but a hard constraint.
+        If a proposal threatens EBITDA below threshold, it is rejected
+        regardless of narrative/status/legacy value.
+      threshold_EBITDA: 100  # CHF Mio. minimum acceptable
+      threshold_digital_share: 0.75
+
+  # --------------------------------------------------------------------------
+  # HOW: Complementarities γ_ij between utility dimensions
+  # --------------------------------------------------------------------------
+  how:
+    complementarities:
+      NAR_FIN:
+        gamma: 0.45  # PAR-EXE-008
+        description: "Good narrative + good financials = super-additive"
+        example: "'KI spart CHF 5M UND klingt innovativ' → γ bonus"
+
+      NAR_STA:
+        gamma: 0.60  # PAR-EXE-009
+        description: "Good narrative + status boost = strongest combo"
+        example: "'Davos-Keynote über RMS KI-Strategie' → maximum γ"
+
+      NAR_LEG:
+        gamma: 0.35  # PAR-EXE-010
+        description: "Narrative that builds legacy = moderate synergy"
+
+      FIN_CON:
+        gamma: -0.20  # PAR-EXE-011
+        description: "Financial optimization sometimes requires ceding control"
+        example: "'Fusion mit TX' = great financials but loss of control → conflict"
+
+      STA_CON:
+        gamma: -0.15  # PAR-EXE-012
+        description: "Status-maximizing moves (Board seats) can dilute control"
+
+    decision_coupling:
+      with_ringier_board: 0.70  # Board has final say on large decisions
+      with_cfo: 0.50  # CFO provides financial validation
+      with_rms_leadership: 0.30  # Ladina's team — influence but not veto
+
+  # --------------------------------------------------------------------------
+  # WHEN: Context Sensitivity (Ψ dimensions)
+  # --------------------------------------------------------------------------
+  when:
+    context_sensitivity:
+      Psi_tech_trends:
+        kappa: 0.95
+        description: "Extremely sensitive to KI/AI/platform trends"
+        current_anchor: "AI-driven company (since SPEAK 2025)"
+
+      Psi_competitive:
+        kappa: 0.85
+        description: "Very sensitive to TX Group / NZZ moves"
+        trigger_words: ["TX Group", "Supino", "Wanner", "Goldbach"]
+
+      Psi_economic:
+        kappa: 0.75
+        description: "Moderately sensitive to macro (ad market, recession)"
+
+      Psi_regulatory:
+        kappa: 0.55
+        description: "Moderate — monitors EU AI Act, Swiss media regulation"
+
+      Psi_internal_org:
+        kappa: 0.35
+        description: "Low — delegates org details to direct reports"
+
+      Psi_editorial_quality:
+        kappa: 0.25
+        description: "Low — sees content as product, not public good"
+
+    context_shock_threshold: 1.5
+    description: "Lower than Board (2.0) — reacts faster to external signals"
+
+    seasonal_patterns:
+      SPEAK_season:
+        period: "Q4-Q1 (Oct-Feb)"
+        effect: "Narrative proposals get +20% attention (SPEAK prep)"
+      budget_season:
+        period: "Q3 (Jul-Sep)"
+        effect: "Financial proposals get +15% scrutiny"
+      summer:
+        period: "Q2 (Jun-Aug)"
+        effect: "Slower decisions, delegation increases"
+
+  # --------------------------------------------------------------------------
+  # WHERE: Parameter Uncertainty & Confidence Requirements
+  # --------------------------------------------------------------------------
+  where:
+    parameter_uncertainty:
+      EBITDA_tolerance: "±5%"  # Accepts 5% variance in EBITDA projections
+      user_growth_tolerance: "±20%"  # Higher tolerance for growth metrics
+      AI_impact_tolerance: "±50%"  # Very high tolerance for AI claims
+      required_confidence:
+        financial: 0.75  # Needs 75% confidence on financials
+        narrative: 0.30  # Accepts narrative claims with low evidence
+        operational: 0.50  # Moderate confidence on operational details
+    confidence_asymmetry:
+      description: |
+        Walder requires HIGH confidence for financial downside
+        but accepts LOW confidence for upside narratives.
+        This is consistent with optimism bias + loss aversion.
+
+  # --------------------------------------------------------------------------
+  # AWARE: Awareness Function A_MW
+  # --------------------------------------------------------------------------
+  aware:
+    # A_MW(signal) = κ(signal_type) × R(source_credibility) × T(timing)
+    #
+    # WHERE:
+    # κ = attention weight (see when.context_sensitivity)
+    # R = source recognition (trusted → 1.0, unknown → 0.3)
+    # T = timing factor (SPEAK season → 1.2, summer → 0.7)
+
+    baseline_awareness: 0.70  # Lower than Board (0.85) — selective attention
+
+    information_diet:
+      high_consumption:
+        - "International media (FT, NYT, Economist)"
+        - "Tech publications (Wired, TechCrunch, The Information)"
+        - "LinkedIn CEO network"
+        - "WEF briefings, DLD Conference"
+        - "Palantir/Tech partner briefings"
+      medium_consumption:
+        - "Swiss business media (Handelszeitung, Bilanz)"
+        - "Ringier internal dashboards (monthly)"
+        - "CFO financial reports (quarterly)"
+      low_consumption:
+        - "Academic papers (unless presented as '1 insight')"
+        - "Detailed market research reports"
+        - "Employee satisfaction surveys"
+        - "Reader feedback / user research"
+
+    blind_spots:
+      - id: "BS-1"
+        domain: "editorial_quality"
+        kappa: 0.30
+        risk: "Content degradation erodes trust → churn → EBITDA impact delayed"
+        detectable_by: "NPS decline, brand perception surveys"
+        literature: "Nelson (1970) — experience goods require trust signals"
+
+      - id: "BS-2"
+        domain: "employee_morale"
+        kappa: 0.25
+        risk: "Repeated restructuring creates fear culture → innovation dies"
+        detectable_by: "Glassdoor ratings, voluntary turnover rate"
+        literature: "Edmondson (1999) — psychological safety drives innovation"
+
+      - id: "BS-3"
+        domain: "swiss_market_specificity"
+        kappa: 0.30
+        risk: "International templates fail in 4-language, high-quality CH market"
+        detectable_by: "Abo-conversion rates vs. international benchmarks"
+        literature: "Hofstede — cultural dimensions affect adoption patterns"
+
+      - id: "BS-4"
+        domain: "user_perspective"
+        kappa: 0.25
+        risk: "B2B thinking ignores B2C willingness-to-pay dynamics"
+        detectable_by: "User survey data, willingness-to-pay studies"
+
+      - id: "BS-5"
+        domain: "narrative_reality_gap"
+        kappa: 0.20
+        risk: "HIGHEST RISK: AI narrative outpaces AI reality → credibility collapse"
+        detectable_by: "Compare SPEAK announcements vs. operational KPIs 12 months later"
+        literature: "Malmendier & Tate (2005) — CEO overconfidence"
+
+    awareness_building:
+      effective_channels:
+        - "1-slide insight (not 30-page report)"
+        - "International benchmark comparison"
+        - "Competitor alert ('TX Group just announced...')"
+        - "EBITDA-impact number (red = threat)"
+      ineffective_channels:
+        - "Academic papers"
+        - "Long strategy documents (>10 pages)"
+        - "Bottom-up proposals without sponsor"
+        - "Purely operational improvements"
+
+  # --------------------------------------------------------------------------
+  # READY: Capability × Willingness
+  # --------------------------------------------------------------------------
+  ready:
+    capability_theta: 0.95  # Full resources, authority, team
+    willingness_theta:
+      high_for: "Deals, partnerships, M&A, narrative moves"
+      medium_for: "Organizational restructuring"
+      low_for: "Incremental operational improvements"
+      overall: 0.70  # Averaged — high for narrative, low for operations
+    readiness_score: 0.665  # 0.95 × 0.70
+
+  # --------------------------------------------------------------------------
+  # STAGE: Change Journey Position
+  # --------------------------------------------------------------------------
+  stage:
+    current_position: 5  # Commitment (fully committed to AI narrative)
+    journey_description: |
+      Walder is at Stage 5 (Commitment) for the AI transformation.
+      He has passed Awareness (1), Interest (2), Evaluation (3),
+      Trial (4) and is now fully committed.
+      RISK: Stage 5 commitment can become rigid — resistant to
+      evidence that contradicts the chosen direction.
+    flexibility: 0.35  # Low flexibility — high commitment = low openness to alternatives
+    regression_triggers:
+      - "Major EBITDA miss (>15% below target)"
+      - "Public failure of AI initiative"
+      - "Board intervention / shareholder revolt"
+      - "Competitor leapfrog with different strategy"
+
+  # --------------------------------------------------------------------------
+  # HIERARCHY: Decision Level & Influence Paths
+  # --------------------------------------------------------------------------
+  hierarchy:
+    decision_level: "L0"  # Ultimate decision-maker for Ringier
+    l2_decisions_per_year: 200  # Approx. coordinated decisions
+    influence_paths:
+      direct:
+        - path: "Ladina → Walder"
+          effectiveness: 0.40
+          note: "Direct proposals need perfect framing"
+        - path: "CFO → Walder"
+          effectiveness: 0.70
+          note: "Financial validation carries high weight"
+        - path: "Board → Walder"
+          effectiveness: 0.90
+          note: "Board direction is near-binding"
+      indirect:
+        - path: "Ladina → CFO → Walder"
+          effectiveness: 0.55
+          note: "Financial framing via CFO increases credibility"
+        - path: "Ladina → External Advisor → Walder"
+          effectiveness: 0.65
+          note: "External validation (McKinsey, FehrAdvice) adds weight"
+        - path: "Media coverage → Walder"
+          effectiveness: 0.75
+          note: "If competitors are covered doing X, Walder wants X too"
+
+# =============================================================================
+# DECISION FUNCTION
+# =============================================================================
+# P(approve | proposal x) = sigmoid(z)
+# WHERE:
+# z = β₀ + β_NAR·nar(x) + β_STA·sta(x) + β_FIN·fin(x)
+#     + β_LEG·leg(x) + β_CON·con(x) + β_COMP·comp(x) + β_TIME·time(x)
+#
+# Subject to: fin(x) ≥ θ_EBITDA (hard constraint — if violated, P=0)
+
+decision_function:
+  model: "Constrained Logistic Regression"
+  version: "0.1"
+
+  formula: |
+    IF fin(x) < θ_EBITDA:
+      P(approve) = 0  (hard financial constraint)
+    ELSE:
+      z = β₀ + β_NAR·nar(x) + β_STA·sta(x) + β_FIN·fin(x)
+          + β_LEG·leg(x) + β_CON·con(x) + β_COMP·comp(x) + β_TIME·time(x)
+      P(approve) = 1 / (1 + exp(-z))
+
+  parameters:
+    β₀_intercept: -1.20          # Baseline skepticism (rejects by default)
+    β_NAR_narrative: 2.50        # STRONGEST driver — good narrative = strong approval
+    β_STA_status: 1.80           # Status boost matters significantly
+    β_FIN_financial: 1.50        # Financial upside is necessary but not sufficient
+    β_LEG_legacy: 1.20           # Legacy contribution adds moderate weight
+    β_CON_control: 0.80          # Control preservation has baseline importance
+    β_COMP_competitive: 1.90     # "Competitor is doing this" is very powerful
+    β_TIME_timing: 0.60          # SPEAK season = small timing bonus
+
+  input_scoring:
+    nar:
+      description: "Narrative score of proposal"
+      scale: "[0,1]"
+      scoring_guide:
+        0.0: "Not communicable externally"
+        0.3: "Internal improvement, no headline"
+        0.5: "Swiss media might cover it"
+        0.7: "International media would cover it"
+        0.9: "Davos/SPEAK keynote material"
+        1.0: "Front page FT + NYT"
+    sta:
+      description: "Status impact"
+      scale: "[0,1]"
+      scoring_guide:
+        0.0: "No status change"
+        0.3: "Minor peer recognition"
+        0.5: "Industry conference speaking slot"
+        0.7: "WEF panel invitation"
+        1.0: "Time Magazine cover"
+    fin:
+      description: "Financial impact (normalized)"
+      scale: "[-1,1]"
+      scoring_guide:
+        -1.0: "EBITDA decline >20%"
+        -0.5: "EBITDA decline 5-20%"
+        0.0: "EBITDA neutral"
+        0.5: "EBITDA growth 5-20%"
+        1.0: "EBITDA growth >20%"
+      threshold: -0.3  # Below this → hard reject regardless of other scores
+    leg:
+      description: "Legacy contribution"
+      scale: "[-1,1]"
+      scoring_guide:
+        -1.0: "Contradicts transformation narrative"
+        0.0: "Neutral"
+        0.5: "Extends transformation"
+        1.0: "Historic milestone"
+    con:
+      description: "Control preserved"
+      scale: "[0,1]"
+      scoring_guide:
+        0.0: "Complete loss of control (hostile takeover)"
+        0.3: "Significant control dilution (50/50 JV)"
+        0.7: "Minor control sharing"
+        1.0: "Full control retained"
+    comp:
+      description: "Competitive pressure"
+      scale: "[0,1]"
+      scoring_guide:
+        0.0: "No competitor doing this"
+        0.5: "Competitors considering it"
+        0.7: "One competitor announced it"
+        1.0: "All competitors already doing it — FOMO maximum"
+    time:
+      description: "Timing factor"
+      scale: "[0,1]"
+      scoring_guide:
+        0.0: "Summer, low attention period"
+        0.5: "Normal business period"
+        0.8: "Budget season (financial proposals)"
+        1.0: "SPEAK season (narrative proposals)"
+
+  # EXAMPLE CALCULATIONS
+  examples:
+    - name: "KI-Content-Deal mit OpenAI"
+      inputs:
+        nar: 0.95   # Perfect headline
+        sta: 0.80   # WEF/conference material
+        fin: 0.30   # Moderate financial upside (licensing revenue)
+        leg: 0.70   # Extends AI-transformation narrative
+        con: 0.80   # Ringier controls terms
+        comp: 0.90  # Axel Springer already did it — FOMO high
+        time: 0.90  # SPEAK season
+      calculation:
+        z: "= -1.20 + 2.50×0.95 + 1.80×0.80 + 1.50×0.30 + 1.20×0.70 + 0.80×0.80 + 1.90×0.90 + 0.60×0.90"
+        z_value: 7.56
+        P_approve: 0.9995
+      prediction: "APPROVED — near certainty"
+
+    - name: "CRM-Datenbank Optimierung (intern)"
+      inputs:
+        nar: 0.10   # No headline
+        sta: 0.05   # No status impact
+        fin: 0.40   # Good financial impact (CHF 2M savings)
+        leg: 0.10   # Neutral legacy
+        con: 1.00   # Full control
+        comp: 0.20  # Not competitive
+        time: 0.50  # Normal period
+      calculation:
+        z: "= -1.20 + 2.50×0.10 + 1.80×0.05 + 1.50×0.40 + 1.20×0.10 + 0.80×1.00 + 1.90×0.20 + 0.60×0.50"
+        z_value: 1.51
+        P_approve: 0.819
+      prediction: "APPROVED but low priority — will be delegated, not championed"
+
+    - name: "Blick Redaktion verdoppeln (+30 Journalist:innen)"
+      inputs:
+        nar: 0.20   # Weak narrative ('invest in journalism' doesn't excite)
+        sta: 0.30   # Some status (quality reputation)
+        fin: -0.40  # EBITDA negative (CHF 4M+ cost)
+        leg: 0.20   # Doesn't fit transformation narrative
+        con: 0.90   # Full control
+        comp: 0.10  # Competitors are cutting, not hiring
+        time: 0.50  # Normal
+      calculation:
+        z: "= -1.20 + 2.50×0.20 + 1.80×0.30 + 1.50×(-0.40) + 1.20×0.20 + 0.80×0.90 + 1.90×0.10 + 0.60×0.50"
+        z_value: 0.71
+        P_approve: 0.670
+      prediction: "MARGINAL — would need reframing as 'KI-augmented premium newsroom'"
+      reframe_suggestion: |
+        Instead of '+30 journalists', propose:
+        'KI-augmentiertes Premium-Newsroom: 15 neue AI-Journalist:innen
+         + 15 neue Data-Journalist:innen → Qualitätssprung der
+         Investigativ-Marke → +20% Abo-Conversion'
+        This reframe changes: nar 0.20→0.65, sta 0.30→0.50, comp 0.10→0.50
+        New P(approve) ≈ 0.96
+
+    - name: "Fusion mit TX Group (unter TX-Führung)"
+      inputs:
+        nar: 0.40   # Mixed — 'Konsolidierung' is defensive
+        sta: 0.20   # Status LOSS — no longer CEO of independent company
+        fin: 0.60   # Good synergies
+        leg: -0.80  # TOXIC — 'transformation wasn't enough'
+        con: 0.10   # Near-total control loss
+        comp: 0.30  # Market forces
+        time: 0.50  # Normal
+      calculation:
+        z: "= -1.20 + 2.50×0.40 + 1.80×0.20 + 1.50×0.60 + 1.20×(-0.80) + 0.80×0.10 + 1.90×0.30 + 0.60×0.50"
+        z_value: 0.71
+        P_approve: 0.670
+      prediction: "Numerically marginal — but LEG=-0.80 triggers emotional veto"
+      qualitative_override: |
+        The model shows P=0.67 which looks marginal. But in practice,
+        LEG = -0.80 (threatens legacy) combined with CON = 0.10 (control loss)
+        triggers a qualitative veto that the logistic model underweights.
+        TRUE P(approve) ≈ 0.05 (near-zero).
+        KNOWN LIMITATION: Model needs interaction terms for LEG×CON.
+
+    - name: "Fusion mit TX Group (unter RINGIER-Führung)"
+      inputs:
+        nar: 0.80   # Great — 'Ringier baut nationale Plattform'
+        sta: 0.90   # CEO of largest Swiss media company!
+        fin: 0.50   # Good synergies, integration costs
+        leg: 0.85   # Historic — 'the man who unified Swiss media'
+        con: 0.75   # Ringier leads, but shared governance
+        comp: 0.60  # Market forces
+        time: 0.50  # Normal
+      calculation:
+        z: "= -1.20 + 2.50×0.80 + 1.80×0.90 + 1.50×0.50 + 1.20×0.85 + 0.80×0.75 + 1.90×0.60 + 0.60×0.50"
+        z_value: 6.51
+        P_approve: 0.9985
+      prediction: "STRONGLY APPROVED — this is Walder's dream scenario"
+
+  # KNOWN LIMITATIONS (v0.1)
+  limitations:
+    - id: "LIM-1"
+      description: "No interaction terms (LEG×CON should be modeled)"
+      severity: "high"
+      fix_plan: "Add γ_LEG_CON interaction in v0.2 after calibration"
+
+    - id: "LIM-2"
+      description: "Linear scoring — reality has thresholds and discontinuities"
+      severity: "medium"
+      fix_plan: "Add piecewise functions for LEG < -0.5 (veto) and CON < 0.2 (veto)"
+
+    - id: "LIM-3"
+      description: "No mood/timing micro-dynamics (e.g., after bad press)"
+      severity: "low"
+      fix_plan: "Add event-conditional adjustments in v0.3"
+
+    - id: "LIM-4"
+      description: "All parameters are LLMMC priors — no empirical calibration yet"
+      severity: "high"
+      fix_plan: "Calibrate after 5+ observed decisions"
+
+# =============================================================================
+# CALIBRATION LOG
+# =============================================================================
+# Each observed decision is recorded here for Bayesian updating.
+# Format: date, proposal, scores, prediction, actual_outcome, update
+
+calibration_log:
+  observations: []
+  # TEMPLATE for new observations:
+  # - date: "YYYY-MM-DD"
+  #   proposal: "Description"
+  #   scores:
+  #     nar: 0.X
+  #     sta: 0.X
+  #     fin: 0.X
+  #     leg: 0.X
+  #     con: 0.X
+  #     comp: 0.X
+  #     time: 0.X
+  #   predicted_P: 0.XX
+  #   predicted_outcome: "approve/reject/modify"
+  #   actual_outcome: "approve/reject/modify/defer"
+  #   correct: true/false
+  #   brier_contribution: 0.XX  # (P - actual)²
+  #   learning: "What did this observation teach us?"
+  #   parameter_update: "Which β should be adjusted and how?"
+
+  # HISTORICAL OBSERVATIONS (retroactive — from public record)
+  # These are coded from known decisions but NOT yet used for calibration.
+  # They serve as initial validation data.
+  historical:
+    - date: "2023-12"
+      proposal: "Axel Springer JV Auflösung — Ringier kauft RASCH-Anteile"
+      scores:
+        nar: 0.70   # 'Ringier geht eigenen Weg'
+        sta: 0.60   # Independent again
+        fin: 0.40   # Cost of acquisition
+        leg: 0.80   # 'Full owner of transformation'
+        con: 1.00   # Full control restored
+        comp: 0.40  # Market driven
+        time: 0.50
+      predicted_P: 0.98
+      actual_outcome: "approve"
+      correct: true
+      note: "Strong fit — model correctly predicts"
+
+    - date: "2024-01"
+      proposal: "75 Stellen abbauen bei RMS"
+      scores:
+        nar: 0.30   # Negative headline, but 'efficiency' framing
+        sta: 0.20   # Status-neutral to negative
+        fin: 0.70   # CHF 5M+ cost savings
+        leg: 0.30   # 'Tough but necessary' fits transformation
+        con: 0.90   # Full control over execution
+        comp: 0.50  # Industry trend
+        time: 0.80  # Budget season (Jan)
+      predicted_P: 0.90
+      actual_outcome: "approve"
+      correct: true
+      note: "Approved despite nar=0.30 — fin=0.70 + con=0.90 compensated"
+
+    - date: "2024-06"
+      proposal: "Palantir AIP Partnership"
+      scores:
+        nar: 0.90   # Perfect headline — 'AI partnership with Palantir'
+        sta: 0.85   # Alex Karp = high-status partner
+        fin: 0.20   # Unclear ROI
+        leg: 0.70   # 'AI-driven company becomes real'
+        con: 0.70   # Ringier controls implementation
+        comp: 0.80  # Other media companies don't have Palantir
+        time: 0.70  # Pre-SPEAK season
+      predicted_P: 0.99
+      actual_outcome: "approve"
+      correct: true
+      note: "Classic Walder decision: high nar + sta, acceptable fin uncertainty"
+
+    - date: "2025-10"
+      proposal: "Content Hub auflösen, 10 Stellen"
+      scores:
+        nar: 0.20
+        sta: 0.10
+        fin: 0.50
+        leg: 0.30
+        con: 0.90
+        comp: 0.40
+        time: 0.50
+      predicted_P: 0.82
+      actual_outcome: "approve"
+      correct: true
+
+  validation_summary:
+    total_historical: 4
+    correct: 4
+    accuracy: 1.00
+    note: "Historical data only — all approvals. Need rejection observations for proper calibration."
+
+# =============================================================================
+# PREDICTION TEMPLATES
+# =============================================================================
+# Pre-scored proposals relevant to RMS Strategy 2027-2035
+
+prediction_templates:
+
+  rms_strategy_proposals:
+
+    - id: "PRED-001"
+      name: "RMS+ Bündel-Abo (CHF 19.90)"
+      framing_A:
+        description: "'Neues Abo-Produkt für Schweizer Medienmarkt'"
+        scores: {nar: 0.50, sta: 0.30, fin: 0.30, leg: 0.40, con: 0.90, comp: 0.50, time: 0.50}
+        P_approve: 0.88
+      framing_B:
+        description: "'RMS lanciert die Netflix-Flat für Schweizer News — KI-kuratiert'"
+        scores: {nar: 0.85, sta: 0.60, fin: 0.30, leg: 0.70, con: 0.90, comp: 0.70, time: 0.90}
+        P_approve: 0.998
+      delta_framing: "+12 Prozentpunkte durch besseres Framing"
+      recommendation: "Framing B — KI + Netflix-Referenz + SPEAK-Timing"
+
+    - id: "PRED-002"
+      name: "First-Party-Data Offensive (1.5M → 3M registrierte User)"
+      framing_A:
+        description: "'CRM-Ausbau und Datensammlung'"
+        scores: {nar: 0.15, sta: 0.10, fin: 0.40, leg: 0.20, con: 0.95, comp: 0.30, time: 0.50}
+        P_approve: 0.82
+      framing_B:
+        description: "'RMS wird zum grössten Schweizer 1st-Party-Data-Pool — Google-unabhängig'"
+        scores: {nar: 0.70, sta: 0.50, fin: 0.40, leg: 0.60, con: 0.95, comp: 0.80, time: 0.70}
+        P_approve: 0.993
+      delta_framing: "+17 Prozentpunkte"
+      recommendation: "Framing B — 'Google-unabhängig' triggers competitive instinct"
+
+    - id: "PRED-003"
+      name: "OpenAI Content Licensing Deal"
+      framing_A:
+        description: "'Content-Lizenzierung an KI-Anbieter'"
+        scores: {nar: 0.80, sta: 0.70, fin: 0.30, leg: 0.65, con: 0.70, comp: 0.90, time: 0.80}
+        P_approve: 0.997
+      framing_B:
+        description: "Nicht nötig — Framing A ist bereits Walder-optimiert"
+        scores: null
+        P_approve: null
+      recommendation: "Framing A reicht — Axel-Springer-FOMO (comp=0.90) treibt allein"
+
+    - id: "PRED-004"
+      name: "Nationale Medienplattform (Fusion mit TX)"
+      framing_A:
+        description: "'Fusion mit TX Group — gleichberechtigte Partner'"
+        scores: {nar: 0.50, sta: 0.40, fin: 0.60, leg: 0.30, con: 0.30, comp: 0.50, time: 0.50}
+        P_approve: 0.87
+        qualitative_override: "CON=0.30 triggers emotional rejection → TRUE P ≈ 0.15"
+      framing_B:
+        description: "'Ringier baut die nationale KI-Medienplattform — integriert TX-Marken'"
+        scores: {nar: 0.85, sta: 0.90, fin: 0.50, leg: 0.85, con: 0.75, comp: 0.60, time: 0.70}
+        P_approve: 0.999
+      delta_framing: "+84 Prozentpunkte (!!)"
+      recommendation: "Framing B CRITICAL — 'Ringier baut' not 'Fusion mit'"
+      warning: "Biggest framing sensitivity in entire portfolio"
+
+# =============================================================================
+# MODEL IMPROVEMENT ROADMAP
+# =============================================================================
+
+roadmap:
+  v0_2:
+    target: "After 5 observed decisions"
+    changes:
+      - "Add interaction terms: γ(LEG × CON), γ(NAR × COMP)"
+      - "Add veto thresholds: LEG < -0.5 → P=0, CON < 0.2 → P=0"
+      - "Calibrate β coefficients with Bayesian updating"
+      - "Add mood-conditional adjustments"
+
+  v0_3:
+    target: "After 10 observed decisions"
+    changes:
+      - "Validate blind spot predictions (BS-1 to BS-5)"
+      - "Add temporal dynamics (how do weights shift over time?)"
+      - "Add Board influence model (when does Board override?)"
+      - "Monte Carlo over parameter uncertainty"
+
+  v1_0:
+    target: "After 20 observed decisions + at least 3 rejections"
+    changes:
+      - "Full empirical calibration"
+      - "Brier score validation (target < 0.15)"
+      - "Formal falsifiability test"
+      - "Publication-ready model"

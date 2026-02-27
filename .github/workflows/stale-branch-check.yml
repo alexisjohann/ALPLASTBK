@@ -1,0 +1,98 @@
+# Stale Branch Check - Warnt bei veralteten PRs
+# Verhindert Merge-Konflikte durch frühzeitige Warnung
+
+name: Stale Branch Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  schedule:
+    # Täglich um 06:00 UTC prüfen
+    - cron: '0 6 * * *'
+
+jobs:
+  check-branch-freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check commits behind main
+        id: check
+        run: |
+          git fetch origin main
+          BEHIND=$(git rev-list --count HEAD..origin/main)
+          echo "behind=$BEHIND" >> $GITHUB_OUTPUT
+          echo "Branch ist $BEHIND Commits hinter main"
+
+      - name: Warn if too far behind
+        if: steps.check.outputs.behind > 20
+        run: |
+          echo "::warning::⚠️ Branch ist ${{ steps.check.outputs.behind }} Commits hinter main!"
+          echo "::warning::Bitte mit main synchronisieren um Merge-Konflikte zu vermeiden."
+
+      - name: Comment on PR if stale
+        if: steps.check.outputs.behind > 20 && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const behind = ${{ steps.check.outputs.behind }};
+            const body = `⚠️ **Branch Synchronisation empfohlen**
+
+            Dieser Branch ist **${behind} Commits** hinter \`main\`.
+
+            Um Merge-Konflikte zu vermeiden:
+            \`\`\`bash
+            git fetch origin main
+            git merge origin/main
+            \`\`\`
+
+            Besonders wichtig bei Registry-Dateien:
+            - \`model-registry.yaml\`
+            - \`intervention-registry.yaml\`
+            - \`forecast-registry.yaml\``;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  check-conflict-prone-files:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for conflict-prone files
+        run: |
+          # Dateien die oft Konflikte haben
+          CONFLICT_PRONE=(
+            "data/model-registry.yaml"
+            "data/intervention-registry.yaml"
+            "data/forecast-registry.yaml"
+            "data/case-registry.yaml"
+          )
+
+          # Geänderte Dateien in diesem PR
+          CHANGED=$(git diff --name-only origin/main...HEAD)
+
+          WARNING=false
+          for file in "${CONFLICT_PRONE[@]}"; do
+            if echo "$CHANGED" | grep -q "$file"; then
+              echo "::warning file=$file::Diese Datei hat oft Merge-Konflikte. Bitte regelmässig mit main synchronisieren."
+              WARNING=true
+            fi
+          done
+
+          if [ "$WARNING" = true ]; then
+            echo ""
+            echo "📋 Tipp: Registry-Dateien immer als letztes committen"
+            echo "         und direkt vor dem Merge nochmals synchronisieren."
+          fi

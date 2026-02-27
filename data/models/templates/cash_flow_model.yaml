@@ -1,0 +1,97 @@
+# =============================================================================
+# CASH FLOW MODEL (CFM-1.0) - CONFIGURATION TEMPLATE
+# =============================================================================
+# Model: Cash Flow Projection
+# Version: 1.0.0
+# Status: GENERIC (no hardcoded defaults)
+#
+# Purpose: Project cash flows from P&L and working capital assumptions.
+#
+# Usage:
+#   python scripts/models/cash_flow.py <config.yaml> [pnl.csv] [capex.csv]
+#
+# Integration:
+#   - Input: P&L from PLM-1.0, CapEx from CAM-1.0
+#   - Output: OCF, FCF, cash position, feeds into VCM-1.0
+# =============================================================================
+
+cash_flow_model:
+  # Time horizon
+  base_year: 2024
+  projection_years: 11
+  currency: "EUR"
+
+  # -----------------------------------------------------------------------------
+  # Working Capital Assumptions
+  # Method 1: Days-based calculation (more accurate)
+  # Method 2: Percent of revenue (simpler)
+  # -----------------------------------------------------------------------------
+  working_capital:
+    # Method 1: Days (DSO, DPO, DIO)
+    days_receivable: 45          # DSO - Days Sales Outstanding
+    days_payable: 60             # DPO - Days Payable Outstanding
+    days_inventory: 30           # DIO - Days Inventory Outstanding
+
+    # Method 2: Percent of revenue (overrides days if set)
+    # wc_percent_of_revenue: 15  # Working capital as % of revenue
+
+  # -----------------------------------------------------------------------------
+  # Cash Conversion
+  # Non-cash adjustments to Net Income
+  # -----------------------------------------------------------------------------
+  cash_conversion:
+    depreciation_add_back: true    # Add back D&A to get OCF
+    amortization_add_back: true    # Add back amortization
+    deferred_tax_percent: 5        # % of tax expense deferred
+
+  # -----------------------------------------------------------------------------
+  # CapEx Assumptions (if not using CAM output)
+  # -----------------------------------------------------------------------------
+  capex_percent_of_revenue: 5      # CapEx as % of revenue
+
+  # -----------------------------------------------------------------------------
+  # Financing Cash Flow
+  # Dividends and debt repayments
+  # -----------------------------------------------------------------------------
+  financing:
+    dividend_payout_ratio: 30      # % of Net Income paid as dividends
+
+    # Debt repayment schedule (optional)
+    debt_repayment_schedule:
+      - year: 2025
+        amount_m: 50
+      - year: 2028
+        amount_m: 100
+      - year: 2031
+        amount_m: 75
+
+  # -----------------------------------------------------------------------------
+  # Opening Cash Balance
+  # -----------------------------------------------------------------------------
+  opening_cash_m: 200              # Cash at start of projection period
+
+# =============================================================================
+# OUTPUT SPECIFICATION
+# =============================================================================
+# Running this model produces:
+#
+# 1. cash_flow_projection.csv
+#    Columns:
+#    - Year
+#    - Revenue, EBITDA, Net_Income (from P&L)
+#    - OCF_Net_Income, OCF_Add_Depreciation, OCF_Deferred_Tax
+#    - Working_Capital, WC_Change
+#    - Operating_Cash_Flow
+#    - CapEx, Investing_Cash_Flow
+#    - Free_Cash_Flow
+#    - Dividends, Debt_Repayment, Financing_Cash_Flow
+#    - Net_Cash_Flow
+#    - Cash_Position
+#    - FCF_Yield_%, OCF_to_EBITDA_%
+#
+# 2. cash_flow_summary.yaml
+#    - Operating cash flow metrics
+#    - Free cash flow metrics
+#    - Capital allocation breakdown
+#    - Cash position evolution
+# =============================================================================

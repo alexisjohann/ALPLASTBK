@@ -1,0 +1,43 @@
+#!/bin/bash
+# EBF CORE Framework Pre-Commit Hook
+#
+# Installation:
+#   cp scripts/hooks/pre-commit .git/hooks/pre-commit
+#   chmod +x .git/hooks/pre-commit
+#
+# This hook validates CORE framework consistency before each commit.
+
+echo "🔍 Validating 9C CORE Framework consistency..."
+
+# Check if any relevant files are staged
+RELEVANT_FILES=$(git diff --cached --name-only | grep -E "(README|CLAUDE|appendix|core-framework)" || true)
+
+if [ -z "$RELEVANT_FILES" ]; then
+    echo "   No CORE-relevant files staged, skipping validation."
+    exit 0
+fi
+
+# Run validation
+python scripts/validate_core_framework.py 2>&1
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "❌ CORE Framework validation failed!"
+    echo ""
+    echo "Your commit includes changes to CORE-relevant files but the"
+    echo "9C Framework has inconsistencies."
+    echo ""
+    echo "To fix:"
+    echo "  1. Run: python scripts/validate_core_framework.py --verbose"
+    echo "  2. Fix all reported issues"
+    echo "  3. Stage fixes: git add -A"
+    echo "  4. Retry commit"
+    echo ""
+    echo "To bypass (NOT recommended):"
+    echo "  git commit --no-verify"
+    echo ""
+    exit 1
+fi
+
+echo "✅ CORE Framework is consistent."
+exit 0

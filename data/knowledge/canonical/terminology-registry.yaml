@@ -1,0 +1,579 @@
+# =============================================================================
+# TERMINOLOGY REGISTRY — Single Source of Truth for ALL canonical terms
+# =============================================================================
+#
+# PURPOSE: Consolidated registry of all terms that MUST be used exactly as
+# defined here. This file is the SSOT for terminology enforcement across
+# the entire EBF framework — backend (Claude Code), front-end, and documents.
+#
+# CONSUMPTION:
+#   - Backend:   scripts/validate_knowledge_consistency.py reads this file
+#   - Front-end: Sync via API or direct YAML parse (flat categories structure)
+#   - Pre-Commit: .claude/hooks/pre-commit.sh validates against this registry
+#
+# ENFORCEMENT LEVELS:
+#   HARD_BLOCK: Commit rejected — cannot proceed
+#   ERROR:      Must be corrected — flagged in validation report
+#   WARNING:    Should be corrected — logged but not blocking
+#
+# FRONTEND FORMAT: This file uses a flat categories structure optimized for
+# front-end consumption. Each category groups terms with shared enforcement.
+#
+# VALIDATION: python scripts/validate_knowledge_consistency.py --strict
+# Last updated: 2026-02-14
+# =============================================================================
+
+version: "2.0"
+last_updated: "2026-02-14"
+total_terms: 67
+
+# =============================================================================
+# FRONTEND SYNC
+# =============================================================================
+frontend_sync:
+  endpoint: "/api/terminology"
+  format: "JSON"
+  cache: "ETag, max-age 3600"
+  update_trigger: "git push to main"
+
+# =============================================================================
+# CATEGORIES
+# =============================================================================
+categories:
+
+  # ---------------------------------------------------------------------------
+  # 1. FRAMEWORK IDENTITY
+  # ---------------------------------------------------------------------------
+  framework_identity:
+    enforcement: ERROR
+    terms:
+
+      - id: TRM-FRM-001
+        canonical: "Evidence-Based Framework"
+        abbreviation: "EBF"
+        frontend_key: "framework_ebf"
+        wrong_forms: ["EVF", "EFB", "Evidence Based Framework", "Evidenz-basiertes Framework"]
+        ssot_ref: "CLAUDE.md"
+
+      - id: TRM-FRM-002
+        canonical: "Behavioral Change Model"
+        abbreviation: "BCM"
+        frontend_key: "bcm_name"
+        wrong_forms: ["Behavioral Competence Model", "Behavioral Context Model", "Behaviour Change Model", "Behavioral Compliance Model"]
+        ssot_ref: "data/knowledge/canonical/bcm.yaml"
+        validation_rules: ["BCM-NAME-001", "BCM-NAME-002"]
+        note: "CRITICAL: NEVER Competence or Context"
+
+      - id: TRM-FRM-003
+        canonical: "10C"
+        frontend_key: "framework_10c"
+        wrong_forms: ["10-C", "10c", "10 C", "Ten C", "9C", "11C", "nC"]
+        ssot_ref: "docs/frameworks/core-framework-definition.yaml"
+        note: "Framework has exactly 10 COREs — not 9, not 11"
+
+      - id: TRM-FRM-004
+        canonical: "BCM2"
+        frontend_key: "context_database"
+        wrong_forms: ["BCM 2", "BCM-2", "BCM II"]
+        ssot_ref: "data/knowledge/canonical/bcm.yaml"
+        note: "Context database name — always BCM2 without space"
+
+      - id: TRM-FRM-005
+        canonical: "BEATRIX"
+        full_name: "Behavioral Economics AI Technology for Research and Implementation eXcellence"
+        type: "product_brand"
+        relationship: "BEATRIX implements EBF + BCM"
+        frontend_key: "product_beatrix"
+        wrong_forms: ["Beatrix", "beatrix"]
+        ssot_ref: "data/knowledge/canonical/index.yaml"
+        note: "Product brand name — always ALL CAPS"
+
+  # ---------------------------------------------------------------------------
+  # 2. 10C CORE DIMENSIONS
+  # ---------------------------------------------------------------------------
+  core_dimensions:
+    enforcement: ERROR
+    ssot_ref: "docs/frameworks/core-framework-definition.yaml"
+    terms:
+
+      - id: TRM-CORE-001
+        code: "WHO"
+        full: "CORE-WHO"
+        appendix: "AAA"
+        question_de: "Wer hat Utility?"
+        question_en: "Who has utility?"
+        output: "Levels L"
+        frontend_key: "core_who"
+        wrong_forms: ["WH", "WHOM"]
+
+      - id: TRM-CORE-002
+        code: "WHAT"
+        full: "CORE-WHAT"
+        appendix: "C"
+        question_de: "Was ist Utility?"
+        question_en: "What is utility?"
+        output: "Dimensionen d (FEPSDE)"
+        frontend_key: "core_what"
+        wrong_forms: []
+
+      - id: TRM-CORE-003
+        code: "HOW"
+        full: "CORE-HOW"
+        appendix: "B"
+        question_de: "Wie interagieren?"
+        question_en: "How do dimensions interact?"
+        output: "Komplementarität γ"
+        frontend_key: "core_how"
+        wrong_forms: []
+
+      - id: TRM-CORE-004
+        code: "WHEN"
+        full: "CORE-WHEN"
+        appendix: "V"
+        question_de: "Wann zählt Kontext?"
+        question_en: "When does context matter?"
+        output: "Kontext Ψ"
+        frontend_key: "core_when"
+        wrong_forms: []
+
+      - id: TRM-CORE-005
+        code: "WHERE"
+        full: "CORE-WHERE"
+        appendix: "BBB"
+        question_de: "Woher die Zahlen?"
+        question_en: "Where do parameters come from?"
+        output: "Parameter Θ"
+        frontend_key: "core_where"
+        wrong_forms: []
+
+      - id: TRM-CORE-006
+        code: "AWARE"
+        full: "CORE-AWARE"
+        appendix: "AU"
+        question_de: "Wie bewusst?"
+        question_en: "How aware is the agent?"
+        output: "Awareness A(·)"
+        frontend_key: "core_aware"
+        wrong_forms: ["AWR", "AWARENESS"]
+
+      - id: TRM-CORE-007
+        code: "READY"
+        full: "CORE-READY"
+        appendix: "AV"
+        question_de: "Handlungsbereit?"
+        question_en: "Is the agent ready to act?"
+        output: "Willingness WAX, τ, θ"
+        frontend_key: "core_ready"
+        wrong_forms: ["RDY", "READINESS"]
+
+      - id: TRM-CORE-008
+        code: "STAGE"
+        full: "CORE-STAGE"
+        appendix: "AW"
+        question_de: "Wo in der Journey?"
+        question_en: "What stage in the journey?"
+        output: "BCJ Phase φ, Journey S(t)"
+        frontend_key: "core_stage"
+        wrong_forms: ["STG", "PHASE", "JOURNEY"]
+
+      - id: TRM-CORE-009
+        code: "HIERARCHY"
+        full: "CORE-HIERARCHY"
+        appendix: "HI"
+        question_de: "Wie stratifizieren Entscheidungen?"
+        question_en: "How do decisions stratify?"
+        output: "Levels L0-L3, N_L2"
+        frontend_key: "core_hierarchy"
+        wrong_forms: ["HIER", "HIE"]
+
+      - id: TRM-CORE-010
+        code: "EIT"
+        full: "CORE-EIT"
+        appendix: "IE"
+        question_de: "Wie emergieren Interventionen?"
+        question_en: "How do interventions emerge?"
+        output: "Vektor I ∈ [0,1]^9"
+        frontend_key: "core_eit"
+        wrong_forms: ["INT", "INTERVENTION"]
+
+  # ---------------------------------------------------------------------------
+  # 3. FEPSDE UTILITY DIMENSIONS
+  # ---------------------------------------------------------------------------
+  fepsde_dimensions:
+    enforcement: ERROR
+    ssot_ref: "data/knowledge/canonical/bcm.yaml"
+    terms:
+
+      - id: TRM-FEPSDE-001
+        letter: "F"
+        canonical: "Financial"
+        description_de: "Einkommen, Vermögen, ökonomische Sicherheit"
+        frontend_key: "fepsde_f"
+        wrong_forms: ["Fiscal", "Finanziell"]
+
+      - id: TRM-FEPSDE-002
+        letter: "E"
+        canonical: "Emotional"
+        description_de: "Wohlbefinden, Zufriedenheit, Sinn"
+        frontend_key: "fepsde_e"
+        wrong_forms: ["Economic", "Environmental"]
+        note: "CRITICAL: E in FEPSDE = Emotional. E in Ψ = Economic. Never confuse!"
+
+      - id: TRM-FEPSDE-003
+        letter: "P"
+        canonical: "Physical"
+        description_de: "Gesundheit, Energie, Langlebigkeit"
+        frontend_key: "fepsde_p"
+        wrong_forms: ["Psychological", "Political"]
+        validation_rules: ["FEPSDE-001"]
+
+      - id: TRM-FEPSDE-004
+        letter: "S"
+        canonical: "Social"
+        description_de: "Beziehungen, Zugehörigkeit, Vertrauen"
+        frontend_key: "fepsde_s"
+        wrong_forms: []
+
+      - id: TRM-FEPSDE-005
+        letter: "D"
+        canonical: "Digital"
+        description_de: "Konnektivität, Zugang, Datenrechte"
+        frontend_key: "fepsde_d"
+        wrong_forms: ["Developmental", "Democratic"]
+        validation_rules: ["FEPSDE-002"]
+
+      - id: TRM-FEPSDE-006
+        letter: "E(X)"
+        canonical: "Ecological"
+        description_de: "Umwelt, Nachhaltigkeit"
+        frontend_key: "fepsde_x"
+        wrong_forms: ["Environmental", "Ethical"]
+        validation_rules: ["FEPSDE-003"]
+        note: "Second E in FEPSDE. Sometimes shown as X to avoid confusion."
+
+  # ---------------------------------------------------------------------------
+  # 4. Ψ-CONTEXT DIMENSIONS
+  # ---------------------------------------------------------------------------
+  psi_dimensions:
+    enforcement: ERROR
+    ssot_ref: "data/knowledge/canonical/psi-context.yaml"
+    terms:
+
+      - id: TRM-PSI-001
+        symbol: "Ψ_I"
+        canonical: "Institutional"
+        description_de: "Welche Regeln, Gesetze, Defaults gelten?"
+        frontend_key: "psi_i"
+        wrong_forms: []
+
+      - id: TRM-PSI-002
+        symbol: "Ψ_S"
+        canonical: "Social"
+        description_de: "Wer ist dabei? Welche sozialen Normen?"
+        frontend_key: "psi_s"
+        wrong_forms: []
+
+      - id: TRM-PSI-003
+        symbol: "Ψ_C"
+        canonical: "Cognitive"
+        description_de: "Müde? Gestresst? Aufmerksam? Motiviert?"
+        frontend_key: "psi_c"
+        wrong_forms: ["Ψ_Cu", "Communication"]
+        validation_rules: ["PSI-NAME-002"]
+
+      - id: TRM-PSI-004
+        symbol: "Ψ_K"
+        canonical: "Cultural"
+        description_de: "Welche Werte, Traditionen, Religion?"
+        frontend_key: "psi_k"
+        wrong_forms: ["Knowledge", "Ψ_Cu"]
+        validation_rules: ["PSI-NAME-004"]
+        note: "CRITICAL: Ψ_K = Cultural (Kultur), not Knowledge."
+
+      - id: TRM-PSI-005
+        symbol: "Ψ_E"
+        canonical: "Economic"
+        description_de: "Wieviel Budget, Zeit, Energie verfügbar?"
+        frontend_key: "psi_e"
+        wrong_forms: ["Environmental", "Emotional"]
+        validation_rules: ["PSI-NAME-005"]
+        note: "CRITICAL: Ψ_E = Economic. FEPSDE-E = Emotional. Never confuse!"
+
+      - id: TRM-PSI-006
+        symbol: "Ψ_T"
+        canonical: "Temporal"
+        description_de: "Wann? Zeitdruck? Welche Lebensphase?"
+        frontend_key: "psi_t"
+        wrong_forms: []
+
+      - id: TRM-PSI-007
+        symbol: "Ψ_M"
+        canonical: "Material"
+        description_de: "Welche Technologie, Infrastruktur, Objekte?"
+        frontend_key: "psi_m"
+        wrong_forms: ["Ψ_Co", "Communication"]
+        validation_rules: ["PSI-NAME-001", "PSI-NAME-006"]
+
+      - id: TRM-PSI-008
+        symbol: "Ψ_F"
+        canonical: "Physical"
+        description_de: "Wo physisch? Zuhause, Büro, öffentlich, online?"
+        frontend_key: "psi_f"
+        wrong_forms: ["Ψ_P"]
+        validation_rules: ["PSI-NAME-003"]
+        note: "CRITICAL: Ψ_F (not Ψ_P). P is reserved for FEPSDE-Physical."
+
+  # ---------------------------------------------------------------------------
+  # 5. PARAMETER SYMBOLS
+  # ---------------------------------------------------------------------------
+  parameter_symbols:
+    enforcement: ERROR
+    ssot_ref: "CLAUDE.md"
+    terms:
+
+      - id: TRM-PAR-001
+        rule: "Atomic Symbol Rule"
+        canonical: "θ_subscript (e.g., λ_R, β_CH, γ_ij)"
+        frontend_key: "param_atomic_rule"
+        description: "Every EBF parameter symbol must include subscript — no bare symbols"
+        wrong_forms: ["λ (bare)", "β (bare)", "γ (bare)", "loss aversion = 2.25 (no context)"]
+        examples_correct: ["λ_R", "β_CH", "γ_ij", "δ_S"]
+        examples_wrong: ["λ", "β", "loss aversion = 2.25"]
+
+  # ---------------------------------------------------------------------------
+  # 6. REGISTRY ID FORMATS
+  # ---------------------------------------------------------------------------
+  registry_ids:
+    enforcement: HARD_BLOCK
+    terms:
+
+      - id: TRM-ID-001
+        registry: "Case"
+        canonical: "CAS-XXX"
+        regex: "^CAS-\\d{3}$"
+        frontend_key: "id_case"
+        script: "scripts/registry_manager.py case --next"
+        ssot_ref: "data/case-registry.yaml"
+
+      - id: TRM-ID-002
+        registry: "Theory Category"
+        canonical: "CAT-XX"
+        regex: "^CAT-\\d{2}$"
+        frontend_key: "id_category"
+        script: "scripts/registry_manager.py category --next"
+        ssot_ref: "data/theory-catalog.yaml"
+
+      - id: TRM-ID-003
+        registry: "Theory Model"
+        canonical: "MS-XX-XXX"
+        regex: "^MS-[A-Z]{2}-\\d{3}$"
+        frontend_key: "id_theory"
+        examples: ["MS-BEH-001", "MS-CM-001", "MS-RD-001"]
+        script: "scripts/registry_manager.py theory --next --prefix XX"
+        ssot_ref: "data/theory-catalog.yaml"
+
+      - id: TRM-ID-004
+        registry: "Parameter"
+        canonical: "PAR-XX-XXX"
+        regex: "^PAR-[A-Z]{2,4}-\\d{3}$"
+        frontend_key: "id_parameter"
+        examples: ["PAR-BEH-001", "PAR-TA-001", "PAR-COMP-001"]
+        script: "scripts/registry_manager.py parameter --next --prefix XX"
+        ssot_ref: "data/parameter-registry.yaml"
+
+      - id: TRM-ID-005
+        registry: "Paper Reference"
+        canonical: "PAP-{bibtex_key}"
+        regex: "^PAP-[a-z]+\\d{4}[a-z]+$"
+        frontend_key: "id_paper"
+        examples: ["PAP-kahneman1979prospect", "PAP-fehr1999theory"]
+        ssot_ref: "docs/standards/bibtex-key-convention.md"
+
+      - id: TRM-ID-006
+        registry: "Session"
+        canonical: "EBF-S-{YYYY}-{MM}-{DD}-{DOMAIN}-{SEQ}"
+        frontend_key: "id_session"
+        domains: ["REL", "FIN", "HLT", "ENV", "POL", "ORG", "EDU", "OTH"]
+        examples: ["EBF-S-2026-01-25-REL-002", "EBF-S-2026-02-14-POL-001"]
+        ssot_ref: "CLAUDE.md"
+
+      - id: TRM-ID-007
+        registry: "Forecast"
+        canonical: "FCT-{DOMAIN}-{YYYY}-{NNN}"
+        frontend_key: "id_forecast"
+        examples: ["FCT-POL-2026-001", "FCT-GEO-2026-003"]
+        ssot_ref: "data/forecast-registry.yaml"
+
+      - id: TRM-ID-008
+        registry: "Intervention Project"
+        canonical: "PRJ-XXX"
+        regex: "^PRJ-\\d{3}$"
+        frontend_key: "id_project"
+        ssot_ref: "data/intervention-registry.yaml"
+
+      - id: TRM-ID-009
+        registry: "Researcher"
+        canonical: "RES-{LASTNAME}-{INITIAL}"
+        frontend_key: "id_researcher"
+        examples: ["RES-FEHR-E", "RES-THALER-R"]
+        ssot_ref: "data/researcher-registry.yaml"
+
+      - id: TRM-ID-010
+        registry: "Canonical Knowledge"
+        canonical: "KB-{TOPIC}-{NNN}"
+        frontend_key: "id_knowledge"
+        examples: ["KB-BCM-001", "KB-COMP-001", "KB-PSI-001"]
+        ssot_ref: "data/knowledge/canonical/index.yaml"
+
+  # ---------------------------------------------------------------------------
+  # 7. BIBTEX KEY FORMAT
+  # ---------------------------------------------------------------------------
+  bibtex_format:
+    enforcement: HARD_BLOCK
+    ssot_ref: "docs/standards/bibtex-key-convention.md"
+    terms:
+
+      - id: TRM-BIB-001
+        rule: "BibTeX Key Convention"
+        canonical: "{nachname}{jahr}{kurzwort}"
+        regex: "^[a-z]+\\d{4}[a-z]+$"
+        frontend_key: "bibtex_key"
+        compliance: "2,347/2,347 (100%)"
+        rules:
+          R1: "Alles lowercase, ASCII only"
+          R2: "Keine Separatoren (kein _, -, Leerzeichen)"
+          R3: "Nachname = Erstautor, nur Buchstaben"
+          R4: "Jahr = exakt 4 Ziffern"
+          R5: "Kurzwort = 1 bedeutungstragendes Wort aus dem Titel"
+          R6: "Bei Mehrdeutigkeit: längeres Wort oder 2. Wort anhängen"
+          R7: "Kurzwort-Auswahl: erstes Nicht-Stoppwort im Titel"
+        examples_correct: ["kahneman1979prospect", "fehr1999theory", "thaler2008nudge"]
+        examples_wrong: ["Kahneman_1979_Prospect", "kahneman-1979", "bénabou2003democracies"]
+
+  # ---------------------------------------------------------------------------
+  # 8. APPENDIX CATEGORIES
+  # ---------------------------------------------------------------------------
+  appendix_categories:
+    enforcement: ERROR
+    ssot_ref: "docs/frameworks/appendix-category-definitions.md"
+    terms:
+
+      - id: TRM-CAT-001
+        prefix: "CORE-"
+        canonical: "Core Theory"
+        question: "Was ist EBF?"
+        frontend_key: "appendix_core"
+
+      - id: TRM-CAT-002
+        prefix: "FORMAL-"
+        canonical: "Formalization"
+        question: "Ist es mathematisch rigoros?"
+        frontend_key: "appendix_formal"
+
+      - id: TRM-CAT-003
+        prefix: "DOMAIN-"
+        canonical: "Applications"
+        question: "Wo anwenden?"
+        frontend_key: "appendix_domain"
+
+      - id: TRM-CAT-004
+        prefix: "CONTEXT-"
+        canonical: "Context"
+        question: "Wie wirkt Ψ?"
+        frontend_key: "appendix_context"
+
+      - id: TRM-CAT-005
+        prefix: "METHOD-"
+        canonical: "Methodology"
+        question: "Wie messen?"
+        frontend_key: "appendix_method"
+
+      - id: TRM-CAT-006
+        prefix: "PREDICT-"
+        canonical: "Predictions"
+        question: "Was vorhersagen?"
+        frontend_key: "appendix_predict"
+
+      - id: TRM-CAT-007
+        prefix: "LIT-"
+        canonical: "Literature"
+        question: "Worauf basiert es?"
+        frontend_key: "appendix_lit"
+
+      - id: TRM-CAT-008
+        prefix: "REF-"
+        canonical: "Reference"
+        question: "Wie nutzen?"
+        frontend_key: "appendix_ref"
+
+  # ---------------------------------------------------------------------------
+  # 9. ORTHOGRAPHY RULES
+  # ---------------------------------------------------------------------------
+  orthography:
+    enforcement: WARNING
+    scope: "FehrAdvice documents only (Style Guide active)"
+    ssot_ref: "appendices/REF-STYLE_SG_corporate_style_guide.tex"
+    terms:
+
+      - id: TRM-ORTH-001
+        rule: "Swiss Quotation Marks"
+        canonical: "« » (Guillemets)"
+        frontend_key: "orth_quotes"
+        wrong_forms:
+          - '" " (straight quotes)'
+          - '„ " (German Gänsefüsschen)'
+
+      - id: TRM-ORTH-002
+        rule: "No ß"
+        canonical: "ss (immer)"
+        frontend_key: "orth_eszett"
+        wrong_forms: ["ß"]
+        examples_correct: ["Strasse", "Massnahme", "grösser"]
+        examples_wrong: ["Straße", "Maßnahme", "größer"]
+
+      - id: TRM-ORTH-003
+        rule: "Thousands Separator"
+        canonical: "Apostroph: 1'000.00"
+        frontend_key: "orth_thousands"
+        wrong_forms: ["1.000,00", "1,000.00"]
+
+      - id: TRM-ORTH-004
+        rule: "Gender-Inclusive Language"
+        canonical: "Doppelpunkt: Kund:innen"
+        frontend_key: "orth_gender"
+        wrong_forms: ["KundInnen", "Kund*innen", "Kund_innen", "Kund/innen"]
+
+      - id: TRM-ORTH-005
+        rule: "US English"
+        canonical: "US spelling when writing English"
+        frontend_key: "orth_us_english"
+        wrong_forms: ["behaviour", "colour", "analyse", "organisation", "recognise"]
+
+  # ---------------------------------------------------------------------------
+  # 10. CROSS-DOMAIN CONFUSION PAIRS
+  # ---------------------------------------------------------------------------
+  confusion_pairs:
+    enforcement: ERROR
+    note: "Terms frequently confused between FEPSDE and Ψ systems"
+    terms:
+
+      - id: TRM-CONF-001
+        name: "Physical Subscript Confusion"
+        fepsde: { letter: "P", meaning: "Physical (Gesundheit, Energie)" }
+        psi: { symbol: "Ψ_F", meaning: "Physical (Ort: Zuhause, Büro)" }
+        rule: "In FEPSDE: P = Physical. In Ψ: Ψ_F = Physical (NOT Ψ_P!)"
+        frontend_key: "confusion_physical"
+
+      - id: TRM-CONF-002
+        name: "Economic/Emotional E-Confusion"
+        fepsde: { letter: "E", meaning: "Emotional (Wohlbefinden)" }
+        psi: { symbol: "Ψ_E", meaning: "Economic (Budget, Ressourcen)" }
+        rule: "In FEPSDE: E = Emotional. In Ψ: Ψ_E = Economic. NEVER reverse!"
+        frontend_key: "confusion_economic_emotional"
+
+      - id: TRM-CONF-003
+        name: "Environmental/Ecological Confusion"
+        fepsde: { letter: "E(X)", meaning: "Ecological (Umwelt)" }
+        common_error: "Environmental"
+        rule: "Always Ecological, never Environmental for the 6th FEPSDE dimension"
+        frontend_key: "confusion_ecological"
