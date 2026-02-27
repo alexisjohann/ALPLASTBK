@@ -1,0 +1,880 @@
+# ALPLA Intervention Selection Framework
+# Version: 1.0
+# Date: 2026-01-19
+# Purpose: Algorithmus zur Bestimmung des optimalen Interventions-Mix pro Werk
+#
+# Input: Alle 47 Variablen aus dem Measurement Framework
+# Output: Empfohlener Interventions-Mix pro Werk
+
+metadata:
+  version: "1.0"
+  created: "2026-01-19"
+  framework_name: "ALPLA Intervention Selection Algorithm (AISA)"
+  total_interventions: 8
+  selection_approach: "Multi-Criteria Decision Analysis (MCDA)"
+
+# =============================================================================
+# INTERVENTIONS-KATALOG
+# =============================================================================
+
+interventions:
+  INT1_job_rotation:
+    code: "INT1"
+    name: "Job Rotation"
+    category: "Work Design"
+    description: "Systematischer Wechsel zwischen verschiedenen Aufgaben innerhalb der Schicht"
+
+    target:
+      churn_drivers: [monotony, repetitive, standing]
+      job_categories: [BC1, BC5]
+      expected_churn_reduction: "5-8%"
+
+    requirements:
+      min_plant_size: 100
+      min_job_variety: 3  # Verschiedene Job-Kategorien
+      shift_model: [2, 3]
+      customer_constraint_max: 0.5
+
+    cost:
+      setup: "low ($1-5k)"
+      ongoing: "low (supervisor time)"
+      training_days: 2-5
+
+    implementation:
+      duration_weeks: 4-6
+      complexity: "low"
+      hr_involvement: "medium"
+      management_effort: "medium"
+
+    contraindications:
+      - "Sehr kleine Werke (< 80 MA)"
+      - "Hohe Spezialisierung erforderlich"
+      - "Strikte Kunden-Vorgaben"
+
+  INT2_career_pathway:
+    code: "INT2"
+    name: "Career Pathway Program"
+    category: "Development"
+    description: "Transparente Aufstiegswege mit definierten Meilensteinen"
+
+    target:
+      churn_drivers: [low_status, no_growth]
+      job_categories: [BC4, BC5]
+      expected_churn_reduction: "4-6%"
+
+    requirements:
+      min_plant_size: 80
+      local_unemployment_min: 3.0  # Höhere AL = mehr Wert auf Stabilität
+      mgmt_buyin_min: 3.5
+
+    cost:
+      setup: "medium ($5-15k)"
+      ongoing: "low (tracking, communication)"
+      training_days: 1-2
+
+    implementation:
+      duration_weeks: 8-12
+      complexity: "medium"
+      hr_involvement: "high"
+      management_effort: "medium"
+
+    components:
+      - "Skill-Matrix erstellen"
+      - "Karrierestufen definieren (BC5 → BC4 → BC1)"
+      - "Mentoring-Programm"
+      - "Quarterly Check-ins"
+
+  INT3_skill_based_pay:
+    code: "INT3"
+    name: "Skill-Based Pay"
+    category: "Compensation"
+    description: "Lohndifferenzierung basierend auf erworbenen Fähigkeiten"
+
+    target:
+      churn_drivers: [no_growth, low_status, wage_competition]
+      job_categories: [BC1, BC3]
+      expected_churn_reduction: "3-5%"
+
+    requirements:
+      min_plant_size: 100
+      wage_competition_min: "medium"  # Lokaler Lohnwettbewerb
+      budget_available_min: 3
+      mgmt_buyin_min: 4.0
+
+    cost:
+      setup: "medium ($10-25k)"
+      ongoing: "high (wage premium 2-5%)"
+      training_days: 0
+
+    implementation:
+      duration_weeks: 12-16
+      complexity: "high"
+      hr_involvement: "high"
+      management_effort: "high"
+
+    components:
+      - "Skill-Assessment System"
+      - "Zertifizierungsprogramm"
+      - "Lohnstruktur-Anpassung"
+      - "Kommunikationskampagne"
+
+    contraindications:
+      - "Tarifvertrag ohne Flexibilität"
+      - "Geringes Budget"
+      - "Management Buy-In < 3.5"
+
+  INT4_workload_management:
+    code: "INT4"
+    name: "Workload Management"
+    category: "Work Design"
+    description: "Optimierung der Arbeitsverteilung und Bereitschaftsplanung"
+
+    target:
+      churn_drivers: [time_pressure, overtime, on_call]
+      job_categories: [BC3]
+      expected_churn_reduction: "2-4%"
+
+    requirements:
+      bc3_share_min: 12  # Mindestens 12% Wartungspersonal
+      overtime_frequency: "medium-high"
+
+    cost:
+      setup: "medium ($5-15k)"
+      ongoing: "low"
+      training_days: 1-2
+
+    implementation:
+      duration_weeks: 6-10
+      complexity: "medium"
+      hr_involvement: "low"
+      management_effort: "high"
+
+    components:
+      - "Predictive Maintenance einführen"
+      - "Bereitschaftsrotation optimieren"
+      - "Workload-Dashboard"
+      - "Cross-Training für Backup"
+
+  INT5_autonomy_enhancement:
+    code: "INT5"
+    name: "Autonomy Enhancement"
+    category: "Work Design"
+    description: "Erhöhung der Selbstbestimmung und Entscheidungsspielräume"
+
+    target:
+      churn_drivers: [monotony, responsibility, micromanagement]
+      job_categories: [BC1, BC2, BC3]
+      expected_churn_reduction: "3-5%"
+
+    requirements:
+      plant_type: [standalone, regional_hq]
+      avg_tenure_min: 2.0  # Jahre, erfahrene Belegschaft
+      supervisor_span_min: 12
+      mgmt_buyin_min: 4.0
+
+    cost:
+      setup: "low ($2-5k)"
+      ongoing: "low"
+      training_days: 2-3
+
+    implementation:
+      duration_weeks: 8-12
+      complexity: "medium"
+      hr_involvement: "low"
+      management_effort: "high"
+
+    components:
+      - "Entscheidungsmatrix (was darf MA selbst entscheiden)"
+      - "Supervisor-Coaching"
+      - "Fehlerkultur etablieren"
+      - "Team-basierte Ziele"
+
+    contraindications:
+      - "In-House Plants (Kunden-Vorgaben)"
+      - "Sehr neue Belegschaft (< 1 Jahr Tenure)"
+      - "Management Buy-In < 3.5"
+
+  INT6_recognition_program:
+    code: "INT6"
+    name: "Recognition Program"
+    category: "Culture"
+    description: "Systematische Anerkennung guter Leistung"
+
+    target:
+      churn_drivers: [low_status, isolation, lack_of_feedback]
+      job_categories: [BC1, BC2, BC3, BC4, BC5]
+      expected_churn_reduction: "1-3%"
+
+    requirements:
+      # Minimale Anforderungen - universell einsetzbar
+      min_plant_size: 50
+
+    cost:
+      setup: "low ($1-3k)"
+      ongoing: "low ($50-100/Monat)"
+      training_days: 0.5
+
+    implementation:
+      duration_weeks: 2-4
+      complexity: "low"
+      hr_involvement: "medium"
+      management_effort: "low"
+
+    components:
+      - "Monthly Recognition Awards"
+      - "Peer-to-Peer Anerkennung"
+      - "Tenure Milestones"
+      - "Team Achievements"
+
+    note: "Kann immer als Basis-Intervention eingesetzt werden"
+
+  INT7_onboarding_improvement:
+    code: "INT7"
+    name: "Onboarding Improvement"
+    category: "Development"
+    description: "Verbesserung der Einarbeitung neuer Mitarbeiter"
+
+    target:
+      churn_drivers: [early_turnover, unclear_expectations]
+      job_categories: [BC1, BC4, BC5]
+      expected_churn_reduction: "2-4% (bei Neueinstellungen)"
+
+    requirements:
+      hiring_volume_min: 10  # Neueinstellungen/Jahr
+      early_turnover_rate_min: 30  # % Churn in ersten 6 Monaten
+
+    cost:
+      setup: "low ($2-5k)"
+      ongoing: "low"
+      training_days: 1
+
+    implementation:
+      duration_weeks: 4-6
+      complexity: "low"
+      hr_involvement: "high"
+      management_effort: "low"
+
+    components:
+      - "Strukturierter 90-Tage-Plan"
+      - "Buddy-System"
+      - "Check-ins (Tag 7, 30, 60, 90)"
+      - "Early Warning Indicators"
+
+  INT8_team_restructuring:
+    code: "INT8"
+    name: "Team Restructuring"
+    category: "Organization"
+    description: "Neuorganisation von Teams für bessere Zusammenarbeit"
+
+    target:
+      churn_drivers: [team_conflict, isolation, poor_communication]
+      job_categories: [BC1, BC2, BC3, BC4, BC5]
+      expected_churn_reduction: "2-4%"
+
+    requirements:
+      team_cohesion_score_max: 3.0  # Probleme bei niedrigem Score
+      mgmt_buyin_min: 4.0
+
+    cost:
+      setup: "medium ($5-10k)"
+      ongoing: "low"
+      training_days: 1-2
+
+    implementation:
+      duration_weeks: 8-12
+      complexity: "high"
+      hr_involvement: "high"
+      management_effort: "high"
+
+    contraindications:
+      - "Aktuell laufende andere große Veränderungen"
+      - "Management Buy-In < 4.0"
+
+# =============================================================================
+# ENTSCHEIDUNGSALGORITHMUS
+# =============================================================================
+
+selection_algorithm:
+  name: "AISA - ALPLA Intervention Selection Algorithm"
+  version: "1.0"
+
+  overview: |
+    Der Algorithmus wählt Interventionen in 5 Schritten:
+    1. Eligibility Check: Welche Interventionen sind überhaupt möglich?
+    2. Fit Scoring: Wie gut passt jede Intervention zum Werk?
+    3. Constraint Check: Budget, Kapazität, Timing
+    4. Combination Rules: Welche Interventionen ergänzen sich?
+    5. Final Recommendation: Priorisierter Interventions-Mix
+
+  step_1_eligibility:
+    name: "Eligibility Check"
+    description: "Prüft harte Ausschlusskriterien für jede Intervention"
+
+    rules:
+      INT1_job_rotation:
+        eligible_if:
+          - "S2_employees >= 100"
+          - "job_categories_count >= 3"
+          - "S6_shift_model IN [2, 3]"
+          - "O1_customer_dependency <= 70"
+
+      INT2_career_pathway:
+        eligible_if:
+          - "S2_employees >= 80"
+          - "M5_buyin >= 3.5"
+
+      INT3_skill_based_pay:
+        eligible_if:
+          - "S2_employees >= 100"
+          - "R3_budget >= 3"
+          - "M5_buyin >= 4.0"
+          - "O5_union = 0 OR union_flexible = 1"
+
+      INT4_workload_management:
+        eligible_if:
+          - "BC3_pct >= 12"
+
+      INT5_autonomy_enhancement:
+        eligible_if:
+          - "S1_plant_type IN [standalone, regional_hq]"
+          - "P2_avg_tenure >= 2.0"
+          - "M5_buyin >= 4.0"
+
+      INT6_recognition_program:
+        eligible_if:
+          - "S2_employees >= 50"  # Fast immer eligible
+
+      INT7_onboarding_improvement:
+        eligible_if:
+          - "annual_hires >= 10"
+
+      INT8_team_restructuring:
+        eligible_if:
+          - "K1_team_cohesion <= 3.0"
+          - "M5_buyin >= 4.0"
+
+  step_2_fit_scoring:
+    name: "Fit Scoring"
+    description: "Berechnet Fit-Score (0-100) für jede eligible Intervention"
+
+    method: "Weighted sum of normalized factors"
+
+    scoring_formulas:
+      INT1_job_rotation:
+        formula: |
+          fit = 0.25 * norm(BC5_pct, 5, 15) +
+                0.25 * norm(S2_employees, 80, 300) +
+                0.20 * norm(monotony_score, 2, 5) +
+                0.15 * I1_rotation_fit / 100 +
+                0.15 * (1 - O1_customer_dependency / 100)
+
+      INT2_career_pathway:
+        formula: |
+          fit = 0.25 * norm(BC4_pct + BC5_pct, 15, 35) +
+                0.20 * norm(L1_unemployment, 2.5, 5.0) +
+                0.20 * I2_career_fit / 100 +
+                0.20 * norm(P1_BC4_BC5, 25, 45) +
+                0.15 * (M5_buyin - 3) / 2
+
+      INT3_skill_based_pay:
+        formula: |
+          fit = 0.25 * norm(BC1_pct + BC3_pct, 50, 75) +
+                0.25 * norm(L2_mfg_establishments, 100, 2000) +
+                0.20 * I3_skill_pay_fit / 100 +
+                0.15 * norm(L4_wage_competition, 17, 21) +
+                0.15 * (R3_budget - 3) / 2
+
+      INT4_workload_management:
+        formula: |
+          fit = 0.35 * norm(BC3_pct, 10, 20) +
+                0.25 * norm(overtime_frequency, 1, 5) +
+                0.25 * I4_workload_fit / 100 +
+                0.15 * norm(S3_production_lines, 5, 25)
+
+      INT5_autonomy_enhancement:
+        formula: |
+          fit = 0.30 * I5_autonomy_fit / 100 +
+                0.25 * norm(M2_supervisor_span, 10, 20) +
+                0.25 * norm(P2_avg_tenure, 2, 5) +
+                0.20 * (M5_buyin - 3.5) / 1.5
+
+      INT6_recognition_program:
+        formula: |
+          fit = 0.30 * (5 - K5_job_satisfaction) / 4 +
+                0.30 * norm(P1_total, 15, 35) +
+                0.20 * (5 - M4_leadership) / 4 +
+                0.20 * 1  # Baseline immer moderate fit
+
+      INT7_onboarding_improvement:
+        formula: |
+          fit = 0.40 * norm(early_turnover_pct, 20, 50) +
+                0.30 * norm(annual_hires, 10, 50) +
+                0.30 * (1 - P2_avg_tenure / 5)
+
+      INT8_team_restructuring:
+        formula: |
+          fit = 0.40 * (4 - K1_team_cohesion) / 3 +
+                0.30 * (4 - K2_communication) / 3 +
+                0.30 * (M5_buyin - 3.5) / 1.5
+
+  step_3_constraint_check:
+    name: "Constraint Check"
+    description: "Prüft praktische Einschränkungen"
+
+    constraints:
+      budget:
+        description: "Gesamtbudget pro Werk"
+        categories:
+          low: "$0-5k"
+          medium: "$5-20k"
+          high: "$20-50k"
+          unlimited: "> $50k"
+        intervention_costs:
+          INT1: "low"
+          INT2: "medium"
+          INT3: "high"
+          INT4: "medium"
+          INT5: "low"
+          INT6: "low"
+          INT7: "low"
+          INT8: "medium"
+
+      hr_capacity:
+        description: "Verfügbare HR-Zeit"
+        threshold: "R1_hr_capacity"
+        intervention_requirements:
+          INT1: "medium"
+          INT2: "high"
+          INT3: "high"
+          INT4: "low"
+          INT5: "low"
+          INT6: "medium"
+          INT7: "high"
+          INT8: "high"
+
+      timing:
+        description: "Zeitliche Einschränkungen"
+        rules:
+          - "Keine neue Intervention wenn T3_planned_changes = major"
+          - "Keine Lohn-Intervention (INT3) 3 Monate vor/nach T4_wage_round"
+          - "Keine Team-Intervention (INT8) während Hochsaison"
+
+      max_concurrent:
+        description: "Maximale gleichzeitige Interventionen"
+        rule: "max 3 Interventionen pro Werk"
+        reason: "Change Fatigue vermeiden, Messbarkeit erhalten"
+
+  step_4_combination_rules:
+    name: "Combination Rules"
+    description: "Welche Interventionen ergänzen sich?"
+
+    synergies:
+      - pair: [INT1, INT2]
+        synergy: "high"
+        reason: "Rotation zeigt Karrierewege auf"
+
+      - pair: [INT2, INT3]
+        synergy: "high"
+        reason: "Career + Skill Pay verstärken Entwicklungsanreiz"
+
+      - pair: [INT5, INT6]
+        synergy: "medium"
+        reason: "Autonomie + Anerkennung = Empowerment"
+
+      - pair: [INT1, INT7]
+        synergy: "medium"
+        reason: "Rotation im Onboarding = schnellere Integration"
+
+    conflicts:
+      - pair: [INT3, INT8]
+        conflict: "high"
+        reason: "Zu viel Veränderung gleichzeitig"
+
+      - pair: [INT5, INT8]
+        conflict: "medium"
+        reason: "Team-Struktur muss stabil sein für Autonomie"
+
+    recommended_bundles:
+      bundle_A_rotation:
+        name: "Rotation Bundle"
+        interventions: [INT1, INT2, INT6]
+        target_cluster: "A_rotation_ready"
+        total_cost: "medium"
+        expected_reduction: "8-12%"
+
+      bundle_B_career:
+        name: "Career Bundle"
+        interventions: [INT2, INT7, INT6]
+        target_cluster: "B_career_hungry"
+        total_cost: "medium"
+        expected_reduction: "6-10%"
+
+      bundle_C_technical:
+        name: "Technical Bundle"
+        interventions: [INT3, INT4, INT6]
+        target_cluster: "C_tech_focused"
+        total_cost: "high"
+        expected_reduction: "5-9%"
+
+      bundle_D_autonomy:
+        name: "Autonomy Bundle"
+        interventions: [INT5, INT6]
+        target_cluster: "D_autonomy_seeking"
+        total_cost: "low"
+        expected_reduction: "4-7%"
+
+      bundle_E_minimal:
+        name: "Minimal Bundle"
+        interventions: [INT6, INT7]
+        target_cluster: "E_constrained"
+        total_cost: "low"
+        expected_reduction: "2-4%"
+
+  step_5_final_recommendation:
+    name: "Final Recommendation"
+    description: "Generiert priorisierten Interventions-Mix"
+
+    output_format:
+      primary_intervention:
+        description: "Hauptintervention mit höchstem Fit"
+        selection: "Höchster Fit-Score nach Constraints"
+
+      secondary_intervention:
+        description: "Ergänzende Intervention"
+        selection: "Zweithöchster Score + Synergy-Check"
+
+      baseline_intervention:
+        description: "Immer dabei"
+        default: "INT6 (Recognition)"
+
+      not_recommended:
+        description: "Explizit ausgeschlossen"
+        list: "Interventionen mit Fit < 40 oder Eligibility = false"
+
+    confidence_levels:
+      high:
+        criteria: "Fit >= 70, Buy-In >= 4, keine Constraints"
+        action: "Direkte Implementation empfohlen"
+
+      medium:
+        criteria: "Fit 50-70 oder moderate Constraints"
+        action: "Pilot empfohlen, dann Ausweitung"
+
+      low:
+        criteria: "Fit < 50 oder starke Constraints"
+        action: "Nicht empfohlen oder starke Anpassung nötig"
+
+# =============================================================================
+# ENTSCHEIDUNGSBAUM (VEREINFACHT)
+# =============================================================================
+
+decision_tree:
+  description: "Vereinfachter Entscheidungsbaum für schnelle Orientierung"
+
+  start: "Welcher IFI-Cluster?"
+
+  branches:
+    cluster_A:
+      condition: "IFI Cluster = A (Rotation-Ready)"
+      questions:
+        - question: "Plant Size >= 150?"
+          yes: "INT1 (Rotation) + INT2 (Career)"
+          no: "INT2 (Career) + INT6 (Recognition)"
+
+    cluster_B:
+      condition: "IFI Cluster = B (Career-Hungry)"
+      questions:
+        - question: "Unemployment >= 3.5%?"
+          yes: "INT2 (Career) als Priorität"
+          no: "INT2 (Career) + INT7 (Onboarding)"
+
+    cluster_C:
+      condition: "IFI Cluster = C (Tech-Focused)"
+      questions:
+        - question: "Budget >= medium?"
+          yes: "INT3 (Skill Pay) + INT4 (Workload)"
+          no: "INT4 (Workload) + INT6 (Recognition)"
+
+    cluster_D:
+      condition: "IFI Cluster = D (Autonomy)"
+      questions:
+        - question: "Avg Tenure >= 3 Jahre?"
+          yes: "INT5 (Autonomy) + INT6 (Recognition)"
+          no: "INT2 (Career) + INT6 (Recognition)"
+
+    cluster_E:
+      condition: "IFI Cluster = E (Constrained)"
+      default: "INT6 (Recognition) + INT7 (Onboarding)"
+      note: "Wenig Spielraum wegen Kundenabhängigkeit"
+
+  always_include: "INT6 (Recognition) als Baseline"
+
+# =============================================================================
+# ANWENDUNG AUF 17 US-WERKE
+# =============================================================================
+
+plant_recommendations:
+  note: "Basierend auf aktuellen LLMMC-Schätzungen. Update nach Phase 2 Daten."
+
+  US-001_McDonough:
+    cluster: "D_autonomy_seeking"
+    eligibility:
+      INT1: true
+      INT2: true
+      INT3: true  # HQ hat Budget
+      INT4: true
+      INT5: true
+      INT6: true
+      INT7: true
+      INT8: "pending (K1 needed)"
+    fit_scores:
+      INT1: 58
+      INT2: 72
+      INT3: 65
+      INT4: 55
+      INT5: 78
+      INT6: 60
+      INT7: 50
+    recommendation:
+      primary: "INT5 (Autonomy Enhancement)"
+      secondary: "INT2 (Career Pathway)"
+      baseline: "INT6 (Recognition)"
+      bundle: "bundle_D_autonomy + Career"
+      expected_reduction: "6-9%"
+      confidence: "medium"
+      notes: "HQ hat Ressourcen für mehrere Interventionen"
+
+  US-002_Bethlehem:
+    cluster: "A_rotation_ready"
+    eligibility:
+      INT1: true
+      INT2: true
+      INT3: "pending (budget)"
+      INT4: true
+      INT5: true
+      INT6: true
+      INT7: true
+    fit_scores:
+      INT1: 68
+      INT2: 58
+      INT3: 55
+      INT4: 52
+      INT5: 62
+      INT6: 55
+    recommendation:
+      primary: "INT1 (Job Rotation)"
+      secondary: "INT5 (Autonomy)"
+      baseline: "INT6 (Recognition)"
+      bundle: "bundle_A_rotation (adapted)"
+      expected_reduction: "6-9%"
+      confidence: "high"
+
+  US-006_St_Peters_1:
+    cluster: "A_rotation_ready"
+    eligibility:
+      INT1: true
+      INT2: true
+      INT3: true
+      INT4: true
+      INT5: true
+      INT6: true
+      INT7: true
+    fit_scores:
+      INT1: 72
+      INT2: 52
+      INT3: 62
+      INT4: 48
+      INT5: 60
+      INT6: 50
+    recommendation:
+      primary: "INT1 (Job Rotation)"
+      secondary: "INT3 (Skill-Based Pay)"
+      baseline: "INT6 (Recognition)"
+      bundle: "bundle_A_rotation"
+      expected_reduction: "7-10%"
+      confidence: "high"
+      notes: "Ideal für Treatment Arm - Twin Plant verfügbar"
+
+  US-007_St_Peters_2:
+    cluster: "A_rotation_ready"
+    recommendation:
+      role: "CONTROL PLANT"
+      intervention: "INT6 only (Recognition)"
+      reason: "Matched Pair mit US-006"
+
+  US-010_Bowling_Green_Henkel:
+    cluster: "E_constrained"
+    eligibility:
+      INT1: false  # Zu klein, Kundenabhängig
+      INT2: true
+      INT3: false  # Kunde bestimmt Löhne
+      INT4: false  # Zu klein
+      INT5: false  # In-House
+      INT6: true
+      INT7: true
+    fit_scores:
+      INT2: 45
+      INT6: 65
+      INT7: 55
+    recommendation:
+      primary: "INT6 (Recognition)"
+      secondary: "INT7 (Onboarding)"
+      baseline: "INT6"
+      bundle: "bundle_E_minimal"
+      expected_reduction: "2-4%"
+      confidence: "medium"
+      notes: "Stark eingeschränkt durch Kundenabhängigkeit"
+
+  US-015_Salt_Lake:
+    cluster: "B_career_hungry"
+    eligibility:
+      INT1: true
+      INT2: true
+      INT3: true
+      INT4: true
+      INT5: true
+      INT6: true
+      INT7: true
+    fit_scores:
+      INT1: 48
+      INT2: 72
+      INT3: 62
+      INT4: 45
+      INT5: 55
+      INT6: 55
+      INT7: 60
+    recommendation:
+      primary: "INT2 (Career Pathway)"
+      secondary: "INT3 (Skill-Based Pay)"
+      baseline: "INT6 (Recognition)"
+      bundle: "bundle_B_career + Skill"
+      expected_reduction: "6-9%"
+      confidence: "high"
+
+  US-016_Houston:
+    cluster: "C_tech_focused"
+    eligibility:
+      INT1: true
+      INT2: true
+      INT3: true
+      INT4: true
+      INT5: false  # Near-Customer
+      INT6: true
+      INT7: true
+    fit_scores:
+      INT1: 58
+      INT2: 60
+      INT3: 72
+      INT4: 55
+      INT6: 50
+      INT7: 52
+    recommendation:
+      primary: "INT3 (Skill-Based Pay)"
+      secondary: "INT2 (Career Pathway)"
+      baseline: "INT6 (Recognition)"
+      bundle: "bundle_C_technical (adapted)"
+      expected_reduction: "5-8%"
+      confidence: "medium"
+      notes: "Hoher Lohnwettbewerb macht Skill Pay attraktiv"
+
+# =============================================================================
+# IMPLEMENTATION MATRIX
+# =============================================================================
+
+implementation_matrix:
+  description: "Zusammenfassung der empfohlenen Interventionen pro Cluster"
+
+  summary_table:
+    # Cluster | Primary | Secondary | Baseline | Budget | Timeline
+    cluster_A:
+      plants: [US-002, US-005, US-006, US-009, US-013, US-014]
+      primary: "INT1 (Rotation)"
+      secondary: "INT2 (Career) oder INT5 (Autonomy)"
+      baseline: "INT6"
+      budget: "low-medium"
+      timeline: "8-12 weeks"
+      expected_reduction: "6-10%"
+
+    cluster_B:
+      plants: [US-004, US-008, US-015, US-017]
+      primary: "INT2 (Career)"
+      secondary: "INT7 (Onboarding) oder INT3 (Skill Pay)"
+      baseline: "INT6"
+      budget: "medium"
+      timeline: "10-14 weeks"
+      expected_reduction: "5-8%"
+
+    cluster_C:
+      plants: [US-003, US-016]
+      primary: "INT3 (Skill Pay) oder INT4 (Workload)"
+      secondary: "INT2 (Career)"
+      baseline: "INT6"
+      budget: "medium-high"
+      timeline: "12-16 weeks"
+      expected_reduction: "5-9%"
+
+    cluster_D:
+      plants: [US-001]
+      primary: "INT5 (Autonomy)"
+      secondary: "INT2 (Career)"
+      baseline: "INT6"
+      budget: "low-medium"
+      timeline: "10-14 weeks"
+      expected_reduction: "5-8%"
+
+    cluster_E:
+      plants: [US-010, US-011, US-012]
+      primary: "INT6 (Recognition)"
+      secondary: "INT7 (Onboarding)"
+      baseline: "INT6"
+      budget: "low"
+      timeline: "4-6 weeks"
+      expected_reduction: "2-4%"
+
+# =============================================================================
+# DOSIERUNG UND INTENSITÄT
+# =============================================================================
+
+dosage_guidelines:
+  description: "Wie intensiv soll die Intervention sein?"
+
+  factors:
+    churn_severity:
+      description: "Je höher der Churn, desto intensiver"
+      thresholds:
+        low: "P1 < 15% → Light Touch"
+        medium: "P1 15-25% → Standard"
+        high: "P1 > 25% → Intensive"
+
+    management_capacity:
+      description: "Anpassung an verfügbare Ressourcen"
+      thresholds:
+        low: "M5 < 3.5 → Reduzierte Intensität"
+        medium: "M5 3.5-4.0 → Standard"
+        high: "M5 > 4.0 → Volle Intensität möglich"
+
+    change_readiness:
+      description: "Anpassung an Veränderungsbereitschaft"
+      thresholds:
+        low: "K4 < 3.0 → Langsamer Start, mehr Kommunikation"
+        medium: "K4 3.0-4.0 → Standard"
+        high: "K4 > 4.0 → Schneller Rollout möglich"
+
+  intensity_levels:
+    light:
+      description: "Minimale Intervention"
+      scope: "1 Team oder Abteilung"
+      frequency: "Monatliche Touchpoints"
+      duration: "3 Monate"
+
+    standard:
+      description: "Reguläre Intervention"
+      scope: "Gesamtes Werk"
+      frequency: "Wöchentliche Touchpoints"
+      duration: "6 Monate"
+
+    intensive:
+      description: "Maximale Intervention"
+      scope: "Gesamtes Werk + individuelle Begleitung"
+      frequency: "Mehrmals wöchentlich"
+      duration: "9-12 Monate"

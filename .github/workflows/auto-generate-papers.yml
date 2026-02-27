@@ -1,0 +1,198 @@
+name: Auto-Generate Papers on Appendix Change
+
+on:
+  push:
+    paths:
+      - 'appendices/*.tex'
+    branches:
+      - main
+      - master
+
+jobs:
+  detect-and-generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Need previous commit for diff
+
+      - name: Detect material changes
+        id: detect
+        run: |
+          # Get changed appendix files
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD -- 'appendices/*.tex' 2>/dev/null || echo "")
+
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No appendix files changed"
+            echo "has_material_changes=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Changed files: $CHANGED_FILES"
+
+          # Check each file for material changes (not just whitespace/comments)
+          MATERIAL_CHANGES=""
+          for file in $CHANGED_FILES; do
+            if [ -f "$file" ]; then
+              # Get diff excluding non-material changes:
+              # - Empty lines / whitespace only
+              # - Comments (% lines)
+              # - Labels, index entries
+              # - Spacing commands
+              # - Page breaks
+              # - Version/date metadata in headers
+              DIFF=$(git diff HEAD~1 HEAD -- "$file" | \
+                grep '^[+-]' | \
+                grep -v '^[+-][+-][+-]' | \
+                grep -v '^[+-]\s*$' | \
+                grep -v '^[+-]\s*%' | \
+                grep -v '^[+-]\s*\\%' | \
+                grep -v '^[+-]\s*\\label{' | \
+                grep -v '^[+-]\s*\\index{' | \
+                grep -v '^[+-]\s*\\vspace' | \
+                grep -v '^[+-]\s*\\hspace' | \
+                grep -v '^[+-]\s*\\newpage' | \
+                grep -v '^[+-]\s*\\clearpage' | \
+                grep -v '^[+-]\s*\\pagebreak' | \
+                grep -v '^[+-]\s*\\smallskip' | \
+                grep -v '^[+-]\s*\\medskip' | \
+                grep -v '^[+-]\s*\\bigskip' | \
+                grep -v '^[+-]\s*\\noindent' | \
+                grep -v '^[+-]\s*\\par\s*$' | \
+                grep -v '^[+-]% Version:' | \
+                grep -v '^[+-]% Date:' | \
+                grep -v '^[+-]% Last modified:' || true)
+
+              if [ -n "$DIFF" ]; then
+                echo "Material changes detected in: $file"
+                MATERIAL_CHANGES="$MATERIAL_CHANGES $file"
+              else
+                echo "Only whitespace/comment changes in: $file"
+              fi
+            fi
+          done
+
+          if [ -z "$MATERIAL_CHANGES" ]; then
+            echo "No material changes detected"
+            echo "has_material_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "Material changes in:$MATERIAL_CHANGES"
+            echo "has_material_changes=true" >> $GITHUB_OUTPUT
+            # Store files as newline-separated for matrix
+            echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+            echo "$MATERIAL_CHANGES" | tr ' ' '\n' | grep -v '^$' >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up Python
+        if: steps.detect.outputs.has_material_changes == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        if: steps.detect.outputs.has_material_changes == 'true'
+        run: pip install pyyaml
+
+      - name: Generate papers for changed appendices
+        if: steps.detect.outputs.has_material_changes == 'true'
+        run: |
+          echo "Generating papers for materially changed appendices..."
+
+          # Read changed files
+          CHANGED="${{ steps.detect.outputs.changed_files }}"
+
+          for file in $CHANGED; do
+            if [ -f "$file" ]; then
+              echo "Processing: $file"
+
+              # Extract category from filename for default style
+              # Format: appendices/[CATEGORY]-[NAME]_description.tex
+              BASENAME=$(basename "$file" .tex)
+              CATEGORY=$(echo "$BASENAME" | grep -oP '^[A-Z]+-[A-Z]+' | cut -d'-' -f1 || echo "")
+
+              # Map category to default style (from category_defaults)
+              case "$CATEGORY" in
+                CORE) STYLE="academic_standard" ;;
+                FORMAL) STYLE="ernst_fehr" ;;
+                DOMAIN) STYLE="practitioner" ;;
+                CONTEXT) STYLE="academic_standard" ;;
+                METHOD) STYLE="ernst_fehr" ;;
+                PREDICT) STYLE="academic_standard" ;;
+                LIT) STYLE="ernst_fehr" ;;
+                REF) STYLE="practitioner" ;;
+                *) STYLE="academic_standard" ;;
+              esac
+
+              echo "  Category: $CATEGORY -> Style: $STYLE"
+
+              # Generate paper
+              python scripts/generate_paper.py "$file" --style "$STYLE" --no-compile || {
+                echo "  Warning: Failed to generate paper for $file"
+              }
+            fi
+          done
+
+          # List generated files
+          echo "Generated papers:"
+          ls -la papers/*.tex 2>/dev/null || echo "No papers generated"
+
+      - name: Compile LaTeX documents
+        if: steps.detect.outputs.has_material_changes == 'true'
+        uses: xu-cheng/latex-action@v3
+        with:
+          working_directory: papers
+          root_file: "*.tex"
+          glob_root_file: true
+          latexmk_use_xelatex: false
+          latexmk_shell_escape: true
+          continue_on_error: true
+
+      - name: Check for new papers
+        if: steps.detect.outputs.has_material_changes == 'true'
+        id: check_papers
+        run: |
+          # Check if any new papers were generated
+          git add papers/
+          if git diff --cached --quiet; then
+            echo "No new papers to commit"
+            echo "has_new_papers=false" >> $GITHUB_OUTPUT
+          else
+            echo "New papers generated"
+            echo "has_new_papers=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: steps.check_papers.outputs.has_new_papers == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "docs(papers): Auto-generate papers from appendix changes"
+          title: "[Auto] Papers generated from appendix updates"
+          body: |
+            ## Automatically Generated Papers
+
+            Papers were automatically generated due to **material changes** in appendices.
+
+            **Changed appendices:**
+            ```
+            ${{ steps.detect.outputs.changed_files }}
+            ```
+
+            **Material change detection:**
+            - Ignores whitespace-only changes
+            - Ignores comment-only changes (lines starting with %)
+            - Only triggers on actual content modifications
+
+            ### Review Checklist
+            - [ ] Content accuracy
+            - [ ] Style consistency
+            - [ ] References completeness
+            - [ ] PDF compiles correctly
+
+            ---
+            *Generated by the 8D Document Type Framework*
+          branch: auto/papers-${{ github.run_number }}
+          delete-branch: true

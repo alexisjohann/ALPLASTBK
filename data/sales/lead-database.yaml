@@ -1,0 +1,5276 @@
+# =============================================================================
+# LEAD DATABASE - FehrAdvice & Partners AG
+# =============================================================================
+# Zentrale Datenbank für alle Kundenbeziehungen:
+# - Ehemalige Kunden (CHURNED)
+# - Aktuelle Kunden (ACTIVE)
+# - Potenzielle Neukunden (PROSPECT, QUALIFIED, PROPOSAL, NEGOTIATION)
+#
+# Superkey Format: LEAD-{NNN}
+# Reference: Appendix BN REF-SUPERKEY
+#
+# ⚠️ LEAD-ID VERGABE: NUR via Script! (Duplikat-Prävention)
+#    python scripts/get_next_lead_id.py  → Gibt ID zurück + incrementiert
+#    NIEMALS manuell IDs vergeben oder next_lead_id direkt ändern!
+#
+# Version: 1.1.0
+# Created: 2026-01-27
+# Updated: 2026-02-04 - Added atomic ID generation via script
+# =============================================================================
+
+metadata:
+  version: "2.0.1"
+  last_updated: "2026-02-04"
+  superkey_prefix: "LEAD-"
+  next_lead_id: 61  # ← NÄCHSTE FREIE ID (automatisch incrementieren!)
+  description: "Zentrale Lead-Datenbank für alle Kundenbeziehungen"
+  owner: "FehrAdvice & Partners AG"
+  schema_extensions:
+    - version: "2.0.0"
+      date: "2026-02-04"
+      description: |
+        Erweiterung um 6 neue Schema-Bereiche:
+        - behavioral_profile_schema (EBF-spezifisch)
+        - meeting_integration_schema
+        - deal_dynamics_schema
+        - communication_preferences_schema
+        - win_loss_schema
+        - relationship_depth_schema
+      reference_implementation: "LEAD-048 (prio.swiss)"
+
+# =============================================================================
+# TEAM REGISTRY (Owner-Verzeichnis)
+# =============================================================================
+# Superkey Format: OWN-{CODE}
+# Jeder Owner hat ein eindeutiges Kürzel das automatisch zugewiesen wird
+# =============================================================================
+
+team_registry:
+  superkey_prefix: "OWN-"
+
+  owners:
+    - id: OWN-GF
+      code: "GF"
+      full_name: "Gerhard Fehr"
+      role: "CEO & Founder"
+      email: "gerhard.fehr@fehradvice.com"
+      github_user: null
+      active: true
+      created: "2020-01-01"
+
+    - id: OWN-EB
+      code: "EB"
+      full_name: "Ernst Fehr"
+      role: "Scientific Director"
+      email: "ernst.fehr@fehradvice.com"
+      github_user: null
+      active: true
+      created: "2020-01-01"
+      note: "Prof. Dr. Ernst Fehr - Universität Zürich"
+
+    - id: OWN-MR
+      code: "MR"
+      full_name: "[Partner MR]"
+      role: "Partner"
+      email: null
+      github_user: null
+      active: true
+      created: "2020-01-01"
+      note: "Bitte vollständigen Namen ergänzen"
+
+    - id: OWN-AJ
+      code: "AJ"
+      full_name: "[Partner AJ]"
+      role: "Partner"
+      email: null
+      active: true
+      created: "2020-01-01"
+
+    - id: OWN-MDL
+      code: "MdL"
+      full_name: "[Partner MdL]"
+      role: "Partner"
+      email: null
+      active: true
+      created: "2020-01-01"
+
+    - id: OWN-MF
+      code: "MF"
+      full_name: "[Partner MF]"
+      role: "Partner"
+      email: null
+      active: true
+      created: "2020-01-01"
+
+    - id: OWN-LA
+      code: "LA"
+      full_name: "[Partner LA]"
+      role: "Partner"
+      email: null
+      active: true
+      created: "2020-01-01"
+
+    - id: OWN-MFA
+      code: "MFA"
+      full_name: "[Partner MFA]"
+      role: "Partner"
+      email: null
+      active: true
+      created: "2020-01-01"
+
+    - id: OWN-EF
+      code: "EF"
+      full_name: "[Partner EF]"
+      role: "Partner"
+      email: null
+      active: true
+      created: "2020-01-01"
+
+  # Automatische Zuweisung basierend auf:
+  # 1. Bestehende Kundenbeziehung → relationship.owner
+  # 2. Neue Leads → Wer den Lead einbringt
+  # 3. Stage-Änderungen → Kann mit --owner überschrieben werden
+
+  assignment_rules:
+    - rule: "existing_customer"
+      description: "Bestehende Kunden behalten ihren Owner"
+      priority: 1
+
+    - rule: "lead_source"
+      description: "Neue Leads → Owner = wer den Lead einbringt"
+      priority: 2
+
+    - rule: "explicit_override"
+      description: "Explizite Änderung via /lead-update --owner CODE"
+      priority: 3
+
+# =============================================================================
+# NOTIFICATIONS (E-Mail-Benachrichtigungen)
+# =============================================================================
+# Automatische Benachrichtigungen bei Lead-Ereignissen
+# =============================================================================
+
+notifications:
+  # Benachrichtigung bei neuen Leads
+  lead_created:
+    enabled: true
+    description: "E-Mail bei Erstellung eines neuen Leads"
+
+    # Feste Empfänger (Sales Operations)
+    recipients:
+      - email: "nora.gavazajsusuri@fehradvice.com"
+        name: "Nora Gavazaj Susuri"
+        role: "Sales Operations"
+
+      - email: "maria.neumann@fehradvice.com"
+        name: "Maria Neumann"
+        role: "Sales Operations"
+
+    # Owner immer benachrichtigen
+    notify_owner: true
+    owner_notification:
+      subject_template: "Neuer Lead zugewiesen: {company_name}"
+      include_deadline: true
+
+    template: "new_lead_notification"
+    include_fields:
+      - company_name
+      - industry
+      - stage
+      - owner
+      - source
+      - fit_score
+      - deadline
+
+  # Weitere Benachrichtigungstypen (optional erweiterbar)
+  stage_changed:
+    enabled: false
+    description: "E-Mail bei Stage-Änderung"
+    recipients: []
+    notify_owner: true
+    trigger_stages: [QUALIFIED, WON, LOST, CHURNED]
+
+  deal_won:
+    enabled: false
+    description: "E-Mail bei gewonnenem Deal"
+    recipients: []
+
+# =============================================================================
+# DEADLINE CONFIGURATION (Follow-up-Fristen)
+# =============================================================================
+# Automatische Deadlines basierend auf Stage
+# =============================================================================
+
+deadline_config:
+  enabled: true
+  description: "Automatische Follow-up-Deadline bei Lead-Erstellung"
+
+  # Default-Fristen pro Stage (in Tagen)
+  default_deadlines:
+    SUSPECT: 14       # 2 Wochen für Erstkontakt
+    PROSPECT: 7       # 1 Woche für Qualifikation
+    QUALIFIED: 14     # 2 Wochen für Angebotserstellung
+    PROPOSAL: 7       # 1 Woche für Follow-up
+    NEGOTIATION: 3    # 3 Tage während Verhandlung
+    WON: 2            # 2 Tage für Onboarding-Start
+    ACTIVE: 30        # 1 Monat für Check-in
+    DORMANT: 90       # 3 Monate für Reaktivierung
+    REACTIVATION: 14  # 2 Wochen für Reaktivierungsversuch
+
+  # Deadline-Berechnung
+  calculation:
+    start_from: "stage_entry_date"  # Datum des Stage-Eintritts
+    business_days_only: false       # Kalendertage (nicht nur Werktage)
+
+  # Erinnerungen
+  reminders:
+    enabled: true
+    days_before: [1]  # 1 Tag vor Deadline
+    notify_owner: true
+    notify_sales_ops: true  # Auch Sales Operations benachrichtigen
+
+# =============================================================================
+# SALES PHASES (Verkaufsphasen 0-5)
+# =============================================================================
+# Vereinfachte Phasenlogik für Sales-Tracking
+# Mapping zu detaillierten Pipeline Stages
+# =============================================================================
+
+sales_phases:
+  description: "Standard Sales-Phasen 0-5 für Opportunity-Tracking"
+
+  phases:
+    - phase: 0
+      name: "Identifiziert"
+      short: "IDENT"
+      description: "Lead identifiziert, aber noch kein Kontakt hergestellt"
+      mapped_stages: [SUSPECT]
+      probability_range: "0-10%"
+      typical_actions:
+        - "Recherche zur Firma"
+        - "Ansprechpartner identifizieren"
+        - "Erstkontakt planen"
+
+    - phase: 1
+      name: "Kontakt"
+      short: "KONTAKT"
+      description: "Erster Kontakt hergestellt, Interesse bekundet"
+      mapped_stages: [PROSPECT]
+      probability_range: "10-25%"
+      typical_actions:
+        - "Discovery Call durchführen"
+        - "Bedarf ermitteln"
+        - "Budget und Timeline klären"
+
+    - phase: 2
+      name: "Qualifiziert"
+      short: "QUAL"
+      description: "Bedarf, Budget und Entscheidungskompetenz qualifiziert"
+      mapped_stages: [QUALIFIED]
+      probability_range: "25-50%"
+      typical_actions:
+        - "Angebot vorbereiten"
+        - "Stakeholder-Mapping"
+        - "Präsentationstermin vereinbaren"
+
+    - phase: 3
+      name: "Angebot"
+      short: "ANGEBOT"
+      description: "Angebot erstellt und beim Kunden präsentiert"
+      mapped_stages: [PROPOSAL]
+      probability_range: "50-75%"
+      typical_actions:
+        - "Angebot präsentieren"
+        - "Fragen klären"
+        - "Einwände behandeln"
+
+    - phase: 4
+      name: "Verhandlung"
+      short: "VERH"
+      description: "Vertragsverhandlung läuft, Konditionen werden abgestimmt"
+      mapped_stages: [NEGOTIATION]
+      probability_range: "75-90%"
+      typical_actions:
+        - "Vertragsbedingungen verhandeln"
+        - "Scope finalisieren"
+        - "Unterschrift einholen"
+
+    - phase: 5
+      name: "Gewonnen"
+      short: "WON"
+      description: "Deal abgeschlossen, Kunde gewonnen"
+      mapped_stages: [WON, ACTIVE]
+      probability_range: "100%"
+      typical_actions:
+        - "Kick-off planen"
+        - "Onboarding starten"
+        - "Projektteam zusammenstellen"
+
+  # Zusätzliche Phasen für Ex-Kunden (optional)
+  extended_phases:
+    - phase: -1
+      name: "Verloren"
+      short: "LOST"
+      description: "Deal verloren oder Kunde abgesprungen"
+      mapped_stages: [LOST, CHURNED]
+      probability_range: "0%"
+
+    - phase: 6
+      name: "Aktiv"
+      short: "ACTIVE"
+      description: "Laufende Kundenbeziehung mit aktiven Projekten"
+      mapped_stages: [ACTIVE]
+      probability_range: "n/a"
+
+    - phase: 7
+      name: "Ruhend"
+      short: "DORMANT"
+      description: "Kunde ohne aktive Projekte"
+      mapped_stages: [DORMANT]
+      probability_range: "n/a"
+
+  # Phase-zu-Stage Mapping für Reports
+  stage_to_phase_mapping:
+    SUSPECT: 0
+    PROSPECT: 1
+    QUALIFIED: 2
+    PROPOSAL: 3
+    NEGOTIATION: 4
+    WON: 5
+    ACTIVE: 6
+    DORMANT: 7
+    CHURNED: -1
+    LOST: -1
+    REACTIVATION: 1  # Reaktivierung startet wieder bei Kontaktphase
+
+# =============================================================================
+# PIPELINE STAGES (Kundenlebenszyklus)
+# =============================================================================
+
+pipeline_stages:
+  # --- Akquise-Phase ---
+  SUSPECT:
+    order: 1
+    phase: acquisition
+    description: "Identifiziert, aber noch kein Kontakt"
+    color: "#CCCCCC"
+    next_stages: [PROSPECT]
+
+  PROSPECT:
+    order: 2
+    phase: acquisition
+    description: "Erster Kontakt hergestellt"
+    color: "#549EDE"
+    next_stages: [QUALIFIED, LOST]
+
+  QUALIFIED:
+    order: 3
+    phase: acquisition
+    description: "Bedarf und Budget qualifiziert (SQL)"
+    color: "#024079"
+    next_stages: [PROPOSAL, LOST]
+
+  PROPOSAL:
+    order: 4
+    phase: acquisition
+    description: "Angebot erstellt und präsentiert"
+    color: "#A1A0C6"
+    next_stages: [NEGOTIATION, LOST]
+
+  NEGOTIATION:
+    order: 5
+    phase: acquisition
+    description: "Vertragsverhandlung"
+    color: "#7EBDAC"
+    next_stages: [WON, LOST]
+
+  # --- Kunden-Phase ---
+  WON:
+    order: 6
+    phase: customer
+    description: "Deal gewonnen, Onboarding"
+    color: "#7EBDAC"
+    next_stages: [ACTIVE]
+
+  ACTIVE:
+    order: 7
+    phase: customer
+    description: "Aktiver Kunde mit laufenden Projekten"
+    color: "#2E7D32"
+    next_stages: [DORMANT, CHURNED]
+
+  DORMANT:
+    order: 8
+    phase: customer
+    description: "Kunde ohne aktive Projekte (ruhend)"
+    color: "#DEA03E"
+    next_stages: [ACTIVE, REACTIVATION, CHURNED]
+
+  # --- Ehemalige/Verlorene ---
+  CHURNED:
+    order: 9
+    phase: former
+    description: "Ehemaliger Kunde (Beziehung beendet)"
+    color: "#C62828"
+    next_stages: [REACTIVATION]
+
+  LOST:
+    order: 10
+    phase: former
+    description: "Deal verloren (nie Kunde geworden)"
+    color: "#757575"
+    next_stages: [REACTIVATION]
+
+  REACTIVATION:
+    order: 11
+    phase: reactivation
+    description: "Reaktivierungsversuch läuft"
+    color: "#FF9800"
+    next_stages: [PROSPECT, QUALIFIED, ACTIVE, LOST]
+
+# =============================================================================
+# PROJECT PHASES (Projekt- & Sales-Phasen)
+# =============================================================================
+# Mapping zwischen internen Pipeline-Stages und kundenorientierten Projekt-Phasen
+#
+# Algorithmus: stage_to_phase(lead)
+#   SUSPECT      → Phase 0 (vor Erstgespräch)
+#   PROSPECT     → Phase 0 (Erstgespräch läuft)
+#   QUALIFIED    → Phase 1 oder 2 (je nach next_action)
+#   PROPOSAL     → Phase 3 (Angebot in Arbeit/versendet)
+#   NEGOTIATION  → Phase 4 (Abschluss in Verhandlung)
+#   WON          → Phase 4 (Commitment erfolgt)
+#   ACTIVE       → Phase 5 (Projekt läuft)
+#   DORMANT      → Phase 5 (abgeschlossen) / Phase 0 (für neues Projekt)
+#   REACTIVATION → Phase 0 (Neustart)
+#   CHURNED/LOST → null (keine aktive Phase)
+
+project_phases:
+  0:
+    name: "Erstgespräch / Kennenlernen"
+    description: "Unverbindliches Kennenlern- oder Orientierungsgespräch ohne klar definiertes Themenfeld oder konkreten Bedarf."
+    typical_stages: [SUSPECT, PROSPECT, REACTIVATION]
+    color: "#CCCCCC"
+
+  1:
+    name: "Themen- & Rahmenprüfung"
+    description: "Prüfung eines konkreten Themenfelds sowie erster Rahmenbedingungen (z.B. Relevanz, grobes Budget, Timing)."
+    typical_stages: [QUALIFIED]
+    color: "#549EDE"
+
+  2:
+    name: "Erwartungsklärung & Vorgehen"
+    description: "Klärung der gegenseitigen Erwartungshaltung und Diskussion eines möglichen Vorgehens für eine Zusammenarbeit."
+    typical_stages: [QUALIFIED]
+    color: "#024079"
+
+  3:
+    name: "Angebotsphase"
+    description: "Ausarbeitung und Übermittlung einer Offerte / eines konkreten Angebots."
+    typical_stages: [PROPOSAL]
+    color: "#A1A0C6"
+
+  4:
+    name: "Abschluss & Commitment"
+    description: "Entscheidung für die Zusammenarbeit und formales Commitment."
+    typical_stages: [NEGOTIATION, WON]
+    color: "#7EBDAC"
+
+  5:
+    name: "Umsetzung & laufendes Projekt"
+    description: "Projektstart, Umsetzung und operative Zusammenarbeit."
+    typical_stages: [ACTIVE, DORMANT]
+    color: "#2E7D32"
+
+# =============================================================================
+# LEAD SCORING CONFIGURATION
+# =============================================================================
+
+scoring:
+  fit_score:
+    description: "Wie gut passt der Lead zu unserem Ideal Customer Profile (ICP)"
+    max_value: 100
+    dimensions:
+      - name: industry_fit
+        weight: 0.25
+        description: "Branche passt zu unseren Kernkompetenzen"
+      - name: size_fit
+        weight: 0.20
+        description: "Unternehmensgrösse passt"
+      - name: budget_fit
+        weight: 0.20
+        description: "Budget für EBF-Projekte vorhanden"
+      - name: culture_fit
+        weight: 0.15
+        description: "Evidenzbasierte Entscheidungskultur"
+      - name: geographic_fit
+        weight: 0.10
+        description: "DACH-Region oder erreichbar"
+      - name: timing_fit
+        weight: 0.10
+        description: "Aktueller Bedarf erkennbar"
+
+  engagement_score:
+    description: "Wie engagiert ist der Lead"
+    max_value: 100
+    activities:
+      - type: website_visit
+        points: 2
+      - type: content_download
+        points: 5
+      - type: event_attendance
+        points: 10
+      - type: meeting_request
+        points: 20
+      - type: rfp_received
+        points: 30
+      - type: proposal_requested
+        points: 40
+
+# =============================================================================
+# INDUSTRY TAXONOMY
+# =============================================================================
+
+industries:
+  finance:
+    name: "Finanzdienstleistungen"
+    subcategories: [banking, insurance, asset_management, fintech]
+  packaging:
+    name: "Verpackungsindustrie"
+    subcategories: [plastics, paper, glass, metal]
+  construction:
+    name: "Bau & Immobilien"
+    subcategories: [general_contractor, specialty, real_estate, infrastructure]
+  fmcg:
+    name: "Konsumgüter"
+    subcategories: [food_beverage, personal_care, household]
+  pharma_health:
+    name: "Pharma & Gesundheit"
+    subcategories: [pharma, medtech, healthcare_provider, health_insurance]
+  energy:
+    name: "Energie & Utilities"
+    subcategories: [oil_gas, renewables, utilities, energy_services]
+  technology:
+    name: "Technologie"
+    subcategories: [software, hardware, it_services, telecom]
+  public_sector:
+    name: "Öffentlicher Sektor"
+    subcategories: [federal, cantonal, municipal, ngo]
+  manufacturing:
+    name: "Industrie & Fertigung"
+    subcategories: [automotive, machinery, chemicals, electronics]
+  retail:
+    name: "Handel"
+    subcategories: [retail, wholesale, ecommerce]
+  professional_services:
+    name: "Professional Services"
+    subcategories: [consulting, legal, accounting, hr_services]
+
+# =============================================================================
+# SOURCE CHANNELS
+# =============================================================================
+
+source_channels:
+  - id: REFERRAL
+    name: "Empfehlung"
+    subcategories: [client_referral, partner_referral, employee_referral, fehr_network]
+  - id: INBOUND
+    name: "Inbound"
+    subcategories: [website, content, event, speaking, publication]
+  - id: OUTBOUND
+    name: "Outbound"
+    subcategories: [cold_outreach, linkedin, conference, direct_mail]
+  - id: EXISTING
+    name: "Bestandskunde"
+    subcategories: [upsell, cross_sell, renewal, expansion]
+  - id: RESEARCH
+    name: "Research"
+    subcategories: [academic_collaboration, grant_project, research_partner]
+
+# =============================================================================
+# CONTACT MANAGEMENT SCHEMA
+# =============================================================================
+# Felder für aktives Nachfassen und Kontaktsteuerung
+# Diese Felder können bei jedem Lead verwendet werden
+# =============================================================================
+
+contact_management:
+  description: "Schema für Kontaktsteuerung und Follow-up-Tracking"
+  version: "1.0.0"
+  created: "2026-01-28"
+
+  # --- Nächste Aktion (pro Lead) ---
+  next_action_schema:
+    next_action:
+      type: string
+      description: "Beschreibung der nächsten geplanten Aktion"
+      example: "Anruf zur Terminvereinbarung"
+    next_action_date:
+      type: date
+      format: "YYYY-MM-DD"
+      description: "Datum für die nächste Aktion"
+    next_action_owner:
+      type: string
+      description: "Owner-Code (z.B. GF, EB, MR)"
+      reference: "team_registry.owners[].code"
+    next_action_type:
+      type: enum
+      values: [call, email, meeting, proposal, linkedin, other]
+      description: "Art der nächsten Aktion"
+    next_action_priority:
+      type: enum
+      values: [critical, high, medium, low]
+      default: medium
+      description: "Priorität der Aktion"
+
+  # --- Kontakt-Log (Chronologie) ---
+  contact_log_schema:
+    date:
+      type: datetime
+      format: "YYYY-MM-DD HH:MM"
+      description: "Zeitpunkt des Kontakts"
+    type:
+      type: enum
+      values: [call, email, meeting, linkedin, video_call, event, other]
+    direction:
+      type: enum
+      values: [outbound, inbound]
+      description: "Wir haben kontaktiert vs. Kunde hat kontaktiert"
+    contact_person:
+      type: string
+      description: "Name der kontaktierten Person"
+    outcome:
+      type: enum
+      values:
+        - reached           # Erreicht und gesprochen
+        - voicemail         # Mailbox besprochen
+        - no_answer         # Nicht erreicht
+        - callback_requested # Rückruf erbeten
+        - meeting_set       # Termin vereinbart
+        - proposal_sent     # Angebot versendet
+        - declined          # Abgesagt/kein Interesse
+        - follow_up_needed  # Weiteres Follow-up nötig
+    notes:
+      type: string
+      description: "Gesprächsnotizen"
+    follow_up_date:
+      type: date
+      description: "Datum für nächstes Follow-up"
+    logged_by:
+      type: string
+      description: "Wer hat den Kontakt geloggt (Owner-Code)"
+
+  # --- Prioritäts-System ---
+  priority_schema:
+    priority:
+      type: enum
+      values: [critical, high, medium, low]
+      description: "Gesamtpriorität des Leads"
+    priority_reason:
+      type: string
+      description: "Begründung für die Priorität"
+    hot_lead:
+      type: boolean
+      default: false
+      description: "Markierung für besonders heisse Leads"
+    hot_lead_reason:
+      type: string
+      description: "Warum ist das ein Hot Lead?"
+    days_since_contact:
+      type: integer
+      computed: true
+      description: "Tage seit letztem Kontakt (berechnet)"
+    follow_up_overdue:
+      type: boolean
+      computed: true
+      description: "Ist das Follow-up überfällig? (berechnet)"
+
+  # --- Kontakt-Frequenz Einstellungen ---
+  contact_frequency:
+    description: "Empfohlene Kontaktfrequenz pro Stage"
+    SUSPECT: 14        # Alle 2 Wochen
+    PROSPECT: 7        # Wöchentlich
+    QUALIFIED: 5       # Alle 5 Tage
+    PROPOSAL: 3        # Alle 3 Tage
+    NEGOTIATION: 2     # Alle 2 Tage
+    ACTIVE: 30         # Monatlich
+    DORMANT: 60        # Alle 2 Monate
+    REACTIVATION: 7    # Wöchentlich
+
+# =============================================================================
+# BEHAVIORAL PROFILE SCHEMA (EBF-spezifisch)
+# =============================================================================
+# Verhaltensökonomische Einschätzung des Kunden/Leads
+# Basis für personalisierte EBF-Interventionen und Kommunikation
+# =============================================================================
+
+behavioral_profile_schema:
+  description: "Verhaltensökonomisches Profil für EBF-Integration"
+  version: "1.0.0"
+  created: "2026-02-04"
+
+  # --- Entscheidungsstil ---
+  decision_style:
+    type: enum
+    values: [analytical, intuitive, consensus, top_down]
+    description: |
+      analytical = Daten-getrieben, braucht Evidenz
+      intuitive = Bauchgefühl, schnelle Entscheidungen
+      consensus = Braucht Zustimmung aller Stakeholder
+      top_down = CEO/VR entscheidet allein
+
+  risk_appetite:
+    type: enum
+    values: [low, medium, high]
+    description: "Risikobereitschaft bei Investitionen/Projekten"
+
+  change_readiness:
+    type: integer
+    min: 0
+    max: 100
+    description: "Veränderungsbereitschaft (0=resistent, 100=Change-Leader)"
+
+  evidence_affinity:
+    type: integer
+    min: 0
+    max: 100
+    description: "Affinität zu evidenz-basierter Entscheidungsfindung"
+
+  time_horizon:
+    type: enum
+    values: [short, medium, long]
+    description: |
+      short = <6 Monate Planungshorizont
+      medium = 6-24 Monate
+      long = >24 Monate
+
+  # --- Organisationskontext ---
+  organizational_context:
+    culture_type:
+      type: enum
+      values: [hierarchical, clan, adhocracy, market]
+      description: "Competing Values Framework (Cameron & Quinn)"
+    transformation_stage:
+      type: enum
+      values: [stable, transition, crisis]
+      description: "Aktuelle Organisationsphase"
+    ai_readiness:
+      type: enum
+      values: [none, exploring, experimenting, adopted]
+      description: "AI/Digital Maturity Level"
+
+# =============================================================================
+# MEETING INTEGRATION SCHEMA
+# =============================================================================
+# Verknüpfung mit meeting-registry.yaml
+# =============================================================================
+
+meeting_integration_schema:
+  description: "Schema für Meeting-Integration mit Lead-Tracking"
+  version: "1.0.0"
+  created: "2026-02-04"
+
+  meetings:
+    type: array
+    description: "Liste aller Meetings mit diesem Lead"
+    item_schema:
+      meeting_id:
+        type: string
+        format: "MTG-YYYY-MM-DD-NNN"
+        reference: "meeting-registry.yaml"
+      date:
+        type: date
+      participants:
+        type: array
+        description: "FA-Teilnehmer (Owner-Codes)"
+      outcome:
+        type: enum
+        values: [positive, neutral, negative]
+        description: "Gesamteindruck des Meetings"
+      follow_up_status:
+        type: enum
+        values: [pending, completed, overdue]
+
+  last_meeting:
+    type: object
+    description: "Quick Access zum letzten Meeting"
+    fields:
+      meeting_id: string
+      date: date
+      outcome: enum
+      days_ago: integer  # Computed
+
+# =============================================================================
+# DEAL DYNAMICS SCHEMA
+# =============================================================================
+# Blocker, Wettbewerb, Buying Committee
+# =============================================================================
+
+deal_dynamics_schema:
+  description: "Schema für Deal-Dynamik und Hindernisse"
+  version: "1.0.0"
+  created: "2026-02-04"
+
+  # --- Deal Blocker ---
+  deal_blockers:
+    type: array
+    description: "Aktive Hindernisse für Deal-Abschluss"
+    item_schema:
+      blocker_type:
+        type: enum
+        values: [budget, timing, champion, competition, internal_politics, technical, legal]
+      description:
+        type: string
+        description: "Was genau blockiert?"
+      severity:
+        type: enum
+        values: [critical, major, minor]
+      mitigation_strategy:
+        type: string
+        description: "Wie lösen wir das?"
+      status:
+        type: enum
+        values: [active, mitigated, resolved]
+      identified_date:
+        type: date
+
+  # --- Wettbewerber ---
+  competitors:
+    type: array
+    description: "Bekannte Wettbewerber im Deal"
+    item_schema:
+      competitor_name:
+        type: string
+      threat_level:
+        type: enum
+        values: [low, medium, high]
+      strengths:
+        type: string
+        description: "Stärken des Wettbewerbers"
+      weaknesses:
+        type: string
+        description: "Schwächen des Wettbewerbers"
+      our_differentiator:
+        type: string
+        description: "Unser USP vs. dieser Wettbewerber"
+
+  # --- Buying Committee (erweitert) ---
+  buying_committee:
+    type: array
+    description: "Alle Stakeholder im Entscheidungsprozess"
+    item_schema:
+      name:
+        type: string
+      role:
+        type: enum
+        values: [champion, decision_maker, influencer, blocker, user, budget_holder]
+      sentiment:
+        type: enum
+        values: [strong_positive, positive, neutral, negative, strong_negative, unknown]
+      engagement_level:
+        type: enum
+        values: [high, medium, low, none]
+      engagement_needed:
+        type: string
+        description: "Welche Aktion brauchen wir bei dieser Person?"
+
+# =============================================================================
+# COMMUNICATION PREFERENCES SCHEMA
+# =============================================================================
+# Personalisierte Kommunikationseinstellungen
+# =============================================================================
+
+communication_preferences_schema:
+  description: "Schema für Kommunikationspräferenzen"
+  version: "1.0.0"
+  created: "2026-02-04"
+
+  preferred_channel:
+    type: enum
+    values: [email, phone, video, in_person, linkedin, whatsapp]
+    description: "Bevorzugter Kommunikationskanal"
+
+  preferred_frequency:
+    type: enum
+    values: [weekly, bi_weekly, monthly, quarterly, on_demand]
+    description: "Gewünschte Kontaktfrequenz"
+
+  preferred_time:
+    type: enum
+    values: [early_morning, morning, lunch, afternoon, evening, flexible]
+    description: "Bevorzugte Tageszeit für Kontakt"
+
+  language:
+    type: enum
+    values: [de, en, fr, it]
+    default: de
+    description: "Bevorzugte Kommunikationssprache"
+
+  formality:
+    type: enum
+    values: [formal_sie, informal_du]
+    description: "Du oder Sie?"
+
+  response_style:
+    type: enum
+    values: [detailed, brief, visual, data_heavy]
+    description: "Wie möchte die Person Informationen erhalten?"
+
+# =============================================================================
+# WIN/LOSS TRACKING SCHEMA
+# =============================================================================
+# Dokumentation von gewonnenen/verlorenen Deals
+# =============================================================================
+
+win_loss_schema:
+  description: "Schema für Win/Loss-Analyse"
+  version: "1.0.0"
+  created: "2026-02-04"
+
+  # --- Bei WON ---
+  win_analysis:
+    outcome_date:
+      type: date
+      description: "Datum des Deal-Abschlusses"
+    win_reasons:
+      type: array
+      description: "Hauptgründe für den Gewinn"
+      values: [relationship, methodology, price, timing, references, team, innovation, trust]
+    key_success_factors:
+      type: string
+      description: "Was war entscheidend?"
+    deal_value_final:
+      type: number
+      description: "Finaler Deal-Wert"
+    lessons_learned:
+      type: string
+      description: "Was können wir für zukünftige Deals lernen?"
+
+  # --- Bei LOST ---
+  loss_analysis:
+    outcome_date:
+      type: date
+      description: "Datum der Absage"
+    loss_reasons:
+      type: array
+      description: "Hauptgründe für den Verlust"
+      values: [price, timing, competition, no_budget, no_champion, internal_politics, scope_mismatch, relationship, other]
+    competitor_won:
+      type: string
+      description: "Welcher Wettbewerber hat gewonnen (falls bekannt)?"
+    could_have_won:
+      type: boolean
+      description: "Hätten wir gewinnen können?"
+    lessons_learned:
+      type: string
+      description: "Was lernen wir daraus?"
+    reactivation_potential:
+      type: enum
+      values: [high, medium, low, none]
+      description: "Potenzial für Reaktivierung"
+    reactivation_trigger:
+      type: string
+      description: "Was müsste passieren für Reaktivierung?"
+
+# =============================================================================
+# RELATIONSHIP DEPTH SCHEMA
+# =============================================================================
+# Tiefe der Kundenbeziehung (EBF: FEPSDE-S)
+# =============================================================================
+
+relationship_depth_schema:
+  description: "Schema für Beziehungstiefe (EBF-basiert)"
+  version: "1.0.0"
+  created: "2026-02-04"
+
+  trust_level:
+    type: integer
+    min: 0
+    max: 100
+    description: "Vertrauensniveau (EBF: FEPSDE-S Social Dimension)"
+
+  personal_connection:
+    type: enum
+    values: [formal, professional, friendly, close]
+    description: "Persönliche Verbindungsstärke"
+
+  shared_experiences:
+    type: array
+    description: "Gemeinsame Erlebnisse (Dinners, Events, Projekte)"
+    item_schema:
+      date: date
+      type: string  # dinner, event, project, travel, etc.
+      description: string
+      impact: enum  # positive, neutral, negative
+
+  reciprocity_balance:
+    type: enum
+    values: [we_owe, balanced, they_owe]
+    description: "Wer hat mehr gegeben? (Reziprozität)"
+
+  years_known:
+    type: number
+    description: "Jahre der Bekanntschaft"
+
+  referrals_given:
+    type: integer
+    description: "Anzahl Empfehlungen von diesem Kontakt"
+
+  referrals_received:
+    type: integer
+    description: "Anzahl Empfehlungen an diesen Kontakt"
+
+# =============================================================================
+# LEADS
+# =============================================================================
+
+leads:
+
+  # ===========================================================================
+  # ACTIVE CUSTOMERS (Aktuelle Kunden)
+  # ===========================================================================
+
+  - id: LEAD-001
+    # --- Identifikation ---
+    company:
+      name: "ALPLA Werke Alwin Lehner GmbH & Co. KG"
+      short_name: "ALPLA"
+      legal_form: "GmbH & Co. KG"
+      website: "https://www.alpla.com"
+      linkedin: "https://www.linkedin.com/company/alpla"
+
+    # --- Klassifikation ---
+    industry: packaging
+    industry_subcategory: plastics
+    segment: enterprise
+    employee_count: 23700
+    revenue_eur: 4900000000
+    headquarters:
+      country: AT
+      city: "Hard"
+      region: "Vorarlberg"
+    geographic_scope: global
+
+    # --- Pipeline Status ---
+    stage: ACTIVE
+    stage_history:
+      - stage: PROSPECT
+        date: "2024-06-01"
+        owner: "EB"
+        notes: "Erstkontakt über Prof. Fehr Netzwerk"
+      - stage: QUALIFIED
+        date: "2024-07-15"
+        owner: "EB"
+        notes: "Sales Strategy Bedarf identifiziert"
+      - stage: PROPOSAL
+        date: "2024-08-01"
+        owner: "EB"
+        notes: "Strategieprojekt Angebot"
+      - stage: WON
+        date: "2024-09-01"
+        owner: "EB"
+        notes: "Strategieprojekt beauftragt"
+      - stage: ACTIVE
+        date: "2024-09-15"
+        owner: "EB"
+        notes: "Projekt gestartet"
+
+    # --- Scoring ---
+    fit_score: 92
+    fit_score_details:
+      industry_fit: 95
+      size_fit: 90
+      budget_fit: 95
+      culture_fit: 90
+      geographic_fit: 85
+      timing_fit: 95
+    engagement_score: 85
+
+    # --- Beziehung ---
+    relationship:
+      owner: "EB"
+      backup_owner: "MR"
+      customer_since: "2024-09-01"
+      contract_type: project
+      contract_value_eur: null  # Confidential
+      renewal_date: null
+      health_score: 95
+      nps: null
+      # --- Projekt-Phase ---
+      project_phase: 5
+      project_phase_note: "Organizational Design Model Projekt in Umsetzung"
+
+    # --- Kontakte ---
+    contacts:
+      - name: "[Primary Contact]"
+        role: "Strategy Lead"
+        email: null
+        phone: null
+        is_champion: true
+        is_decision_maker: true
+        relationship_strength: strong
+
+    # --- Projekte ---
+    projects:
+      - id: CUS-ALPLA-PRJ-001
+        name: "Sales & Key Account Strategy 2025-2035"
+        status: completed
+        start_date: "2024-09-15"
+        end_date: "2025-01-15"
+      - id: CUS-ALPLA-PRJ-002
+        name: "Organizational Design Model"
+        status: active
+        start_date: "2025-01-01"
+
+    # --- EBF Integration ---
+    ebf_integration:
+      customer_registry_ref: "CUS-ALPLA"
+      profile_path: "data/customers/alpla/alpla_profile.yaml"
+      models_path: "data/customers/alpla/alpla_models.yaml"
+      has_10c_analysis: true
+      has_intervention_design: true
+
+    # --- Source & Attribution ---
+    source:
+      channel: REFERRAL
+      subchannel: fehr_network
+      campaign: null
+      referrer: "Prof. Ernst Fehr"
+      first_touch_date: "2024-06-01"
+
+    # --- Notizen ---
+    notes: |
+      Familienunternehmen (4. Generation Lehner).
+      Strategische Sales-Transformation 2025-2035.
+      Sehr hohe Datenqualität und Engagement.
+    tags: [family_business, manufacturing, sustainability, global]
+
+    # --- Contact Management (NEU) ---
+    next_action: "Q1 Review Call - Projektstatus ODM"
+    next_action_date: "2026-02-03"
+    next_action_owner: "EB"
+    next_action_type: call
+    next_action_priority: medium
+
+    priority: medium
+    priority_reason: "Aktives Projekt, reguläres Review"
+    hot_lead: false
+
+    contact_log:
+      - date: "2026-01-15 10:00"
+        type: meeting
+        direction: outbound
+        contact_person: "[Primary Contact]"
+        outcome: reached
+        notes: "Kick-off ODM Projekt, alle Stakeholder aligned"
+        logged_by: "EB"
+        follow_up_date: "2026-02-03"
+
+    # --- Metadata ---
+    created: "2024-06-01"
+    updated: "2026-01-28"
+
+  # ---------------------------------------------------------------------------
+
+  - id: LEAD-002
+    company:
+      name: "PORR AG"
+      short_name: "PORR"
+      legal_form: "AG"
+      website: "https://www.porr-group.com"
+      linkedin: "https://www.linkedin.com/company/porr-ag"
+
+    industry: construction
+    industry_subcategory: general_contractor
+    segment: enterprise
+    employee_count: 20000
+    revenue_eur: 6500000000
+    headquarters:
+      country: AT
+      city: "Wien"
+      region: "Wien"
+    geographic_scope: europe
+
+    stage: ACTIVE
+    stage_history:
+      - stage: PROSPECT
+        date: "2024-08-01"
+        owner: "EB"
+      - stage: ACTIVE
+        date: "2024-10-01"
+        owner: "EB"
+
+    fit_score: 85
+    engagement_score: 75
+
+    relationship:
+      owner: "EB"
+      customer_since: "2024-10-01"
+      health_score: 85
+      # --- Projekt-Phase ---
+      project_phase: 5
+      project_phase_note: "Aktiver Kunde, Bauindustrie-Transformation"
+
+    contacts: []
+    projects: []
+
+    ebf_integration:
+      customer_registry_ref: "CUS-PORR"
+      profile_path: "data/customers/porr/porr_profile.yaml"
+      has_10c_analysis: false
+
+    source:
+      channel: REFERRAL
+      first_touch_date: "2024-08-01"
+
+    notes: "Börsenkotiert (ATX). Fokus auf Bauindustrie-Transformation."
+    tags: [publicly_listed, construction, infrastructure]
+
+    # --- Contact Management (NEU) ---
+    next_action: "Quartals-Review und neue Projektideen besprechen"
+    next_action_date: "2026-02-10"
+    next_action_owner: "MR"
+    next_action_type: meeting
+    next_action_priority: medium
+
+    priority: medium
+    priority_reason: "Grosser Bestandskunde, regelmässiger Kontakt"
+    hot_lead: false
+
+    contact_log:
+      - date: "2026-01-10 14:00"
+        type: call
+        direction: outbound
+        contact_person: "[PORR Contact]"
+        outcome: reached
+        notes: "Jahresend-Review, zufrieden mit Zusammenarbeit"
+        logged_by: "MR"
+        follow_up_date: "2026-02-10"
+
+    created: "2024-08-01"
+    updated: "2026-01-28"
+
+  # ---------------------------------------------------------------------------
+
+  - id: LEAD-003
+    company:
+      name: "Luzerner Kantonalbank"
+      short_name: "LUKB"
+      legal_form: "öffentlich-rechtliche Anstalt"
+      website: "https://www.lukb.ch"
+      linkedin: "https://www.linkedin.com/company/luzerner-kantonalbank"
+
+    industry: finance
+    industry_subcategory: banking
+    segment: mid_market
+    employee_count: 1100
+    revenue_eur: null
+    headquarters:
+      country: CH
+      city: "Luzern"
+      region: "Zentralschweiz"
+    geographic_scope: regional
+
+    stage: ACTIVE
+    stage_history:
+      - stage: PROSPECT
+        date: "2024-03-01"
+        owner: "MR"
+      - stage: ACTIVE
+        date: "2024-06-01"
+        owner: "MR"
+
+    fit_score: 88
+    engagement_score: 95
+
+    relationship:
+      owner: "MR"
+      customer_since: "2024-06-01"
+      health_score: 92
+      # --- Projekt-Phase ---
+      project_phase: 5
+      project_phase_note: "Offsite 2026 Projekt in Umsetzung"
+
+    contacts:
+      - name: "Silvana Laesi"
+        role: "Contact"
+        relationship_strength: medium
+      - name: "Nadja Sciavoni"
+        role: "Contact"
+        relationship_strength: medium
+      - name: "Patricia Urfer"
+        role: "Contact"
+        relationship_strength: medium
+
+    projects:
+      - id: CUS-LUKB-PRJ-001
+        name: "Offsite 2026"
+        status: active
+      - id: CUS-LUKB-PRJ-002
+        name: "One-Day Management Meeting 06.03.26"
+        status: proposal
+        description: "Strukturierung und Durchführung des Management Meetings"
+
+    opportunities:
+      - name: "One-Day Management Meeting 06.03.26"
+        status: proposal_requested
+        probability: 70
+        expected_close: "2026-02-15"
+        description: |
+          Videocall 26.01.26 14:15 Uhr.
+          Teilnehmer: Silvana Laesi, Nadja Sciavoni, Patricia Urfer, Gerhard Fehr.
+          Anfrage: Ideen für Strukturierung und Durchführung des
+          One-Day Management Meeting am 06.03.26.
+          Gewünscht: FehrAdvice Involvement + Kostenofferte.
+
+    # --- Contact Management (NEU - erweitertes Schema) ---
+    next_action: "Konzept + Offerte für One-Day Management Meeting 06.03.26"
+    next_action_date: "2026-02-01"
+    next_action_owner: "MR"
+    next_action_type: proposal
+    next_action_priority: high
+
+    priority: high
+    priority_reason: "Aktive Opportunity, Deadline 06.03.26"
+    hot_lead: true
+    hot_lead_reason: "Klarer Bedarf, fester Termin, Budget vorhanden"
+
+    contact_log:
+      - date: "2026-01-26 14:15"
+        type: video_call
+        direction: inbound
+        contact_person: "Silvana Laesi, Nadja Sciavoni, Patricia Urfer"
+        outcome: meeting_set
+        notes: |
+          Briefing-Call für One-Day Management Meeting 06.03.26.
+          Anfrage: Strukturierung, Durchführung, FehrAdvice Involvement.
+          Next Step: Konzept + Kostenofferte bis 01.02.
+        logged_by: "GF"
+        follow_up_date: "2026-02-01"
+
+    ebf_integration:
+      customer_registry_ref: "CUS-LUKB"
+      profile_path: "data/customers/lukb/lukb_assumptions.yaml"
+      context_path: "data/dr-datareq/sources/clients/lukb/"
+      has_10c_analysis: true
+
+    source:
+      channel: REFERRAL
+      first_touch_date: "2024-03-01"
+
+    notes: |
+      Kantonalbank mit Staatsgarantie. Retail & Private Banking.
+
+      2026-01-26 Videocall (14:15):
+      - Teilnehmer LUKB: Silvana Laesi, Nadja Sciavoni, Patricia Urfer
+      - Teilnehmer FA: Gerhard Fehr
+      - Thema: One-Day Management Meeting am 06.03.26
+      - Anfrage: Strukturierung, Durchführung, FehrAdvice Involvement
+      - Next Step: Konzept + Kostenofferte
+    tags: [cantonal_bank, retail_banking, switzerland, management_meeting]
+    created_at: "2026-01-27T17:00:00+01:00"
+    updated: "2026-01-28"
+
+  # ---------------------------------------------------------------------------
+
+  - id: LEAD-004
+    company:
+      name: "Lindt & Sprüngli AG"
+      short_name: "Lindt"
+      legal_form: "AG"
+      website: "https://www.lindt-spruengli.com"
+      linkedin: "https://www.linkedin.com/company/lindt-&-sprungli"
+
+    industry: fmcg
+    industry_subcategory: food_beverage
+    segment: enterprise
+    employee_count: 14500
+    revenue_eur: 5200000000
+    headquarters:
+      country: CH
+      city: "Kilchberg"
+      region: "Zürich"
+    geographic_scope: global
+
+    stage: ACTIVE
+    stage_history:
+      - stage: PROSPECT
+        date: "2024-04-01"
+        owner: "EB"
+      - stage: ACTIVE
+        date: "2024-07-01"
+        owner: "EB"
+
+    fit_score: 86
+    engagement_score: 70
+
+    relationship:
+      owner: "EB"
+      customer_since: "2024-07-01"
+      health_score: 80
+      # --- Projekt-Phase ---
+      project_phase: 5
+      project_phase_note: "Aktiver Kunde, Co-Packing Fokus"
+
+    contacts: []
+    projects: []
+
+    ebf_integration:
+      customer_registry_ref: "CUS-LINDT"
+      profile_path: "data/customers/lindt-copacking/lindt_copacking_profile.yaml"
+      has_10c_analysis: true
+
+    source:
+      channel: REFERRAL
+      first_touch_date: "2024-04-01"
+
+    notes: "Premium Schokolade. Co-Packing Projekt Fokus."
+    tags: [premium_brand, fmcg, switzerland, global]
+
+    # --- Contact Management ---
+    next_action: "Quartals-Check-in und Co-Packing Status"
+    next_action_date: "2026-02-15"
+    next_action_owner: "EB"
+    next_action_type: call
+    next_action_priority: medium
+
+    priority: medium
+    priority_reason: "Aktiver Bestandskunde, regelmässiger Kontakt"
+    hot_lead: false
+
+    contact_log:
+      - date: "2025-11-20 11:00"
+        type: call
+        direction: outbound
+        contact_person: "[Lindt Contact]"
+        outcome: reached
+        notes: "Jahres-Review, Co-Packing Projekt läuft gut"
+        logged_by: "EB"
+        follow_up_date: "2026-02-15"
+
+    created: "2024-04-01"
+    updated: "2026-01-28"
+
+  # ===========================================================================
+  # CONTEXT CUSTOMERS (Kontext-Kunden ohne strategische Projekte)
+  # ===========================================================================
+
+  - id: LEAD-005
+    company:
+      name: "UBS Group AG"
+      short_name: "UBS"
+      legal_form: "AG"
+      website: "https://www.ubs.com"
+      linkedin: "https://www.linkedin.com/company/ubs"
+
+    industry: finance
+    industry_subcategory: banking
+    segment: enterprise
+    employee_count: 115000
+    revenue_eur: 35000000000
+    headquarters:
+      country: CH
+      city: "Zürich"
+      region: "Zürich"
+    geographic_scope: global
+
+    stage: DORMANT
+    stage_history:
+      - stage: PROSPECT
+        date: "2022-01-01"
+        owner: "EB"
+      - stage: ACTIVE
+        date: "2022-06-01"
+        owner: "EB"
+        notes: "Kontext-Daten Projekt"
+      - stage: DORMANT
+        date: "2023-12-01"
+        owner: "EB"
+        notes: "Projekt abgeschlossen, kein Folgeprojekt"
+
+    fit_score: 80
+    engagement_score: 30
+
+    relationship:
+      owner: "EB"
+      customer_since: "2022-06-01"
+      health_score: 60
+      # --- Projekt-Phase ---
+      project_phase: 5
+      project_phase_note: "Letztes Projekt abgeschlossen, ruhend"
+
+    contacts: []
+    projects: []
+
+    ebf_integration:
+      customer_registry_ref: "CUS-UBS"
+      context_path: "data/dr-datareq/sources/clients/ubs/"
+      has_10c_analysis: false
+
+    source:
+      channel: INBOUND
+      first_touch_date: "2022-01-01"
+
+    notes: "Grösste Schweizer Bank. MIKRO-Kontext Daten vorhanden (161 Faktoren)."
+    tags: [global_bank, wealth_management, switzerland]
+    created: "2022-01-01"
+    updated: "2026-01-27"
+
+  # ---------------------------------------------------------------------------
+
+  - id: LEAD-006
+    company:
+      name: "Bundesamt für Energie"
+      short_name: "BFE"
+      legal_form: "Bundesamt"
+      website: "https://www.bfe.admin.ch"
+      linkedin: null
+
+    industry: public_sector
+    industry_subcategory: federal
+    segment: government
+    employee_count: 300
+    revenue_eur: null
+    headquarters:
+      country: CH
+      city: "Bern"
+      region: "Bern"
+    geographic_scope: national
+
+    stage: ACTIVE
+    stage_history:
+      - stage: PROSPECT
+        date: "2023-01-01"
+        owner: "MR"
+      - stage: ACTIVE
+        date: "2023-06-01"
+        owner: "MR"
+
+    fit_score: 90
+    engagement_score: 85
+
+    relationship:
+      owner: "MR"
+      customer_since: "2023-06-01"
+      health_score: 88
+      # --- Projekt-Phase ---
+      project_phase: 5
+      project_phase_note: "Heizungsersatz + ECHFP Projekte in Umsetzung"
+
+    contacts: []
+
+    projects:
+      - id: CUS-BFE-PRJ-001
+        name: "Heizungsersatz Programm"
+        status: active
+      - id: CUS-BFE-PRJ-002
+        name: "ECHFP Cockpit"
+        status: active
+
+    ebf_integration:
+      customer_registry_ref: "CUS-BFE"
+      context_path: "data/dr-datareq/sources/clients/bfe/"
+      has_10c_analysis: true
+
+    source:
+      channel: RESEARCH
+      subchannel: grant_project
+      first_touch_date: "2023-01-01"
+
+    notes: "Energiepolitik Schweiz. Heizungsersatz-Programm mit Behavioral Interventions."
+    tags: [public_sector, energy_policy, switzerland, behavioral_policy]
+    created: "2023-01-01"
+    updated: "2026-01-27"
+
+  # ===========================================================================
+  # FUNDERS (Fördergeber - spezielle Kategorie)
+  # ===========================================================================
+
+  - id: LEAD-007
+    company:
+      name: "Innosuisse - Schweizerische Agentur für Innovationsförderung"
+      short_name: "Innosuisse"
+      legal_form: "Bundesanstalt"
+      website: "https://www.innosuisse.ch"
+      linkedin: "https://www.linkedin.com/company/innosuisse"
+
+    industry: public_sector
+    industry_subcategory: federal
+    segment: government
+    employee_count: 100
+    revenue_eur: null
+    headquarters:
+      country: CH
+      city: "Bern"
+      region: "Bern"
+    geographic_scope: national
+
+    stage: ACTIVE
+    stage_history:
+      - stage: PROSPECT
+        date: "2025-06-01"
+        owner: "MR"
+      - stage: PROPOSAL
+        date: "2025-09-01"
+        owner: "MR"
+        notes: "BEATRIX Antrag eingereicht"
+      - stage: WON
+        date: "2025-12-01"
+        owner: "MR"
+        notes: "BEATRIX Projekt bewilligt"
+      - stage: ACTIVE
+        date: "2026-01-01"
+        owner: "MR"
+
+    fit_score: 95
+    engagement_score: 90
+
+    relationship:
+      owner: "MR"
+      relationship_type: funder
+      customer_since: "2026-01-01"
+      health_score: 95
+      # --- Projekt-Phase ---
+      project_phase: 5
+      project_phase_note: "BEATRIX Projekt in Umsetzung"
+
+    contacts: []
+
+    projects:
+      - id: PRJ-BEATRIX
+        name: "BEATRIX - Behavioral AI Training"
+        status: active
+        funding_amount_chf: null
+
+    ebf_integration:
+      funder_path: "data/funders/innosuisse/"
+
+    source:
+      channel: RESEARCH
+      subchannel: grant_project
+      first_touch_date: "2025-06-01"
+
+    notes: "Schweizer Innovationsförderung. BEATRIX Projekt bewilligt."
+    tags: [funder, innovation, switzerland, research]
+    created: "2025-06-01"
+    updated: "2026-01-27"
+
+  # ===========================================================================
+  # PROSPECTS (Potenzielle Neukunden)
+  # ===========================================================================
+
+  - id: LEAD-008
+    company:
+      name: "Schweizerische Post AG"
+      short_name: "Post"
+      legal_form: "AG"
+      website: "https://www.post.ch"
+      linkedin: "https://www.linkedin.com/company/swiss-post"
+
+    industry: professional_services
+    industry_subcategory: logistics
+    segment: enterprise
+    employee_count: 48000
+    revenue_eur: 7500000000
+    headquarters:
+      country: CH
+      city: "Bern"
+      region: "Bern"
+    geographic_scope: national
+
+    stage: PROSPECT
+    stage_history:
+      - stage: SUSPECT
+        date: "2025-11-01"
+        owner: "EB"
+        notes: "Identifiziert via LinkedIn"
+      - stage: PROSPECT
+        date: "2026-01-15"
+        owner: "EB"
+        notes: "Erstkontakt an Event"
+
+    fit_score: 82
+    fit_score_details:
+      industry_fit: 75
+      size_fit: 90
+      budget_fit: 85
+      culture_fit: 80
+      geographic_fit: 95
+      timing_fit: 70
+    engagement_score: 25
+
+    relationship:
+      owner: "EB"
+      # --- Projekt-Phase ---
+      project_phase: 0
+      project_phase_note: "Erstkontakt an Event, Discovery Call geplant"
+
+    contacts:
+      - name: "[Innovation Lead]"
+        role: "Head of Innovation"
+        relationship_strength: weak
+
+    projects: []
+
+    ebf_integration: null
+
+    source:
+      channel: OUTBOUND
+      subchannel: conference
+      campaign: "Swiss Innovation Forum 2026"
+      first_touch_date: "2026-01-15"
+
+    next_action:
+      type: meeting
+      date: "2026-02-15"
+      description: "Discovery Call vereinbaren"
+      owner: "EB"
+
+    notes: "Grosse Transformation (Digitalisierung, E-Commerce). Potenzial für Behavioral Strategy."
+    tags: [logistics, public_enterprise, digital_transformation, switzerland]
+    created: "2025-11-01"
+    updated: "2026-01-27"
+
+  # ---------------------------------------------------------------------------
+
+  - id: LEAD-009
+    company:
+      name: "Migros-Genossenschafts-Bund"
+      short_name: "Migros"
+      legal_form: "Genossenschaft"
+      website: "https://www.migros.ch"
+      linkedin: "https://www.linkedin.com/company/migros"
+
+    industry: retail
+    industry_subcategory: retail
+    segment: enterprise
+    employee_count: 100000
+    revenue_eur: 30000000000
+    headquarters:
+      country: CH
+      city: "Zürich"
+      region: "Zürich"
+    geographic_scope: national
+
+    stage: PROSPECT
+    priority: 3
+    stage_history:
+      - stage: SUSPECT
+        date: "2026-01-01"
+        owner: null
+        notes: "Auf Target Account Liste"
+      - stage: PROSPECT
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Kontakt Nold - Migros 2030 Strategie"
+
+    fit_score: 78
+    engagement_score: 15
+
+    relationship:
+      owner: "GF"
+      backup_owner: "EF"
+
+    contacts:
+      - name: "Nold"
+        role: "Strategy"
+        relationship_strength: medium
+    projects: []
+    ebf_integration: null
+
+    source:
+      channel: OUTBOUND
+      subchannel: cold_outreach
+      first_touch_date: "2026-01-27"
+
+    opportunity:
+      name: "Migros 2030 Strategie"
+      sent: "Treffen"
+
+    next_action:
+      type: meeting
+      date: "2026-02-28"
+      description: "Follow Up im Feb 26 - evtl. Strategieprozess 2026"
+      owner: "GF"
+
+    notes: |
+      PRIO 3 - Grösster Schweizer Retailer. Genossenschaftsstruktur.
+      Migros 2030 - kein aktuelles Mandat.
+      Evtl. Strategieprozess 2026 - Follow Up im Feb 26.
+    tags: [retail, cooperative, sustainability, switzerland]
+    created: "2026-01-01"
+    updated: "2026-01-27"
+
+  # ---------------------------------------------------------------------------
+
+  - id: LEAD-010
+    company:
+      name: "Swisscom AG"
+      short_name: "Swisscom"
+      legal_form: "AG"
+      website: "https://www.swisscom.ch"
+      linkedin: "https://www.linkedin.com/company/swisscom"
+
+    industry: technology
+    industry_subcategory: telecom
+    segment: enterprise
+    employee_count: 19000
+    revenue_eur: 11000000000
+    headquarters:
+      country: CH
+      city: "Bern"
+      region: "Bern"
+    geographic_scope: national
+
+    stage: QUALIFIED
+    priority: 1
+    stage_history:
+      - stage: SUSPECT
+        date: "2025-09-01"
+        owner: "MdL"
+      - stage: PROSPECT
+        date: "2025-10-15"
+        owner: "MdL"
+        notes: "Intro via Board-Kontakt"
+      - stage: QUALIFIED
+        date: "2025-12-01"
+        owner: "MdL"
+        notes: "Budget für Behavioral Projekt vorhanden"
+
+    fit_score: 88
+    engagement_score: 55
+
+    relationship:
+      owner: "MR"
+      # --- Projekt-Phase ---
+      project_phase: 2
+      project_phase_note: "Bedarf qualifiziert, Erwartungsklärung & Workshop-Scope in Diskussion"
+
+    contacts:
+      - name: "[Strategy Contact]"
+        role: "VP Strategy"
+        is_champion: true
+        relationship_strength: medium
+
+    projects: []
+    ebf_integration: null
+
+    source:
+      channel: REFERRAL
+      subchannel: fehr_network
+      referrer: "Board Connection"
+      first_touch_date: "2025-10-15"
+
+    next_action:
+      type: proposal
+      date: "2026-02-07"
+      description: "Weiteres Vorgehen Anfang Feb - BEATRIX Demo"
+      owner: "MdL"
+
+    opportunity:
+      name: "BEATRIX - Einführung und Begleitung KI"
+      value_eur: 30000
+      probability: 65
+      expected_close: "2026-Q2"
+
+    notes: |
+      PRIO 1 - Grösster Telco Schweiz. Mehrheitlich Staatseigentum.
+      Fokus: Einführung und Begleitung KI (BEATRIX).
+    tags: [telecom, semi_public, digital, switzerland, beatrix, ai]
+    created: "2025-09-01"
+    updated: "2026-01-27"
+
+  # ===========================================================================
+  # NEUE LEADS (Januar 2026 Pipeline-Import)
+  # ===========================================================================
+
+  # ---------------------------------------------------------------------------
+  # ACTIVE (Laufende Projekte)
+  # ---------------------------------------------------------------------------
+
+  - id: LEAD-013
+    company:
+      name: "Assura SA"
+      short_name: "Assura"
+      legal_form: "SA"
+      website: "https://www.assura.ch"
+    industry: pharma_health
+    industry_subcategory: health_insurance
+    segment: enterprise
+    headquarters:
+      country: CH
+      city: "Pully"
+    stage: ACTIVE
+    priority: 1
+    stage_history:
+      - stage: ACTIVE
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "BEATRIX Projekt + strategische Begleitung"
+    relationship:
+      owner: "GF"
+      backup_owner: "LA"
+    projects:
+      - name: "BEATRIX Integration"
+        status: active
+      - name: "Strategische Begleitung (2-3 Fragen)"
+        status: active
+    opportunity:
+      name: "BEATRIX + Strategische Begleitung"
+      value_eur: 28000
+      probability: 85
+      sent: "Offerte"
+    next_action:
+      type: follow_up
+      date: "2026-01-26"
+      description: "Follow up am 26.01.26"
+      owner: "GF"
+    notes: "PRIO 1 - BEATRIX + 2-3 Fragen strategische Begleitung"
+    tags: [health_insurance, beatrix, switzerland]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-014
+    company:
+      name: "Migrosbank AG"
+      short_name: "Migrosbank"
+      legal_form: "AG"
+      website: "https://www.migrosbank.ch"
+    industry: finance
+    industry_subcategory: banking
+    segment: mid_market
+    headquarters:
+      country: CH
+      city: "Zürich"
+    stage: ACTIVE
+    priority: 1
+    stage_history:
+      - stage: ACTIVE
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Laufendes Projekt - Follow up"
+    relationship:
+      owner: "GF"
+      backup_owner: "MdL"
+    next_action:
+      type: meeting
+      description: "laufend - Follow up Projekt"
+      owner: "GF"
+    notes: "PRIO 1 - Laufendes Projekt - Follow up erforderlich"
+    tags: [banking, switzerland, migros_group]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-015
+    company:
+      name: "Denner AG"
+      short_name: "Denner"
+      legal_form: "AG"
+      website: "https://www.denner.ch"
+    industry: retail
+    industry_subcategory: retail
+    segment: enterprise
+    headquarters:
+      country: CH
+      city: "Zürich"
+    stage: ACTIVE
+    priority: 1
+    stage_history:
+      - stage: ACTIVE
+        date: "2026-01-27"
+        owner: "MdL"
+        notes: "Nachfolgeprojekt Littering"
+    relationship:
+      owner: "MdL"
+    projects:
+      - name: "Nachfolgeprojekt Littering"
+        status: active
+    opportunity:
+      name: "Nachfolgeprojekt Littering"
+      sent: "Folgemandat"
+    next_action:
+      type: follow_up
+      date: "2026-02-28"
+      description: "Follow up Ende Feb 26"
+      owner: "MdL"
+    notes: "PRIO 1 - Nachfolgeprojekt Littering (Discounter, Migros-Tochter)"
+    tags: [retail, discounter, littering, switzerland]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-016
+    company:
+      name: "BMW AG"
+      short_name: "BMW"
+      legal_form: "AG"
+      website: "https://www.bmw.com"
+    industry: manufacturing
+    industry_subcategory: automotive
+    segment: enterprise
+    headquarters:
+      country: DE
+      city: "München"
+    geographic_scope: global
+    stage: ACTIVE
+    priority: 1
+    stage_history:
+      - stage: ACTIVE
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Folgemandate"
+    relationship:
+      owner: "GF"
+      backup_owner: "MdL"
+    projects:
+      - name: "Folgemandate"
+        status: active
+    opportunity:
+      name: "Folgemandate"
+      sent: "Offering"
+    next_action:
+      type: follow_up
+      date: "2026-02-20"
+      description: "Follow up am Mitte-Ende Feb 26"
+      owner: "GF"
+    notes: "PRIO 1 - Folgemandate - bestehende Kundenbeziehung"
+    tags: [automotive, germany, global, premium]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  # ---------------------------------------------------------------------------
+  # NEGOTIATION (Vertragsverhandlung)
+  # ---------------------------------------------------------------------------
+
+  - id: LEAD-017
+    company:
+      name: "Österreichische Post AG"
+      short_name: "POST AT"
+      legal_form: "AG"
+      website: "https://www.post.at"
+    industry: professional_services
+    industry_subcategory: logistics
+    segment: enterprise
+    headquarters:
+      country: AT
+      city: "Wien"
+    stage: NEGOTIATION
+    priority: 1
+    stage_history:
+      - stage: NEGOTIATION
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Fortsetzung CONNECT Programm"
+    relationship:
+      owner: "GF"
+    opportunity:
+      name: "Fortsetzung CONNECT"
+      value_eur: 30000
+      probability: 65
+      sent: "Offerte"
+    next_action:
+      type: negotiation
+      description: "in Vereinbarung - Fortsetzung CONNECT"
+      owner: "GF"
+    notes: "PRIO 1 - Fortsetzung CONNECT Programm - in Vereinbarung"
+    tags: [logistics, austria, public_enterprise]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  # ---------------------------------------------------------------------------
+  # PROPOSAL (Offerte gestellt)
+  # ---------------------------------------------------------------------------
+
+  - id: LEAD-018
+    company:
+      name: "KPT Krankenkasse"
+      short_name: "KPT"
+      legal_form: "Genossenschaft"
+      website: "https://www.kpt.ch"
+    industry: pharma_health
+    industry_subcategory: health_insurance
+    segment: mid_market
+    headquarters:
+      country: CH
+      city: "Bern"
+    stage: PROPOSAL
+    priority: 1
+    stage_history:
+      - stage: PROPOSAL
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Angebotsstatus, Genossenschaftsthema (August/Anf. Sept)"
+    relationship:
+      owner: "GF"
+    opportunity:
+      name: "Genossenschaftsthema"
+      probability: 50
+      sent: "Offerte"
+    next_action:
+      type: follow_up
+      date: "2026-01-31"
+      description: "Follow up Angebotsstatus im Jan 26"
+      owner: "GF"
+    notes: "PRIO 1 - Angebotsstatus, Genossenschaftsthema (August/Anfang September)"
+    tags: [health_insurance, cooperative, switzerland]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-019
+    company:
+      name: "Roche Holding AG"
+      short_name: "Roche"
+      legal_form: "AG"
+      website: "https://www.roche.com"
+    industry: pharma_health
+    industry_subcategory: pharma
+    segment: enterprise
+    employee_count: 100000
+    headquarters:
+      country: CH
+      city: "Basel"
+    geographic_scope: global
+    stage: PROPOSAL
+    priority: 3
+    stage_history:
+      - stage: PROPOSAL
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Rückmeldung 15.9 erwartet"
+    relationship:
+      owner: "GF"
+      backup_owner: "MF"
+    contacts:
+      - name: "Baumann"
+        role: "Contact"
+        relationship_strength: medium
+    opportunity:
+      name: "Projekt Baumann"
+      value_eur: 120000
+      probability: 40
+      sent: "Proposal"
+    next_action:
+      type: follow_up
+      date: "2026-04-01"
+      description: "Fokus im Q2 wieder - 15.9. Zu-/Absage / positive Rückmeldung"
+      owner: "GF"
+    notes: "PRIO 3 - 15.9. Zu-/Absage erwartet - positive Rückmeldung möglich. Fokus im Q2 wieder."
+    tags: [pharma, switzerland, global, enterprise]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-020
+    company:
+      name: "Raiffeisen Bank International AG"
+      short_name: "RBI"
+      legal_form: "AG"
+      website: "https://www.rbinternational.com"
+    industry: finance
+    industry_subcategory: banking
+    segment: enterprise
+    headquarters:
+      country: AT
+      city: "Wien"
+    geographic_scope: europe
+    stage: PROPOSAL
+    priority: 1
+    stage_history:
+      - stage: PROPOSAL
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Offerte geschickt - BEATRIX"
+    relationship:
+      owner: "GF"
+    contacts:
+      - name: "Valerie Brunner"
+        role: "Contact"
+        relationship_strength: medium
+    opportunity:
+      name: "BEATRIX Implementation"
+      value_eur: 15000
+      probability: 65
+      sent: "Offerte"
+    next_action:
+      type: follow_up
+      description: "Follow up tbd"
+      owner: "GF"
+    notes: "PRIO 1 - Offerte geschickt - BEATRIX Follow Up mit Valerie Brunner"
+    tags: [banking, austria, europe, beatrix]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-021
+    company:
+      name: "UBS Group AG"
+      short_name: "UBS AI"
+      legal_form: "AG"
+      website: "https://www.ubs.com"
+    industry: finance
+    industry_subcategory: banking
+    segment: enterprise
+    headquarters:
+      country: CH
+      city: "Zürich"
+    stage: PROPOSAL
+    priority: 3
+    stage_history:
+      - stage: PROPOSAL
+        date: "2026-01-27"
+        owner: "AJ"
+        notes: "Proposal gestellt - AI Projekt"
+    relationship:
+      owner: "AJ"
+      backup_owner: "GF"
+    contacts:
+      - name: "Katarina Rosen"
+        role: "Contact"
+        relationship_strength: medium
+    opportunity:
+      name: "UBS AI Projekt"
+      probability: 45
+      sent: "Offerte"
+    next_action:
+      type: follow_up
+      date: "2026-02-07"
+      description: "Follow up Anfang Feb"
+      owner: "AJ"
+    notes: "PRIO 3 - Proposal gestellt - Katarina Rosen"
+    tags: [banking, switzerland, global, ai]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-022
+    company:
+      name: "UBS Group AG"
+      short_name: "UBS EK"
+      legal_form: "AG"
+      website: "https://www.ubs.com"
+    industry: finance
+    industry_subcategory: banking
+    segment: enterprise
+    headquarters:
+      country: CH
+      city: "Zürich"
+    stage: PROPOSAL
+    priority: 1
+    stage_history:
+      - stage: PROPOSAL
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Offerte Folgemandat"
+    relationship:
+      owner: "GF"
+      backup_owner: "MF"
+    opportunity:
+      name: "Folgemandat EK"
+      value_eur: 35000
+      probability: 85
+      sent: "Offerte"
+    next_action:
+      type: workshop
+      date: "2026-01-27"
+      description: "WS Ende Januar 27.01."
+      owner: "GF"
+    notes: "PRIO 1 - Offerte Folgemandat"
+    tags: [banking, switzerland, global]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-023
+    company:
+      name: "DS Studio"
+      short_name: "DS Studio Pitch"
+      legal_form: null
+    industry: professional_services
+    segment: mid_market
+    headquarters:
+      country: CH
+    stage: PROPOSAL
+    priority: 1
+    stage_history:
+      - stage: PROPOSAL
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Pitch Freisinnige"
+    relationship:
+      owner: "GF"
+    opportunity:
+      name: "Pitch Freisinnige"
+      value_eur: 30000
+      probability: 85
+    notes: "PRIO 1 - Pitch Freisinnige"
+    tags: [politics, switzerland]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  # ---------------------------------------------------------------------------
+  # QUALIFIED (Budget/Bedarf bestätigt)
+  # ---------------------------------------------------------------------------
+
+  - id: LEAD-024
+    company:
+      name: "Ypsomed Holding AG"
+      short_name: "Ypsomed"
+      legal_form: "AG"
+      website: "https://www.ypsomed.com"
+    industry: pharma_health
+    industry_subcategory: medtech
+    segment: enterprise
+    headquarters:
+      country: CH
+      city: "Burgdorf"
+    stage: QUALIFIED
+    priority: 2
+    stage_history:
+      - stage: QUALIFIED
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Termin am 28.10 - Budget 2026?"
+    relationship:
+      owner: "GF"
+    contacts:
+      - name: "Simon Michel"
+        role: "CEO"
+        is_decision_maker: true
+        relationship_strength: medium
+    opportunity:
+      name: "Projekt Simon Michel"
+      value_eur_high: 48000
+      value_eur_medium: 30000
+      probability: 65
+      sent: "Offerte"
+    next_action:
+      type: meeting
+      date: "2026-02-28"
+      description: "Follow up Ende Februar - Budget 2026 klären"
+      owner: "GF"
+    notes: "PRIO 2 - Termin am 28.10. mit Simon Michel - Budget 2026 klären"
+    tags: [medtech, switzerland, insulin_delivery]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-025
+    company:
+      name: "Kaufland Stiftung & Co. KG"
+      short_name: "Kaufland"
+      legal_form: "Stiftung & Co. KG"
+      website: "https://www.kaufland.de"
+    industry: retail
+    industry_subcategory: retail
+    segment: enterprise
+    headquarters:
+      country: DE
+      city: "Neckarsulm"
+    geographic_scope: europe
+    stage: QUALIFIED
+    priority: 2
+    stage_history:
+      - stage: QUALIFIED
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Projektphase Sauberkeit - Termin mit Dammeier Mitte Okt"
+    relationship:
+      owner: "GF"
+      backup_owner: "MdL"
+    contacts:
+      - name: "Dammeier"
+        role: "Contact"
+        relationship_strength: medium
+    projects:
+      - name: "Sauberkeit"
+        status: active
+    opportunity:
+      name: "Projektphase Sauberkeit"
+      value_eur: 25000
+      probability: 40
+      sent: "Offerte"
+    next_action:
+      type: meeting
+      date: "2026-02-13"
+      description: "Termin mit Dammeier - 13.02.2026"
+      owner: "GF"
+    notes: "PRIO 2 - Projektphase Sauberkeit - Termin mit Dammeier"
+    tags: [retail, germany, schwarz_group, sauberkeit]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-026
+    company:
+      name: "Helvetia Holding AG"
+      short_name: "Helvetia"
+      legal_form: "AG"
+      website: "https://www.helvetia.com"
+    industry: finance
+    industry_subcategory: insurance
+    segment: enterprise
+    headquarters:
+      country: CH
+      city: "St. Gallen"
+    stage: QUALIFIED
+    priority: 1
+    stage_history:
+      - stage: QUALIFIED
+        date: "2026-01-27"
+        owner: "MFA"
+        notes: "BEATRIX Demo wird vereinbart"
+    relationship:
+      owner: "MFA"
+      backup_owner: "GF"
+    contacts:
+      - name: "Benjamin Clerc"
+        role: "Contact"
+        relationship_strength: medium
+    opportunity:
+      name: "BEATRIX Demo"
+      value_eur: 30000
+      probability: 65
+      sent: "Beatrix Pitch"
+    next_action:
+      type: demo
+      date: "2026-02-11"
+      description: "Follow up 11.02.26 - BEATRIX Demo vereinbaren"
+      owner: "MFA"
+    notes: "PRIO 1 - BEATRIX - Demo wird vereinbart mit Benjamin Clerc"
+    tags: [insurance, switzerland, beatrix]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-027
+    company:
+      name: "Geberit AG"
+      short_name: "Geberit"
+      legal_form: "AG"
+      website: "https://www.geberit.com"
+    industry: manufacturing
+    industry_subcategory: construction_materials
+    segment: enterprise
+    headquarters:
+      country: CH
+      city: "Rapperswil-Jona"
+    geographic_scope: global
+    stage: QUALIFIED
+    priority: 1
+    stage_history:
+      - stage: QUALIFIED
+        date: "2026-01-27"
+        owner: "MdL"
+        notes: "Einführung und Begleitung KI (BEATRIX)"
+    relationship:
+      owner: "MdL"
+    opportunity:
+      name: "BEATRIX Einführung"
+      value_eur: 30000
+      probability: 65
+    next_action:
+      type: proposal
+      date: "2026-01-23"
+      description: "Follow up 23 Januar 26 - BEATRIX Einführungskonzept erstellen"
+      owner: "MdL"
+    notes: "PRIO 1 - Einführung und Begleitung KI (BEATRIX)"
+    tags: [manufacturing, switzerland, global, beatrix, ai]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  # ---------------------------------------------------------------------------
+  # PROSPECT (Erste Gespräche/Follow-up)
+  # ---------------------------------------------------------------------------
+
+  - id: LEAD-028
+    company:
+      name: "SBB AG"
+      short_name: "SBB"
+      legal_form: "AG"
+      website: "https://www.sbb.ch"
+    industry: professional_services
+    industry_subcategory: transportation
+    segment: enterprise
+    employee_count: 35000
+    headquarters:
+      country: CH
+      city: "Bern"
+    stage: PROSPECT
+    priority: 1
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Workshop / Follow Up - Blankschön"
+    relationship:
+      owner: "GF"
+      backup_owner: "MdL"
+    contacts:
+      - name: "Blankschön"
+        role: "Contact"
+        relationship_strength: weak
+    opportunity:
+      name: "Workshop SBB Blankschön"
+      value_eur: 64000
+      probability: 85
+      sent: "Offering"
+    next_action:
+      type: workshop
+      date: "2026-02-28"
+      description: "Workshop / Follow Up im Feb 26"
+      owner: "GF"
+    notes: "PRIO 1 - Workshop / Follow Up mit Blankschön"
+    tags: [transportation, switzerland, public_enterprise]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-029
+    company:
+      name: "EnergieSchweiz"
+      short_name: "Energie Schweiz"
+      legal_form: "Bundesamt"
+      website: "https://www.energieschweiz.ch"
+    industry: public_sector
+    industry_subcategory: federal
+    segment: government
+    headquarters:
+      country: CH
+      city: "Bern"
+    stage: PROSPECT
+    priority: 1
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Strategie für Energie Schweiz in den nächsten 10 Jahren"
+    relationship:
+      owner: "GF"
+    opportunity:
+      name: "10-Jahres-Strategie"
+      value_eur: 20000
+      probability: 65
+      sent: "Treffen"
+    next_action:
+      type: meeting
+      date: "2026-02-15"
+      description: "Follow up Mitte Februar 26 - Strategiegespräch 10-Jahres-Perspektive"
+      owner: "GF"
+    notes: "PRIO 1 - Strategie für Energie Schweiz in den nächsten 10 Jahren"
+    tags: [public_sector, energy, switzerland, strategy]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-030
+    company:
+      name: "A1 Telekom Austria AG"
+      short_name: "A1"
+      legal_form: "AG"
+      website: "https://www.a1.net"
+    industry: technology
+    industry_subcategory: telecom
+    segment: enterprise
+    headquarters:
+      country: AT
+      city: "Wien"
+    stage: WON
+    priority: 1
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Abomodell Jugendsegment - Kantauer Gansch"
+      - stage: QUALIFIED
+        date: "2026-01-28"
+        owner: "GF"
+        notes: "Offering gesendet - BEATRIX Market Intelligence Suite"
+      - stage: WON
+        date: "2026-02-05"
+        owner: "GF"
+        notes: "Projekt bestätigt - Kick-off 13.02.2026"
+    relationship:
+      owner: "GF"
+    contacts:
+      - name: "Frau Kantauer-Gansch"
+        role: "Project Lead"
+        relationship_strength: strong
+        email: null
+        phone: null
+    opportunity:
+      name: "BEATRIX Market Intelligence Suite - Jugend-Abomodell"
+      value_eur: 30000
+      probability: 100
+      status: "WON"
+      closed_date: "2026-02-05"
+    project:
+      id: "PRJ-A1-001"
+      name: "BEATRIX Market Intelligence Suite - A1 Jugend-Abomodell"
+      type: "POC"
+      start_date: "2026-02-13"
+      end_date: "2026-04-11"
+      poc_validity: "2026-12-31"
+      duration_weeks: "4-6"
+      payment_terms:
+        - milestone: "Projektstart"
+          percent: 50
+          amount_eur: 15000
+        - milestone: "Abschluss"
+          percent: 50
+          amount_eur: 15000
+      exclusivity: "Telekommunikationsbranche AT im Bereich Jugend"
+      data_protection:
+        server_location: "Schweiz"
+        gdpr_compliant: true
+        data_type: "anonymisiert, aggregiert"
+    deliverables:
+      - "BEATRIX-Suite (A1 Edition) - konfiguriert für Jugendsegment"
+      - "Strukturierte Kontext- und Nutzenanalyse Jugendsegment (16-25 Jahre)"
+      - "Prozess- und Strukturvorschläge Jugend-Abomodell"
+      - "Storyline- und Kommunikationsdokument"
+      - "Simulationsergebnisse und Handlungsempfehlungen"
+      - "Management-Präsentation & Entscheidungsgrundlage"
+      - "Dokumentierte Sparring- und Debriefing-Sessions"
+    scope:
+      target_group: "Jugendliche und junge Erwachsene 18-29 Jahre (Sinus-Milieus)"
+      primary_focus:
+        - "Value Proposition Jugendprodukte"
+        - "Kommunikation und Storylines"
+        - "Kommunikationskanäle und Medienarten"
+      secondary_focus:
+        - "Digitale und physische POS im Jugendsegment"
+      out_of_scope:
+        - "Preisgestaltung (nicht primär)"
+        - "IT-Implementierung (CRM, Billing)"
+        - "Detailkonzepte Fachbereiche"
+        - "Externe Kommunikation/Kampagnen"
+        - "Langfristige Implementierungsbegleitung"
+        - "Empirische Marktforschung"
+    next_action:
+      type: kickoff
+      date: "2026-02-13"
+      description: "Kick-off & Onboarding BEATRIX für A1"
+      owner: "GF"
+    notes: "WON - BEATRIX POC Jugend-Abomodell. Verhaltensökonomische Analyse, Simulation und Storyline-Entwicklung. Exklusivität AT Telekom Jugend."
+    tags: [telecom, austria, youth_segment, beatrix, poc, won]
+    created: "2026-01-27"
+    updated: "2026-02-05"
+    cva_reference:
+      path: "data/customers/a1-telekom/"
+      level: "STANDARD"
+      factors: 410
+      files:
+        - "a1_profile.yaml"
+        - "a1_context_org_governance.yaml"
+        - "a1_context_org_culture.yaml"
+        - "a1_context_fin_financial.yaml"
+        - "a1_context_mkt_market.yaml"
+        - "a1_context_cus_customer.yaml"
+        - "a1_context_tec_technology.yaml"
+        - "a1_context_ris_risk.yaml"
+      country_context: "AT"
+    project_registry_link: "PRJ-A1-001"
+
+  - id: LEAD-031
+    company:
+      name: "UBS Group AG"
+      short_name: "UBS Leitz"
+      legal_form: "AG"
+      website: "https://www.ubs.com"
+    industry: finance
+    industry_subcategory: banking
+    segment: enterprise
+    headquarters:
+      country: CH
+      city: "Zürich"
+    stage: PROSPECT
+    priority: 1
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Gesellschaftlicher Nutzen in UBS transformieren"
+    relationship:
+      owner: "GF"
+      backup_owner: "MdL"
+    contacts:
+      - name: "Christian Leitz"
+        role: "Contact"
+        relationship_strength: weak
+    opportunity:
+      name: "Gesellschaftlicher Nutzen"
+      value_eur: 36000
+      probability: 85
+      sent: "Offering"
+    next_action:
+      type: meeting
+      description: "Follow up ongoing - Gespräch gesellschaftlicher Nutzen"
+      owner: "GF"
+    notes: "PRIO 1 - Gesellschaftlichen Nutzen in UBS transformieren"
+    tags: [banking, switzerland, impact, transformation]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-032
+    company:
+      name: "Mövenpick Hotels & Resorts"
+      short_name: "Mövenpick"
+      legal_form: "AG"
+      website: "https://www.movenpick.com"
+    industry: professional_services
+    industry_subcategory: hospitality
+    segment: enterprise
+    headquarters:
+      country: CH
+      city: "Baar"
+    geographic_scope: global
+    stage: PROSPECT
+    priority: 2
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Wachstumsmarkt - Follow Up in Vereinbarung"
+    relationship:
+      owner: "GF"
+    opportunity:
+      name: "Wachstumsmarkt"
+      sent: "Offerte"
+    next_action:
+      type: meeting
+      date: "2025-12-19"
+      description: "Follow up 19.12. - Wachstumsmarkt"
+      owner: "GF"
+    notes: "PRIO 2 - Wachstumsmarkt / Follow Up in Vereinbarung"
+    tags: [hospitality, switzerland, global, growth]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-033
+    company:
+      name: "UBS Group AG"
+      short_name: "UBS Investment"
+      legal_form: "AG"
+      website: "https://www.ubs.com"
+    industry: finance
+    industry_subcategory: banking
+    segment: enterprise
+    headquarters:
+      country: CH
+      city: "Zürich"
+    stage: PROSPECT
+    priority: 1
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-01-27"
+        owner: "MdL"
+        notes: "Investition"
+    relationship:
+      owner: "MdL"
+    opportunity:
+      name: "UBS Investition"
+      value_eur: 96000
+      probability: 85
+      sent: "Offerte"
+    next_action:
+      type: follow_up
+      description: "laufend"
+      owner: "MdL"
+    notes: "PRIO 1 - UBS Investition"
+    tags: [banking, switzerland, investment]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-034
+    company:
+      name: "AWEL - Amt für Abfall, Wasser, Energie und Luft"
+      short_name: "Klima Zürich"
+      legal_form: "Kantonal"
+      website: "https://www.zh.ch/awel"
+    industry: public_sector
+    industry_subcategory: cantonal
+    segment: government
+    headquarters:
+      country: CH
+      city: "Zürich"
+    stage: PROSPECT
+    priority: 1
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Workshop Herr Stoiber"
+    relationship:
+      owner: "GF"
+    contacts:
+      - name: "Stoiber"
+        role: "Contact"
+        relationship_strength: weak
+    opportunity:
+      name: "Workshop Klima Zürich"
+      value_eur: 12000
+      probability: 65
+      sent: "Offerte"
+    next_action:
+      type: workshop
+      date: "2026-01-29"
+      description: "Follow up 29.01.26 - Workshop durchführen"
+      owner: "GF"
+    notes: "PRIO 1 - Workshop Klima Zürich - Herr Stoiber"
+    tags: [public_sector, climate, zurich, switzerland]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-035
+    company:
+      name: "ERZ Entsorgung + Recycling Zürich"
+      short_name: "ERZ"
+      legal_form: "Dienstabteilung"
+      website: "https://www.stadt-zuerich.ch/erz"
+    industry: public_sector
+    industry_subcategory: municipal
+    segment: government
+    headquarters:
+      country: CH
+      city: "Zürich"
+    stage: PROSPECT
+    priority: 1
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Workshop Littering - Herr M. Ultsch"
+    relationship:
+      owner: "GF"
+    contacts:
+      - name: "M. Ultsch"
+        role: "Contact"
+        relationship_strength: weak
+    opportunity:
+      name: "Workshop Littering"
+      value_eur: 15000
+      probability: 85
+      sent: "Offerte"
+    next_action:
+      type: workshop
+      date: "2026-02-28"
+      description: "Follow up Ende Feb 26 - Workshop Littering"
+      owner: "GF"
+    notes: "PRIO 1 - Workshop Littering - Herr M. Ultsch"
+    tags: [public_sector, municipal, littering, zurich, switzerland]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-036
+    company:
+      name: "Kanton Basel-Stadt"
+      short_name: "Basel Stadt"
+      legal_form: "Kanton"
+      website: "https://www.bs.ch"
+    industry: public_sector
+    industry_subcategory: cantonal
+    segment: government
+    headquarters:
+      country: CH
+      city: "Basel"
+    stage: PROSPECT
+    priority: 1
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Begleitung Steuer-Kampagne"
+    relationship:
+      owner: "GF"
+    opportunity:
+      name: "Begleitung Steuer-Kampagne"
+      value_eur: 12000
+      probability: 85
+      sent: "Offerte"
+    next_action:
+      type: meeting
+      date: "2026-01-08"
+      description: "08.01.2026 - Gespräch Steuer-Kampagne"
+      owner: "GF"
+    notes: "PRIO 1 - Begleitung Steuer-Kampagne"
+    tags: [public_sector, cantonal, tax, basel, switzerland]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-037
+    company:
+      name: "Verband Schweizer Medien"
+      short_name: "VSM"
+      legal_form: "Verband"
+      website: "https://www.schweizermedien.ch"
+    industry: professional_services
+    industry_subcategory: media
+    segment: mid_market
+    headquarters:
+      country: CH
+      city: "Zürich"
+    stage: PROSPECT
+    priority: 1
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-01-27"
+        owner: "AJ"
+        notes: "Follow up zu Studie"
+    relationship:
+      owner: "AJ"
+    opportunity:
+      name: "Studie"
+      value_eur_high: 18000
+      value_eur_medium: 80000
+      probability: 75
+      sent: "Offerte"
+    next_action:
+      type: follow_up
+      date: "2026-01-09"
+      description: "Follow up 09.01. zu Studie"
+      owner: "AJ"
+    notes: "PRIO 1 - Follow up zu Studie"
+    tags: [media, association, switzerland]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-038
+    company:
+      name: "Kanton Zürich"
+      short_name: "Kanton ZH"
+      legal_form: "Kanton"
+      website: "https://www.zh.ch"
+    industry: public_sector
+    industry_subcategory: cantonal
+    segment: government
+    headquarters:
+      country: CH
+      city: "Zürich"
+    stage: PROSPECT
+    priority: 1
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Follow up Anfrage - Meret Grob"
+    relationship:
+      owner: "GF"
+    contacts:
+      - name: "Meret Grob"
+        role: "Contact"
+        relationship_strength: weak
+    next_action:
+      type: follow_up
+      date: "2026-01-09"
+      description: "Termin am 09.01. - Meret Grob"
+      owner: "GF"
+    notes: "PRIO 1 - Follow up Anfrage - Meret Grob"
+    tags: [public_sector, cantonal, zurich, switzerland]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-039
+    company:
+      name: "Österreichischer Wirtschaftsbund"
+      short_name: "Wirtschaftsbund AT"
+      legal_form: "Verband"
+      website: "https://www.wirtschaftsbund.at"
+    industry: professional_services
+    industry_subcategory: association
+    segment: mid_market
+    headquarters:
+      country: AT
+      city: "Wien"
+    stage: PROSPECT
+    priority: 1
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "BEATRIX - Begleitung des Programms für Österreich"
+    relationship:
+      owner: "GF"
+    opportunity:
+      name: "BEATRIX Programm Österreich"
+      value_eur_high: 11000
+      value_eur_medium: 23000
+      probability: 70
+      sent: "Offerte"
+    next_action:
+      type: meeting
+      description: "in Vereinbarung - BEATRIX Programm Österreich besprechen"
+      owner: "GF"
+    notes: "PRIO 1 - BEATRIX - Begleitung des Programms für Österreich"
+    tags: [association, austria, beatrix, politics]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-040
+    company:
+      name: "DS Studio"
+      short_name: "DS Studio Programm"
+      legal_form: null
+    industry: professional_services
+    segment: mid_market
+    headquarters:
+      country: CH
+    stage: NEGOTIATION
+    priority: 1
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Begleitung Programm 2029"
+      - stage: NEGOTIATION
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "in Verhandlung"
+    relationship:
+      owner: "GF"
+    opportunity:
+      name: "Begleitung Programm 2029"
+      value_eur: 22500
+      probability: 85
+      sent: "Offerte"
+    next_action:
+      type: negotiation
+      description: "in Verhandlung - Programm 2029"
+      owner: "GF"
+    notes: "PRIO 1 - Begleitung Programm 2029 - in Verhandlung"
+    tags: [politics, switzerland]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-041
+    company:
+      name: "ZFV-Unternehmungen"
+      short_name: "ZFV"
+      legal_form: "Genossenschaft"
+      website: "https://www.zfv.ch"
+    industry: professional_services
+    industry_subcategory: hospitality
+    segment: mid_market
+    headquarters:
+      country: CH
+      city: "Zürich"
+    stage: PROSPECT
+    priority: 1
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Offering Projektbegleitung"
+    relationship:
+      owner: "GF"
+    opportunity:
+      name: "Projektbegleitung"
+      value_eur: 50000
+      probability: 85
+      sent: "Offering"
+    next_action:
+      type: proposal
+      date: "2026-02-28"
+      description: "spätestens Ende Februar - Offering Projektbegleitung"
+      owner: "GF"
+    notes: "PRIO 1 - Offering Projektbegleitung"
+    tags: [hospitality, gastronomy, switzerland, cooperative]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-042
+    company:
+      name: "ALPLA Werke - Daniela Ebner"
+      short_name: "ALPLA Ebner"
+    industry: packaging
+    industry_subcategory: plastics
+    segment: enterprise
+    headquarters:
+      country: AT
+      city: "Hard"
+    stage: ACTIVE
+    priority: 1
+    stage_history:
+      - stage: ACTIVE
+        date: "2026-01-27"
+        owner: "AJ"
+        notes: "Laufendes Projekt Daniela Ebner"
+    relationship:
+      owner: "AJ"
+      backup_owner: "GF"
+    contacts:
+      - name: "Daniela Ebner"
+        role: "Contact"
+        relationship_strength: strong
+    next_action:
+      type: follow_up
+      date: "2026-01-31"
+      description: "Follow up im Jan 26"
+      owner: "AJ"
+    ebf_integration:
+      customer_registry_ref: "CUS-ALPLA"
+    notes: "PRIO 1 - ALPLA Projekt mit Daniela Ebner"
+    tags: [packaging, austria, alpla]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-043
+    company:
+      name: "ALPLA Werke - Martin Laur / KI"
+      short_name: "ALPLA KI"
+    industry: packaging
+    industry_subcategory: plastics
+    segment: enterprise
+    headquarters:
+      country: AT
+      city: "Hard"
+    stage: ACTIVE
+    priority: 1
+    stage_history:
+      - stage: ACTIVE
+        date: "2026-01-27"
+        owner: "AJ"
+        notes: "Implementierung KI in OPEX"
+    relationship:
+      owner: "AJ"
+    contacts:
+      - name: "Martin Laur"
+        role: "OPEX Lead"
+        relationship_strength: strong
+    projects:
+      - name: "Implementierung KI in OPEX"
+        status: active
+    opportunity:
+      name: "Implementierung KI in OPEX"
+      value_eur_high: 30000
+      value_eur_medium: 30000
+      value_eur_low: 30000
+      probability: 75
+    next_action:
+      type: follow_up
+      date: "2026-01-31"
+      description: "Follow up im Jan 26"
+      owner: "AJ"
+    ebf_integration:
+      customer_registry_ref: "CUS-ALPLA"
+    notes: "PRIO 1 - Implementierung KI in OPEX - Martin Laur"
+    tags: [packaging, austria, alpla, ai, opex]
+    created: "2026-01-27"
+    updated: "2026-01-27"
+
+  - id: LEAD-044
+    company:
+      name: "ALPLA Steinabrückl"
+      short_name: "ALPLA Steinabrückl"
+    industry: packaging
+    industry_subcategory: plastics
+    segment: enterprise
+    headquarters:
+      country: AT
+      city: "Steinabrückl"
+    stage: ACTIVE
+    priority: 1
+    stage_history:
+      - stage: ACTIVE
+        date: "2026-01-27"
+        owner: "GF"
+        notes: "Begleitung Strategie"
+    relationship:
+      owner: "GF"
+    projects:
+      - name: "Begleitung Strategie Steinabrückl"
+        status: active
+    opportunity:
+      name: "Begleitung Strategie"
+      value_eur: 30000
+      probability: 85
+    ebf_integration:
+      customer_registry_ref: "CUS-ALPLA"
+    notes: "PRIO 1 - Begleitung Strategie ALPLA Steinabrückl"
+    tags: [packaging, austria, alpla, strategy]
+    created_at: "2026-01-27T16:45:00+01:00"
+    updated: "2026-01-27"
+
+  - id: LEAD-045
+    company:
+      name: "Industriellenvereinigung Oberösterreich"
+      short_name: "IV-OÖ"
+    industry: association
+    industry_subcategory: industry_association
+    segment: enterprise
+    headquarters:
+      country: AT
+      region: "Oberösterreich"
+      city: "Linz"
+    stage: NEGOTIATION
+    phase: 4
+    priority: 2
+    stage_history:
+      - stage: NEGOTIATION
+        date: "2026-01-28"
+        owner: "AJ"
+        notes: "Phase 4 - Projektstart geplant 11.02.26"
+    relationship:
+      owner: "AJ"
+    opportunity:
+      name: "Projekt IV-OÖ"
+      probability: 80
+    next_action:
+      type: project_kickoff
+      date: "2026-02-11"
+      description: "Projektstart"
+      owner: "AJ"
+    notes: "Phase 4 - Projektstart 11.02.26"
+    tags: [association, austria, oberösterreich, iv]
+    created_at: "2026-01-28T13:15:00+01:00"
+    updated: "2026-01-28"
+
+  - id: LEAD-046
+    company:
+      name: "BMW Group"
+      short_name: "BMW"
+    industry: automotive
+    industry_subcategory: oem
+    segment: enterprise
+    headquarters:
+      country: DE
+      city: "München"
+    stage: QUALIFIED
+    phase: 2
+    priority: 1
+    stage_history:
+      - stage: QUALIFIED
+        date: "2026-01-28"
+        owner: "MdL"
+        notes: "Workshop-Konzept international - 20 Workshops geplant"
+    relationship:
+      owner: "MdL"
+    opportunity:
+      name: "International Workshop Rollout"
+      description: "Workshop-Konzept international ausrollen - ca. 20 Workshops"
+      quantity: 20
+      value_eur: null
+      probability: 50
+      pricing_status: "tbd"
+    next_action:
+      type: proposal
+      date: "2026-02-07"
+      description: "Pricing definieren und Angebot erstellen"
+      owner: "MdL"
+    notes: "BMW möchte Workshop-Konzept international ausrollen. Ca. 20 Workshops. Pricing wird noch definiert."
+    tags: [automotive, germany, bmw, workshop, international]
+    created_at: "2026-01-28T13:20:00+01:00"
+    updated: "2026-01-28"
+
+  # BMW Compliance Projekt - bereits gewonnen und aktiv
+  - id: LEAD-051
+    company:
+      name: "BMW Group"
+      short_name: "BMW"
+    industry: automotive
+    industry_subcategory: oem
+    segment: enterprise
+    headquarters:
+      country: DE
+      city: "München"
+    stage: CLOSED_WON
+    phase: 5
+    priority: 1
+    stage_history:
+      - stage: LEAD
+        date: "2025-09-01"
+        owner: "MdL"
+        notes: "Erste Gespräche zu Compliance-Themen"
+      - stage: QUALIFIED
+        date: "2025-09-15"
+        owner: "MdL"
+        notes: "Bedarf für Faktor Mensch identifiziert"
+      - stage: PROPOSAL
+        date: "2025-09-20"
+        owner: "MdL"
+        notes: "Angebot erstellt"
+      - stage: NEGOTIATION
+        date: "2025-09-25"
+        owner: "GF"
+        notes: "Vertragsverhandlung"
+      - stage: CLOSED_WON
+        date: "2025-10-01"
+        owner: "GF"
+        notes: "Projekt gestartet - BMW001"
+    relationship:
+      owner: "MdL"
+      backup_owner: "GF"
+    contacts:
+      - name: "Christoph Klahold"
+        role: "Auftraggeber"
+        department: "AF4"
+        relationship_strength: strong
+      - name: "Markus Meister"
+        role: "Project Lead (BMW)"
+        relationship_strength: strong
+      - name: "Lou-Mareen Kersting"
+        role: "Team Member"
+        relationship_strength: medium
+      - name: "Nadine Begic"
+        role: "Team Member"
+        relationship_strength: medium
+    opportunity:
+      name: "Faktor Mensch in der Produkt-Compliance"
+      description: "Verhaltensökonomische Analyse und Intervention zur Verbesserung der Produkt-Compliance"
+      value_eur: null  # confidential
+      probability: 100
+      pricing_status: "closed"
+    outcome:
+      status: won
+      closed_date: "2025-10-01"
+      project_id: "PRJ-BMW-001"
+      project_internal_code: "BMW001"
+      project_end_date: "2026-03-31"
+    consulting_team:
+      - id: FA-SC-001
+        name: "Dr. Marvin Auf der Landwehr"
+        role: "Project Lead"
+      - id: FA-CON-003
+        name: "Valentin Lohmer"
+        role: "Consultant"
+      - id: FA-VR-001
+        name: "Gerhard Fehr"
+        role: "Partner / Senior Advisor"
+    notes: "Laufendes Projekt seit Oktober 2025. Fokus auf Faktor Mensch in der Produkt-Compliance. Läuft bis Ende März 2026."
+    tags: [automotive, germany, bmw, compliance, active-project, closed-won]
+    created_at: "2025-09-01T10:00:00+01:00"
+    updated: "2026-01-29"
+
+  - id: LEAD-047
+    company:
+      name: "Kanton Zürich"
+      short_name: "KT-ZH"
+    industry: public_sector
+    industry_subcategory: cantonal_government
+    segment: government
+    headquarters:
+      country: CH
+      region: "Zürich"
+      city: "Zürich"
+    stage: PROPOSAL
+    phase: 3
+    priority: 2
+    stage_history:
+      - stage: PROPOSAL
+        date: "2026-01-28"
+        owner: "GF"
+        notes: "Phase 3 - BEATRIX Nutzung und Fragestellungen"
+    relationship:
+      owner: "GF"
+    opportunity:
+      name: "BEATRIX Nutzung & Fragestellungen"
+      description: "Nutzung von BEATRIX und Erarbeitung konkreter Fragestellungen"
+      value_eur: 18000
+      probability: 60
+    next_action:
+      type: followup
+      date: "2026-02-07"
+      description: "Angebot Follow-up"
+      owner: "GF"
+    ebf_integration:
+      beatrix_project: true
+    notes: "Nutzung von BEATRIX und Erarbeitung konkreter Fragestellungen"
+    tags: [public_sector, switzerland, zurich, beatrix, kanton]
+    created_at: "2026-01-28T13:25:00+01:00"
+    updated: "2026-01-28"
+
+  - id: LEAD-054
+    company:
+      name: "HOFER REISEN"
+      short_name: "HOFER REISEN"
+      parent_company: "HOFER KG"
+    industry: retail
+    industry_subcategory: travel
+    segment: enterprise
+    headquarters:
+      country: AT
+      city: "Sattledt"
+    stage: PROSPECT
+    phase: 1
+    priority: 3
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-01-28"
+        owner: "MdL"
+        notes: "Kontakt über Florian - Q4 2026 Follow-up vereinbart"
+    relationship:
+      owner: "MdL"
+      contact_person: "Florian"
+    opportunity:
+      name: "Testing & Analyse Transformationsprojekt"
+      description: "HOFER REISEN mitten in Transformationsprojekt (Strategie, Plattform, Sortiment, Marketing). Potenzial für Tests im weiteren Verlauf. Hypothesen und Fragestellungen kristallisieren sich im Laufe des Jahres."
+      probability: 25
+    next_action:
+      type: followup
+      date: "2026-10-01"
+      description: "Q4 Follow-up zu Transformationsprojekt - Austausch zu konkreten Hypothesen"
+      owner: "MdL"
+    context:
+      current_situation: "Transformationsprojekt läuft (Strategie, Plattform, Sortiment, Marketing)"
+      h1_2026: "Kein direkter Bedarf"
+      q4_2026: "Potenzial für Testing/Analyse"
+    notes: "Email-Austausch mit Florian. H1/2026 kein Bedarf, aber Q4 Potenzial bei HOFER REISEN Transformationsprojekt. Austausch in Q4 vereinbart."
+    tags: [retail, travel, austria, hofer, transformation, testing]
+    created_at: "2026-01-28T13:30:00+01:00"
+    updated: "2026-01-28"
+
+  - id: LEAD-049
+    company:
+      name: "PUC"
+      short_name: "PUC"
+    industry: consulting
+    segment: enterprise
+    stage: PROPOSAL
+    phase: 3
+    priority: 2
+    stage_history:
+      - stage: PROPOSAL
+        date: "2026-01-28"
+        owner: "AJ"
+        notes: "Innovation Engine - Offering geht KW06 raus"
+    relationship:
+      owner: "AJ"
+      contact_person: "Martin Hepp"
+    opportunity:
+      name: "Innovation Engine"
+      probability: 60
+      sent: "Offering (KW06)"
+    next_action:
+      type: offering
+      date: "2026-02-07"
+      description: "Offering versenden (KW06)"
+      owner: "AJ"
+    notes: "Innovation Engine Projekt. Kontakt: Martin Hepp. Offering geht KW06 raus."
+    tags: [innovation, puc]
+    created_at: "2026-01-28T13:35:00+01:00"
+    updated: "2026-01-28"
+
+  - id: LEAD-050
+    company:
+      name: "David Schärer Studio"
+      short_name: "DSS"
+    industry: creative
+    industry_subcategory: design_studio
+    segment: sme
+    headquarters:
+      country: CH
+    stage: NEGOTIATION
+    phase: 4
+    priority: 1
+    stage_history:
+      - stage: NEGOTIATION
+        date: "2026-01-28"
+        owner: "AJ"
+        notes: "Offerte 30k zur Unterschrift raus"
+    relationship:
+      owner: "AJ"
+    opportunity:
+      name: "Projekt DSS"
+      value_eur: 30000
+      probability: 80
+      sent: "Offerte zur Unterschrift"
+    next_action:
+      type: signature
+      date: "2026-02-07"
+      description: "Follow-up Unterschrift"
+      owner: "AJ"
+    notes: "Offerte 30k zur Unterschrift ist raus."
+    tags: [creative, switzerland, design]
+    created_at: "2026-01-28T13:40:00+01:00"
+    updated: "2026-01-28"
+
+  - id: LEAD-056
+    company:
+      name: "UBS AG"
+      short_name: "UBS"
+    industry: financial_services
+    industry_subcategory: banking
+    segment: enterprise
+    headquarters:
+      country: CH
+      city: "Zürich"
+    stage: QUALIFIED
+    phase: 2
+    priority: 2
+    stage_history:
+      - stage: QUALIFIED
+        date: "2026-01-28"
+        owner: "GF"
+        notes: "Phase 2 - Volumen 12-18k"
+    relationship:
+      owner: "GF"
+      contact_person: "Christian Leitz"
+    opportunity:
+      name: "Projekt UBS"
+      value_eur: 15000
+      value_eur_low: 12000
+      value_eur_high: 18000
+      probability: 50
+    next_action:
+      type: followup
+      date: "2026-02-11"
+      description: "Follow-up in den nächsten 2 Wochen"
+      owner: "GF"
+    notes: "Kontakt Christian Leitz. Volumen 12-18k. Follow-up nächste 2 Wochen."
+    tags: [financial_services, banking, switzerland, ubs]
+    created_at: "2026-01-28T13:45:00+01:00"
+    updated: "2026-01-28"
+
+  - id: LEAD-052
+    company:
+      name: "Ringier AG"
+      short_name: "Ringier"
+    industry: media
+    industry_subcategory: publishing
+    segment: enterprise
+    headquarters:
+      country: CH
+      city: "Zürich"
+      region: "Zürich"
+    stage: QUALIFIED
+    priority: 2
+    project_phase: 3
+    stage_history:
+      - stage: QUALIFIED
+        date: "2026-01-29"
+        owner: "MF"
+        notes: "Konkrete Fragestellung mit BEATRIX"
+    relationship:
+      owner: "MF"
+      secondary_owners: ["GF"]
+    contacts:
+      - name: "Patrick Rademacher"
+        role: "Head of Strategy"
+        company: "Ringier Medien Schweiz (RMS)"
+        primary: true
+    opportunity:
+      name: "BEATRIX Fragestellung"
+      value_eur: null
+      probability: 50
+      product_interest: ["BEATRIX"]
+    next_action:
+      action: "Follow-up Call"
+      due_date: "2026-02-05"
+      owner: "MF"
+      description: "Follow-up nächste Woche"
+    notes: "Konkrete Fragestellung mit BEATRIX - Phase 3"
+    tags: [media, switzerland, beatrix, ringier]
+    created: "2026-01-29"
+    updated: "2026-01-29"
+    stage: PROPOSAL
+    phase: 3
+    priority: 2
+    stage_history:
+      - stage: PROPOSAL
+        date: "2026-01-29"
+        owner: "GF"
+        notes: "Phase 3 - Follow-up KW06"
+    relationship:
+      owner: "GF"
+      backup_owner: "MF"
+      contact_person: "Patrick Rademacher"
+    opportunity:
+      name: "Projekt Ringier"
+      probability: 60
+    next_action:
+      type: followup
+      date: "2026-02-07"
+      description: "Follow-up KW06"
+      owner: "GF"
+    notes: "Kontakt Patrick Rademacher (Head of Strategy, RMS). Verantwortlich GF + MF. Meeting 2026-02-03."
+    tags: [media, publishing, switzerland, ringier, rms]
+    created_at: "2026-01-29T10:00:00+01:00"
+    updated: "2026-02-06"
+    cva_profile:
+      level: "STANDARD"
+      path: "data/customers/ringier-medien-schweiz/"
+      factors: 400
+      created: "2026-02-06"
+
+  # ===========================================================================
+  # economiesuisse - Strategische Begleitung (12 Monate Retainer)
+  # ===========================================================================
+  - id: LEAD-053
+    company:
+      name: "economiesuisse - Verband der Schweizer Unternehmen"
+      short_name: "economiesuisse"
+      legal_form: "Verein"
+      website: "https://www.economiesuisse.ch"
+      linkedin: "https://www.linkedin.com/company/economiesuisse"
+
+    # --- Klassifikation ---
+    industry: public_sector
+    industry_subcategory: association
+    segment: association
+    employee_count: 100
+    headquarters:
+      country: CH
+      city: "Zürich"
+      region: "Zürich"
+    geographic_scope: national
+
+    # --- Pipeline Status ---
+    stage: PROSPECT
+    phase: 1
+    priority: 1
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-01-30"
+        owner: "GF"
+        notes: "Lead aus laufender Projektarbeit (MOD-015, MOD-016, MOD-017)"
+
+    # --- Scoring ---
+    fit_score: 88
+    fit_score_details:
+      industry_fit: 85
+      size_fit: 80
+      budget_fit: 85
+      culture_fit: 95
+      geographic_fit: 100
+      timing_fit: 90
+    engagement_score: 75
+
+    # --- Beziehung ---
+    relationship:
+      owner: "GF"
+      backup_owner: "EB"
+      project_phase: 1
+      project_phase_note: "Strategische Begleitung als Retainer-Modell"
+
+    # --- Kontakte ---
+    contacts:
+      - name: "Monika Rühl"
+        role: "Direktorin / Vorsitzende der Geschäftsleitung"
+        is_champion: true
+        is_decision_maker: true
+        relationship_strength: warm
+
+    # --- Opportunity ---
+    opportunity:
+      name: "Strategische Begleitung - 12 Monate Retainer"
+      description: |
+        Begleitung bei strategischen Themen durch FehrAdvice / Gerhard Fehr.
+        - Laufzeit: 12 Monate
+        - Umfang: 2-3 Fragen pro Monat
+        - Spezieller Verbandspreis
+      value_eur: null  # Spezieller Verbandspreis - noch zu definieren
+      probability: 40
+      expected_close_date: "2026-03-01"
+      product_interest:
+        - "Strategic Advisory"
+        - "EBF Analysis"
+        - "Political Engagement Models"
+
+    # --- Projekte (bestehend) ---
+    projects:
+      - id: PRJ-ECOS-001
+        name: "10-Millionen-Initiative (RDM-X)"
+        status: completed
+        model_ref: MOD-015
+      - id: PRJ-ECOS-002
+        name: "USA-Zollabkommen (PVM)"
+        status: completed
+        model_ref: MOD-016
+      - id: PRJ-ECOS-003
+        name: "Political Engagement Portfolio (PEPM)"
+        status: completed
+        model_ref: MOD-017
+
+    # --- EBF Integration ---
+    ebf_integration:
+      customer_registry_ref: "CUS-ECOS"
+      profile_path: "data/customers/economiesuisse/economiesuisse_profile.yaml"
+      has_10c_analysis: true
+      has_intervention_design: false
+
+    # --- Source & Attribution ---
+    source:
+      channel: EXISTING
+      subchannel: expansion
+      first_touch_date: "2026-01-30"
+      notes: "Entstanden aus laufender Projektarbeit - drei Modelle erfolgreich geliefert"
+
+    # --- Nächste Aktion ---
+    next_action:
+      action: "Angebot vorbereiten"
+      due_date: "2026-02-07"
+      owner: "GF"
+      type: proposal
+      priority: high
+      description: |
+        Retainer-Angebot für 12-Monate strategische Begleitung erstellen.
+        - Spezieller Verbandspreis definieren
+        - Scope: 2-3 Fragen/Monat
+        - Bezug auf erfolgreiche Zusammenarbeit (MOD-015/016/017)
+
+    # --- Notizen ---
+    notes: |
+      Dachverband der Schweizer Wirtschaft. Sehr gute Erfahrung aus
+      drei abgeschlossenen Modellen (RDM-X, PVM, PEPM).
+
+      Interesse an langfristiger strategischer Begleitung:
+      - Thema: Strategische Fragen (politische Kampagnen, Positionierung)
+      - Format: 2-3 Fragen pro Monat
+      - Laufzeit: 12 Monate
+      - Preis: Spezieller Verbandspreis zu definieren
+
+      Kontaktperson: Monika Rühl (Direktorin)
+
+    tags: [association, switzerland, political, retainer, strategic_advisory, verband]
+    created: "2026-01-30"
+    updated: "2026-01-30"
+
+  # ===========================================================================
+  # SOB Strategiemodell (Folgeprojekt nach Mission Statement)
+  # ===========================================================================
+  - id: LEAD-055
+    company:
+      name: "Schweizerische Südostbahn AG"
+      short_name: "SOB"
+    industry: public_transport
+    industry_subcategory: regional_rail
+    segment: public_enterprise
+    headquarters:
+      country: CH
+      region: "St. Gallen"
+      city: "St. Gallen"
+
+    # --- Pipeline Status ---
+    stage: WON
+    phase: 4
+    priority: 1
+    stage_history:
+      - stage: PROSPECT
+        date: "2025-10-01"
+        owner: "GF"
+        notes: "Erstkontakt für Mission Statement Projekt"
+      - stage: QUALIFIED
+        date: "2025-10-15"
+        owner: "GF"
+        notes: "SOB001 Mission Statement Projekt qualifiziert"
+      - stage: WON
+        date: "2026-01-28"
+        owner: "GF"
+        notes: "SOB002 Strategiemodell vereinbart nach CEO-Debriefing"
+
+    # --- Relationship ---
+    relationship:
+      owner: "GF"
+      since: "2025-10-01"
+      type: "ACTIVE"
+      health: "GREEN"
+
+    # --- Contacts ---
+    contacts:
+      - name: "Armin Weber"
+        role: "CEO"
+        email: null
+        phone: null
+        relationship_strength: strong
+        is_champion: true
+        note: "Hauptansprechpartner und Sponsor für SOB002"
+        models_co_developed:
+          - model_id: "MOD-MSR-001"
+            model_name: "Mission Statement Resonance Model"
+            role: "VR-Validierung"
+            date: "2026-01-28"
+            result: "Mission 'Wege bahnen' genehmigt"
+
+    # --- Opportunity ---
+    opportunity:
+      name: "SOB002 Strategiemodell"
+      description: |
+        Entwicklung eines integrierten SOB-Strategiemodells in BEATRIX/EBF.
+        Konsolidierung von Vision + Mission, Implementierungs-Projektion.
+        Basis: CEO-Debriefing nach erfolgreichem Mission Statement Projekt.
+      value_chf_min: 30000
+      value_chf_max: 40000
+      value_chf: 35000
+      value_eur: 37000
+      currency: CHF
+      probability: 90
+      expected_close_date: "2026-02-01"
+      contract_type: "project"
+      timeline: "Februar - April 2026 (3 Monate)"
+
+    # --- Projects ---
+    projects:
+      - id: "PRJ-SOB-001"
+        name: "SOB Mission Statement"
+        status: completed
+        period: "Oktober 2025 - Januar 2026"
+        deliverables:
+          - "Mission: 'Einsteigen - Gemeinsam Bewegen - Wege bahnen'"
+          - "VR-Präsentation"
+          - "Kontextvektor (CVA SCHNELL)"
+
+      - id: "PRJ-SOB-002"
+        name: "SOB Strategiemodell"
+        status: scoping
+        period: "Februar - April 2026"
+        scope_file: "data/customers/sob/projects/SOB002_scope.yaml"
+        beatrix_integration: true
+        deliverables_planned:
+          - "Strategie-Pyramide"
+          - "Strategiemodell in BEATRIX"
+          - "Dimensions-Katalog"
+          - "Implementierungs-Dashboard"
+          - "Bereichs-Factsheets (4-5)"
+          - "Strategie-Handbuch"
+
+    # --- Next Action ---
+    next_action:
+      type: kickoff
+      date: "2026-02-01"
+      description: "SOB002 Kick-off mit CEO Armin Weber"
+      owner: "GF"
+
+    # --- EBF Integration ---
+    ebf_integration:
+      customer_registry_ref: "CUS-SOB"
+      customer_path: "data/customers/sob/"
+      context_vector: "data/customers/sob/sob_context.yaml"
+      cva_level: "SCHNELL"
+      beatrix_project: true
+      session_ref: "EBF-S-2026-01-28-ORG-002"
+      model_refs:
+        - id: "MOD-MSR-001"
+          name: "Mission Statement Resonance Model"
+          created_with: "Armin Weber (CEO)"
+          session: "EBF-S-2026-01-28-ORG-001"
+          result: "Mission 'Wege bahnen' (Score 4.26)"
+      target_10c_dimensions:
+        - WHO
+        - WHAT
+        - HOW
+        - WHEN
+        - AWARE
+        - STAGE
+
+    notes: |
+      Folgeprojekt nach erfolgreichem Mission Statement Projekt (SOB001).
+      CEO Armin Weber hat im Debriefing-Gespräch 3-monatige Zusammenarbeit
+      für Strategiemodell vereinbart. Implementierung in BEATRIX/EBF.
+
+    tags: [public_transport, switzerland, ostschweiz, beatrix, strategy, sob, rail]
+    created_at: "2026-01-28T14:00:00+01:00"
+    updated: "2026-01-28"
+
+  # ===========================================================================
+  # ALPLA HR Strategy / People Development (Lead)
+  # ===========================================================================
+  - id: LEAD-058  # Umbenannt von LEAD-045 (Duplikat-Fix 2026-02-04)
+    company:
+      name: "ALPLA Werke - HR Strategy"
+      short_name: "ALPLA HR Strategy"
+    industry: packaging
+    industry_subcategory: plastics
+    segment: enterprise
+    headquarters:
+      country: AT
+      city: "Hard"
+      region: "Vorarlberg"
+
+    # --- Pipeline Status ---
+    stage: QUALIFIED
+    stage_history:
+      - stage: QUALIFIED
+        date: "2026-01-28"
+        owner: "GF"
+        notes: "Lead für HR/People Development Strategy basierend auf ALPLA Gesamtstrategie"
+
+    # --- Relationship ---
+    relationship:
+      owner: "GF"
+      backup_owner: "EB"
+
+    # --- Contacts ---
+    contacts:
+      - name: "Andrea Becker"
+        role: "HR Director"
+        email: null
+        relationship_strength: medium
+        note: "Nachfolgerin von Gerhard Geismayr, alleinige Stakeholderin"
+
+    # --- Opportunity ---
+    opportunity:
+      name: "HR Strategy / People Development 2025-2035"
+      description: |
+        Begleitung bei der Ausarbeitung einer HR-/People Development Strategie
+        auf Basis der ALPLA Gesamtstrategie (Wachstum 24.350 → 38.500 MA).
+
+      # Choice Architecture - 3 Optionen
+      options:
+        - id: "OPTION_A"
+          name: "Strategy Framework"
+          scope: "Strategischer Rahmen"
+          description: |
+            Entwicklung des strategischen Rahmens für People Development:
+            - Analyse der ALPLA Gesamtstrategie (2025-2035)
+            - Identifikation HR-relevanter strategischer Implikationen
+            - Talent-Gap-Analyse (High-Level)
+            - People Development Framework (Struktur)
+            - Executive Summary für Board
+          deliverables:
+            - "Strategic Alignment Report (20-30 Seiten)"
+            - "Talent Gap Matrix (High-Level)"
+            - "People Development Framework (Struktur)"
+            - "Board Presentation (10 Slides)"
+          duration_weeks: 6
+          effort_days_fa: 8
+          budget_range_eur: "15.000 - 20.000"
+          out_of_scope:
+            - "Detaillierte Kompetenzmodelle"
+            - "Implementierungs-Roadmap"
+            - "Regionale Anpassungen"
+            - "Change Management"
+
+        - id: "OPTION_B"
+          name: "Strategy + Roadmap"
+          scope: "Strategie mit Umsetzungsplanung"
+          description: |
+            Option A PLUS detaillierte Umsetzungsplanung:
+            - Alle Inhalte aus Option A
+            - Detailliertes Kompetenzmodell (BC + WC)
+            - Karrierepfad-Design (5 Levels)
+            - Leadership Pipeline Framework
+            - 3-Jahres Implementation Roadmap
+            - KPI-Framework mit Messkriterien
+          deliverables:
+            - "Alle Deliverables aus Option A"
+            - "Kompetenzmodell (BC1-BC5 + WC)"
+            - "Karrierepfad-Dokumentation"
+            - "Leadership Pipeline Framework"
+            - "Implementation Roadmap (36 Monate)"
+            - "KPI Dashboard Design"
+          duration_weeks: 12
+          effort_days_fa: 25
+          budget_range_eur: "80.000 - 120.000"
+          out_of_scope:
+            - "Implementierungs-Begleitung"
+            - "Regionale Roll-out Unterstützung"
+            - "Training Design/Delivery"
+
+        - id: "OPTION_C"
+          name: "Full Partnership"
+          scope: "Strategie + Roadmap + Begleitung"
+          description: |
+            Option B PLUS Implementierungs-Begleitung:
+            - Alle Inhalte aus Option A + B
+            - Pilotierung in 1-2 Regionen (z.B. WEEU, NA)
+            - Change Management Begleitung
+            - Quarterly Review & Adjustment
+            - Stakeholder Alignment Workshops
+            - Train-the-Trainer für HR Business Partner
+          deliverables:
+            - "Alle Deliverables aus Option A + B"
+            - "Pilot Implementation (1-2 Regionen)"
+            - "Change Management Playbook"
+            - "4x Quarterly Reviews"
+            - "HR BP Training Materials"
+            - "Lessons Learned Documentation"
+          duration_weeks: 36
+          effort_days_fa: 50
+          budget_range_eur: "150.000 - 200.000"
+          out_of_scope:
+            - "Globaler Roll-out (alle 5 Regionen)"
+            - "HRIS System Selection/Implementation"
+            - "Arbeitsrechtliche Beratung"
+
+      # Recommendation
+      recommended_option: "OPTION_B"
+      recommendation_rationale: |
+        Option B bietet das beste Verhältnis von Tiefe und Umsetzbarkeit:
+        - Genug Detail für eigenständige Implementierung durch ALPLA HR
+        - Konkrete Roadmap als Orientierung
+        - Kompetenzmodell als Fundament für alle weiteren HR-Initiativen
+        - Anschlussfähig an Option C falls Begleitung gewünscht
+
+      value_eur_low: 15000
+      value_eur_medium: 100000
+      value_eur_high: 200000
+      probability: 60
+      expected_close_date: "2026-03-15"
+
+    # --- Project Context ---
+    project_context:
+      strategic_driver: |
+        ALPLA Wachstumsstrategie 2025-2035:
+        - Revenue: €4.9B → €9.9B (+101%)
+        - Employees: 24.350 → 38.500 (+58%, +14.150)
+        - HR muss Wachstum personalseitig absichern
+
+      key_challenges:
+        - "Skalierung HR ohne proportionale Kostensteigerung"
+        - "Talent-Gaps in kritischen Funktionen (Tech, Recycling, Digital)"
+        - "Leadership Pipeline für 5 Regionen"
+        - "Blue Collar Retention (aktuell 22% Churn)"
+        - "Harmonisierung über 47 Länder"
+
+      constraints:
+        - "ALPLA Gesamtstrategie als Rahmen (nicht verhandelbar)"
+        - "Familienunternehmen-Kultur bewahren"
+        - "Regionale Autonomie respektieren"
+        - "Budget-Zyklus: Q2/2026 für 2027er Budget"
+
+      success_criteria:
+        - "Board-Approval der Strategie bis Q2/2026"
+        - "Alignment zwischen HR, Operations, Finance"
+        - "Messbares KPI-Framework"
+        - "Regionale Adaptierbarkeit"
+
+      timeline_constraints:
+        - "Kick-off: Februar/März 2026"
+        - "Board-Präsentation: Mai/Juni 2026"
+        - "Budget-Input für 2027: Juli 2026"
+
+    # --- Next Actions ---
+    next_action:
+      type: proposal
+      date: "2026-02-05"
+      description: "Proposal mit Choice Architecture an Andrea Becker senden"
+      owner: "GF"
+
+    # --- EBF Integration ---
+    ebf_integration:
+      customer_registry_ref: "CUS-ALPLA"
+      related_projects:
+        - "CUS-ALPLA-PRJ-001"  # Sales Strategy
+        - "CUS-ALPLA-PRJ-002"  # Organizational Design
+        - "CUS-ALPLA-PRJ-009"  # HR Churn (hypothetisch)
+      intervention_registry_ref: null  # Wird bei Conversion erstellt
+
+    # --- Source ---
+    source:
+      channel: EXISTING_CUSTOMER
+      subchannel: cross_sell
+      referrer: "Internes Cross-Selling aus ODM-Projekt"
+
+    # --- Metadata ---
+    notes: |
+      Lead für HR Strategy / People Development.
+      Auftraggeber: Andrea Becker (HR Director).
+      Basiert auf ALPLA Gesamtstrategie 2025-2035.
+      Choice Architecture mit 3 Optionen (A/B/C).
+      Empfehlung: Option B (Strategy + Roadmap).
+    tags: [packaging, austria, alpla, hr, strategy, people_development]
+    created: "2026-01-28"
+    updated: "2026-01-28"
+
+  # ===========================================================================
+  # ALPLA HR + AI Strategy 2027-2030 (Lead)
+  # ===========================================================================
+  - id: LEAD-059  # Umbenannt von LEAD-046 (Duplikat-Fix 2026-02-04)
+    company:
+      name: "ALPLA Werke - HR + AI Strategy"
+      short_name: "ALPLA HR+AI"
+    industry: packaging
+    industry_subcategory: plastics
+    segment: enterprise
+    headquarters:
+      country: AT
+      city: "Hard"
+      region: "Vorarlberg"
+
+    # --- Pipeline Status ---
+    stage: QUALIFIED
+    stage_history:
+      - stage: QUALIFIED
+        date: "2026-01-28"
+        owner: "GF"
+        notes: "Lead für HR + AI Strategie im Rahmen der Digitalisierung 2027-2030"
+
+    # --- Relationship ---
+    relationship:
+      owner: "GF"
+      backup_owner: "EB"
+
+    # --- Contacts ---
+    contacts:
+      - name: "Andrea Becker"
+        role: "HR Director"
+        email: null
+        relationship_strength: medium
+        note: "Alleinige Stakeholderin für HR + AI Transformation"
+
+    # --- Opportunity ---
+    opportunity:
+      name: "HR + AI Strategy 2027-2030"
+      description: |
+        Integration von AI/Machine Learning in HR-Prozesse zur Unterstützung
+        des ALPLA Wachstums. Fokus auf Predictive Analytics, Automatisierung
+        und datengestützte Entscheidungsfindung im People Management.
+
+      # Choice Architecture - 3 Optionen
+      options:
+        - id: "OPTION_A"
+          name: "AI Readiness Assessment"
+          scope: "Standortbestimmung"
+          description: |
+            Analyse der AI-Readiness der HR-Organisation:
+            - Assessment des aktuellen Digitalisierungsgrades
+            - Identifikation von AI-Anwendungsfällen mit höchstem ROI
+            - Data Landscape Analyse (Qualität, Verfügbarkeit, Governance)
+            - Quick-Win Empfehlungen
+            - Management Summary
+          deliverables:
+            - "AI Readiness Report (15-20 Seiten)"
+            - "Use Case Priorisierung (Top 10)"
+            - "Data Quality Assessment"
+            - "Quick-Win Roadmap (6 Monate)"
+            - "Executive Presentation (10 Slides)"
+          duration_weeks: 4
+          effort_days_fa: 6
+          budget_range_eur: "15.000 - 20.000"
+          out_of_scope:
+            - "Technische Implementation"
+            - "Tool-Auswahl"
+            - "Change Management"
+            - "Training"
+
+        - id: "OPTION_B"
+          name: "AI Strategy + Pilot"
+          scope: "Strategie mit Pilotprojekt"
+          description: |
+            Option A PLUS Strategieentwicklung und Pilotprojekt:
+            - Alle Inhalte aus Option A
+            - HR AI Strategie 2027-2030 (aligniert mit Gesamtstrategie)
+            - Detaillierte Use Case Spezifikation (Top 3)
+            - Pilot-Design für 1 Use Case (z.B. Predictive Churn)
+            - Vendor Landscape & Empfehlung
+            - Governance Framework für HR AI
+          deliverables:
+            - "Alle Deliverables aus Option A"
+            - "HR AI Strategie 2027-2030 (30 Seiten)"
+            - "Use Case Specifications (3x)"
+            - "Pilot Design Document"
+            - "Vendor Evaluation Matrix"
+            - "AI Governance Guidelines"
+          duration_weeks: 10
+          effort_days_fa: 20
+          budget_range_eur: "60.000 - 80.000"
+          out_of_scope:
+            - "Pilot-Durchführung"
+            - "Software-Entwicklung"
+            - "Roll-out Begleitung"
+
+        - id: "OPTION_C"
+          name: "Full AI Transformation"
+          scope: "Strategie + Pilot + Begleitung"
+          description: |
+            Option B PLUS Pilot-Durchführung und Change Management:
+            - Alle Inhalte aus Option A + B
+            - Pilot-Durchführung (z.B. Predictive Churn in 2-3 Werken)
+            - Change Management für HR + Operations
+            - Skill Building (Data Literacy für HR)
+            - Quarterly Reviews & Optimization
+            - Scale-up Planung
+          deliverables:
+            - "Alle Deliverables aus Option A + B"
+            - "Pilot Implementation (1 Use Case)"
+            - "Change Management Playbook"
+            - "Data Literacy Training (2 Tage)"
+            - "4x Quarterly Reviews"
+            - "Scale-up Roadmap"
+          duration_weeks: 30
+          effort_days_fa: 40
+          budget_range_eur: "120.000 - 160.000"
+          out_of_scope:
+            - "Globaler Roll-out"
+            - "Software-Lizenzkosten"
+            - "IT-Infrastruktur"
+
+      # Recommendation
+      recommended_option: "OPTION_B"
+      recommendation_rationale: |
+        Option B bietet strategische Klarheit mit konkretem Pilotdesign:
+        - Strategie gibt Orientierung für 3+ Jahre
+        - Pilot-Design ermöglicht schnellen Start
+        - Governance Framework verhindert spätere Compliance-Probleme
+        - Anschlussfähig an Option C für Begleitung
+        - Innerhalb Budget-Zyklus Q2/2026 umsetzbar
+
+      value_eur_low: 15000
+      value_eur_medium: 70000
+      value_eur_high: 160000
+      probability: 50
+      expected_close_date: "2026-04-30"
+
+    # --- Project Context ---
+    project_context:
+      strategic_driver: |
+        ALPLA Digitalisierungsstrategie 2027-2030:
+        - HR muss Wachstum (24.350 → 38.500 MA) effizient unterstützen
+        - Skalierung ohne proportionale HR-Kostensteigerung
+        - Datengestützte Entscheidungen für Talent Management
+        - Predictive Capabilities für Churn, Performance, Succession
+
+      key_challenges:
+        - "Datenqualität und -verfügbarkeit über 47 Länder"
+        - "Data Literacy in HR-Organisation"
+        - "Integration mit bestehenden HRIS-Systemen"
+        - "Datenschutz (GDPR, regionale Regulierung)"
+        - "Change Resistance bei HR Business Partnern"
+
+      ai_use_cases_potential:
+        - name: "Predictive Churn"
+          priority: high
+          description: "Vorhersage von Kündigungsrisiko für proaktive Retention"
+          roi_potential: "sehr hoch"
+        - name: "Talent Matching"
+          priority: high
+          description: "AI-gestützte interne Stellenbesetzung und Karriereplanung"
+          roi_potential: "hoch"
+        - name: "Workforce Planning"
+          priority: medium
+          description: "Bedarfsprognose für Recruiting und Skill-Gaps"
+          roi_potential: "hoch"
+        - name: "Onboarding Optimization"
+          priority: medium
+          description: "Personalisierte Einarbeitung basierend auf Rolle/Profil"
+          roi_potential: "mittel"
+        - name: "Performance Prediction"
+          priority: low
+          description: "Früherkennung von High/Low Performers"
+          roi_potential: "mittel"
+          note: "Sensibel - erst nach anderen Use Cases"
+
+      constraints:
+        - "ALPLA HR Strategie (LEAD-045) als Rahmen"
+        - "Bestehende HRIS-Landschaft respektieren"
+        - "GDPR-Compliance zwingend"
+        - "Familienunternehmen-Werte (keine 'Big Brother' Wahrnehmung)"
+        - "Budget-Zyklus: Q2/2026 für 2027er Budget"
+
+      success_criteria:
+        - "Klare AI Roadmap für 2027-2030"
+        - "Mindestens 1 Pilot mit messbarem ROI"
+        - "HR-Team mit Data Literacy Grundlagen"
+        - "Governance Framework etabliert"
+
+      timeline_constraints:
+        - "Kick-off: Q2/2026 (nach HR Strategy Start)"
+        - "Strategie-Draft: Q3/2026"
+        - "Pilot-Start: Q4/2026"
+        - "Pilot-Ergebnisse: Q1/2027"
+
+    # --- Dependencies ---
+    dependencies:
+      - lead_id: "LEAD-045"
+        type: "strategic_prerequisite"
+        description: "HR Strategy muss vor AI Strategy definiert sein"
+        status: "in_progress"
+
+    # --- Next Actions ---
+    next_action:
+      type: proposal
+      date: "2026-02-15"
+      description: "Proposal nach HR Strategy Kick-off an Andrea Becker senden"
+      owner: "GF"
+
+    # --- EBF Integration ---
+    ebf_integration:
+      customer_registry_ref: "CUS-ALPLA"
+      related_projects:
+        - "CUS-ALPLA-PRJ-001"  # Sales Strategy
+        - "CUS-ALPLA-PRJ-002"  # Organizational Design
+        - "CUS-ALPLA-PRJ-009"  # HR Churn (hypothetisch)
+      intervention_registry_ref: null
+
+    # --- Source ---
+    source:
+      channel: EXISTING_CUSTOMER
+      subchannel: cross_sell
+      referrer: "Anschluss an HR Strategy (LEAD-045)"
+
+    # --- Metadata ---
+    notes: |
+      Lead für HR + AI Strategy 2027-2030.
+      Auftraggeber: Andrea Becker (HR Director).
+      Basiert auf ALPLA HR Strategy (LEAD-045) und Digitalisierungsstrategie.
+      Choice Architecture mit 3 Optionen (A/B/C).
+      Empfehlung: Option B (AI Strategy + Pilot).
+      Abhängigkeit: LEAD-045 muss zuerst starten.
+    tags: [packaging, austria, alpla, hr, ai, digital, strategy]
+    created: "2026-01-28"
+    updated: "2026-01-28"
+
+  # ===========================================================================
+  # ALPLA INDUSTRIAL - Sales Transformation
+  # ===========================================================================
+  - id: LEAD-060  # Umbenannt von LEAD-047 (Duplikat-Fix 2026-02-04)
+    company:
+      name: "ALPLA Industrial - Sales Transformation"
+      short_name: "ALPLA Industrial"
+    industry: packaging
+    industry_subcategory: industrial_plastics
+    segment: enterprise
+    headquarters:
+      country: AT
+      city: "Hard"
+      region: "Vorarlberg"
+
+    # --- Pipeline Status ---
+    stage: PROPOSAL
+    stage_history:
+      - stage: PROPOSAL
+        date: "2025-09-18"
+        owner: "FA Austria"
+        notes: "Offerte für Vertriebs-Transformation übermittelt"
+
+    # --- Relationship ---
+    relationship:
+      owner: "FA Austria"
+      backup_owner: "GF"
+
+    # --- Contacts ---
+    contacts:
+      - name: "TBD"
+        role: "Geschäftsführung ALPLA Industrial"
+        email: null
+        relationship_strength: medium
+        note: "Auftraggeber für Sales Transformation"
+
+    # --- Opportunity ---
+    opportunity:
+      name: "Vertriebs-Transformation ALPLA Industrial 2025-2027"
+      description: |
+        Strategische Neuausrichtung des Vertriebs bei ALPLA Industrial:
+        - Commodity/Großkundengeschäft erschließen (bisher weniger erfolgreich)
+        - KMU-Segment stärken & effizienter machen (Automatisierung)
+        - Anreizsysteme neu ausrichten (Neukundenakquise honorieren)
+
+        Drei Stoßrichtungen:
+        1. Strategisch: Segmentlogik (ABC-Kunden), Großkunden-Differenzierung
+        2. Organisational: Werksübergreifende Vertriebsorganisation, KAM, CSM
+        3. Taktisch/Verhaltensökonomisch: Neue Incentives, relative Boni, Dashboards
+
+      # Current Offer: IMPULS + DESIGN Package
+      options:
+        - id: "IMPULS_DESIGN"
+          name: "IMPULS + DESIGN – Begleitung Phase 1 & 2"
+          scope: "Analyse, Pilotierung, Rollout-Entscheidung"
+          description: |
+            Kombiniertes Paket für Phase 1 & 2:
+
+            TEIL 1 (Oktober-November 2025):
+            - Health Check → Interviews, Stärken/Schwächen
+            - Impuls-Workshop → Maßnahmenoptionen in drei Stoßrichtungen
+            - Strategie-Sparring → Diskussion & Sparring mit Management
+
+            TEIL 2 (Januar-Februar 2026):
+            - Funktionsfähige Pilotstruktur
+            - Evaluation
+            - Rollout-Entscheidungsvorlage
+            - Kick-off mit dem Team
+
+          deliverables:
+            - "Vertiefte Markt- und Wettbewerbsanalyse (Commodity vs. KMU)"
+            - "Kundeninterviews / Integration vorhandener Befragungen"
+            - "Abschätzung der Wirkung (Kundenattraktivität, MA-Motivation)"
+            - "High-Level Roadmap 2025-2027"
+            - "Pilot-Entscheidungsvorlage (was, wo, mit wem starten?)"
+            - "Pilot-Kick-off mit dem Team: Vision, Ziele, Regeln, Commitment"
+          duration: "4-5 Monate (Okt 2025 - Feb 2026)"
+          budget_eur: 25000
+          payment_terms: "EUR 15.000 per Oktober 2025, EUR 10.000 per Projektende"
+
+      # Alternative smaller packages from proposal
+      alternative_packages:
+        - id: "KICK_OFF"
+          name: "Sales Transformation Kick-off"
+          description: "1-2 Management-Workshops, Kurzanalyse, Optionsskizze, Mini-Roadmap"
+          deliverable: "Kompakte Ergebnispräsentation (10-12 Seiten)"
+          goal: "Schnell und pragmatisch erste Klarheit schaffen"
+
+        - id: "HEALTH_CHECK"
+          name: "Sales Health Check"
+          description: "3-4 Interviews, Organisations-Check, Best Practice Vergleich, 1 Workshop"
+          deliverable: "Health Check Report (5-8 Seiten) mit Top 3 Hebeln"
+          goal: "Realistisches Bild von Stärken, Schwächen & Chancen"
+
+        - id: "STRATEGIE_SPARRING"
+          name: "Strategie-Sparring"
+          description: "Sparring-Sessions, Ad-hoc-Analysen, Quick Wins"
+          deliverable: "Executive Summary (5-6 Seiten) mit Empfehlungen"
+          goal: "Führungsebene beim laufenden Strategieprozess begleiten"
+
+      value_eur_low: 25000
+      value_eur_medium: 25000
+      value_eur_high: 50000  # Bei Follow-up Phase 3
+      probability: 70
+      expected_close_date: "2025-10-15"
+
+    # --- Project Context ---
+    project_context:
+      ausgangslage: |
+        ALPLA Industrial steht vor einer strategischen Neuausrichtung des Vertriebs:
+
+        COMMODITY/GROßKUNDEN:
+        - In anderen ALPLA-Sparten eine Stärke, im Industrial-Bereich bisher weniger erfolgreich
+        - Gründe: kaum Differenzierung, preislich nicht attraktiv, Vertrieb nicht auf lange Buying Cycles eingestellt
+        - Herausforderung: Differenzierung über Service (Just-in-Time), Nachhaltigkeit, Co-Development
+
+        KMU-SEGMENT:
+        - Stärke durch Flexibilität, persönliche Interaktion, schnelle Lieferung
+        - Herausforderung: Effizienz durch Technologie & Automatisierung (Self-Service, KI)
+        - Ziel: Außendienst entlasten für Akquise & Wachstum
+
+        ANREIZSYSTEME:
+        - Heute: Fokus auf Bestandspflege
+        - Morgen: Neukundenakquise und Business Development honorieren
+
+      strategic_directions:
+        - direction: "Strategisch"
+          actions:
+            - "Entwicklung einer Segmentlogik (ABC-Kunden)"
+            - "Großkundengeschäft differenzieren (USP über Service, Nachhaltigkeit, Kooperation)"
+            - "Roadmap für Pilotprojekte im Commodity-Segment"
+
+        - direction: "Organisational"
+          actions:
+            - "Aufbau einer werksübergreifenden Vertriebsorganisation"
+            - "Einführung von Key Account Management (für Commodity/Großkunden)"
+            - "Customer Success Management für KMU (Technologie & Automatisierung)"
+            - "Klare Governance, Schnittstellen und Verantwortlichkeiten"
+
+        - direction: "Taktisch / verhaltensökonomisch"
+          actions:
+            - "Neue Incentives: Fokus auf Neukundenakquise & Großkundenentwicklung"
+            - "Relative Boni (Team + Individuum) für Balance Kooperation & Wettbewerb"
+            - "Transparenz & Social Proof: Dashboards & Erfolgsstories"
+            - "Upskilling & Community-Learning für Außen- & Innendienst"
+
+      project_phases:
+        - phase: 1
+          name: "Analyse & Zielbild"
+          timing: "Q3-Q4 2025"
+          deliverables:
+            - "Optionen für strategische, organisatorische und taktische Maßnahmen"
+            - "Abschätzung der Wirkung auf Kunden & Mitarbeitende"
+            - "High-Level Roadmap & Pilotentscheidungsgrundlage"
+
+        - phase: 2
+          name: "Pilotierung & Einführung"
+          timing: "2026"
+          deliverables:
+            - "Funktionsfähige Pilotstruktur (KAM, Incentives, KMU-Automatisierung)"
+            - "Briefings, Debriefings, Pit-Stops"
+            - "Umfassende Empfehlungsanalyse zur Weiterentwicklung"
+
+        - phase: 3
+          name: "Rollout & Verankerung"
+          timing: "2026-2027"
+          deliverables:
+            - "Rollout der KAM-Struktur"
+            - "Briefings für Job-Hirings"
+            - "Entwicklungspfade für Mitarbeitende im Sales"
+            - "Einführung neuer Preis- & Vertragsmodelle"
+            - "Kultur- & Community-Learning"
+
+      vision_2027: |
+        Martin, Key Account Manager bei ALPLA Industrial, startet seinen Tag mit allen KPIs
+        auf seinem Tablet: Pipeline-Übersicht, Großkunden-Projekte, Feedback aus Service-Calls.
+        Er weiß genau, welche Kunden Priorität haben.
+
+        Er ist motiviert:
+        - Klare Ziele, die fordern und belohnen (Bonus auch für neue Großprojekte)
+        - Teil eines High-Performance-Sales-Teams mit Best Practice Austausch
+        - Seine Arbeit macht Sinn: ALPLA Industrial als Partner, nicht nur Lieferant
+
+        Am Nachmittag trifft er sich virtuell mit Kolleg:innen aus Österreich, Ungarn, Rumänien.
+        Werksübergreifend, organisiert, kundenorientiert. Entscheidungen fallen schnell,
+        Pilotideen werden getestet, Erfolge geteilt.
+
+    # --- 10C/EBF Integration ---
+    ebf_integration:
+      target_10c_dimensions:
+        - dimension: "WHAT (F)"
+          description: "Finanzielle Anreize neu ausrichten (Neukundenakquise)"
+          mechanism: "Incentive Restructuring"
+
+        - dimension: "WHAT (S)"
+          description: "Social Proof durch Dashboards & Erfolgsstories"
+          mechanism: "Descriptive Norms, Peer Effects"
+
+        - dimension: "WHO"
+          description: "Team-Identity durch werksübergreifende Organisation"
+          mechanism: "Shared Goals, Community"
+
+        - dimension: "HOW"
+          description: "Relative Boni balancieren Kooperation & Wettbewerb"
+          mechanism: "Complementarity Design"
+
+        - dimension: "AWARE"
+          description: "Transparenz durch Dashboards & KPIs"
+          mechanism: "Salience, Feedback Loops"
+
+      customer_registry_ref: "CUS-ALPLA"
+      related_projects:
+        - "CUS-ALPLA-PRJ-001"  # Sales Strategy (existing)
+        - "CUS-ALPLA-PRJ-002"  # Organizational Design (existing)
+      intervention_registry_ref: "CUS-ALPLA-PRJ-010"
+
+    # --- Next Actions ---
+    next_action:
+      type: follow_up
+      date: "2025-10-01"
+      description: "Klärung Beauftragung IMPULS + DESIGN Paket"
+      owner: "FA Austria"
+
+    # --- Source ---
+    source:
+      channel: EXISTING_CUSTOMER
+      subchannel: cross_sell
+      referrer: "ALPLA Group Relationship"
+      proposal_date: "2025-09-18"
+
+    # --- Metadata ---
+    notes: |
+      Offerte vom 18.09.2025 für Vertriebs-Transformation ALPLA Industrial.
+      Kombiniertes Paket IMPULS + DESIGN für Phase 1 & 2.
+      EUR 25.000 (15k Oktober, 10k Projektende).
+      Fokus: Commodity/Großkunden erschließen, KMU effizienter, Anreize neu.
+      Drei Stoßrichtungen: Strategisch, Organisational, Verhaltensökonomisch.
+    tags: [packaging, austria, alpla, industrial, sales, transformation, incentives, kam]
+    created: "2026-01-28"
+    updated: "2026-01-28"
+
+  # ===========================================================================
+  # CHURNED (Ehemalige Kunden)
+  # ===========================================================================
+
+  - id: LEAD-011
+    company:
+      name: "[Example Churned Company]"
+      short_name: "ExChurned"
+      legal_form: "AG"
+      website: null
+
+    industry: manufacturing
+    industry_subcategory: machinery
+    segment: mid_market
+    employee_count: 2500
+    revenue_eur: 500000000
+    headquarters:
+      country: CH
+      city: "Winterthur"
+      region: "Zürich"
+    geographic_scope: europe
+
+    stage: CHURNED
+    stage_history:
+      - stage: PROSPECT
+        date: "2021-03-01"
+        owner: "EB"
+      - stage: ACTIVE
+        date: "2021-09-01"
+        owner: "EB"
+      - stage: CHURNED
+        date: "2023-06-01"
+        owner: "EB"
+        notes: "Projekt abgeschlossen, keine Folgeaufträge, Budgetkürzungen"
+
+    fit_score: 70
+    engagement_score: 10
+
+    relationship:
+      owner: "EB"
+      customer_since: "2021-09-01"
+      churned_date: "2023-06-01"
+      churn_reason: budget_cuts
+      health_score: 30
+      # --- Projekt-Phase ---
+      project_phase: null
+      project_phase_note: "Beziehung beendet (Budgetkürzungen)"
+
+    churn_analysis:
+      reason: "Budgetkürzungen nach Restrukturierung"
+      preventable: false
+      win_back_potential: medium
+      last_project: "Change Management Workshop"
+      total_lifetime_value_eur: 85000
+
+    contacts: []
+    projects: []
+    ebf_integration: null
+
+    source:
+      channel: REFERRAL
+      first_touch_date: "2021-03-01"
+
+    notes: "Ehemaliger Kunde. Restrukturierung 2023. Win-Back bei neuer Führung möglich."
+    tags: [manufacturing, churned, switzerland]
+    created: "2021-03-01"
+    updated: "2026-01-27"
+
+  # ===========================================================================
+  # LOST (Nie Kunde geworden)
+  # ===========================================================================
+
+  - id: LEAD-012
+    company:
+      name: "[Example Lost Deal]"
+      short_name: "ExLost"
+      legal_form: "AG"
+      website: null
+
+    industry: finance
+    industry_subcategory: insurance
+    segment: enterprise
+    employee_count: 8000
+    revenue_eur: 4000000000
+    headquarters:
+      country: CH
+      city: "Zürich"
+      region: "Zürich"
+    geographic_scope: europe
+
+    stage: LOST
+    stage_history:
+      - stage: PROSPECT
+        date: "2024-02-01"
+        owner: "MR"
+      - stage: QUALIFIED
+        date: "2024-04-01"
+        owner: "MR"
+      - stage: PROPOSAL
+        date: "2024-06-01"
+        owner: "MR"
+      - stage: NEGOTIATION
+        date: "2024-08-01"
+        owner: "MR"
+      - stage: LOST
+        date: "2024-10-01"
+        owner: "MR"
+        notes: "Entscheidung für McKinsey"
+
+    fit_score: 85
+    engagement_score: 75
+
+    relationship:
+      owner: "MR"
+      # --- Projekt-Phase ---
+      project_phase: null
+      project_phase_note: "Deal verloren an McKinsey"
+
+    lost_analysis:
+      competitor: "McKinsey"
+      reason: "Brand preference, existing relationship"
+      decision_maker: "CEO"
+      price_competitive: true
+      proposal_quality: high
+      lessons_learned: |
+        - Früher C-Level Engagement nötig
+        - Brand Awareness in Insurance Sektor erhöhen
+        - McKinsey-Beziehung war entscheidend
+      reapproach_date: "2025-10-01"
+
+    opportunity:
+      name: "Digital Strategy Insurance"
+      value_eur: 300000
+
+    contacts: []
+    projects: []
+    ebf_integration: null
+
+    source:
+      channel: OUTBOUND
+      subchannel: conference
+      first_touch_date: "2024-02-01"
+
+    notes: "Deal verloren an McKinsey. Learnings dokumentiert. Reapproach in 12 Monaten."
+    tags: [insurance, lost_deal, competitor_mckinsey]
+    created: "2024-02-01"
+    updated: "2026-01-27"
+
+  # ===========================================================================
+  # PROSPECT (Neues Potenzial - Sounding Phase)
+  # ===========================================================================
+
+  - id: LEAD-057
+    # --- Identifikation ---
+    company:
+      name: "Helsana Versicherungen AG"
+      short_name: "Helsana"
+      legal_form: "AG (Genossenschaftsstruktur)"
+      website: "https://www.helsana.ch"
+      linkedin: "https://www.linkedin.com/company/helsana"
+
+    # --- Klassifikation ---
+    industry: finance
+    industry_subcategory: health_insurance
+    segment: enterprise
+    employee_count: 3400
+    revenue_eur: 7200000000  # CHF 7.8 Mrd → ca. EUR 7.2 Mrd
+    headquarters:
+      country: CH
+      city: "Dübendorf"
+      region: "Zürich"
+    geographic_scope: national
+
+    # --- Pipeline Status ---
+    stage: PROSPECT
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-01-28"
+        owner: "GF"
+        notes: "Sounding der Sales-Strategie - potentielles Projekt"
+
+    # --- Scoring ---
+    fit_score: 88
+    fit_score_details:
+      industry_fit: 90       # Versicherung = Kernkompetenz FA
+      size_fit: 95           # Enterprise, 3400 MA
+      budget_fit: 90         # Marktführer, starke Bilanz
+      culture_fit: 85        # Genossenschaftlich, Schweizer Werte
+      geographic_fit: 95     # CH Headquarter
+      timing_fit: 80         # Sales-Strategie Sounding
+    engagement_score: 40     # Noch frühe Phase
+
+    # --- Beziehung ---
+    relationship:
+      owner: "GF"
+      backup_owner: null
+      customer_since: null
+      contract_type: null
+      contract_value_eur: null
+      renewal_date: null
+      health_score: null
+      nps: null
+      # --- Projekt-Phase ---
+      project_phase: 0
+      project_phase_note: "Sounding Phase - Sales-Strategie"
+
+    # --- Kontakte ---
+    contacts:
+      - name: "Sandro Mannino"
+        role: "Mitglied der Geschäftsleitung / Head of Sales"
+        email: null
+        phone: null
+        is_champion: true
+        is_decision_maker: true
+        relationship_strength: new
+
+    # --- Opportunity ---
+    opportunity:
+      name: "Sounding der Sales-Strategie"
+      value_eur: null  # TBD nach Sounding
+      probability: 20
+      expected_close_date: null
+      next_steps:
+        - action: "Sounding-Gespräch mit Sandro Mannino"
+          due_date: null
+          owner: "GF"
+
+    # --- Projekte ---
+    projects: []
+
+    # --- EBF Integration ---
+    ebf_integration:
+      customer_registry_ref: "CUS-HELSANA"
+      profile_path: "data/customers/helsana/"
+      models_path: null
+      has_10c_analysis: false
+      has_intervention_design: false
+
+    # --- Quelle ---
+    source:
+      channel: NETWORK
+      subchannel: executive_referral
+      first_touch_date: "2026-01-28"
+
+    notes: "Sounding der Sales-Strategie mit Sandro Mannino (GL/Head of Sales). CVA-Profil bereits vorhanden."
+    tags: [insurance, health_insurance, sales_strategy, sounding, switzerland, market_leader]
+    created: "2026-01-28"
+    updated: "2026-01-28"
+
+  # ---------------------------------------------------------------------------
+  # LEAD-048: prio.swiss (Verband Schweizer Krankenversicherer)
+  # ---------------------------------------------------------------------------
+  - id: LEAD-048
+    # --- Identifikation ---
+    company:
+      name: "prio.swiss - Verband Schweizer Krankenversicherer"
+      short_name: "prio.swiss"
+      legal_form: "Verband"
+      website: "https://www.prio.swiss"
+      linkedin: null
+
+    # --- Klassifikation ---
+    industry: finance
+    industry_subcategory: health_insurance_association
+    segment: association
+    employee_count: 30  # Geschätzt (Verband)
+    revenue_eur: null   # Verband, nicht kommerziell
+    headquarters:
+      country: CH
+      city: "Bern"
+      region: "Bern"
+    geographic_scope: national
+
+    # --- Pipeline Status ---
+    stage: PROSPECT
+    stage_history:
+      - stage: PROSPECT
+        date: "2026-02-04"
+        owner: "GF"
+        notes: "Erstes Meeting mit Saskia Schenker (Direktorin) - sehr gutes Gespräch"
+
+    # --- Scoring ---
+    fit_score: 85
+    fit_score_details:
+      industry_fit: 90       # Gesundheit/Versicherung = Kernkompetenz FA
+      size_fit: 70           # Verband, kleiner aber einflussreich
+      budget_fit: 75         # Verband, Budget limitiert aber vorhanden
+      culture_fit: 90        # FDP-nah, wirtschaftsorientiert, evidenz-affin
+      geographic_fit: 95     # CH Headquarter
+      timing_fit: 85         # Aktuell: Medikamentenpreise, Einheitskasse, Tardoc
+    engagement_score: 70     # Sehr gutes Erstgespräch, EBF-Demo durchgeführt
+
+    # --- Beziehung ---
+    relationship:
+      owner: "GF"
+      backup_owner: null
+      customer_since: null
+      contract_type: null
+      contract_value_eur: null
+      renewal_date: null
+      health_score: null
+      nps: null
+      # --- Projekt-Phase ---
+      project_phase: 1
+      project_phase_note: "Erstes Meeting durchgeführt, Analyse-Versand pending"
+
+    # --- Kontakte ---
+    contacts:
+      - name: "Saskia Schenker"
+        role: "Direktorin"
+        email: null
+        phone: null
+        is_champion: true
+        is_decision_maker: true
+        relationship_strength: warm
+        note: "Per Du mit GF, MBA Finance, FDP-Hintergrund"
+      - name: "[Kommunikationsverantwortliche]"
+        role: "Head of Communications"
+        email: null
+        phone: null
+        is_champion: false
+        is_decision_maker: false
+        relationship_strength: null
+        note: "Startet April 2026"
+
+    # --- Opportunity ---
+    opportunity:
+      name: "Retainer / Strategieberatung prio.swiss"
+      value_eur: null  # TBD - Option A oder B
+      probability: 25
+      expected_close_date: "2026-03-31"
+      next_steps:
+        - action: "Medikamentenpreis-Analyse zusenden"
+          due_date: "2026-02-07"
+          owner: "GF"
+        - action: "Optionen A/B konkretisieren"
+          due_date: "2026-02-14"
+          owner: "GF"
+        - action: "Offerte erstellen"
+          due_date: "2026-02-21"
+          owner: "GF"
+
+      # Choice Architecture - 2 Optionen
+      options:
+        - id: "OPTION_A"
+          name: "Retainer (Einzelfragen)"
+          scope: "Laufende Beratung"
+          description: |
+            Stundenbasierter Retainer für ad-hoc Fragestellungen:
+            - EBF-Analysen zu aktuellen Themen (Medikamentenpreise, Initiativen)
+            - Argumentationshilfe für politische Debatten
+            - Evidenz-basierte Positionierung
+          budget_range_eur: "30.000 - 50.000 p.a."
+          note: "Passt besser zur aktuellen Situation (Start-up Phase prio.swiss)"
+
+        - id: "OPTION_B"
+          name: "Strategie-Digitalisierung"
+          scope: "Strategisches Projekt"
+          description: |
+            Aufbau einer evidenz-basierten Strategie-Architektur:
+            - Systematische Referendum-Verhinderungsstrategie
+            - Digitalisierung der Kommunikation
+            - EBF-Integration in Argumentations-Baukasten (Upgrade von ChatGPT)
+          budget_range_eur: "80.000 - 120.000"
+          note: "Timing könnte zu früh sein (prio.swiss noch in Konsolidierung)"
+
+    # --- Projekte ---
+    projects: []
+
+    # --- EBF Integration ---
+    ebf_integration:
+      customer_registry_ref: "CUS-PRIO"
+      profile_path: "data/customers/prio-swiss/"
+      models_path: null
+      has_10c_analysis: true   # Trump MFN Analyse durchgeführt
+      has_intervention_design: false
+      analysis_sessions:
+        - session_id: "EBF-S-2026-02-04-POL-001"
+          topic: "Trump MFN Pharma Pricing"
+          date: "2026-02-04"
+          presented_in_meeting: true
+
+    # --- Quelle ---
+    source:
+      channel: NETWORK
+      subchannel: executive_referral
+      first_touch_date: "2026-02-04"
+
+    notes: |
+      Erstes Meeting mit Saskia Schenker (04.02.2026, Jacks Brasserie, 2h).
+      Sehr gutes Gespräch, EBF-Exploit zu Trump MFN durchgeführt (30 min).
+      prio.swiss nutzt bereits ChatGPT-basierten Argumentations-Baukasten.
+      Organisation noch in Konsolidierungsphase (Fusion Curafutura/Santésuisse).
+      Option A (Retainer) passt besser als Option B (Strategieprojekt).
+
+    tags: [insurance, health_insurance, association, pharma_pricing, switzerland, evidenz, ai_readiness]
+    created: "2026-02-04"
+    updated: "2026-02-04"
+
+    # =========================================================================
+    # NEUE FELDER (Reference Implementation v2.0)
+    # =========================================================================
+
+    # --- Behavioral Profile (EBF-spezifisch) ---
+    behavioral_profile:
+      decision_style: analytical        # Saskia: MBA Finance, evidenz-affin
+      risk_appetite: medium             # Verband = moderate Risikotoleranz
+      change_readiness: 75              # Start-up Mentalität, aber Verband-Struktur
+      evidence_affinity: 90             # FDP, wirtschaftsorientiert, EBF-Demo sehr positiv
+      time_horizon: medium              # Tardoc 2026, Medikamentenpreise akut
+
+      organizational_context:
+        culture_type: adhocracy         # Start-up Mentalität trotz Verband
+        transformation_stage: transition # Fusion noch nicht abgeschlossen
+        ai_readiness: experimenting     # ChatGPT Baukasten bereits operativ
+
+    # --- Meeting Integration ---
+    meetings:
+      - meeting_id: "MTG-2026-02-04-001"
+        date: "2026-02-04"
+        participants: ["GF"]
+        outcome: positive
+        follow_up_status: pending
+        location: "Jacks Brasserie"
+        duration_minutes: 121
+        topics:
+          - "Trump MFN Pharma Pricing (EBF-Exploit)"
+          - "Strategie prio.swiss"
+          - "Mögliche Zusammenarbeit"
+        ebf_session: "EBF-S-2026-02-04-POL-001"
+
+    last_meeting:
+      meeting_id: "MTG-2026-02-04-001"
+      date: "2026-02-04"
+      outcome: positive
+      days_ago: 0  # Computed at runtime
+
+    # --- Deal Dynamics ---
+    deal_blockers:
+      - blocker_type: timing
+        description: "Organisation noch in Konsolidierungsphase nach Fusion"
+        severity: minor
+        mitigation_strategy: "Option A (Retainer) statt Option B (Strategieprojekt)"
+        status: mitigated
+        identified_date: "2026-02-04"
+
+      - blocker_type: budget
+        description: "Verband, Budget limitiert"
+        severity: minor
+        mitigation_strategy: "Retainer-Modell mit flexiblem Volumen"
+        status: active
+        identified_date: "2026-02-04"
+
+    competitors: []  # Aktuell keine bekannten Wettbewerber im Deal
+
+    buying_committee:
+      - name: "Saskia Schenker"
+        role: decision_maker
+        sentiment: strong_positive
+        engagement_level: high
+        engagement_needed: "Follow-up nach Analyse-Versand"
+
+      - name: "[Kommunikationsverantwortliche]"
+        role: user
+        sentiment: unknown
+        engagement_level: none
+        engagement_needed: "Kennenlernen ab April 2026"
+
+      - name: "Felix Gutzwiller"
+        role: influencer
+        sentiment: unknown
+        engagement_level: none
+        engagement_needed: "Ggf. Präsentation vor Präsidium"
+        note: "Präsident prio.swiss"
+
+    # --- Communication Preferences ---
+    communication_preferences:
+      preferred_channel: in_person
+      preferred_frequency: monthly
+      preferred_time: lunch
+      language: de
+      formality: informal_du
+      response_style: data_heavy
+
+    # --- Relationship Depth ---
+    relationship_depth:
+      trust_level: 65             # Guter Start, aber noch frisch
+      personal_connection: friendly
+      shared_experiences:
+        - date: "2026-02-04"
+          type: "lunch_meeting"
+          description: "2h Mittagessen Jacks Brasserie, offener Austausch"
+          impact: positive
+      reciprocity_balance: balanced
+      years_known: 0
+      referrals_given: 0
+      referrals_received: 0
+
+# =============================================================================
+# PIPELINE SUMMARY (Auto-generated)
+# =============================================================================
+
+pipeline_summary:
+  last_updated: "2026-02-04"
+  total_leads: 46
+
+  by_stage:
+    SUSPECT: 0
+    PROSPECT: 18  # +1 prio.swiss
+    QUALIFIED: 5
+    PROPOSAL: 6
+    NEGOTIATION: 1
+    WON: 0
+    ACTIVE: 13
+    DORMANT: 1
+    CHURNED: 1
+    LOST: 1
+    REACTIVATION: 0
+
+  by_phase:
+    acquisition: 30      # SUSPECT + PROSPECT + QUALIFIED + PROPOSAL + NEGOTIATION (+1)
+    customer: 14         # WON + ACTIVE + DORMANT
+    former: 2            # CHURNED + LOST
+    reactivation: 0
+
+  # NEU: Verteilung nach Projekt-Phasen
+  by_project_phase:
+    phase_0: 3    # Post, Migros, Helsana (Erstgespräch/Kennenlernen)
+    phase_1: 1    # prio.swiss (Themen- & Rahmenprüfung)
+    phase_2: 1    # Swisscom (Erwartungsklärung)
+    phase_3: 0    # (Angebotsphase)
+    phase_4: 0    # (Abschluss & Commitment)
+    phase_5: 7    # ALPLA, PORR, LUKB, Lindt, UBS, BFE, Innosuisse (Umsetzung)
+    null: 2       # Churned, Lost (keine aktive Phase)
+
+  by_industry:
+    finance: 8           # LUKB, UBS (4x), Migrosbank, RBI, Helvetia
+    packaging: 4         # ALPLA (4x)
+    construction: 1      # PORR
+    fmcg: 1              # Lindt
+    pharma_health: 4     # Assura, KPT, Roche, Ypsomed
+    public_sector: 7     # BFE, Innosuisse, Energie CH, AWEL, ERZ, Basel, Kanton ZH
+    technology: 2        # Swisscom, A1
+    retail: 3            # Migros, Denner, Kaufland
+    manufacturing: 3     # BMW, Geberit, ExChurned
+    professional_services: 10  # Post, SBB, Mövenpick, VSM, DS Studio (2x), ZFV, Wirtschaftsbund, POST AT
+    insurance: 1         # ExLost (Helvetia now counted under finance)
+
+  by_country:
+    CH: 33
+    AT: 9
+    DE: 2                # Kaufland, BMW
+
+  active_opportunities:
+    count: 8
+    total_pipeline_eur: null  # Values not fully disclosed
+    key_opportunities:
+      - lead: LEAD-010
+        name: "Swisscom BEATRIX"
+        value_eur: 150000
+        probability: 40
+      - lead: LEAD-017
+        name: "POST AT CONNECT"
+        probability: 70
+      - lead: LEAD-019
+        name: "Roche Baumann"
+        probability: 40
+      - lead: LEAD-020
+        name: "RBI BEATRIX"
+        probability: 50
+      - lead: LEAD-021
+        name: "UBS AI"
+        probability: 45
+      - lead: LEAD-022
+        name: "UBS EK Folgemandat"
+        probability: 55
+
+  beatrix_pipeline:
+    description: "BEATRIX-spezifische Opportunities"
+    leads: [LEAD-007, LEAD-010, LEAD-013, LEAD-020, LEAD-026, LEAD-027, LEAD-039]
+    count: 7
+
+# =============================================================================
+# SCHEMA DEFINITION
+# =============================================================================
+
+schema:
+  lead:
+    required:
+      - id                    # LEAD-{NNN} superkey
+      - created_at            # ISO 8601 Timestamp (z.B. "2026-01-27T14:35:22+01:00")
+      - company.name          # Full legal name
+      - company.short_name    # Display name
+      - industry              # From industries taxonomy
+      - stage                 # From pipeline_stages
+      - created               # Creation date
+    optional:
+      - company.legal_form
+      - company.website
+      - company.linkedin
+      - industry_subcategory
+      - segment               # enterprise | mid_market | smb | government
+      - employee_count
+      - revenue_eur
+      - headquarters
+      - geographic_scope      # local | regional | national | europe | global
+      - stage_history
+      - fit_score
+      - fit_score_details
+      - engagement_score
+      - relationship
+      - relationship.project_phase       # NEU: Phase 0-5 oder null
+      - relationship.project_phase_note  # NEU: Begründung/Kontext
+      - contacts
+      - projects
+      - ebf_integration
+      - source
+      - opportunity
+      - next_action
+      - lost_analysis
+      - churn_analysis
+      - notes
+      - tags
+      - updated
+
+# =============================================================================
+# AUTO-SUGGEST ALGORITHM (Projekt-Phase)
+# =============================================================================
+# Bei Lead-Erstellung wird automatisch eine Phase vorgeschlagen.
+# - Wenn nicht bestätigt → vorgeschlagene Phase wird verwendet
+# - Wenn manuell geändert → geänderte Phase wird verwendet
+
+phase_auto_suggest:
+  description: |
+    Automatischer Vorschlag der Projekt-Phase basierend auf Pipeline-Stage
+    und optionalen Zusatzinformationen (next_action, projects).
+
+  algorithm:
+    # Primär-Mapping: Stage → Default Phase
+    primary_rules:
+      - stage: SUSPECT
+        default_phase: 0
+        reason: "Noch kein Kontakt hergestellt"
+
+      - stage: PROSPECT
+        default_phase: 0
+        reason: "Erster Kontakt / Kennenlernen"
+
+      - stage: QUALIFIED
+        default_phase: 1
+        reason: "Thema & Rahmen geprüft (SQL)"
+        # Override-Regel für Phase 2:
+        override:
+          condition: "next_action.type IN ['meeting', 'workshop'] AND next_action.description CONTAINS 'Erwartung' OR 'Vorgehen' OR 'Scope'"
+          then_phase: 2
+          reason: "Erwartungsklärung läuft"
+
+      - stage: PROPOSAL
+        default_phase: 3
+        reason: "Angebot in Arbeit oder versendet"
+
+      - stage: NEGOTIATION
+        default_phase: 4
+        reason: "Vertragsverhandlung / Abschluss"
+
+      - stage: WON
+        default_phase: 4
+        reason: "Deal gewonnen, Commitment erfolgt"
+        # Override-Regel für Phase 5:
+        override:
+          condition: "projects[].status = 'active'"
+          then_phase: 5
+          reason: "Projekt bereits gestartet"
+
+      - stage: ACTIVE
+        default_phase: 5
+        reason: "Aktives Projekt in Umsetzung"
+
+      - stage: DORMANT
+        default_phase: 5
+        reason: "Letztes Projekt abgeschlossen"
+        note: "Für neues Projekt → Phase 0"
+
+      - stage: REACTIVATION
+        default_phase: 0
+        reason: "Neustart der Beziehung"
+
+      - stage: CHURNED
+        default_phase: null
+        reason: "Beziehung beendet"
+
+      - stage: LOST
+        default_phase: null
+        reason: "Nie Kunde geworden"
+
+  # Sekundär-Regeln: Verfeinerung basierend auf next_action
+  secondary_rules:
+    - condition: "stage = QUALIFIED AND next_action.type = 'proposal'"
+      suggest_phase: 2
+      reason: "Übergang zu Angebotsphase → Phase 2 (Erwartungsklärung) fast abgeschlossen"
+
+    - condition: "stage = QUALIFIED AND next_action.type = 'meeting'"
+      suggest_phase: 1
+      reason: "Weiteres Meeting → noch in Themenprüfung"
+
+    - condition: "stage = DORMANT AND next_action.type IS NOT NULL"
+      suggest_phase: 0
+      reason: "Reaktivierung geplant → neues Projekt beginnt"
+
+  # Beispiel-Implementierung (Pseudocode)
+  pseudocode: |
+    function suggest_phase(lead):
+      stage = lead.stage
+
+      # Primär-Regel anwenden
+      rule = primary_rules.find(stage)
+      suggested_phase = rule.default_phase
+
+      # Override prüfen (falls vorhanden)
+      if rule.override and evaluate(rule.override.condition, lead):
+        suggested_phase = rule.override.then_phase
+
+      # Sekundär-Regeln prüfen
+      for secondary_rule in secondary_rules:
+        if evaluate(secondary_rule.condition, lead):
+          suggested_phase = secondary_rule.suggest_phase
+          break
+
+      return {
+        phase: suggested_phase,
+        reason: rule.reason,
+        is_auto_suggested: true
+      }
+
+# =============================================================================
+# CROSS-REFERENCES
+# =============================================================================
+
+cross_references:
+  to_customer_registry: "ebf_integration.customer_registry_ref → CUS-{CODE}"
+  to_projects: "projects[].id → CUS-{CODE}-PRJ-{NNN}"
+  to_interventions: "Via project → CUS-{CODE}-PRJ-{NNN}-INT-{NN}"
+  to_funders: "ebf_integration.funder_path → data/funders/{code}/"
+  specification: "Appendix BN REF-SUPERKEY"

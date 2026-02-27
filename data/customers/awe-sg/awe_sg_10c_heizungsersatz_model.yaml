@@ -1,0 +1,1056 @@
+# =============================================================================
+# AWE SG - 10C INTERVENTIONS-MODELL: HEIZUNGSERSATZ ST. GALLEN
+# =============================================================================
+# Verhaltensbasiertes Interventionsportfolio für Heizungsersatz-Förderung
+# Basierend auf CVA STANDARD (398 Faktoren) und BFE-Analogie
+# =============================================================================
+
+metadata:
+  model_id: "MOD-AWE-SG-HEIZ-001"
+  customer_id: "AWE-SG"
+  model_name: "10C Heizungsersatz St. Gallen"
+  version: "1.0"
+  created: "2026-02-02"
+  status: "ready_for_validation"
+
+  theoretical_basis:
+    - "Prospect Theory (Kahneman & Tversky 1979)"
+    - "Choice Architecture (Thaler & Sunstein 2008)"
+    - "Social Norms (Cialdini 2007)"
+    - "Default Effects (Johnson & Goldstein 2003)"
+    - "Present Bias (Laibson 1997)"
+
+# =============================================================================
+# EXECUTIVE SUMMARY
+# =============================================================================
+
+executive_summary:
+
+  core_insight: |
+    55% aller Heizungsersetzungen sind Notfälle mit 24-72h Entscheidungsfenster.
+    In dieser Situation entscheidet der INSTALLATEUR faktisch über erneuerbar/fossil.
+    Das Impulsprogramm (+30% Förderung) endet Ende 2026 - KRITISCHES ZEITFENSTER.
+
+  strategic_priorities:
+    - priority: 1
+      intervention: "Installateur-Multiplikatoren-Programm"
+      dimension: "WHO"
+      rationale: "Höchster Hebel bei Notfallersetzungen"
+      expected_impact: "+15-20% erneuerbare Entscheidungen"
+
+    - priority: 2
+      intervention: "Impulsprogramm Deadline Campaign"
+      dimension: "WHEN"
+      rationale: "Zeitdruck nutzen, Loss Aversion aktivieren"
+      expected_impact: "+25% Anträge in MFH/Industrie"
+
+    - priority: 3
+      intervention: "Förderportal Choice Architecture"
+      dimension: "AWARE"
+      rationale: "Reibung reduzieren, Defaults setzen"
+      expected_impact: "+10-15% Konversionsrate"
+
+  key_numbers:
+    heizungen_sg_total: 80000
+    fossile_heizungen: 48000
+    jaehrliche_ersetzungen: 4000
+    notfall_anteil: 0.55
+    impulsprogramm_deadline: "2026-12-31"
+
+# =============================================================================
+# 10C DIMENSION MAPPING
+# =============================================================================
+
+ebf_10c_mapping:
+
+  # -------------------------------------------------------------------------
+  # WHO: Wer sind die Zielgruppen?
+  # -------------------------------------------------------------------------
+  WHO:
+    code: "AAA"
+    question: "Wer hat Utility? Wer entscheidet?"
+
+    primary_segments:
+      - id: "SEG-EFH"
+        name: "EFH-Eigentümer"
+        share: 0.45
+        population: 36000
+        behavioral_profile:
+          lambda: 2.40
+          beta: 0.70
+          theta: 0.42
+          decision_mode: "deliberate"
+          key_barrier: "Investitionskosten"
+
+      - id: "SEG-MFH"
+        name: "MFH-Eigentümer/Verwaltungen"
+        share: 0.25
+        population: 20000
+        behavioral_profile:
+          lambda: 2.20
+          beta: 0.75
+          theta: 0.48
+          decision_mode: "committee"
+          key_barrier: "Komplexität, Abstimmung"
+        priority: "HIGH"  # Impulsprogramm-Fokus
+
+      - id: "SEG-IND"
+        name: "Industrie/Gewerbe"
+        share: 0.15
+        population: 12000
+        behavioral_profile:
+          lambda: 1.95
+          beta: 0.82
+          theta: 0.55
+          decision_mode: "rational"
+          key_barrier: "Betriebsunterbrechung"
+        priority: "HIGH"  # Impulsprogramm-Fokus
+
+      - id: "SEG-INST"
+        name: "Installateure (Multiplikatoren)"
+        share: 0.15
+        population: 250  # Firmen
+        behavioral_profile:
+          lambda: 1.80
+          beta: 0.88
+          theta: 0.65
+          decision_mode: "habitual"
+          key_barrier: "Gewohnheit, Zeitdruck"
+        priority: "CRITICAL"  # Entscheiden bei 55% aller Fälle
+
+    decision_influence_matrix:
+      notfall_ersetzung:
+        eigentümer: 0.20
+        installateur: 0.70
+        energieberater: 0.05
+        nachbar_freunde: 0.05
+      geplante_ersetzung:
+        eigentümer: 0.60
+        installateur: 0.20
+        energieberater: 0.15
+        nachbar_freunde: 0.05
+
+  # -------------------------------------------------------------------------
+  # WHAT: Was treibt die Entscheidung?
+  # -------------------------------------------------------------------------
+  WHAT:
+    code: "C"
+    question: "Was ist Utility? Welche Dimensionen?"
+
+    utility_dimensions:
+      u_F_financial:
+        weight: 0.40
+        components:
+          - "Betriebskosten-Ersparnis"
+          - "Förderung (Kanton + Bund)"
+          - "Impulsprogramm-Bonus (+30%)"
+          - "Wertsteigerung Immobilie"
+        current_value: 0.85
+
+      u_E_environmental:
+        weight: 0.15
+        components:
+          - "CO2-Reduktion"
+          - "Klimaschutz"
+          - "Ressourcenschonung"
+        current_value: 0.55
+
+      u_P_practical:
+        weight: 0.25
+        components:
+          - "Komfort (neue Heizung)"
+          - "Zuverlässigkeit"
+          - "Wartungsaufwand"
+          - "Unabhängigkeit (keine Öl-Lieferung)"
+        current_value: 0.70
+
+      u_S_social:
+        weight: 0.20
+        components:
+          - "Nachbarschaftseffekt"
+          - "Soziale Anerkennung"
+          - "Zukunftsfähigkeit"
+        current_value: 0.45
+
+    segment_utility_weights:
+      EFH:  { u_F: 0.45, u_E: 0.15, u_P: 0.25, u_S: 0.15 }
+      MFH:  { u_F: 0.50, u_E: 0.10, u_P: 0.30, u_S: 0.10 }
+      IND:  { u_F: 0.55, u_E: 0.10, u_P: 0.30, u_S: 0.05 }
+      INST: { u_F: 0.30, u_E: 0.05, u_P: 0.50, u_S: 0.15 }
+
+  # -------------------------------------------------------------------------
+  # HOW: Wie interagieren die Faktoren?
+  # -------------------------------------------------------------------------
+  HOW:
+    code: "B"
+    question: "Wie interagieren Dimensionen? Komplementarität?"
+
+    complementarity_matrix:
+      - pair: ["Förderung", "Deadline"]
+        gamma: 0.45
+        effect: "Urgency-Verstärkung"
+        mechanism: "Loss Aversion × Zeitdruck"
+
+      - pair: ["Installer", "Information"]
+        gamma: 0.55
+        effect: "Qualitätssteigerung"
+        mechanism: "Geschulter Berater × Informierter Kunde"
+
+      - pair: ["Nachbar", "Testimonial"]
+        gamma: 0.35
+        effect: "Social Proof"
+        mechanism: "Sichtbarkeit × Erzählung"
+
+      - pair: ["Förderung", "Vereinfachung"]
+        gamma: 0.40
+        effect: "Reibungsreduktion"
+        mechanism: "Attraktivität × Zugänglichkeit"
+
+      - pair: ["Default", "Installer"]
+        gamma: 0.60
+        effect: "Automatisierung"
+        mechanism: "Erneuerbar als Standard beim Installateur"
+
+    crowding_effects:
+      - pair: ["Finanzielle Anreize", "Intrinsische Motivation"]
+        gamma: -0.25
+        risk: "Crowding Out"
+        mitigation: "Framing als Anerkennung, nicht als Bestechung"
+
+  # -------------------------------------------------------------------------
+  # WHEN: Wann ist der richtige Zeitpunkt?
+  # -------------------------------------------------------------------------
+  WHEN:
+    code: "V"
+    question: "Wann zählt Kontext? Kritische Momente?"
+
+    critical_moments:
+      - id: "MOM-01"
+        name: "Heizungsdefekt (Notfall)"
+        frequency: 0.55  # 55% aller Ersetzungen
+        time_window: "24-72h"
+        decision_quality: "low"
+        context_multiplier: 1.9
+        intervention_priority: "CRITICAL"
+        interventions:
+          - "Installateur-Schulung"
+          - "Express-Förderantrag"
+          - "Renewable-Default"
+
+      - id: "MOM-02"
+        name: "Impulsprogramm-Ende 2026"
+        frequency: "one-time"
+        time_window: "Monate"
+        decision_quality: "high"
+        context_multiplier: 1.5
+        intervention_priority: "HIGH"
+        interventions:
+          - "Deadline-Kommunikation"
+          - "Countdown-Kampagne"
+          - "Scarcity-Framing"
+
+      - id: "MOM-03"
+        name: "Geplante Renovation"
+        frequency: 0.30
+        time_window: "Monate"
+        decision_quality: "high"
+        context_multiplier: 1.2
+        intervention_priority: "MEDIUM"
+        interventions:
+          - "Paketangebote"
+          - "GEAK-Beratung"
+          - "Finanzierungslösungen"
+
+      - id: "MOM-04"
+        name: "Nachbar hat gewechselt"
+        frequency: "varies"
+        time_window: "Wochen"
+        decision_quality: "medium"
+        context_multiplier: 1.3
+        intervention_priority: "MEDIUM"
+        interventions:
+          - "Nachbarschaftskarte"
+          - "Testimonials"
+          - "Informationsveranstaltungen"
+
+  # -------------------------------------------------------------------------
+  # WHERE: Welcher Kontext gilt?
+  # -------------------------------------------------------------------------
+  WHERE:
+    code: "BBB"
+    question: "Woher die Zahlen? Welcher Kontext?"
+
+    context_dimensions:
+      psi_I_institutional:
+        value: 0.80
+        description: "Starke Förderstruktur, klare Regelungen"
+        components:
+          - "Kantonsförderung aktiv"
+          - "Bundesförderung via Impulsprogramm"
+          - "MuKEn-Vollzug"
+
+      psi_T_temporal:
+        value: 0.75
+        description: "Kritisches Zeitfenster Impulsprogramm"
+        components:
+          - "Deadline Ende 2026"
+          - "Saisonale Effekte (Heizperiode)"
+
+      psi_E_economic:
+        value: 0.70
+        description: "Günstige wirtschaftliche Rahmenbedingungen"
+        components:
+          - "Hohe Förderquoten"
+          - "Steigende Energiepreise"
+          - "Gute Finanzierungsmöglichkeiten"
+
+      psi_K_cultural:
+        value: 0.65
+        description: "Ostschweizer Konservativismus"
+        components:
+          - "Traditionelle Werte"
+          - "Skeptisch gegenüber Neuem"
+          - "Aber: Wachsendes Umweltbewusstsein"
+
+      psi_C_cognitive:
+        value: 0.60
+        description: "Komplexität als Barriere"
+        components:
+          - "Informationsüberlastung"
+          - "Technische Unsicherheit"
+          - "Entscheidungsmüdigkeit"
+
+      psi_M_material:
+        value: 0.60
+        description: "Technologie verfügbar"
+        components:
+          - "Wärmepumpen etabliert"
+          - "Installateur-Netzwerk vorhanden"
+
+      psi_S_social:
+        value: 0.55
+        description: "Moderate soziale Dynamik"
+        components:
+          - "Nachbarschaftseffekte beginnen"
+          - "Noch nicht Mainstream"
+
+      psi_F_physical:
+        value: 0.55
+        description: "Gebäudebestand gemischt"
+        components:
+          - "Altbauten dominieren"
+          - "Sanierungsbedarf hoch"
+
+  # -------------------------------------------------------------------------
+  # AWARE: Wie bewusst ist die Zielgruppe?
+  # -------------------------------------------------------------------------
+  AWARE:
+    code: "AU"
+    question: "Wie bewusst? Awareness-Level?"
+
+    awareness_levels:
+      foerderung_existiert:
+        level: 0.70
+        description: "Meisten wissen, dass es Förderung gibt"
+
+      foerderung_details:
+        level: 0.35
+        description: "Wenige kennen konkrete Beträge"
+
+      impulsprogramm_deadline:
+        level: 0.25
+        description: "Deadline weitgehend unbekannt"
+        gap: "KRITISCH - Haupthebel für Kommunikation"
+
+      installer_rolle:
+        level: 0.15
+        description: "Kaum bewusst, dass Installer entscheiden"
+
+    touchpoint_effectiveness:
+      - touchpoint: "Installateur"
+        reach: 0.90
+        trust: 0.85
+        conversion: 0.60
+        timing: "Kritisch bei Notfall"
+
+      - touchpoint: "Förderportal"
+        reach: 0.70
+        trust: 0.70
+        conversion: 0.30
+        timing: "Geplante Entscheidungen"
+
+      - touchpoint: "Energieagentur"
+        reach: 0.30
+        trust: 0.70
+        conversion: 0.40
+        timing: "Beratungsphase"
+
+      - touchpoint: "Gemeinde"
+        reach: 0.40
+        trust: 0.60
+        conversion: 0.20
+        timing: "Allgemeine Information"
+
+  # -------------------------------------------------------------------------
+  # READY: Handlungsbereitschaft
+  # -------------------------------------------------------------------------
+  READY:
+    code: "AV"
+    question: "Handlungsbereit? Willingness?"
+
+    willingness_by_segment:
+      EFH:
+        w_base: 0.38
+        barriers:
+          - "Investitionskosten (CHF 25-50k)"
+          - "Unsicherheit Technologie"
+          - "Aufwand Antragstellung"
+        enablers:
+          - "Förderung verfügbar"
+          - "Betriebskosten-Ersparnis"
+          - "Wunsch nach Unabhängigkeit"
+
+      MFH:
+        w_base: 0.32
+        barriers:
+          - "Abstimmung Eigentümergemeinschaft"
+          - "Hohe Investition"
+          - "Komplexität Planung"
+        enablers:
+          - "Impulsprogramm-Bonus"
+          - "Wertsteigerung"
+          - "Mieterzufriedenheit"
+
+      IND:
+        w_base: 0.45
+        barriers:
+          - "Betriebsunterbrechung"
+          - "ROI-Unsicherheit"
+          - "Entscheidungsprozesse"
+        enablers:
+          - "Energiekosten-Reduktion"
+          - "Nachhaltigkeitsziele"
+          - "Impulsprogramm-Förderung"
+
+      INST:
+        w_base: 0.55
+        barriers:
+          - "Gewohnheit (fossile Systeme)"
+          - "Schulungsaufwand"
+          - "Zeitdruck im Alltag"
+        enablers:
+          - "Wärmepumpen profitabler"
+          - "Marktnachfrage steigt"
+          - "Schulungsangebote"
+
+  # -------------------------------------------------------------------------
+  # STAGE: Customer Journey Phase
+  # -------------------------------------------------------------------------
+  STAGE:
+    code: "AW"
+    question: "Wo in der Journey? Phase?"
+
+    journey_stages:
+      awareness:
+        share: 0.35
+        description: "Weiss, dass Heizung irgendwann ersetzt werden muss"
+        intervention_focus: "Information, Sensibilisierung"
+
+      consideration:
+        share: 0.25
+        description: "Erwägt Optionen, informiert sich"
+        intervention_focus: "Vergleiche, Beratung, Testimonials"
+
+      decision:
+        share: 0.20
+        description: "Hat sich entschieden, plant Umsetzung"
+        intervention_focus: "Förderantrag, Installateur-Wahl"
+        drop_off_rate: 0.40  # Kritisch!
+
+      action:
+        share: 0.15
+        description: "Setzt um, baut um"
+        intervention_focus: "Prozess-Support, Dokumentation"
+
+      loyalty:
+        share: 0.05
+        description: "Hat gewechselt, empfiehlt weiter"
+        intervention_focus: "Testimonial-Gewinnung, Referenzen"
+
+    critical_transition: "Consideration → Decision"
+    transition_barrier: "Komplexität, Aufwand, Unsicherheit"
+
+  # -------------------------------------------------------------------------
+  # HIERARCHY: Entscheidungsebenen
+  # -------------------------------------------------------------------------
+  HIERARCHY:
+    code: "HI"
+    question: "Wie stratifizieren Entscheidungen? Levels?"
+
+    decision_levels:
+      L0_automatic:
+        share: 0.10
+        description: "Sofortige Entscheidung ohne Nachdenken"
+        typical_situation: "Notfall, Zeitdruck extrem"
+        implication: "Installer-Default entscheidend"
+
+      L1_habitual:
+        share: 0.20
+        description: "Gewohnheitsbasiert: 'wie immer'"
+        typical_situation: "Notfall, Installateur-Empfehlung"
+        implication: "Installer-Schulung kritisch"
+
+      L2_deliberate:
+        share: 0.50
+        description: "Bewusstes Abwägen der Optionen"
+        typical_situation: "Geplanter Ersatz"
+        implication: "Information + Vereinfachung"
+
+      L3_strategic:
+        share: 0.20
+        description: "Langfristige Planung, Gesamtkonzept"
+        typical_situation: "Grosse Renovation, MFH"
+        implication: "Beratung + Finanzierung"
+
+    installer_influence_by_level:
+      L0: 0.90  # Fast vollständig
+      L1: 0.75
+      L2: 0.30
+      L3: 0.15
+
+  # -------------------------------------------------------------------------
+  # EIT: Emergent Intervention Targeting
+  # -------------------------------------------------------------------------
+  EIT:
+    code: "IE"
+    question: "Wie emergieren Interventionen?"
+
+    intervention_vector:
+      # 9D Vektor für optimale Intervention
+      I_WHO: 0.85      # Installer-Fokus
+      I_WHAT_F: 0.70   # Finanzielle Argumente
+      I_WHAT_S: 0.45   # Soziale Argumente
+      I_HOW: 0.65      # Komplementaritäten nutzen
+      I_WHEN: 0.90     # Timing kritisch (Deadline)
+      I_WHERE: 0.60    # Kontext nutzen
+      I_AWARE: 0.75    # Awareness erhöhen
+      I_READY: 0.65    # Barrieren abbauen
+      I_STAGE: 0.70    # Journey optimieren
+
+# =============================================================================
+# INTERVENTIONS-PORTFOLIO
+# =============================================================================
+
+intervention_portfolio:
+
+  # -------------------------------------------------------------------------
+  # INTERVENTION 1: Installateur-Multiplikatoren-Programm (WHO)
+  # -------------------------------------------------------------------------
+  - id: "INT-AWE-001"
+    name: "Installateur-Multiplikatoren-Programm"
+    priority: 1
+    status: "design"
+
+    target_dimension: "WHO"
+    target_segment: ["INST"]
+    indirect_impact: ["EFH", "MFH", "IND"]
+
+    mechanism:
+      primary: "Default Setting"
+      secondary: ["Vereinfachung", "Incentives", "Social Proof"]
+
+    behavioral_levers:
+      - lever: "Renewable als Default"
+        description: "Installateure empfehlen standardmässig Wärmepumpe"
+        expected_shift: "+0.25"
+
+      - lever: "Vereinfachter Förderantrag"
+        description: "Installer kann Antrag direkt stellen"
+        expected_shift: "+0.15"
+
+      - lever: "Peer Recognition"
+        description: "Zertifizierung als 'Klimapartner'"
+        expected_shift: "+0.10"
+
+    implementation:
+      components:
+        - "Schulungsprogramm (1 Tag)"
+        - "Toolkit mit Förder-Infos"
+        - "Vereinfachter Antragsprozess"
+        - "Zertifizierung + Badge"
+        - "Bonus-System (optional)"
+
+      timeline:
+        q1_2026: "Konzept + Pilotgruppe (10 Firmen)"
+        q2_2026: "Rollout (50 Firmen)"
+        q3_2026: "Vollständig (100+ Firmen)"
+
+      budget_estimate: "CHF 80-120k"
+
+    expected_impact:
+      reach: 250  # Firmen
+      influenced_decisions: 2200  # pro Jahr
+      conversion_uplift: 0.20
+      additional_renewable: 440  # pro Jahr
+
+    kpis:
+      - metric: "Teilnehmende Firmen"
+        target: 100
+        measurement: "Registry"
+      - metric: "Erneuerbar-Quote Teilnehmer"
+        target: 0.75
+        measurement: "Förderanträge"
+      - metric: "Kundenzufriedenheit"
+        target: 0.85
+        measurement: "Survey"
+
+  # -------------------------------------------------------------------------
+  # INTERVENTION 2: Impulsprogramm Deadline Campaign (WHEN)
+  # -------------------------------------------------------------------------
+  - id: "INT-AWE-002"
+    name: "Impulsprogramm Deadline Campaign"
+    priority: 2
+    status: "design"
+
+    target_dimension: "WHEN"
+    target_segment: ["MFH", "IND"]
+
+    mechanism:
+      primary: "Deadline Framing"
+      secondary: ["Loss Aversion", "Scarcity", "Countdown"]
+
+    behavioral_levers:
+      - lever: "Loss Framing"
+        description: "'CHF X entgeht Ihnen' statt 'CHF X können Sie sparen'"
+        expected_shift: "+0.15"
+
+      - lever: "Countdown"
+        description: "Visuelle Deadline-Kommunikation"
+        expected_shift: "+0.10"
+
+      - lever: "Scarcity"
+        description: "'Nur noch X Monate' - Verknappung"
+        expected_shift: "+0.08"
+
+    implementation:
+      components:
+        - "Kampagnenkonzept mit Loss-Framing"
+        - "Multi-Channel: Print, Digital, Events"
+        - "Countdown-Widget auf Förderportal"
+        - "Direktmailing an MFH/Industrie"
+        - "Medienarbeit"
+
+      timeline:
+        q1_2026: "Konzept + Kreation"
+        q2_2026: "Launch Hauptkampagne"
+        q3_2026: "Intensivierung"
+        q4_2026: "Final Push"
+
+      budget_estimate: "CHF 50-80k"
+
+    expected_impact:
+      reach: 15000  # Zielgruppe
+      awareness_uplift: 0.40
+      additional_applications: 500
+
+    messaging:
+      headline: "Jetzt wechseln - bevor die Förderung sinkt!"
+      subline: "Das Impulsprogramm endet am 31.12.2026"
+      loss_frame: "CHF [BETRAG] weniger Förderung ab 2027"
+      cta: "Jetzt Förderung sichern"
+
+  # -------------------------------------------------------------------------
+  # INTERVENTION 3: Förderportal Choice Architecture (AWARE)
+  # -------------------------------------------------------------------------
+  - id: "INT-AWE-003"
+    name: "Förderportal Choice Architecture"
+    priority: 3
+    status: "design"
+
+    target_dimension: "AWARE"
+    target_segment: ["EFH", "MFH", "IND"]
+
+    mechanism:
+      primary: "Choice Architecture"
+      secondary: ["Smart Defaults", "Simplification", "Progress Indicators"]
+
+    behavioral_levers:
+      - lever: "Smart Defaults"
+        description: "Wärmepumpe als vorausgewählte Option"
+        expected_shift: "+0.12"
+
+      - lever: "Vereinfachtes Formular"
+        description: "Reduktion von 40 auf 15 Felder"
+        expected_shift: "+0.10"
+
+      - lever: "Progress Indicator"
+        description: "Fortschrittsanzeige im Antragsprozess"
+        expected_shift: "+0.05"
+
+      - lever: "Förderbetrag-Rechner"
+        description: "Sofortige Anzeige des erwarteten Betrags"
+        expected_shift: "+0.08"
+
+    implementation:
+      components:
+        - "UX-Analyse aktuelles Portal"
+        - "Redesign mit Nudges"
+        - "A/B Testing"
+        - "Rollout"
+
+      timeline:
+        q1_2026: "UX-Analyse + Konzept"
+        q2_2026: "Prototyp + Testing"
+        q3_2026: "Rollout"
+
+      budget_estimate: "CHF 30-50k"
+
+    expected_impact:
+      completion_rate_before: 0.45
+      completion_rate_after: 0.65
+      additional_completed: 800  # pro Jahr
+
+  # -------------------------------------------------------------------------
+  # INTERVENTION 4: Social Proof Nachbarschaftskarte (WHAT.S)
+  # -------------------------------------------------------------------------
+  - id: "INT-AWE-004"
+    name: "Social Proof Nachbarschaftskarte"
+    priority: 4
+    status: "concept"
+
+    target_dimension: "WHAT"
+    utility_sub: "u_S"
+    target_segment: ["EFH"]
+
+    mechanism:
+      primary: "Social Norms"
+      secondary: ["Visibility", "Proximity", "Testimonials"]
+
+    behavioral_levers:
+      - lever: "Sichtbarkeit"
+        description: "Karte zeigt Wärmepumpen in der Nachbarschaft"
+        expected_shift: "+0.08"
+
+      - lever: "Testimonials"
+        description: "Nachbar-Erfahrungsberichte"
+        expected_shift: "+0.06"
+
+    implementation:
+      components:
+        - "Interaktive Karte auf Website"
+        - "Opt-in für Testimonials"
+        - "Integration Förderportal"
+
+      timeline:
+        q2_2026: "Konzept + Datenintegration"
+        q3_2026: "Launch"
+
+      budget_estimate: "CHF 20-30k"
+
+  # -------------------------------------------------------------------------
+  # INTERVENTION 5: Express-Track für Notfälle (WHEN + AWARE)
+  # -------------------------------------------------------------------------
+  - id: "INT-AWE-005"
+    name: "Express-Track Notfall-Förderantrag"
+    priority: 5
+    status: "concept"
+
+    target_dimension: "WHEN"
+    target_segment: ["EFH", "MFH"]
+
+    mechanism:
+      primary: "Friction Reduction"
+      secondary: ["Timing", "Simplification"]
+
+    problem: |
+      Bei Notfallersetzungen (55% aller Fälle) ist keine Zeit für
+      regulären Förderantrag. Ergebnis: Meist fossiler Ersatz.
+
+    solution: |
+      Express-Track: Vereinfachter Antrag, nachträgliche Dokumentation,
+      24h-Zusicherung telefonisch/online.
+
+    implementation:
+      components:
+        - "Hotline für Notfälle"
+        - "Vereinfachtes Online-Formular"
+        - "Nachträgliche Dokumentation (30 Tage)"
+        - "Installateur kann stellvertretend beantragen"
+
+      budget_estimate: "CHF 15-25k"
+
+# =============================================================================
+# SEGMENT-SPEZIFISCHE EMPFEHLUNGEN
+# =============================================================================
+
+segment_recommendations:
+
+  EFH:
+    primary_intervention: "INT-AWE-001"  # Über Installateur
+    secondary_interventions:
+      - "INT-AWE-003"  # Portal
+      - "INT-AWE-004"  # Nachbarschaftskarte
+    key_message: "Ihre Nachbarn machen mit - sichern Sie sich die Förderung"
+    channel_priority: ["Installateur", "Gemeinde", "Digital"]
+
+  MFH:
+    primary_intervention: "INT-AWE-002"  # Deadline Campaign
+    secondary_interventions:
+      - "INT-AWE-001"  # Installateur
+      - "INT-AWE-003"  # Portal
+    key_message: "Impulsprogramm endet - jetzt +30% Förderung sichern"
+    channel_priority: ["Direktmailing", "Verwaltungen", "Events"]
+
+  IND:
+    primary_intervention: "INT-AWE-002"  # Deadline Campaign
+    secondary_interventions:
+      - "INT-AWE-001"  # Installateur
+    key_message: "Energiekosten senken + Förderung maximieren"
+    channel_priority: ["Direktmailing", "Branchenverbände", "IHK"]
+
+  INST:
+    primary_intervention: "INT-AWE-001"  # Multiplikatoren-Programm
+    key_message: "Mehr verdienen mit erneuerbaren Systemen"
+    channel_priority: ["Branchenverband", "Schulungen", "Persönlich"]
+
+# =============================================================================
+# IMPLEMENTIERUNGS-ROADMAP
+# =============================================================================
+
+implementation_roadmap:
+
+  phase_1:
+    name: "Quick Wins & Piloting"
+    timeframe: "Q1 2026"
+    focus: "Schnelle Wirkung, Lerneffekte"
+
+    actions:
+      - intervention: "INT-AWE-001"
+        action: "Pilot-Gruppe Installateure (10 Firmen)"
+        budget: "CHF 20k"
+
+      - intervention: "INT-AWE-002"
+        action: "Kampagnenkonzept + erste Materialien"
+        budget: "CHF 15k"
+
+      - intervention: "INT-AWE-003"
+        action: "UX-Analyse Förderportal"
+        budget: "CHF 10k"
+
+    expected_outcome:
+      - "Erste Installateur-Erfolge dokumentiert"
+      - "Kampagne bereit für Launch"
+      - "Portal-Verbesserungen identifiziert"
+
+  phase_2:
+    name: "Kampagnen-Launch & Rollout"
+    timeframe: "Q2 2026"
+    focus: "Reichweite, Skalierung"
+
+    actions:
+      - intervention: "INT-AWE-001"
+        action: "Rollout auf 50 Firmen"
+        budget: "CHF 40k"
+
+      - intervention: "INT-AWE-002"
+        action: "Launch Hauptkampagne"
+        budget: "CHF 30k"
+
+      - intervention: "INT-AWE-003"
+        action: "Portal-Redesign + A/B Test"
+        budget: "CHF 25k"
+
+    expected_outcome:
+      - "50% Ziel-Installateure onboarded"
+      - "Awareness Impulsprogramm +40%"
+      - "Konversionsrate Portal +15%"
+
+  phase_3:
+    name: "Intensivierung"
+    timeframe: "Q3 2026"
+    focus: "Maximale Wirkung vor Deadline"
+
+    actions:
+      - intervention: "INT-AWE-001"
+        action: "100+ Firmen, Qualitätsmonitoring"
+        budget: "CHF 30k"
+
+      - intervention: "INT-AWE-002"
+        action: "Kampagnen-Verstärkung"
+        budget: "CHF 20k"
+
+      - intervention: "INT-AWE-004"
+        action: "Launch Nachbarschaftskarte"
+        budget: "CHF 20k"
+
+  phase_4:
+    name: "Final Push"
+    timeframe: "Q4 2026"
+    focus: "Letzte Chance Impulsprogramm"
+
+    actions:
+      - intervention: "INT-AWE-002"
+        action: "Countdown-Kampagne, PR-Push"
+        budget: "CHF 15k"
+
+      - intervention: "INT-AWE-005"
+        action: "Express-Track für Spätentscheider"
+        budget: "CHF 15k"
+
+# =============================================================================
+# BUDGET-ÜBERSICHT
+# =============================================================================
+
+budget_summary:
+
+  total_budget_range: "CHF 195-305k"
+
+  by_intervention:
+    INT-AWE-001: "CHF 80-120k"
+    INT-AWE-002: "CHF 50-80k"
+    INT-AWE-003: "CHF 30-50k"
+    INT-AWE-004: "CHF 20-30k"
+    INT-AWE-005: "CHF 15-25k"
+
+  by_quarter:
+    Q1_2026: "CHF 45k"
+    Q2_2026: "CHF 95k"
+    Q3_2026: "CHF 70k"
+    Q4_2026: "CHF 30k"
+
+  roi_estimate:
+    additional_renewable_heizungen: 1500  # pro Jahr
+    co2_reduction_tonnes: 4500  # pro Jahr
+    foerdergelder_mobilisiert: "CHF 15-20 Mio"
+    roi_factor: "50-100x"
+
+# =============================================================================
+# WIRKUNGSMESSUNG
+# =============================================================================
+
+measurement_framework:
+
+  primary_kpis:
+    - metric: "Erneuerbare-Quote bei Heizungsersatz"
+      baseline: 0.40
+      target: 0.60
+      measurement: "Förderdaten"
+
+    - metric: "Förderanträge MFH/Industrie"
+      baseline: 200
+      target: 500
+      measurement: "Antragsstatistik"
+
+    - metric: "Installateur-Empfehlungsrate erneuerbar"
+      baseline: 0.45
+      target: 0.75
+      measurement: "Survey"
+
+  secondary_kpis:
+    - metric: "Awareness Impulsprogramm-Deadline"
+      baseline: 0.25
+      target: 0.70
+      measurement: "Survey"
+
+    - metric: "Portal-Konversionsrate"
+      baseline: 0.45
+      target: 0.65
+      measurement: "Analytics"
+
+    - metric: "Kundenzufriedenheit Antragsprozess"
+      baseline: 3.2
+      target: 4.0
+      measurement: "Survey (1-5)"
+
+  evaluation:
+    frequency: "Quartalsweise"
+    method: "Pre-Post Vergleich, A/B Testing wo möglich"
+    responsibility: "Energieagentur St. Gallen"
+
+# =============================================================================
+# RISIKEN & MITIGATIONEN
+# =============================================================================
+
+risks:
+
+  - risk: "Installateur-Widerstand"
+    probability: "medium"
+    impact: "high"
+    mitigation: "Attraktive Incentives, Peer Recognition"
+
+  - risk: "Impulsprogramm-Verlängerung (macht Deadline ungültig)"
+    probability: "low"
+    impact: "medium"
+    mitigation: "Kampagne schnell starten, Alternative Benefits betonen"
+
+  - risk: "Portal-Änderungen technisch schwierig"
+    probability: "medium"
+    impact: "medium"
+    mitigation: "Frühe technische Abklärung, MVP-Ansatz"
+
+  - risk: "Konservativismus Ostschweiz"
+    probability: "medium"
+    impact: "medium"
+    mitigation: "Lokale Testimonials, Peer Effects betonen"
+
+  - risk: "Budget-Kürzungen"
+    probability: "low"
+    impact: "high"
+    mitigation: "Priorisierung auf INT-001 und INT-002"
+
+# =============================================================================
+# SYNERGIEN
+# =============================================================================
+
+synergies:
+
+  bfe:
+    description: "Learnings aus nationalen BFE-Projekten"
+    transferable:
+      - "Segmentierung EFH/MFH/STWE"
+      - "Installateur-Hebel Erkenntnisse"
+      - "Notfall-vs-Geplant Typologie"
+      - "λ, β, θ Parameter-Kalibrierung"
+
+  awel_zh:
+    description: "Paralleler Lead in Pipeline (LEAD-034)"
+    potential: "Gemeinsame Skalierung, Erfahrungsaustausch"
+
+  awe001:
+    description: "Aufbau auf Erkenntnissen Energiekonzept 2021-2030"
+    learnings:
+      - "Erfolgsfaktoren identifiziert"
+      - "Barrieren bekannt"
+      - "Kontakte etabliert"
+
+# =============================================================================
+# VALIDATION
+# =============================================================================
+
+_validation:
+  model_type: "10C Intervention Model"
+  completeness:
+    10c_dimensions: 10
+    interventions: 5
+    segments: 4
+    timeline: "4 Quartale"
+  data_quality: "medium-high"
+  sources:
+    - "CVA STANDARD AWE-SG (398 Faktoren)"
+    - "BFE-Projekt Analogie"
+    - "LLMMC Priors"
+    - "Web-Recherche sg.ch, energieagentur-sg.ch"
+  gaps:
+    - "Exakte Förderzahlen fehlen"
+    - "Historische Konversionsraten fehlen"
+    - "Installateur-Befragung ausstehend"
+  next_steps:
+    - "Validierung mit Energieagentur SG"
+    - "Dokumente AWE001/AWE002 integrieren"
+    - "Pilotierung planen"
+
+_changelog:
+  - version: "1.0"
+    date: "2026-02-02"
+    author: "Claude"
+    changes: "Initiale Erstellung 10C Interventions-Modell"

@@ -1,0 +1,198 @@
+# =============================================================================
+# CUSTOMER REGISTRY
+# =============================================================================
+# Single Source of Truth for all EBF customers with CUS- superkeys
+#
+# Superkey Format: CUS-{CODE}
+# Reference: Appendix BN REF-SUPERKEY
+#
+# Version: 1.0.0
+# Created: 2026-01-26
+# =============================================================================
+
+metadata:
+  version: "1.0.0"
+  last_updated: "2026-01-26"
+  superkey_prefix: "CUS-"
+  description: "Central registry of all FehrAdvice customers with unified superkeys"
+
+# =============================================================================
+# CUSTOMERS
+# =============================================================================
+
+customers:
+
+  # ---------------------------------------------------------------------------
+  # STRATEGIC CUSTOMERS (data/customers/)
+  # Full strategic profiles with financial data and models
+  # ---------------------------------------------------------------------------
+
+  - id: CUS-ALPLA
+    code: ALPLA
+    name: "ALPLA Werke Alwin Lehner GmbH & Co. KG"
+    short_name: "ALPLA"
+    type: strategic
+    industry: packaging
+    country: AT
+    status: active
+    profile_path: "data/customers/alpla/alpla_profile.yaml"
+    context_path: null
+    projects: []
+    created: "2026-01-15"
+    notes: "Packaging manufacturer, family-owned, 46 countries"
+
+  - id: CUS-PORR
+    code: PORR
+    name: "PORR AG"
+    short_name: "PORR"
+    type: strategic
+    industry: construction
+    country: AT
+    status: active
+    profile_path: "data/customers/porr/porr_profile.yaml"
+    context_path: null
+    projects: []
+    created: "2026-01-15"
+    notes: "Construction & engineering, publicly listed (ATX)"
+
+  - id: CUS-LINDT
+    code: LINDT
+    name: "Lindt & Sprüngli AG"
+    short_name: "Lindt"
+    type: strategic
+    industry: fmcg
+    country: CH
+    status: active
+    profile_path: "data/customers/lindt-copacking/lindt_copacking_profile.yaml"
+    context_path: null
+    projects: []
+    created: "2026-01-15"
+    notes: "Co-Packing project focus"
+
+  - id: CUS-LUKB
+    code: LUKB
+    name: "Luzerner Kantonalbank"
+    short_name: "LUKB"
+    type: strategic
+    industry: finance
+    country: CH
+    status: active
+    profile_path: "data/customers/lukb/lukb_assumptions.yaml"
+    context_path: "data/dr-datareq/sources/clients/lukb/"
+    projects: []
+    created: "2026-01-15"
+    notes: "Cantonal bank, retail & private banking focus"
+
+  # ---------------------------------------------------------------------------
+  # CONTEXT CUSTOMERS (data/dr-datareq/sources/clients/)
+  # BCM2 context data, MIKRO-level factors
+  # ---------------------------------------------------------------------------
+
+  - id: CUS-UBS
+    code: UBS
+    name: "UBS Group AG"
+    short_name: "UBS"
+    type: context
+    industry: finance
+    country: CH
+    status: active
+    profile_path: null
+    context_path: "data/dr-datareq/sources/clients/ubs/"
+    projects: []
+    created: "2026-01-26"
+    notes: "161 MIKRO factors (External 75, Internal 50, Theory 36)"
+
+  - id: CUS-BFE
+    code: BFE
+    name: "Bundesamt für Energie"
+    short_name: "BFE"
+    type: context
+    industry: public_sector
+    country: CH
+    status: active
+    profile_path: null
+    context_path: "data/dr-datareq/sources/clients/bfe/"
+    projects: []
+    created: "2026-01-26"
+    notes: "Energy policy, heating replacement program"
+
+  # ---------------------------------------------------------------------------
+  # PROSPECT CUSTOMERS
+  # Potential customers with initial context vectors
+  # ---------------------------------------------------------------------------
+
+  - id: CUS-PHILORO
+    code: PHILORO
+    name: "philoro Holding GmbH"
+    short_name: "philoro"
+    type: prospect
+    industry: precious_metals
+    country: AT
+    status: prospect
+    profile_path: "data/customers/philoro/philoro_profile.yaml"
+    context_path: "data/customers/philoro/"
+    projects: []
+    created: "2026-01-27"
+    notes: |
+      Edelmetallhändler DACH-Raum, 17 Filialen (AT/DE/CH/LI/HK/USA).
+      Hauptsitz Korneuburg, eigenes Goldwerk (60 Mio. EUR).
+      ~300 Mitarbeiter, ~2 Mrd. EUR Umsatz (2021).
+      Strategie-Modell: MOD-PSM-001 (Antifragile Gold Business).
+      Session: EBF-S-2026-01-27-ORG-002.
+
+# =============================================================================
+# SCHEMA VALIDATION
+# =============================================================================
+
+schema:
+  customer:
+    required:
+      - id          # CUS-{CODE} superkey
+      - code        # Short code (2-6 chars)
+      - name        # Full legal name
+      - short_name  # Display name
+      - type        # strategic | context | prospect
+      - industry    # Industry category
+      - country     # ISO 2-letter code
+      - status      # active | inactive | prospect
+    optional:
+      - profile_path   # Path to strategic profile YAML
+      - context_path   # Path to BCM2 context data
+      - projects       # List of CUS-{CODE}-PRJ-{NNN} references
+      - created        # Creation date
+      - notes          # Free text notes
+
+# =============================================================================
+# CROSS-REFERENCES
+# =============================================================================
+
+cross_references:
+  to_projects: "Project superkeys embed customer: CUS-{CODE}-PRJ-{NNN}"
+  to_interventions: "Intervention superkeys embed project: CUS-{CODE}-PRJ-{NNN}-INT-{NN}"
+  to_sessions: "Sessions reference customer via customer_ref attribute"
+  specification: "Appendix BN REF-SUPERKEY"
+
+# =============================================================================
+# STATISTICS
+# =============================================================================
+
+statistics:
+  total_customers: 7
+  by_type:
+    strategic: 4
+    context: 2
+    prospect: 1
+  by_country:
+    AT: 3
+    CH: 4
+  by_industry:
+    finance: 2
+    packaging: 1
+    construction: 1
+    fmcg: 1
+    public_sector: 1
+    precious_metals: 1
+  by_status:
+    active: 6
+    inactive: 0
+    prospect: 1

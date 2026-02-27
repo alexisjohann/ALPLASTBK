@@ -1,0 +1,1349 @@
+# ALPLA Plant Categorization: Vollständiges Messkonzept
+# Version: 1.0
+# Date: 2026-01-19
+# Purpose: Integration aller Dimensionen mit Messvorschriften
+#
+# Struktur:
+# - 8 Hauptdimensionen (S, L, O, P, I, M, K, T, R)
+# - 45+ Variablen
+# - Jede Variable mit: Definition, Messmethode, Quelle, Frequenz, Skalierung
+
+metadata:
+  version: "1.0"
+  created: "2026-01-19"
+  framework_name: "ALPLA Plant Categorization Framework (APCF)"
+  total_dimensions: 9
+  total_variables: 47
+  measurement_levels:
+    L1_existing: "Bereits vorhanden (LLMMC/öffentlich)"
+    L2_request: "Von ALPLA anzufordern"
+    L3_collect: "Neu zu erheben (Survey/Interview)"
+    L4_derive: "Aus anderen Variablen abzuleiten"
+
+# =============================================================================
+# ÜBERSICHT: 9 DIMENSIONEN
+# =============================================================================
+
+dimensions_overview:
+  S_structural:
+    name: "Strukturelle Faktoren"
+    code: "S"
+    variables: 6
+    status: "L1_existing"
+    description: "Physische und organisatorische Struktur des Werks"
+
+  L_labor_market:
+    name: "Arbeitsmarkt-Faktoren"
+    code: "L"
+    variables: 5
+    status: "L1_existing"
+    description: "Lokaler Arbeitsmarkt und Wettbewerbsumfeld"
+
+  O_organizational:
+    name: "Organisatorische Faktoren"
+    code: "O"
+    variables: 5
+    status: "L1_existing"
+    description: "Betriebliche Organisation und Kundenbeziehung"
+
+  P_performance:
+    name: "Performance-Faktoren"
+    code: "P"
+    variables: 6
+    status: "mixed"
+    description: "Churn und operative Leistungskennzahlen"
+
+  I_intervention_fit:
+    name: "Interventions-Fit"
+    code: "I"
+    variables: 5
+    status: "L4_derive"
+    description: "Eignung für verschiedene Interventionstypen"
+
+  M_management:
+    name: "Management/Leadership"
+    code: "M"
+    variables: 5
+    status: "L2_request"
+    description: "Führungsstruktur und -qualität"
+
+  K_culture:
+    name: "Kultur/Soft Factors"
+    code: "K"
+    variables: 5
+    status: "L3_collect"
+    description: "Arbeitsklima und Veränderungsbereitschaft"
+
+  T_temporal:
+    name: "Zeitliche Faktoren"
+    code: "T"
+    variables: 5
+    status: "L2_request"
+    description: "Dynamik und geplante Veränderungen"
+
+  R_readiness:
+    name: "Implementation Readiness"
+    code: "R"
+    variables: 5
+    status: "L3_collect"
+    description: "Bereitschaft und Fähigkeit zur Intervention"
+
+# =============================================================================
+# S: STRUKTURELLE FAKTOREN
+# =============================================================================
+
+S_structural:
+  S1_plant_type:
+    code: "S1"
+    name: "Werkstyp"
+    definition: "Klassifikation nach Kundenbeziehung und Funktion"
+
+    measurement:
+      method: "Kategorisierung"
+      scale: "nominal"
+      categories:
+        - value: "regional_hq"
+          label: "Regional Headquarters"
+          description: "Administrative Funktion + Produktion"
+        - value: "standalone"
+          label: "Standalone Plant"
+          description: "Unabhängiges Produktionswerk"
+        - value: "near_customer"
+          label: "Near-Customer Plant"
+          description: "Nahe beim Kunden, aber nicht on-site"
+        - value: "in_house"
+          label: "In-House Plant"
+          description: "Auf Kundengelände (z.B. Henkel, L'Oréal)"
+
+    data_source:
+      primary: "ALPLA Unternehmensdaten"
+      current_status: "L1_existing"
+      file: "alpla-pci-estimates.csv"
+      column: "plant_type"
+
+    quality:
+      reliability: "hoch"
+      validity: "hoch"
+      completeness: "100%"
+
+  S2_employees:
+    code: "S2"
+    name: "Mitarbeiteranzahl"
+    definition: "Gesamtzahl der Mitarbeiter am Standort (Headcount)"
+
+    measurement:
+      method: "Zählung"
+      scale: "ratio"
+      unit: "Personen"
+      range: [50, 500]
+      precision: "exact"
+
+    data_source:
+      primary: "ALPLA HR-System"
+      secondary: "LLMMC-Schätzung"
+      current_status: "L1_existing (Schätzung) / L2_request (Ist)"
+      file: "alpla-pci-estimates.csv"
+      column: "S2_employees"
+
+    collection:
+      frequency: "monatlich"
+      responsible: "HR"
+      method: "Automatischer Export aus HR-System"
+
+    quality:
+      reliability: "hoch (bei Ist-Daten)"
+      validity: "hoch"
+      current_confidence: "medium (LLMMC)"
+
+  S3_production_lines:
+    code: "S3"
+    name: "Produktionslinien"
+    definition: "Anzahl aktiver Produktionslinien/Maschinen"
+
+    measurement:
+      method: "Zählung"
+      scale: "ratio"
+      unit: "Linien"
+      range: [4, 30]
+
+    data_source:
+      primary: "ALPLA Operations"
+      current_status: "L1_existing (Schätzung)"
+      file: "alpla-pci-estimates.csv"
+      column: "S3"
+
+    quality:
+      reliability: "mittel"
+      current_confidence: "medium (LLMMC)"
+
+  S4_plant_age:
+    code: "S4"
+    name: "Werksalter"
+    definition: "Jahre seit Inbetriebnahme"
+
+    measurement:
+      method: "Berechnung"
+      scale: "ratio"
+      unit: "Jahre"
+      formula: "current_year - opening_year"
+
+    data_source:
+      primary: "ALPLA Unternehmensdaten"
+      current_status: "L2_request"
+
+    quality:
+      reliability: "hoch"
+
+  S5_technology_level:
+    code: "S5"
+    name: "Technologieniveau"
+    definition: "Durchschnittliches Alter der Produktionsanlagen"
+
+    measurement:
+      method: "Berechnung"
+      scale: "ratio"
+      unit: "Jahre"
+      formula: "avg(machine_age)"
+      proxy: "Anteil Maschinen < 5 Jahre alt (%)"
+
+    data_source:
+      primary: "ALPLA Asset Management"
+      current_status: "L2_request"
+
+    quality:
+      reliability: "mittel"
+
+  S6_shift_model:
+    code: "S6"
+    name: "Schichtmodell"
+    definition: "Anzahl der regulären Schichten pro Tag"
+
+    measurement:
+      method: "Kategorisierung"
+      scale: "ordinal"
+      categories:
+        - value: 1
+          label: "Tagschicht"
+        - value: 2
+          label: "2-Schicht"
+        - value: 3
+          label: "3-Schicht (kontinuierlich)"
+
+    data_source:
+      primary: "ALPLA Operations"
+      current_status: "L1_existing (Schätzung)"
+
+    quality:
+      reliability: "hoch"
+
+# =============================================================================
+# L: ARBEITSMARKT-FAKTOREN
+# =============================================================================
+
+L_labor_market:
+  L1_unemployment:
+    code: "L1"
+    name: "Arbeitslosenquote"
+    definition: "County-level Arbeitslosenquote"
+
+    measurement:
+      method: "Sekundärdaten"
+      scale: "ratio"
+      unit: "Prozent"
+      range: [2.0, 6.0]
+
+    data_source:
+      primary: "BLS LAUS (Local Area Unemployment Statistics)"
+      url: "https://www.bls.gov/lau/"
+      current_status: "L1_existing"
+      file: "alpla-usa-labor-market-data.csv"
+      column: "L1_unemployment_pct"
+
+    collection:
+      frequency: "quartalsweise"
+      lag: "2 Monate"
+      method: "API-Abruf oder manueller Download"
+
+    quality:
+      reliability: "hoch"
+      validity: "hoch"
+      completeness: "100%"
+
+  L2_mfg_establishments:
+    code: "L2"
+    name: "Manufacturing Density"
+    definition: "Anzahl Fertigungsbetriebe im 30-Meilen-Radius"
+
+    measurement:
+      method: "Sekundärdaten"
+      scale: "ratio"
+      unit: "Betriebe"
+      range: [100, 2500]
+
+    data_source:
+      primary: "Census County Business Patterns (CBP)"
+      url: "https://www.census.gov/programs-surveys/cbp.html"
+      current_status: "L1_existing"
+      file: "alpla-usa-labor-market-data.csv"
+      column: "L2_mfg_establishments"
+
+    interpretation: |
+      Höhere Dichte = mehr Wettbewerb um Arbeitskräfte
+      Korreliert mit Lohnniveau und Churn
+
+  L3_urbanization:
+    code: "L3"
+    name: "Urbanisierungsgrad"
+    definition: "Klassifikation des Standorts nach Bevölkerungsdichte"
+
+    measurement:
+      method: "Klassifikation"
+      scale: "ordinal"
+      categories:
+        - value: 1
+          label: "Rural"
+          definition: "< 50,000 Einwohner"
+        - value: 2
+          label: "Suburban"
+          definition: "50,000 - 500,000"
+        - value: 3
+          label: "Urban"
+          definition: "> 500,000"
+
+    data_source:
+      primary: "Census Urban-Rural Classification"
+      current_status: "L1_existing"
+      file: "alpla-usa-labor-market-data.csv"
+      column: "L3_urbanization"
+
+  L4_mfg_wage:
+    code: "L4"
+    name: "Manufacturing-Lohnniveau"
+    definition: "Median-Stundenlohn für Production Occupations in der Region"
+
+    measurement:
+      method: "Sekundärdaten"
+      scale: "ratio"
+      unit: "USD/Stunde"
+      range: [15.00, 25.00]
+
+    data_source:
+      primary: "BLS OES (Occupational Employment Statistics)"
+      url: "https://www.bls.gov/oes/"
+      current_status: "L1_existing"
+      file: "alpla-usa-labor-market-data.csv"
+      column: "L4_mfg_wage_hr"
+
+    collection:
+      frequency: "jährlich (Mai-Erhebung)"
+      lag: "12 Monate"
+
+  L5_cost_of_living:
+    code: "L5"
+    name: "Lebenshaltungskosten-Index"
+    definition: "Cost of Living Index (100 = US-Durchschnitt)"
+
+    measurement:
+      method: "Sekundärdaten"
+      scale: "ratio"
+      unit: "Index (100 = US avg)"
+      range: [80, 120]
+
+    data_source:
+      primary: "C2ER (Council for Community and Economic Research)"
+      url: "https://www.coli.org/"
+      current_status: "L1_existing"
+      file: "alpla-usa-labor-market-data.csv"
+      column: "L5_coli"
+
+# =============================================================================
+# O: ORGANISATORISCHE FAKTOREN
+# =============================================================================
+
+O_organizational:
+  O1_customer_dependency:
+    code: "O1"
+    name: "Kundenabhängigkeit"
+    definition: "Umsatzanteil des größten Kunden (%)"
+
+    measurement:
+      method: "Berechnung"
+      scale: "ratio"
+      unit: "Prozent"
+      range: [0, 100]
+      thresholds:
+        low: "< 30%"
+        medium: "30-70%"
+        high: "> 70%"
+
+    data_source:
+      primary: "ALPLA Finance"
+      current_status: "L2_request"
+
+    interpretation: |
+      Hohe Abhängigkeit → In-House-Charakter
+      Beeinflusst Interventions-Spielraum
+
+  O2_product_complexity:
+    code: "O2"
+    name: "Produktkomplexität"
+    definition: "Anzahl verschiedener Produktlinien/SKUs"
+
+    measurement:
+      method: "Zählung"
+      scale: "ratio"
+      unit: "SKUs"
+      proxy: "Anzahl aktiver Formen"
+
+    data_source:
+      primary: "ALPLA Operations"
+      current_status: "L2_request"
+
+  O3_certification_level:
+    code: "O3"
+    name: "Zertifizierungsniveau"
+    definition: "Vorhandene Qualitäts-/Umweltzertifizierungen"
+
+    measurement:
+      method: "Scoring"
+      scale: "ordinal"
+      scoring:
+        - item: "ISO 9001"
+          points: 1
+        - item: "ISO 14001"
+          points: 1
+        - item: "FSSC 22000"
+          points: 2
+        - item: "BRC"
+          points: 2
+        - item: "Customer-specific"
+          points: 1
+      range: [0, 7]
+
+    data_source:
+      primary: "ALPLA Quality"
+      current_status: "L2_request"
+
+  O4_automation_level:
+    code: "O4"
+    name: "Automatisierungsgrad"
+    definition: "Anteil automatisierter Prozesse"
+
+    measurement:
+      method: "Schätzung"
+      scale: "ratio"
+      unit: "Prozent"
+      categories:
+        low: "< 30% (manuell dominiert)"
+        medium: "30-60%"
+        high: "> 60% (hochautomatisiert)"
+
+    data_source:
+      primary: "ALPLA Operations"
+      current_status: "L2_request"
+
+    interpretation: |
+      Beeinflusst Job-Profile-Mix (BC1 vs BC5)
+      Höhere Automatisierung → weniger BC5
+
+  O5_union_presence:
+    code: "O5"
+    name: "Gewerkschaftspräsenz"
+    definition: "Gewerkschaftliche Organisation am Standort"
+
+    measurement:
+      method: "Binär + Prozent"
+      scale: "mixed"
+      variables:
+        - name: "union_present"
+          type: "binary"
+          values: [0, 1]
+        - name: "union_coverage"
+          type: "ratio"
+          unit: "Prozent der Belegschaft"
+
+    data_source:
+      primary: "ALPLA HR"
+      current_status: "L2_request"
+
+    interpretation: |
+      Beeinflusst Interventions-Spielraum
+      Lohn- und Arbeitszeitregelungen
+
+# =============================================================================
+# P: PERFORMANCE-FAKTOREN
+# =============================================================================
+
+P_performance:
+  P1_churn_total:
+    code: "P1"
+    name: "Gesamt-Churn-Rate"
+    definition: "Jährliche Fluktuationsrate (freiwillige + unfreiwillige Abgänge)"
+
+    measurement:
+      method: "Berechnung"
+      scale: "ratio"
+      unit: "Prozent"
+      formula: "(Abgänge_12M / Ø_Headcount_12M) × 100"
+      range: [5, 50]
+
+    data_source:
+      primary: "ALPLA HR-System"
+      secondary: "LLMMC-Schätzung"
+      current_status: "L1_existing (Schätzung) / L2_request (Ist)"
+      file: "alpla-pci-estimates.csv"
+      column: "P1_total"
+
+    collection:
+      frequency: "monatlich (rollierend 12M)"
+      responsible: "HR"
+      method: "HR-System Report"
+
+    quality:
+      target_source: "Ist-Daten von ALPLA"
+      current_confidence: "medium (LLMMC)"
+
+  P1a_churn_voluntary:
+    code: "P1a"
+    name: "Freiwillige Churn-Rate"
+    definition: "Anteil der freiwilligen Kündigungen"
+
+    measurement:
+      method: "Berechnung"
+      scale: "ratio"
+      unit: "Prozent"
+      formula: "(Freiwillige_Abgänge_12M / Gesamt_Abgänge_12M) × 100"
+
+    data_source:
+      primary: "ALPLA HR-System"
+      current_status: "L2_request"
+
+    interpretation: |
+      Fokus der Intervention = freiwillige Churn
+      Unfreiwillige Churn (Kündigung, Befristung) separat
+
+  P1_BC:
+    code: "P1_BC"
+    name: "Blue Collar Churn-Rate"
+    definition: "Churn-Rate für Blue Collar Mitarbeiter (BC1-BC5)"
+
+    measurement:
+      method: "Berechnung"
+      scale: "ratio"
+      unit: "Prozent"
+      formula: "(BC_Abgänge_12M / Ø_BC_Headcount_12M) × 100"
+
+    data_source:
+      primary: "ALPLA HR-System"
+      secondary: "LLMMC-Schätzung"
+      current_status: "L1_existing (Schätzung)"
+      file: "alpla-pci-estimates.csv"
+      column: "P1_BC"
+
+    breakdown_required:
+      - "P1_BC1: Produktion"
+      - "P1_BC2: Qualität"
+      - "P1_BC3: Wartung"
+      - "P1_BC4: Logistik"
+      - "P1_BC5: Support"
+
+  P1_WC:
+    code: "P1_WC"
+    name: "White Collar Churn-Rate"
+    definition: "Churn-Rate für White Collar Mitarbeiter"
+
+    measurement:
+      method: "Berechnung"
+      scale: "ratio"
+      unit: "Prozent"
+
+    data_source:
+      current_status: "L1_existing (Schätzung)"
+      file: "alpla-pci-estimates.csv"
+      column: "P1_WC"
+
+  P2_tenure_avg:
+    code: "P2"
+    name: "Durchschnittliche Betriebszugehörigkeit"
+    definition: "Mittlere Tenure aller aktiven Mitarbeiter"
+
+    measurement:
+      method: "Berechnung"
+      scale: "ratio"
+      unit: "Jahre"
+      formula: "avg(today - hire_date)"
+
+    data_source:
+      primary: "ALPLA HR-System"
+      current_status: "L2_request"
+
+    additional_metrics:
+      - "P2a: Median Tenure"
+      - "P2b: Tenure < 1 Jahr (%)"
+      - "P2c: Tenure > 5 Jahre (%)"
+
+  P3_absenteeism:
+    code: "P3"
+    name: "Absenteeismus-Rate"
+    definition: "Ungeplante Abwesenheiten als % der Soll-Arbeitszeit"
+
+    measurement:
+      method: "Berechnung"
+      scale: "ratio"
+      unit: "Prozent"
+      formula: "(Ungeplante_Abwesenheitstage / Soll_Arbeitstage) × 100"
+      excludes: ["Urlaub", "Feiertage", "Elternzeit"]
+
+    data_source:
+      primary: "ALPLA HR-System / Zeiterfassung"
+      current_status: "L2_request"
+
+    interpretation: |
+      Frühindikator für Churn
+      Hoher Absenteeismus oft Vorstufe zur Kündigung
+
+  P4_productivity:
+    code: "P4"
+    name: "Produktivität"
+    definition: "Output pro Mitarbeiter-Stunde"
+
+    measurement:
+      method: "Berechnung"
+      scale: "ratio"
+      unit: "Einheiten/Stunde oder Umsatz/MA"
+      formula: "Output / Arbeitsstunden"
+
+    data_source:
+      primary: "ALPLA Operations/Finance"
+      current_status: "L2_request"
+
+    normalization: |
+      Muss nach Produktmix normalisiert werden
+      Vergleich nur innerhalb ähnlicher Werke sinnvoll
+
+# =============================================================================
+# I: INTERVENTION FIT (abgeleitet)
+# =============================================================================
+
+I_intervention_fit:
+  note: "Diese Dimensionen werden aus S, L, O, P, M, K berechnet (siehe alpla-intervention-fit-index.yaml)"
+
+  I1_rotation_fit:
+    code: "I1"
+    name: "Job Rotation Fit"
+    definition: "Eignung für Job-Rotation-Intervention"
+
+    measurement:
+      method: "Scoring"
+      scale: "ratio"
+      unit: "Score 0-100"
+      derivation: "Gewichtete Kombination aus BC5%, Werksgröße, Monotonie-Score"
+
+    data_source:
+      current_status: "L4_derive"
+      file: "alpla-intervention-fit-index.yaml"
+
+  I2_career_fit:
+    code: "I2"
+    name: "Career Pathway Fit"
+    definition: "Eignung für Karrierepfad-Programme"
+
+    measurement:
+      method: "Scoring"
+      scale: "ratio"
+      unit: "Score 0-100"
+      derivation: "Gewichtete Kombination aus BC4+BC5%, Arbeitslosigkeit, Werkstyp"
+
+  I3_skill_pay_fit:
+    code: "I3"
+    name: "Skill-Based Pay Fit"
+    definition: "Eignung für Skill-basierte Vergütung"
+
+    measurement:
+      method: "Scoring"
+      scale: "ratio"
+      unit: "Score 0-100"
+      derivation: "Gewichtete Kombination aus BC1+BC3%, Lohnwettbewerb, Skill-Varianz"
+
+  I4_workload_fit:
+    code: "I4"
+    name: "Workload Management Fit"
+    definition: "Eignung für Workload-Balancing-Maßnahmen"
+
+    measurement:
+      method: "Scoring"
+      scale: "ratio"
+      unit: "Score 0-100"
+      derivation: "Gewichtete Kombination aus BC3%, Überstunden, Komplexität"
+
+  I5_autonomy_fit:
+    code: "I5"
+    name: "Autonomy Enhancement Fit"
+    definition: "Eignung für Autonomie-Erweiterung"
+
+    measurement:
+      method: "Scoring"
+      scale: "ratio"
+      unit: "Score 0-100"
+      derivation: "Gewichtete Kombination aus Unabhängigkeit, Erfahrung, Standardisierung"
+
+# =============================================================================
+# M: MANAGEMENT/LEADERSHIP (NEU)
+# =============================================================================
+
+M_management:
+  M1_pm_tenure:
+    code: "M1"
+    name: "Plant Manager Tenure"
+    definition: "Amtszeit des aktuellen Werksleiters"
+
+    measurement:
+      method: "Berechnung"
+      scale: "ratio"
+      unit: "Jahre"
+      formula: "today - pm_start_date"
+
+    data_source:
+      primary: "ALPLA HR"
+      current_status: "L2_request"
+
+    interpretation: |
+      < 1 Jahr: Einarbeitungsphase, Vorsicht bei Intervention
+      1-3 Jahre: Ideal für Veränderung
+      > 5 Jahre: Etabliert, evtl. Change-resistant
+
+  M2_supervisor_span:
+    code: "M2"
+    name: "Supervisor Span of Control"
+    definition: "Durchschnittliche Anzahl direkt unterstellter MA pro Supervisor"
+
+    measurement:
+      method: "Berechnung"
+      scale: "ratio"
+      unit: "MA/Supervisor"
+      formula: "BC_headcount / supervisor_count"
+      range: [5, 25]
+
+    data_source:
+      primary: "ALPLA HR / Org-Chart"
+      current_status: "L2_request"
+
+    interpretation: |
+      < 10: Enge Führung möglich
+      10-15: Standard
+      > 15: Hohe Autonomie nötig, wenig individuelle Betreuung
+
+  M3_mgmt_turnover:
+    code: "M3"
+    name: "Management Turnover"
+    definition: "Fluktuation im Management-Team (letzte 24 Monate)"
+
+    measurement:
+      method: "Berechnung"
+      scale: "ratio"
+      unit: "Prozent"
+      scope: "Plant Manager + direkte Reports"
+      formula: "(Mgmt_Abgänge_24M / Mgmt_Headcount) × 100"
+
+    data_source:
+      primary: "ALPLA HR"
+      current_status: "L2_request"
+
+    interpretation: |
+      Hohe Mgmt-Fluktuation → Instabilität
+      Kann Churn auf MA-Ebene verstärken
+
+  M4_leadership_style:
+    code: "M4"
+    name: "Leadership Style Score"
+    definition: "Bewertung des Führungsstils durch Mitarbeiter"
+
+    measurement:
+      method: "Survey"
+      scale: "ordinal"
+      unit: "Score 1-5"
+      instrument: "Kurzfragebogen (5 Items)"
+      items:
+        - "Mein Vorgesetzter gibt mir regelmäßig Feedback"
+        - "Mein Vorgesetzter unterstützt meine Entwicklung"
+        - "Mein Vorgesetzter ist fair"
+        - "Mein Vorgesetzter kommuniziert offen"
+        - "Mein Vorgesetzter erkennt gute Leistung an"
+
+    data_source:
+      primary: "Mitarbeiterbefragung"
+      current_status: "L3_collect"
+
+    collection:
+      frequency: "Baseline + 6M + 12M"
+      method: "Online-Survey (anonym)"
+      target_response_rate: "> 60%"
+
+  M5_intervention_buyin:
+    code: "M5"
+    name: "Management Buy-In"
+    definition: "Bereitschaft des Plant Managers, Intervention zu unterstützen"
+
+    measurement:
+      method: "Interview/Survey"
+      scale: "ordinal"
+      unit: "Score 1-5"
+      instrument: "Plant Manager Assessment (5 Items)"
+      items:
+        - "Ich sehe Handlungsbedarf beim Thema Mitarbeiterfluktuation"
+        - "Ich bin bereit, Zeit für die Intervention zu investieren"
+        - "Ich unterstütze die vorgeschlagenen Maßnahmen"
+        - "Ich werde mein Team aktiv einbinden"
+        - "Ich erwarte positive Ergebnisse"
+
+    data_source:
+      primary: "Plant Manager Survey"
+      current_status: "L3_collect"
+
+    collection:
+      frequency: "Vor Interventionsstart"
+      method: "Strukturiertes Interview oder Online-Survey"
+
+    interpretation: |
+      Score < 3: Hohes Risiko für Implementierungsfehler
+      Score ≥ 4: Gute Voraussetzungen
+      KRITISCH für Experiment-Erfolg
+
+# =============================================================================
+# K: KULTUR/SOFT FACTORS (NEU)
+# =============================================================================
+
+K_culture:
+  K1_team_cohesion:
+    code: "K1"
+    name: "Team-Kohäsion"
+    definition: "Zusammenhalt und Zusammenarbeit im Team"
+
+    measurement:
+      method: "Survey"
+      scale: "ordinal"
+      unit: "Score 1-5"
+      instrument: "Team Cohesion Scale (4 Items)"
+      items:
+        - "In meinem Team helfen wir uns gegenseitig"
+        - "Ich verstehe mich gut mit meinen Kollegen"
+        - "Wir arbeiten als Team zusammen, nicht als Einzelkämpfer"
+        - "Neue Kollegen werden gut aufgenommen"
+
+    data_source:
+      primary: "Mitarbeiterbefragung"
+      current_status: "L3_collect"
+
+  K2_communication_quality:
+    code: "K2"
+    name: "Kommunikationsqualität"
+    definition: "Qualität der internen Kommunikation"
+
+    measurement:
+      method: "Survey"
+      scale: "ordinal"
+      unit: "Score 1-5"
+      instrument: "Communication Quality Scale (4 Items)"
+      items:
+        - "Ich werde rechtzeitig über wichtige Änderungen informiert"
+        - "Ich weiß, was von mir erwartet wird"
+        - "Ich kann Probleme offen ansprechen"
+        - "Meine Ideen werden gehört"
+
+    data_source:
+      primary: "Mitarbeiterbefragung"
+      current_status: "L3_collect"
+
+  K3_change_history:
+    code: "K3"
+    name: "Veränderungs-Historie"
+    definition: "Erfahrung mit früheren Veränderungsinitiativen"
+
+    measurement:
+      method: "Interview/Dokumentenanalyse"
+      scale: "ordinal"
+      categories:
+        - value: 1
+          label: "Negativ"
+          description: "Frühere Initiativen gescheitert"
+        - value: 2
+          label: "Neutral"
+          description: "Keine relevante Historie"
+        - value: 3
+          label: "Gemischt"
+          description: "Teils erfolgreich, teils nicht"
+        - value: 4
+          label: "Positiv"
+          description: "Frühere Initiativen erfolgreich"
+
+    data_source:
+      primary: "HR/Plant Manager Interview"
+      current_status: "L3_collect"
+
+    interpretation: |
+      Negative Erfahrungen → Skepsis, mehr Change Management nötig
+      Positive Erfahrungen → Höhere Akzeptanz erwartbar
+
+  K4_change_readiness:
+    code: "K4"
+    name: "Veränderungsbereitschaft"
+    definition: "Bereitschaft der Belegschaft für Veränderungen"
+
+    measurement:
+      method: "Survey"
+      scale: "ordinal"
+      unit: "Score 1-5"
+      instrument: "Change Readiness Scale (4 Items)"
+      items:
+        - "Ich bin offen für neue Arbeitsweisen"
+        - "Veränderungen sind in unserem Werk willkommen"
+        - "Ich glaube, dass Verbesserungen möglich sind"
+        - "Ich würde eine neue Initiative unterstützen"
+
+    data_source:
+      primary: "Mitarbeiterbefragung"
+      current_status: "L3_collect"
+
+  K5_job_satisfaction:
+    code: "K5"
+    name: "Arbeitszufriedenheit"
+    definition: "Gesamtzufriedenheit mit der Arbeitssituation"
+
+    measurement:
+      method: "Survey"
+      scale: "ordinal"
+      unit: "Score 1-5"
+      instrument: "Job Satisfaction Scale (5 Items)"
+      items:
+        - "Insgesamt bin ich zufrieden mit meiner Arbeit"
+        - "Ich würde meinen Job einem Freund empfehlen"
+        - "Ich sehe mich in 12 Monaten noch hier arbeiten"
+        - "Meine Arbeit ist sinnvoll"
+        - "Ich werde fair behandelt"
+
+    data_source:
+      primary: "Mitarbeiterbefragung"
+      current_status: "L3_collect"
+
+    interpretation: |
+      Baseline für Intervention
+      Korreliert negativ mit Churn-Intention
+      "12 Monate" Item = bester Prädiktor für tatsächliche Churn
+
+# =============================================================================
+# T: ZEITLICHE FAKTOREN (NEU)
+# =============================================================================
+
+T_temporal:
+  T1_churn_seasonality:
+    code: "T1"
+    name: "Churn-Saisonalität"
+    definition: "Saisonales Muster der Fluktuation"
+
+    measurement:
+      method: "Zeitreihenanalyse"
+      scale: "nominal"
+      pattern_types:
+        - "flat": "Keine Saisonalität"
+        - "summer_peak": "Höhepunkt im Sommer"
+        - "winter_peak": "Höhepunkt im Winter"
+        - "q1_peak": "Höhepunkt Q1 (Jahresanfang)"
+
+    data_source:
+      primary: "ALPLA HR (24M Historie)"
+      current_status: "L2_request"
+
+    interpretation: |
+      Beeinflusst Timing der Intervention
+      Vermeiden: Start während Churn-Hochphase
+
+  T2_growth_trajectory:
+    code: "T2"
+    name: "Wachstumstrend"
+    definition: "Headcount-Entwicklung der letzten 12-24 Monate"
+
+    measurement:
+      method: "Berechnung"
+      scale: "ordinal"
+      categories:
+        - value: -2
+          label: "Starke Schrumpfung"
+          definition: "< -10% YoY"
+        - value: -1
+          label: "Leichte Schrumpfung"
+          definition: "-10% bis -2% YoY"
+        - value: 0
+          label: "Stabil"
+          definition: "-2% bis +2% YoY"
+        - value: 1
+          label: "Leichtes Wachstum"
+          definition: "+2% bis +10% YoY"
+        - value: 2
+          label: "Starkes Wachstum"
+          definition: "> +10% YoY"
+
+    data_source:
+      primary: "ALPLA HR"
+      current_status: "L2_request"
+
+    interpretation: |
+      Schrumpfung → Churn kann "erwünscht" sein
+      Wachstum → Churn besonders problematisch
+
+  T3_planned_changes:
+    code: "T3"
+    name: "Geplante Veränderungen"
+    definition: "Bekannte anstehende Veränderungen am Standort"
+
+    measurement:
+      method: "Checkliste"
+      scale: "nominal"
+      checklist:
+        - "Expansion / neue Linien"
+        - "Schrumpfung / Linien-Abbau"
+        - "Neuer Großkunde"
+        - "Kundenverlust"
+        - "Technologie-Upgrade"
+        - "Management-Wechsel geplant"
+        - "Lohnrunde anstehend"
+        - "Keine bekannten Änderungen"
+
+    data_source:
+      primary: "Plant Manager Interview"
+      current_status: "L3_collect"
+
+    interpretation: |
+      KRITISCH als Confounder
+      Große Änderungen → ggf. vom Experiment ausschließen
+
+  T4_wage_round:
+    code: "T4"
+    name: "Anstehende Lohnrunde"
+    definition: "Geplante Gehaltsanpassungen in den nächsten 12 Monaten"
+
+    measurement:
+      method: "Abfrage"
+      scale: "mixed"
+      variables:
+        - name: "wage_round_planned"
+          type: "binary"
+        - name: "wage_round_date"
+          type: "date"
+        - name: "wage_round_magnitude"
+          type: "ratio"
+          unit: "Prozent"
+
+    data_source:
+      primary: "ALPLA HR/Compensation"
+      current_status: "L2_request"
+
+    interpretation: |
+      Confounder für Churn-Intervention
+      Vor Lohnrunde: Churn evtl. temporär erhöht (Abwarten)
+      Nach Lohnrunde: Baseline-Effekt
+
+  T5_contract_changes:
+    code: "T5"
+    name: "Kundenvertrags-Änderungen"
+    definition: "Anstehende Änderungen bei Hauptkunden"
+
+    measurement:
+      method: "Abfrage"
+      scale: "nominal"
+      categories:
+        - "Vertragsverlängerung sicher"
+        - "Vertragsverhandlung offen"
+        - "Vertragskündigung absehbar"
+        - "Neuer Vertrag in Aussicht"
+        - "Keine Änderungen bekannt"
+
+    data_source:
+      primary: "Plant Manager / Sales"
+      current_status: "L3_collect"
+
+    interpretation: |
+      Besonders relevant für In-House-Werke
+      Unsicherheit → erhöhte Churn-Wahrscheinlichkeit
+
+# =============================================================================
+# R: IMPLEMENTATION READINESS (NEU)
+# =============================================================================
+
+R_readiness:
+  R1_hr_capacity:
+    code: "R1"
+    name: "HR-Kapazität"
+    definition: "Verfügbare HR-Ressourcen vor Ort"
+
+    measurement:
+      method: "Abfrage"
+      scale: "ratio"
+      unit: "HR-FTE pro 100 MA"
+      formula: "HR_headcount / total_headcount × 100"
+
+    data_source:
+      primary: "ALPLA HR"
+      current_status: "L2_request"
+
+    interpretation: |
+      < 0.5 FTE/100 MA: Geringe Kapazität, externe Unterstützung nötig
+      0.5-1.0: Standard
+      > 1.0: Gute Kapazität für Intervention
+
+  R2_it_infrastructure:
+    code: "R2"
+    name: "IT-Infrastruktur"
+    definition: "Verfügbarkeit von IT-Systemen für Tracking"
+
+    measurement:
+      method: "Checkliste"
+      scale: "ordinal"
+      checklist:
+        - item: "HR-System mit Employee Self-Service"
+          points: 2
+        - item: "Digitale Zeiterfassung"
+          points: 1
+        - item: "Survey-Tool verfügbar"
+          points: 1
+        - item: "Dashboard/Reporting"
+          points: 1
+      range: [0, 5]
+
+    data_source:
+      primary: "ALPLA IT / HR"
+      current_status: "L2_request"
+
+    interpretation: |
+      Score < 2: Manuelle Datenerfassung nötig
+      Score ≥ 3: Automatisiertes Tracking möglich
+
+  R3_budget_available:
+    code: "R3"
+    name: "Budget-Verfügbarkeit"
+    definition: "Verfügbares Budget für Intervention"
+
+    measurement:
+      method: "Abfrage"
+      scale: "ordinal"
+      categories:
+        - value: 1
+          label: "Kein Budget"
+        - value: 2
+          label: "Minimales Budget (< $5k)"
+        - value: 3
+          label: "Moderates Budget ($5-20k)"
+        - value: 4
+          label: "Gutes Budget ($20-50k)"
+        - value: 5
+          label: "Umfangreiches Budget (> $50k)"
+
+    data_source:
+      primary: "Plant Manager / Finance"
+      current_status: "L3_collect"
+
+    interpretation: |
+      Manche Interventionen (z.B. Skill Pay) brauchen Budget
+      Andere (z.B. Rotation) hauptsächlich Arbeitszeit
+
+  R4_change_success_history:
+    code: "R4"
+    name: "Change-Erfolgshistorie"
+    definition: "Erfolgsrate früherer Veränderungsinitiativen"
+
+    measurement:
+      method: "Interview"
+      scale: "ratio"
+      unit: "Prozent erfolgreiche Initiativen"
+      questions:
+        - "Welche Initiativen wurden in den letzten 3 Jahren gestartet?"
+        - "Welche davon würden Sie als erfolgreich bezeichnen?"
+
+    data_source:
+      primary: "Plant Manager Interview"
+      current_status: "L3_collect"
+
+    interpretation: |
+      < 30%: Hoher Aufwand für Change Management
+      > 60%: Gute Voraussetzungen
+
+  R5_external_support:
+    code: "R5"
+    name: "Externe Unterstützung"
+    definition: "Erfahrung mit externen Beratern/Unterstützung"
+
+    measurement:
+      method: "Abfrage"
+      scale: "ordinal"
+      categories:
+        - value: 1
+          label: "Keine Erfahrung"
+        - value: 2
+          label: "Negative Erfahrung"
+        - value: 3
+          label: "Neutrale Erfahrung"
+        - value: 4
+          label: "Positive Erfahrung"
+
+    data_source:
+      primary: "Plant Manager Interview"
+      current_status: "L3_collect"
+
+# =============================================================================
+# DATENERHEBUNGSPLAN
+# =============================================================================
+
+data_collection_plan:
+  phase_1_existing:
+    name: "Vorhandene Daten konsolidieren"
+    duration: "1 Woche"
+    variables:
+      - S1, S2, S3, S6
+      - L1, L2, L3, L4, L5
+      - P1 (Schätzung)
+    source: "Bereits in YAML/CSV"
+    responsible: "Data Team"
+
+  phase_2_request:
+    name: "ALPLA-Daten anfordern"
+    duration: "2-4 Wochen"
+    variables:
+      - S2, S4, S5 (Ist-Daten)
+      - O1, O2, O3, O4, O5
+      - P1, P1a, P1_BC, P1_WC (Ist-Daten)
+      - P2, P3, P4
+      - M1, M2, M3
+      - T1, T2, T4
+      - R1, R2
+    source: "ALPLA HR, Operations, Finance"
+    responsible: "Project Lead + ALPLA Kontakt"
+    deliverable: "Daten-Anforderungsliste (Excel Template)"
+
+  phase_3_collect:
+    name: "Primärerhebung durchführen"
+    duration: "3-4 Wochen"
+
+    survey_employee:
+      name: "Mitarbeiterbefragung"
+      variables: [K1, K2, K4, K5, M4]
+      n_items: 22
+      duration_min: 10
+      method: "Online-Survey (anonym)"
+      target: "Alle BC-Mitarbeiter"
+      target_response_rate: "> 60%"
+
+    survey_plant_manager:
+      name: "Plant Manager Assessment"
+      variables: [M5, T3, T5, R3, R4, R5]
+      n_items: 15
+      duration_min: 20
+      method: "Strukturierter Fragebogen + kurzes Interview"
+      target: "17 Plant Manager"
+
+    interview_hr:
+      name: "HR-Interview"
+      variables: [K3, O5]
+      duration_min: 30
+      method: "Semi-strukturiertes Interview"
+      target: "HR-Verantwortliche pro Werk"
+
+  phase_4_derive:
+    name: "Abgeleitete Variablen berechnen"
+    duration: "1 Woche"
+    variables: [I1, I2, I3, I4, I5]
+    method: "Python-Script (IFI-Berechnung)"
+    input: "Alle Phase 1-3 Daten"
+    responsible: "Data Team"
+
+# =============================================================================
+# MESSINSTRUMENTE
+# =============================================================================
+
+survey_instruments:
+  employee_survey:
+    name: "ALPLA Employee Pulse Survey"
+    purpose: "Baseline-Messung für Feldexperiment"
+    language: ["English", "Spanish"]
+    duration_min: 10
+    anonymous: true
+
+    sections:
+      - name: "Job Satisfaction (K5)"
+        items: 5
+        scale: "1-5 Likert"
+      - name: "Team Cohesion (K1)"
+        items: 4
+        scale: "1-5 Likert"
+      - name: "Communication (K2)"
+        items: 4
+        scale: "1-5 Likert"
+      - name: "Change Readiness (K4)"
+        items: 4
+        scale: "1-5 Likert"
+      - name: "Leadership (M4)"
+        items: 5
+        scale: "1-5 Likert"
+
+    total_items: 22
+
+    administration:
+      method: "QR-Code + Kiosk (für MA ohne Computer)"
+      timing: "Während Arbeitszeit (Schichtübergabe)"
+      incentive: "Optional: Verlosung"
+
+  plant_manager_survey:
+    name: "Plant Manager Readiness Assessment"
+    purpose: "Buy-In und Readiness evaluieren"
+    language: ["English"]
+    duration_min: 20
+
+    sections:
+      - name: "Buy-In (M5)"
+        items: 5
+        scale: "1-5 Likert"
+      - name: "Planned Changes (T3, T5)"
+        items: 5
+        format: "Multiple Choice + Open"
+      - name: "Resources (R3)"
+        items: 2
+        format: "Dropdown"
+      - name: "Change History (R4, R5)"
+        items: 3
+        format: "Mixed"
+
+    administration:
+      method: "Online oder persönlich"
+      timing: "Vor Interventionsstart"
+
+# =============================================================================
+# ZUSAMMENFASSUNG
+# =============================================================================
+
+summary:
+  total_dimensions: 9
+  total_variables: 47
+
+  by_status:
+    L1_existing: 15
+    L2_request: 18
+    L3_collect: 9
+    L4_derive: 5
+
+  critical_for_experiment:
+    must_have:
+      - P1 (Ist-Churn)
+      - M5 (Buy-In)
+      - T3 (Confounders)
+    should_have:
+      - K5 (Baseline Satisfaction)
+      - P1_BC (Churn by Job)
+      - R1-R3 (Readiness)
+    nice_to_have:
+      - K1-K4 (Culture)
+      - M1-M4 (Leadership details)
+
+  data_collection_timeline:
+    week_1: "Phase 1: Vorhandene Daten"
+    week_2_4: "Phase 2: ALPLA-Anforderung"
+    week_5_8: "Phase 3: Surveys + Interviews"
+    week_9: "Phase 4: Berechnung + Validierung"
+    week_10: "Finales Dataset ready"

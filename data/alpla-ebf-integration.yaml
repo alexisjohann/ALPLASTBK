@@ -1,0 +1,829 @@
+# =============================================================================
+# ALPLA-EBF INTEGRATION: Mapping to 10C CORE Framework
+# =============================================================================
+# Version: 1.0
+# Date: 2026-01-19
+# Purpose: Vollständige Integration des ALPLA Plant Categorization Framework
+#          in das Evidence-Based Framework (EBF) mit 10C CORE Mapping
+#
+# Input: ALPLA-Measurement-Framework (47 Variablen, 9 Dimensionen)
+# Output: EBF-konforme Struktur für Churn-Reduktions-Feldexperiment
+# =============================================================================
+
+metadata:
+  version: "1.0"
+  created: "2026-01-19"
+  framework_name: "ALPLA-EBF Integration"
+  domain: "DOMAIN-ALPLA"
+  appendix_code: "BI"  # Available - DOMAIN-ALPLA
+  category: "DOMAIN"
+  ebf_version: "10C"
+
+# =============================================================================
+# TEIL 1: MAPPING DER 9 ALPLA-DIMENSIONEN AUF 10C CORE
+# =============================================================================
+
+dimension_to_core_mapping:
+  overview: |
+    Das ALPLA Plant Categorization Framework (APCF) mit seinen 9 Dimensionen
+    mappt systematisch auf das EBF 10C CORE Framework. Diese Integration
+    ermöglicht die Nutzung der vollständigen EBF-Infrastruktur für das
+    Churn-Reduktions-Feldexperiment.
+
+  # ---------------------------------------------------------------------------
+  # WHO (AAA): Wer hat Utility?
+  # ---------------------------------------------------------------------------
+  WHO:
+    core_code: "WHO"
+    core_appendix: "AAA"
+    question: "Wer hat Utility im ALPLA-Kontext?"
+
+    alpla_mapping:
+      primary_source: "Job Profiles (BC1-BC5)"
+      secondary_source: "Workforce Segmentation"
+
+    levels:
+      L1_individual:
+        description: "Einzelner Mitarbeiter"
+        alpla_variables:
+          - "Job Category (BC1-BC5)"
+          - "Tenure"
+          - "Skills"
+        utility_function: "U_i = f(wage, autonomy, growth, recognition)"
+
+      L2_dyadic:
+        description: "MA ↔ Supervisor Beziehung"
+        alpla_variables:
+          - "M4_leadership_style"
+          - "M2_supervisor_span"
+        utility_function: "U_ij = f(feedback, support, fairness)"
+
+      L3_team:
+        description: "Team/Schicht"
+        alpla_variables:
+          - "K1_team_cohesion"
+          - "K2_communication_quality"
+        utility_function: "U_team = f(cohesion, cooperation, support)"
+
+      L4_organization:
+        description: "Werk/Unternehmen"
+        alpla_variables:
+          - "P1_churn_total"
+          - "P4_productivity"
+        utility_function: "U_org = f(-churn, productivity, quality)"
+
+    weight_functions:
+      alpha_L:
+        description: "Kontextabhängige Gewichtung der Levels"
+        formula: "α^L(Ψ) = α_base^L × (1 + κ_context)"
+        alpla_specific: |
+          - In-House Plants: α^L4 erhöht (Kundenfokus)
+          - Standalone: α^L1 erhöht (Individualfokus)
+          - Regional HQ: α^L3 erhöht (Team-/Organisationsfokus)
+
+  # ---------------------------------------------------------------------------
+  # WHAT (C): Was ist Utility?
+  # ---------------------------------------------------------------------------
+  WHAT:
+    core_code: "WHAT"
+    core_appendix: "C"
+    question: "Welche Utility-Dimensionen sind relevant für Churn?"
+
+    fepsde_mapping:
+      F_financial:
+        alpla_variables:
+          - "L4_mfg_wage"
+          - "INT3_skill_based_pay"
+        churn_relevance: "high"
+        churn_drivers: ["wage_competition", "no_growth"]
+
+      E_emotional:
+        alpla_variables:
+          - "K5_job_satisfaction"
+          - "INT6_recognition_program"
+        churn_relevance: "high"
+        churn_drivers: ["low_status", "lack_of_feedback", "isolation"]
+
+      P_physical:
+        alpla_variables:
+          - "Physical Load (activities)"
+          - "S6_shift_model"
+          - "INT4_workload_management"
+        churn_relevance: "medium"
+        churn_drivers: ["standing", "repetitive", "time_pressure"]
+
+      S_social:
+        alpla_variables:
+          - "K1_team_cohesion"
+          - "K2_communication"
+          - "INT8_team_restructuring"
+        churn_relevance: "high"
+        churn_drivers: ["isolation", "team_conflict", "poor_communication"]
+
+      D_development:
+        alpla_variables:
+          - "INT2_career_pathway"
+          - "INT1_job_rotation"
+          - "Skill variety"
+        churn_relevance: "very high"
+        churn_drivers: ["no_growth", "monotony", "dead_end_job"]
+
+      E_existential:
+        alpla_variables:
+          - "Job Security (T5)"
+          - "Meaningfulness (K5)"
+        churn_relevance: "medium"
+        churn_drivers: ["uncertainty", "lack_of_purpose"]
+
+    dimension_weights:
+      omega_d:
+        description: "Gewichtung der Utility-Dimensionen für Blue Collar"
+        values:
+          financial: 0.25
+          emotional: 0.15
+          physical: 0.10
+          social: 0.15
+          development: 0.25
+          existential: 0.10
+        source: "LLMMC-Schätzung, validiert mit Literatur"
+
+  # ---------------------------------------------------------------------------
+  # HOW (B): Wie interagieren die Dimensionen?
+  # ---------------------------------------------------------------------------
+  HOW:
+    core_code: "HOW"
+    core_appendix: "B"
+    question: "Wie interagieren Churn-Faktoren und Interventionen?"
+
+    alpla_mapping:
+      primary_source: "Intervention Fit Index (IFI)"
+      secondary_source: "AISA Combination Rules"
+
+    complementarity_matrix:
+      description: "γ-Matrix für ALPLA Interventionen"
+
+      positive_gamma:  # Verstärkende Wechselwirkungen
+        - pair: [INT1_rotation, INT2_career]
+          gamma: 0.35
+          mechanism: "Rotation zeigt Karrierewege auf"
+
+        - pair: [INT2_career, INT3_skill_pay]
+          gamma: 0.40
+          mechanism: "Career + Skill Pay verstärken Entwicklungsanreiz"
+
+        - pair: [INT5_autonomy, INT6_recognition]
+          gamma: 0.25
+          mechanism: "Autonomie + Anerkennung = Empowerment"
+
+        - pair: [Development, Financial]
+          gamma: 0.30
+          mechanism: "Skill-Entwicklung führt zu Lohnsteigerung"
+
+      negative_gamma:  # Substitutionseffekte
+        - pair: [INT3_skill_pay, INT8_restructuring]
+          gamma: -0.45
+          mechanism: "Zu viel Veränderung gleichzeitig"
+
+        - pair: [INT5_autonomy, INT8_restructuring]
+          gamma: -0.30
+          mechanism: "Team-Struktur muss stabil sein für Autonomie"
+
+      intervention_dimension_gamma:
+        description: "Welche Intervention wirkt auf welche FEPSDE-Dimension?"
+        matrix:
+          #           F     E     P     S     D     X
+          INT1: [ 0.05, 0.15, 0.20, 0.10, 0.40, 0.05]  # Rotation
+          INT2: [ 0.20, 0.15, 0.00, 0.10, 0.50, 0.10]  # Career
+          INT3: [ 0.60, 0.10, 0.00, 0.05, 0.25, 0.00]  # Skill Pay
+          INT4: [ 0.00, 0.15, 0.50, 0.10, 0.05, 0.05]  # Workload
+          INT5: [ 0.00, 0.30, 0.10, 0.15, 0.25, 0.15]  # Autonomy
+          INT6: [ 0.05, 0.45, 0.00, 0.30, 0.10, 0.10]  # Recognition
+          INT7: [ 0.05, 0.25, 0.05, 0.35, 0.20, 0.10]  # Onboarding
+          INT8: [ 0.00, 0.20, 0.05, 0.55, 0.10, 0.05]  # Team
+
+  # ---------------------------------------------------------------------------
+  # WHEN (V): Wann zählt Kontext?
+  # ---------------------------------------------------------------------------
+  WHEN:
+    core_code: "WHEN"
+    core_appendix: "V"
+    question: "Welcher Kontext beeinflusst Churn und Interventions-Effektivität?"
+
+    psi_dimension_mapping:
+      Psi_1_economic:
+        description: "Wirtschaftlicher Kontext"
+        alpla_dimensions: ["L (Labor Market)"]
+        variables:
+          - "L1_unemployment"
+          - "L2_mfg_establishments"
+          - "L4_mfg_wage"
+          - "L5_cost_of_living"
+        effect_on_churn: |
+          Niedrige Arbeitslosigkeit → mehr Optionen → höhere Churn
+          Hohe Manufacturing-Dichte → mehr Wettbewerb → höhere Churn
+
+      Psi_2_social:
+        description: "Sozialer Kontext"
+        alpla_dimensions: ["K (Culture)"]
+        variables:
+          - "K1_team_cohesion"
+          - "K2_communication"
+          - "K5_job_satisfaction"
+        effect_on_churn: |
+          Starke Teamkultur → niedrigere Churn
+          Hohe Zufriedenheit → niedrigere Churn
+
+      Psi_3_temporal:
+        description: "Zeitlicher Kontext"
+        alpla_dimensions: ["T (Temporal)"]
+        variables:
+          - "T1_churn_seasonality"
+          - "T2_growth_trajectory"
+          - "T3_planned_changes"
+          - "T4_wage_round"
+        effect_on_churn: |
+          Saisonalität beeinflusst Timing
+          Wachstum verstärkt Churn-Problem
+          Geplante Änderungen sind Confounder
+
+      Psi_4_spatial:
+        description: "Räumlicher Kontext"
+        alpla_dimensions: ["S (Structural)", "L (Labor Market)"]
+        variables:
+          - "S1_plant_type"
+          - "L3_urbanization"
+        effect_on_churn: |
+          Urban → mehr Alternativen → höhere Churn
+          In-House → Abhängigkeit → Sondereffekte
+
+      Psi_5_institutional:
+        description: "Institutioneller Kontext"
+        alpla_dimensions: ["O (Organizational)"]
+        variables:
+          - "O3_certification_level"
+          - "O5_union_presence"
+        effect_on_churn: |
+          Gewerkschaft → andere Dynamik
+          Zertifizierungen → Prozess-Constraints
+
+      Psi_6_cultural:
+        description: "Kultureller Kontext"
+        alpla_dimensions: ["K (Culture)", "M (Management)"]
+        variables:
+          - "K3_change_history"
+          - "K4_change_readiness"
+          - "M4_leadership_style"
+        effect_on_churn: |
+          Positive Change-Erfahrung → bessere Akzeptanz
+          Supportive Leadership → niedrigere Churn
+
+      Psi_7_technological:
+        description: "Technologischer Kontext"
+        alpla_dimensions: ["S (Structural)", "O (Organizational)"]
+        variables:
+          - "S5_technology_level"
+          - "O4_automation_level"
+          - "R2_it_infrastructure"
+        effect_on_churn: |
+          Höhere Automatisierung → weniger BC5
+          IT-Infrastruktur → besseres Tracking
+
+      Psi_8_environmental:
+        description: "Umgebungskontext"
+        alpla_dimensions: ["S (Structural)"]
+        variables:
+          - "Physical work environment"
+          - "Safety conditions"
+        effect_on_churn: |
+          Schlechte Arbeitsbedingungen → höhere Churn
+
+  # ---------------------------------------------------------------------------
+  # WHERE (BBB): Woher die Zahlen?
+  # ---------------------------------------------------------------------------
+  WHERE:
+    core_code: "WHERE"
+    core_appendix: "BBB"
+    question: "Woher kommen die Parameter für das ALPLA-Modell?"
+
+    alpla_mapping:
+      primary_source: "P (Performance) + BBB Estimation"
+      estimation_methods:
+        - "LLMMC (LLM Monte Carlo)"
+        - "Sekundärdaten (BLS, Census)"
+        - "Primärerhebung (Surveys, Interviews)"
+
+    parameter_categories:
+      Theta_structural:
+        description: "Parameter aus strukturellen Daten"
+        source: "L1_existing / L2_request"
+        confidence: "high"
+        variables: ["S1-S6", "L1-L5", "O1-O5"]
+
+      Theta_performance:
+        description: "Performance-Parameter"
+        source: "L1_existing (LLMMC) / L2_request (Ist)"
+        confidence: "medium → high (nach Validierung)"
+        variables: ["P1", "P1a", "P1_BC", "P1_WC", "P2", "P3", "P4"]
+
+      Theta_intervention:
+        description: "Interventions-Effekt-Parameter"
+        source: "Literature + LLMMC + Field Experiment"
+        confidence: "medium (a priori) → high (post-experiment)"
+        variables: ["Expected Churn Reduction per INT"]
+
+      Theta_soft:
+        description: "Soft Factor Parameter"
+        source: "L3_collect (Surveys)"
+        confidence: "medium"
+        variables: ["M4", "M5", "K1-K5", "R3-R5"]
+
+    epistemic_status:
+      format: "E(θ) = (point_estimate, CI_95, source, confidence)"
+      example:
+        parameter: "Churn Reduction from INT1"
+        point_estimate: "6.5%"
+        CI_95: "[4.2%, 8.8%]"
+        source: "Meta-Analysis Job Rotation Studies"
+        confidence: "medium"
+
+  # ---------------------------------------------------------------------------
+  # AWARE (AU): Wie bewusst?
+  # ---------------------------------------------------------------------------
+  AWARE:
+    core_code: "AWARE"
+    core_appendix: "AU"
+    question: "Wie bewusst sind MA und Management über Churn-Treiber?"
+
+    alpla_mapping:
+      primary_source: "M (Management) + K (Culture)"
+
+    awareness_levels:
+      A_employee:
+        description: "MA-Awareness über eigene Situation"
+        variables:
+          - "K5_job_satisfaction (Selbsteinschätzung)"
+          - "K4_change_readiness"
+        formula: "A_emp = f(information, reflection, alternatives)"
+
+      A_management:
+        description: "Management-Awareness über Churn-Problem"
+        variables:
+          - "M5_intervention_buyin"
+          - "M1_pm_tenure"
+        formula: "A_mgmt = f(data_access, experience, attention)"
+
+      A_organization:
+        description: "Organisationale Awareness"
+        variables:
+          - "R1_hr_capacity"
+          - "R2_it_infrastructure"
+        formula: "A_org = f(systems, processes, culture)"
+
+    awareness_function:
+      description: "Filter von potentieller zu effektiver Utility"
+      formula: "U_eff = A(t*) × U_pot"
+      application: |
+        - Wenn MA nicht weiß, dass Career Pathway existiert: A = 0
+        - Wenn Recognition nicht kommuniziert wird: A < 1
+        - Höhere Kommunikation → höheres A → höhere Effektivität
+
+  # ---------------------------------------------------------------------------
+  # READY (AV): Handlungsbereit?
+  # ---------------------------------------------------------------------------
+  READY:
+    core_code: "READY"
+    core_appendix: "AV"
+    question: "Ist das Werk bereit für Intervention?"
+
+    alpla_mapping:
+      primary_source: "R (Implementation Readiness)"
+
+    readiness_components:
+      WAX_willingness:
+        description: "Willingness to Act"
+        variables:
+          - "M5_intervention_buyin"
+          - "K4_change_readiness"
+        formula: "WAX = f(M5, K4, perceived_benefit)"
+
+      theta_threshold:
+        description: "Handlungsschwelle"
+        variables:
+          - "R3_budget_available"
+          - "R1_hr_capacity"
+          - "T3_planned_changes"
+        formula: "θ = f(resource_constraints, timing)"
+
+    action_decision:
+      formula: "Action ⟺ WAX(U_eff, φ, Ψ) ≥ θ(Ψ)"
+      application: |
+        - Hohe Buy-In (M5 ≥ 4) → WAX hoch
+        - Budget vorhanden (R3 ≥ 3) → θ niedriger
+        - Keine Confounders (T3 = none) → θ niedriger
+        - Action = Intervention durchführen
+
+  # ---------------------------------------------------------------------------
+  # STAGE (AW): Wo in der Verhaltensänderung?
+  # ---------------------------------------------------------------------------
+  STAGE:
+    core_code: "STAGE"
+    core_appendix: "AW"
+    question: "Wo steht das Werk in der Behavioral Change Journey?"
+
+    alpla_mapping:
+      primary_source: "T (Temporal) + BCJ Phases"
+
+    bcj_phases:
+      phase_1_awareness:
+        S_range: "[0, 0.2)"
+        description: "Problem wird erkannt"
+        alpla_indicators:
+          - "Hohe Churn wird bemerkt"
+          - "HR schlägt Alarm"
+        intervention_fit: "Awareness-Interventionen, Datensammlung"
+
+      phase_2_trigger:
+        S_range: "[0.2, 0.4)"
+        description: "Auslöser für Veränderung"
+        alpla_indicators:
+          - "Management Buy-In entsteht"
+          - "Budget wird allokiert"
+        intervention_fit: "Planning, Pilot-Design"
+
+      phase_3_action:
+        S_range: "[0.4, 0.6)"
+        description: "Intervention wird implementiert"
+        alpla_indicators:
+          - "Roll-out der Maßnahmen"
+          - "Erste Verhaltensänderungen"
+        intervention_fit: "Alle 8 Interventionen"
+
+      phase_4_maintenance:
+        S_range: "[0.6, 0.8)"
+        description: "Veränderung wird stabilisiert"
+        alpla_indicators:
+          - "Churn sinkt messbar"
+          - "Prozesse werden Routine"
+        intervention_fit: "Recognition, Monitoring"
+
+      phase_5_stabilization:
+        S_range: "[0.8, 1.0]"
+        description: "Neuer Gleichgewichtszustand"
+        alpla_indicators:
+          - "Niedriger Churn nachhaltig"
+          - "Kultur verändert"
+        intervention_fit: "Continuous Improvement"
+
+    stage_dynamics:
+      formula: "dS/dt = (1/τ) × [S*(A, WAX, Ψ) - S(t)]"
+      tau_estimation:
+        description: "Zeitkonstante für Verhaltensänderung"
+        values:
+          recognition_program: "τ ≈ 4 Wochen"
+          job_rotation: "τ ≈ 8 Wochen"
+          career_pathway: "τ ≈ 16 Wochen"
+          skill_based_pay: "τ ≈ 24 Wochen"
+          culture_change: "τ ≈ 52 Wochen"
+
+  # ---------------------------------------------------------------------------
+  # HIERARCHY (HI): Entscheidungshierarchie
+  # ---------------------------------------------------------------------------
+  HIERARCHY:
+    core_code: "HIERARCHY"
+    core_appendix: "HI"
+    question: "Wie stratifizieren sich die Entscheidungen?"
+
+    alpla_mapping:
+      primary_source: "Decision Levels in AISA"
+
+    decision_levels:
+      L0_operative:
+        description: "Tägliche operative Entscheidungen"
+        alpla_examples:
+          - "Schichteinteilung"
+          - "Task-Zuweisung"
+          - "Rotation durchführen"
+        decision_maker: "Supervisor"
+
+      L1_strategic_roots:
+        description: "Strategische Grundsatzentscheidungen"
+        alpla_examples:
+          - "Teilnahme am Experiment"
+          - "Budget-Allokation"
+          - "Interventions-Mix wählen"
+        decision_maker: "Plant Manager + Regional HR"
+
+      L2_derived:
+        description: "Koordinierte Folgeentscheidungen"
+        alpla_examples:
+          - "Timing der Roll-outs"
+          - "Pilot vs. Full-Scale"
+          - "Anpassungen während Experiment"
+        decision_maker: "Plant Manager + Supervisors"
+
+      L3_emergent:
+        description: "Emergente System-Muster"
+        alpla_examples:
+          - "Kulturwandel"
+          - "Vertrauensbildung"
+          - "Selbstverstärkende Effekte"
+        emergence: "Nicht direkt steuerbar"
+
+    N_L2_formula:
+      description: "Anzahl benötigter koordinierter Entscheidungen"
+      formula: "N_L2 = α·γ_avg × n × (1-m) / log(n)"
+      alpla_application:
+        n: "Anzahl Interventionen (3)"
+        gamma_avg: "Durchschnittliche Komplementarität (0.25)"
+        m: "Modularität (0.4)"
+        alpha: "Koordinationsfaktor (0.8)"
+        result: "N_L2 ≈ 5 koordinierte Entscheidungen pro Werk"
+
+# =============================================================================
+# TEIL 2: MAPPING AUF HHH 20-FIELD INTERVENTION SCHEMA
+# =============================================================================
+
+hhh_integration:
+  description: |
+    Das HHH 20-Field Schema ist das Standard-Format für Interventionen im EBF.
+    Jede ALPLA-Intervention wird auf dieses Schema gemappt.
+
+  intervention_mapping:
+    INT1_job_rotation:
+      F1_title: "Job Rotation Program"
+      F2_type: "Contextual (→ κ_KON)"
+      F3_context: "Ψ₄ (Spatial) + Ψ₃ (Temporal)"
+      F4_target_level: "L3 (Group/Team)"
+      F5_fepsde: "Development (D) + Physical (P)"
+      F6_journey_phase: "Action (S ∈ [0.4, 0.6))"
+      F7_framing: "Positive (Skill-Building)"
+      F8_autonomy: "Default (opt-out möglich)"
+      F9_segment: "BC1, BC5"
+      F10_complementarity: "γ(INT1, INT2) = 0.35"
+      F11_side_effect: "Low"
+      F12_temporal_scope: "Tactical (weeks-months)"
+      F13_evaluation: "Churn Rate Comparison T/C"
+      F14_path_function: "Door-opener"
+      F15_repetition: "Cyclic"
+      F16_responsible: "Supervisor + HR"
+      F17_source: "Hackman & Oldham (1976); Meta-Analysis"
+      F18_system_id: "ALPLA-INT1-2026"
+      F19_description: "Systematischer Wechsel zwischen Aufgaben zur Reduktion von Monotonie"
+      F20_status: "Proposed"
+
+    INT2_career_pathway:
+      F1_title: "Career Pathway Program"
+      F2_type: "Identity (→ W_base)"
+      F3_context: "Ψ₁ (Economic) + Ψ₅ (Institutional)"
+      F4_target_level: "L1 (Individual)"
+      F5_fepsde: "Development (D) + Financial (F)"
+      F6_journey_phase: "Action (S ∈ [0.4, 0.6))"
+      F7_framing: "Positive (Growth)"
+      F8_autonomy: "Voluntary"
+      F9_segment: "BC4, BC5"
+      F10_complementarity: "γ(INT2, INT3) = 0.40"
+      F11_side_effect: "Low"
+      F12_temporal_scope: "Strategic (months-years)"
+      F13_evaluation: "Churn Rate + Promotion Rate"
+      F14_path_function: "Escalator"
+      F15_repetition: "No (continuous)"
+      F16_responsible: "HR + Plant Manager"
+      F17_source: "Heckman Skill Formation; Internal Mobility Literature"
+      F18_system_id: "ALPLA-INT2-2026"
+      F19_description: "Transparente Aufstiegswege mit definierten Meilensteinen"
+      F20_status: "Proposed"
+
+    INT6_recognition:
+      F1_title: "Recognition Program"
+      F2_type: "Feedback (→ κ_AWX)"
+      F3_context: "Ψ₂ (Social) + Ψ₆ (Cultural)"
+      F4_target_level: "L1-L3 (Individual + Team)"
+      F5_fepsde: "Emotional (E) + Social (S)"
+      F6_journey_phase: "All Phases"
+      F7_framing: "Positive"
+      F8_autonomy: "Default"
+      F9_segment: "All BC"
+      F10_complementarity: "γ(INT6, all) > 0 (universal complement)"
+      F11_side_effect: "Low"
+      F12_temporal_scope: "Operative (days-weeks)"
+      F13_evaluation: "Satisfaction Survey + Churn"
+      F14_path_function: "Amplifier"
+      F15_repetition: "Cyclic (monthly)"
+      F16_responsible: "Supervisor"
+      F17_source: "Ariely Recognition Studies"
+      F18_system_id: "ALPLA-INT6-2026"
+      F19_description: "Systematische Anerkennung guter Leistung"
+      F20_status: "Baseline (always included)"
+
+# =============================================================================
+# TEIL 3: EBF OUTPUT-GLEICHUNGEN FÜR ALPLA
+# =============================================================================
+
+ebf_equations:
+  stage_1_potential_utility:
+    name: "Potential Utility für ALPLA-Mitarbeiter"
+    formula: |
+      U^pot_i = Σ_L α^L(Ψ) · [Σ_d ω_d · U_d + Σ γ_dd' · U_d·U_d']
+
+      wobei:
+      - L = {Individual, Team, Organization}
+      - d = {Financial, Emotional, Physical, Social, Development, Existential}
+      - γ = Complementarity Matrix aus HOW
+      - Ψ = Context Vector aus WHEN
+
+    alpla_specification: |
+      U^pot_BC1 = 0.4·α^L1 + 0.35·α^L3 + 0.25·α^L4
+
+      mit:
+      - α^L1(standalone) = 0.5
+      - α^L3(standalone) = 0.35
+      - α^L4(standalone) = 0.15
+
+  stage_2_effective_utility:
+    name: "Effective Utility (gefiltert durch Awareness)"
+    formula: |
+      U^eff_i(t*) = A_i(t*) × U^pot_i
+
+    alpla_specification: |
+      A_i = f(information_access, communication, salience)
+
+      Für Recognition Intervention:
+      - Pre-Intervention: A ≈ 0.3 (niedrige Sichtbarkeit)
+      - Post-Intervention: A ≈ 0.8 (hohe Sichtbarkeit)
+
+  stage_3_action_decision:
+    name: "Stay/Leave Decision"
+    formula: |
+      Stay ⟺ WAX(U^eff, φ, Ψ) ≥ θ(Ψ)
+      Leave ⟺ WAX(U^eff, φ, Ψ) < θ(Ψ)
+
+    alpla_specification: |
+      WAX = W_base × (1 + κ_INT) × (1 + κ_context)
+
+      wobei:
+      - W_base = Baseline Willingness to Stay
+      - κ_INT = Effekt der Interventionen
+      - θ = Schwelle (abhängig von Alternativen am Arbeitsmarkt)
+
+  stage_4_churn_dynamics:
+    name: "Churn Rate Dynamics"
+    formula: |
+      dChurn/dt = (1/τ) × [Churn*(Interventions, Ψ) - Churn(t)]
+
+    alpla_specification: |
+      Churn*(INT1, INT2, INT6) = Churn_baseline × (1 - ΔR)
+
+      wobei:
+      - Churn_baseline = aktueller Churn ohne Intervention
+      - ΔR = Expected Churn Reduction
+      - τ = Time Constant (8-24 Wochen je nach Intervention)
+
+# =============================================================================
+# TEIL 4: FIELD EXPERIMENT DESIGN MIT EBF
+# =============================================================================
+
+field_experiment_design:
+  treatment_control:
+    description: "Matched Pairs Design basierend auf Plant Deltas"
+
+    matching_criteria:
+      primary:
+        - "IFI Cluster (A, B, C, D, E)"
+        - "Plant Size (±20%)"
+        - "Churn Rate (±5pp)"
+      secondary:
+        - "Unemployment Rate (±1pp)"
+        - "Plant Type"
+
+    treatment_arms:
+      arm_T:
+        n_plants: 6
+        intervention: "Full Bundle (Primary + Secondary + Baseline)"
+        expected_effect: "Churn -6-10%"
+
+      arm_C:
+        n_plants: 6
+        intervention: "Baseline only (INT6 Recognition)"
+        expected_effect: "Churn -1-2%"
+
+  measurement_protocol:
+    baseline:
+      timing: "T-0 (vor Intervention)"
+      variables:
+        - "P1_churn (Ist-Daten von ALPLA)"
+        - "K1-K5 (Survey)"
+        - "M4-M5 (Survey)"
+
+    midpoint:
+      timing: "T+6 months"
+      variables:
+        - "P1_churn (6M rolling)"
+        - "K5_satisfaction (Survey)"
+        - "Implementation Fidelity"
+
+    endpoint:
+      timing: "T+12 months"
+      variables:
+        - "P1_churn (12M rolling)"
+        - "Full Survey Battery"
+        - "Cost-Benefit Analysis"
+
+  analysis_plan:
+    primary_outcome:
+      variable: "Δ Churn Rate (T vs C)"
+      method: "Difference-in-Differences"
+
+    secondary_outcomes:
+      - "Δ Job Satisfaction (K5)"
+      - "Δ Tenure Distribution"
+      - "ROI per Intervention"
+
+    heterogeneity_analysis:
+      - "By IFI Cluster"
+      - "By Plant Type"
+      - "By Job Category (BC1-BC5)"
+
+# =============================================================================
+# TEIL 5: INTEGRATION MIT BESTEHENDEN EBF APPENDICES
+# =============================================================================
+
+ebf_appendix_integration:
+  core_appendices:
+    AAA_who:
+      integration: "Job Profiles (BC1-BC5) als Welfare Levels"
+      new_contribution: "Blue Collar Level Specification"
+
+    B_how:
+      integration: "Intervention Complementarity Matrix"
+      new_contribution: "γ-Werte für 8 Interventionen"
+
+    V_when:
+      integration: "9 ALPLA Dimensionen als Ψ-Spezifikation"
+      new_contribution: "Manufacturing Context Operationalization"
+
+    BBB_where:
+      integration: "47 Variablen mit Measurement Protocol"
+      new_contribution: "LLMMC + Field Data Validation"
+
+    AU_aware:
+      integration: "MA + Mgmt Awareness Levels"
+      new_contribution: "Awareness im Arbeitsplatz-Kontext"
+
+    AV_ready:
+      integration: "Implementation Readiness (R1-R5)"
+      new_contribution: "Organizational Readiness Assessment"
+
+    AW_stage:
+      integration: "BCJ Phases für Churn-Intervention"
+      new_contribution: "Time Constants für Workplace Interventions"
+
+    HI_hierarchy:
+      integration: "Decision Hierarchy für Field Experiment"
+      new_contribution: "N_L2 für Multi-Plant Coordination"
+
+  method_appendices:
+    AN_llmmc:
+      integration: "Parameter Estimation für 47 Variablen"
+
+    HHH_toolkit:
+      integration: "8 Interventionen im 20-Field Format"
+
+    EEE_design:
+      integration: "Model Design Workflow für ALPLA"
+
+    FFF_registry:
+      integration: "ALPLA Churn Model als Seed Model"
+
+# =============================================================================
+# ZUSAMMENFASSUNG
+# =============================================================================
+
+summary:
+  title: "ALPLA-EBF Integration Summary"
+
+  key_mappings:
+    - mapping: "9 ALPLA Dimensions → 10C CORE"
+      completeness: "100%"
+
+    - mapping: "47 Variables → Θ Parameters (WHERE)"
+      completeness: "100%"
+
+    - mapping: "8 Interventions → HHH 20-Field"
+      completeness: "100%"
+
+    - mapping: "5 IFI Clusters → BCJ Phases"
+      completeness: "100%"
+
+  new_contributions:
+    - "First DOMAIN application of full 10C framework to churn reduction"
+    - "Manufacturing-specific Ψ context operationalization"
+    - "Intervention complementarity matrix (γ) for HR interventions"
+    - "BCJ time constants (τ) for workplace interventions"
+    - "Field experiment protocol with EBF measurement framework"
+
+  next_steps:
+    1: "Create formal DOMAIN-ALPLA appendix (LaTeX)"
+    2: "Register ALPLA Churn Model in FFF Registry"
+    3: "Validate LLMMC parameters with ALPLA Ist-Daten"
+    4: "Execute Field Experiment (12 months)"
+    5: "Update BBB with empirical parameter estimates"

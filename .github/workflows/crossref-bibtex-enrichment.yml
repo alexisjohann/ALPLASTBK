@@ -1,0 +1,112 @@
+# =============================================================================
+# CROSSREF BIBTEX ENRICHMENT
+# =============================================================================
+# Automatically enriches bcm_master.bib with CrossRef metadata.
+#
+# Features:
+#   - Find missing DOIs by title search
+#   - Update citation counts
+#   - Validate existing DOIs
+#   - Fill missing metadata (volume, pages)
+#
+# Triggers:
+#   - Manual (workflow_dispatch)
+#   - Monthly on 1st at 06:00 UTC (citation updates)
+#
+# API: CrossRef (kostenlos, kein API-Key)
+# =============================================================================
+
+name: CrossRef BibTeX Enrichment
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Enrichment mode'
+        type: choice
+        required: true
+        default: 'report'
+        options:
+          - report        # Only generate report
+          - find-dois     # Find missing DOIs
+          - citations     # Update citation counts
+          - full          # Full enrichment
+      limit:
+        description: 'Max entries to process'
+        required: false
+        default: '100'
+      apply_updates:
+        description: 'Apply updates to BibTeX'
+        type: boolean
+        default: false
+
+  schedule:
+    # Monthly on 1st at 06:00 UTC - citation updates
+    - cron: '0 6 1 * *'
+
+jobs:
+  enrich-bibtex:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests pyyaml
+
+      - name: Run enrichment (report only)
+        if: ${{ github.event.inputs.mode == 'report' || github.event.inputs.mode == '' }}
+        run: |
+          python scripts/enrich_bibtex.py \
+            --limit ${{ github.event.inputs.limit || '100' }}
+
+      - name: Find missing DOIs
+        if: ${{ github.event.inputs.mode == 'find-dois' }}
+        run: |
+          python scripts/enrich_bibtex.py \
+            --find-dois \
+            --limit ${{ github.event.inputs.limit || '50' }} \
+            ${{ github.event.inputs.apply_updates == 'true' && '--update' || '' }}
+
+      - name: Update citation counts
+        if: ${{ github.event.inputs.mode == 'citations' || github.event_name == 'schedule' }}
+        run: |
+          python scripts/enrich_bibtex.py \
+            --citations \
+            --limit ${{ github.event.inputs.limit || '200' }} \
+            ${{ (github.event.inputs.apply_updates == 'true' || github.event_name == 'schedule') && '--update' || '' }}
+
+      - name: Full enrichment
+        if: ${{ github.event.inputs.mode == 'full' }}
+        run: |
+          python scripts/enrich_bibtex.py \
+            --limit ${{ github.event.inputs.limit || '100' }} \
+            ${{ github.event.inputs.apply_updates == 'true' && '--update' || '' }}
+
+      - name: Commit changes
+        if: ${{ github.event.inputs.apply_updates == 'true' || github.event_name == 'schedule' }}
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add bibliography/bcm_master.bib
+          git diff --staged --quiet || git commit -m "feat(bib): Enrich BibTeX with CrossRef data
+
+          - Updated citation counts
+          - Added missing DOIs where found
+          - Filled missing metadata fields"
+          git push || echo "Nothing to push"
+
+      - name: Upload enrichment report
+        uses: actions/upload-artifact@v4
+        with:
+          name: enrichment-report
+          path: |
+            bibliography/bcm_master.bib.backup
+          retention-days: 7

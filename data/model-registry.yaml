@@ -1,0 +1,3940 @@
+metadata:
+  total_models: 21
+  last_updated: '2026-02-05'
+  version: '1.16'
+learning:
+  enabled: true
+  log_file: data/model-learning-log.yaml
+  sources:
+  - session_models
+  - project_models
+  - case_models
+models:
+- id: MOD-001
+  name: Religious Tradition Distance Model
+  version: '2.0'
+  created: '2026-01-25'
+  last_updated: '2026-01-25'
+  created_in_session: EBF-S-2026-01-25-REL-001
+  evolved_in_sessions:
+  - EBF-S-2026-01-25-REL-001
+  question_type: distance_comparison
+  question_template: Ist [A] näher zu [B] oder [C]?
+  example_questions:
+  - Ist Alevitentum näher zu Zoroastrismus oder Sunnismus?
+  - Ist Protestantismus näher zu Katholizismus oder Orthodoxie?
+  - Ist Sufismus näher zu Sunnismus oder Schiismus?
+  core_dimensions:
+    primary:
+    - WHAT
+    - WHEN
+    secondary:
+    - WHO
+    - HOW
+    extended:
+    - AWARE
+  psi_dimensions:
+  - Ψ_I
+  - Ψ_S
+  - Ψ_K
+  - Ψ_C
+  - Ψ_T
+  - Ψ_E
+  - Ψ_F
+  variables:
+  - symbol: κ
+    name: ritual_rigidity
+    description: Wie verbindlich sind religiöse Praktiken?
+    scale: '[0,1]'
+    source_psi: Ψ_I
+    weight: 0.12
+    group: core_identity
+  - symbol: σ
+    name: authority_sensitivity
+    description: Wie wichtig ist religiöse Hierarchie?
+    scale: '[0,1]'
+    source_psi: Ψ_S
+    weight: 0.12
+    group: core_identity
+  - symbol: γ
+    name: gender_equality
+    description: Geschlechter-Egalität in Praktiken
+    scale: '[0,1]'
+    source_psi: Ψ_S
+    weight: 0.12
+    group: core_identity
+  - symbol: τ
+    name: syncretism_tolerance
+    description: Werden fremde Elemente aufgenommen?
+    scale: '[0,1]'
+    source_psi: Ψ_K
+    weight: 0.12
+    group: core_identity
+  - symbol: ω
+    name: mysticism_orientation
+    description: Innere Erfahrung vs. äußeres Gesetz
+    scale: '[0,1]'
+    source_psi: Ψ_C
+    weight: 0.12
+    group: core_identity
+  - symbol: δ
+    name: afterlife_focus
+    description: Wie stark bestimmt Jenseits das Diesseits?
+    scale: '[0,1]'
+    source_psi: Ψ_K
+    weight: 0.12
+    group: core_identity
+  - symbol: η
+    name: historical_roots
+    description: Gemeinsame historische Wurzeln und Einflüsse
+    scale: '[0,1]'
+    source_psi: Ψ_T
+    weight: 0.08
+    group: historical_geographic
+    added_in: v2
+  - symbol: φ
+    name: geographic_proximity
+    description: Räumliche Nähe der Ursprungsregionen
+    scale: '[0,1]'
+    source_psi: Ψ_F
+    weight: 0.08
+    group: historical_geographic
+    added_in: v2
+  - symbol: π
+    name: practice_intensity
+    description: Alltags-Religiosität, Häufigkeit der Praxis
+    scale: '[0,1]'
+    source_psi: Ψ_I
+    weight: 0.04
+    group: context
+    added_in: v2
+  - symbol: α
+    name: awareness_minority
+    description: Minderheits- vs. Mehrheitsbewusstsein
+    scale: '[0,1]'
+    source_psi: AWARE
+    weight: 0.04
+    group: context
+    added_in: v2
+  - symbol: ε
+    name: economic_tradition
+    description: Charakteristische Wirtschaftsstrukturen
+    scale: '[0,1]'
+    source_psi: Ψ_E
+    weight: 0.04
+    group: context
+    added_in: v2
+  functional_form:
+    type: weighted_euclidean_distance
+    formula: d(A,B) = √[Σᵢ wᵢ · (pᵢᴬ - pᵢᴮ)²]
+    interpretation: Je größer d, desto unterschiedlicher die Traditionen
+    weights:
+      core_identity: 0.72
+      historical_geographic: 0.16
+      context: 0.12
+      total: 1.0
+  theory_basis:
+    primary:
+    - theory_id: MS-IB-001
+      name: Identity Economics
+      authors: Akerlof, Kranton
+      year: 2000
+      relevance: Religiöse Identität formt U_IDN
+    secondary:
+    - theory_id: MS-IB-008
+      name: Social Identity
+      authors: Tajfel, Turner
+      year: 1979
+      relevance: In-group/Out-group Dynamik
+  data_sources:
+  - source: BCM2_07_REL_religious_context.yaml
+    type: context_database
+    coverage: 8 Traditionen profiliert
+  - source: bcm_master.bib
+    type: literature
+    key_papers:
+    - soekefeld2008struggling
+    - dressler2013writing
+    - boyce1979zoroastrians
+    - melikoff1998hadji
+    - kehlbodrogi1988kizilbas
+    - shankland2003alevis
+  validation:
+    status: validated
+    applied_cases: 2
+    last_application: '2026-01-25'
+    notes: v2 validiert durch STANDARD-Workflow mit User-Feedback
+  example_results:
+    case: Alevi-Zoro-Sunni
+    model_version: v2
+    results:
+      d_alevi_zoro: 0.286
+      d_alevi_sunni: 0.589
+      ratio: 2.06
+      confidence: 68% CI
+      ci_zoro: '[0.22, 0.35]'
+      ci_sunni: '[0.51, 0.67]'
+      robustness: P(d_Zoro < d_Sunni) > 99.5%
+      main_drivers:
+      - variable: τ_syncretism
+        contribution: 24.5%
+      - variable: γ_gender
+        contribution: 16.2%
+      - variable: ω_mysticism
+        contribution: 15.0%
+      - variable: κ_ritual
+        contribution: 12.2%
+      - variable: η_historical
+        contribution: 11.9%
+  version_history:
+  - version: '1.0'
+    date: '2026-01-25'
+    changes: Initial model with 6 variables
+    variables: 6
+    formula: unweighted euclidean
+  - version: '2.0'
+    date: '2026-01-25'
+    changes: Extended to 11 variables with weighting based on User-Feedback in STANDARD-Workflow
+    variables: 11
+    formula: weighted euclidean
+    user_feedback:
+      context: Alle (K1+K2+K3+K4)
+      model: Alle (M1+M2+M3+M4+M5+M6)
+      parameter: P6 (Weiter)
+      answer: A6 (Keine Änderung)
+- id: MOD-REF-001
+  name: Organic Referral Behavior Model
+  version: '1.0'
+  created: '2026-01-25'
+  last_updated: '2026-01-25'
+  created_in_session: EBF-S-2026-01-25-FIN-002
+  evolved_in_sessions:
+  - EBF-S-2026-01-25-FIN-002
+  question_type: referral_activation
+  question_template: Wie können wir [Kundensegment] dazu bringen, organisch über [Produkt/Service]
+    zu sprechen?
+  example_questions:
+  - Wie stimulieren wir UBS Vorsorge-Kunden zu positivem Word-of-Mouth?
+  - Wie aktivieren wir Bestandskunden als Markenbotschafter?
+  - Wie fördern wir organische Empfehlungen ohne monetäre Anreize?
+  core_dimensions:
+    primary:
+    - WHAT
+    - WHO
+    - HOW
+    secondary:
+    - AWARE
+    - STAGE
+    extended:
+    - WHEN
+    - WHERE
+    - READY
+    - HIERARCHY
+  psi_dimensions:
+  - Ψ_K
+  - Ψ_S
+  - Ψ_I
+  - Ψ_C
+  - Ψ_T
+  - Ψ_E
+  - Ψ_F
+  segments:
+  - id: A
+    name: Active Ambassadors
+    proportion: 0.15
+    sigma: 2.2
+    characteristics: Hohe Zufriedenheit, extrovertiert, meinungsführend
+    intervention_affinity:
+    - Identity Activation
+    - Social Recognition
+  - id: B
+    name: Quiet Satisfied
+    proportion: 0.45
+    sigma: 0.8
+    characteristics: Zufrieden aber zurückhaltend, Privatsphäre-orientiert
+    intervention_affinity:
+    - Facilitated Sharing
+    - Subtle Social Proof
+  - id: C
+    name: Occasional Recommenders
+    proportion: 0.3
+    sigma: 1.4
+    characteristics: Situativ empfehlend, wenn direkt gefragt
+    intervention_affinity:
+    - Conversation Starters
+    - Warm Glow Activation
+  - id: D
+    name: Private/Disengaged
+    proportion: 0.1
+    sigma: 0.3
+    characteristics: Neutral bis unzufrieden, spricht nicht über Finanzen
+    intervention_affinity:
+    - None - Focus on satisfaction first
+  utility_dimensions:
+  - symbol: U_IDN
+    name: identity_utility
+    description: Identität als kompetenter Vorsorge-Entscheider
+    weight: 0.35
+    activation_mechanism: Identity-consistent behavior
+  - symbol: U_SOC
+    name: social_utility
+    description: Soziale Anerkennung für hilfreiche Empfehlung
+    weight: 0.25
+    activation_mechanism: Peer recognition, gratitude
+  - symbol: U_PSY
+    name: psychological_utility
+    description: Warm Glow durch Helfen von Freunden/Familie
+    weight: 0.3
+    activation_mechanism: Altruistic satisfaction
+  - symbol: U_FIN
+    name: financial_utility
+    description: NICHT AKTIVIEREN - Crowding-Out Risiko
+    weight: 0.0
+    warning: Monetary incentives destroy intrinsic motivation
+  complementarity_matrix:
+  - pair:
+    - Identity
+    - Social
+    gamma_ij: 0.35
+    parameter_ref: PAR-COMP-001
+    mechanism: Identität wird durch soziale Bestätigung verstärkt
+  - pair:
+    - Social
+    - Warm Glow
+    gamma_ij: 0.28
+    parameter_ref: PAR-COMP-004
+    mechanism: Soziale Anerkennung aktiviert Warm Glow
+  - pair:
+    - Identity
+    - Warm Glow
+    gamma_ij: 0.22
+    parameter_ref: PAR-COMP-005
+    mechanism: Kompetenz-Identität führt zu Hilfsbereitschaft
+  - pair:
+    - Financial
+    - Any
+    gamma_ij: -0.68
+    parameter_ref: PAR-COMP-002
+    mechanism: 'CROWDING-OUT: Monetäre Anreize zerstören intrinsische Motivation'
+    warning: CRITICAL - Never combine with organic referral
+  functional_form:
+    type: portfolio_with_complementarity
+    formula: E(R) = Σᵢ βᵢ·Iᵢ + Σᵢⱼ γᵢⱼ·√(Iᵢ·Iⱼ) - φ·I_FIN
+    parameters:
+      beta_identity: 0.253
+      beta_social: 0.144
+      beta_facilitated: 0.169
+      gamma_12: 0.35
+      gamma_13: 0.22
+      gamma_23: 0.28
+      phi_crowding: 0.68
+  theory_basis:
+    primary:
+    - theory_id: MS-IB-001
+      name: Identity Economics
+      authors: Akerlof, Kranton
+      year: 2000
+      relevance: Referral als identitätskonsistentes Verhalten
+    - theory_id: MS-SP-007
+      name: Warm Glow
+      authors: Andreoni
+      year: 1990
+      relevance: Intrinsische Belohnung durch Helfen
+    secondary:
+    - theory_id: MS-IN-005
+      name: Motivation Crowding
+      authors: Frey, Jegen
+      year: 2001
+      relevance: Monetäre Anreize verdrängen intrinsische Motivation
+    - theory_id: MS-IF-008
+      name: Social Proof
+      authors: Cialdini
+      year: 1984
+      relevance: Normative Einflüsse auf Empfehlungsverhalten
+  data_sources:
+  - source: BCM2_MIKRO_UBS_context_relevance.yaml
+    type: context_database
+  - source: BCM2_04_KON_socio_cultural.yaml
+    type: context_database
+  - source: bcm_master.bib
+    type: literature
+    key_papers:
+    - akerlof2000economics
+    - andreoni1990impure
+    - frey2001motivation
+    - cialdini1984influence
+  context_parameters:
+    swiss_specific:
+      tau_taboo_finance:
+        mean: 0.72
+        ci_68:
+        - 0.65
+        - 0.79
+      trust_institutions:
+        mean: 0.78
+        ci_68:
+        - 0.72
+        - 0.84
+      privacy_norm:
+        mean: 0.85
+        ci_68:
+        - 0.8
+        - 0.9
+      quality_over_quantity:
+        mean: 0.82
+        ci_68:
+        - 0.76
+        - 0.88
+  validation:
+    status: initial
+    applied_cases: 1
+    last_application: '2026-01-25'
+    notes: Erstellt in TIEF-Analyse für UBS Vorsorge Referral Strategy
+  example_results:
+    case: UBS Vorsorge CH
+    results:
+      identity_activation: +25.3%
+      social_proof_warmglow: +14.4%
+      facilitated_sharing: +16.9%
+      portfolio_effect: +65.2%
+      complementarity_contribution: +8.6%
+      ci_95:
+      - +48.1%
+      - +82.3%
+  critical_warnings:
+  - type: contraindication
+    condition: Monetary referral incentives
+    risk: Destroys intrinsic motivation (φ = 0.68)
+    recommendation: NEVER use monetary incentives for organic referral
+  version_history:
+  - version: '1.0'
+    date: '2026-01-25'
+    changes: Initial model for UBS Vorsorge referral strategy
+    session: EBF-S-2026-01-25-FIN-002
+- id: MOD-PSF
+  name: Papal Succession Framework
+  version: '2.0'
+  created: '2025-05-08'
+  last_updated: '2026-01-25'
+  created_in_session: null
+  evolved_in_sessions:
+  - EBF-S-2026-01-25-REL-002
+  question_type: elite_selection
+  question_template: Wer wird zum [Amt] gewählt und warum?
+  example_questions:
+  - Wer wird der nächste Papst?
+  - Wie funktioniert das Konklave verhaltensökonomisch?
+  - Warum werden bestimmte Kandidaten gewählt?
+  core_dimensions:
+    primary:
+    - HOW
+    - WHEN
+    - WHO
+    secondary:
+    - AWARE
+    - READY
+  psi_dimensions:
+  - Ψ_I
+  - Ψ_S
+  - Ψ_K
+  - Ψ_F
+  - Ψ_E
+  - Ψ_T
+  variables:
+  - symbol: Λ
+    name: network_centrality
+    description: Position im Vatikan-Netzwerk, Betweenness Centrality
+    scale: '[0,1]'
+    source_psi: Ψ_S
+    weight: 0.4
+    group: structural
+    elasticity: 2.1
+  - symbol: Ι
+    name: integration_capacity
+    description: Fähigkeit, Fraktionen zu verbinden, Brückenbauer
+    scale: '[0,1]'
+    source_psi: Ψ_S
+    weight: 0.25
+    group: relational
+    elasticity: 1.4
+  - symbol: Π
+    name: predecessor_support
+    description: Signal des Vorgänger-Papstes (Ernennungen, Öffentliche Äußerungen)
+    scale: '[0,1]'
+    source_psi: Ψ_I
+    weight: 0.2
+    group: institutional
+    elasticity: 1.1
+  - symbol: Ν
+    name: ideological_neutrality
+    description: Nicht-Radikalität, Mitte-Position
+    scale: '[0,1]'
+    source_psi: Ψ_K
+    weight: 0.1
+    group: ideological
+    elasticity: 0.5
+  - symbol: Α
+    name: authentic_legitimacy
+    description: Demut, spirituelle Glaubwürdigkeit, percieved Authenticity
+    scale: '[0,1]'
+    source_psi: Ψ_K
+    weight: 0.05
+    group: personal
+    elasticity: 0.2
+  functional_form:
+    type: weighted_linear
+    formula: P(Kandidat_i) ∝ 0.40·Λ_i + 0.25·Ι_i + 0.20·Π_i + 0.10·Ν_i + 0.05·Α_i
+    interpretation: Je höher der Score, desto wahrscheinlicher die Wahl
+    weights:
+      structural: 0.4
+      relational: 0.25
+      institutional: 0.2
+      ideological: 0.1
+      personal: 0.05
+      total: 1.0
+  theory_basis:
+    primary:
+    - theory_id: MS-IN-004
+      name: Social Network Analysis
+      authors: Freeman, Burt
+      relevance: Betweenness Centrality als Wahlprädiktor
+    - theory_id: MS-IN-005
+      name: Coalition Formation
+      authors: Riker
+      relevance: Minimum Winning Coalition Dynamik
+    secondary:
+    - theory_id: MS-IB-001
+      name: Identity Economics
+      authors: Akerlof, Kranton
+      year: 2000
+      relevance: Kardinäle wählen identitätskonsistent
+  data_sources:
+  - source: PAP3_PAPAL-SUCCESSION-FRAMEWORK.tex
+    type: appendix
+  - source: bcm_master.bib
+    type: literature
+    key_papers:
+    - crokidakis2025conclave
+    - soda2025network
+    - antonioni2025totopapa
+    - baumgartner2003locked
+    - prevost2026psf
+  validation:
+    status: validated
+    applied_cases: 12
+    conclaves: 1878-2025
+    accuracy: 86%
+    rmse: 3.185
+    last_application: '2026-01-25'
+    notes: Post-hoc validiert mit Leo XIV (2025)
+  historical_data:
+  - pope: Johannes XXIII
+    year: 1958
+    Lambda: 0.7
+    Iota: 0.85
+    Pi: 0.6
+    Nu: 0.9
+    ballots: 4
+  - pope: Paul VI
+    year: 1963
+    Lambda: 0.9
+    Iota: 0.7
+    Pi: 0.95
+    Nu: 0.65
+    ballots: 6
+  - pope: Johannes Paul I
+    year: 1978
+    Lambda: 0.65
+    Iota: 0.88
+    Pi: 0.55
+    Nu: 0.92
+    ballots: 4
+  - pope: Johannes Paul II
+    year: 1978
+    Lambda: 0.45
+    Iota: 0.82
+    Pi: 0.3
+    Nu: 0.75
+    ballots: 8
+  - pope: Benedikt XVI
+    year: 2005
+    Lambda: 0.95
+    Iota: 0.55
+    Pi: 0.85
+    Nu: 0.5
+    ballots: 4
+  - pope: Franziskus
+    year: 2013
+    Lambda: 0.6
+    Iota: 0.9
+    Pi: 0.4
+    Nu: 0.85
+    ballots: 5
+  - pope: Leo XIV
+    year: 2025
+    Lambda: 0.85
+    Iota: 0.92
+    Pi: 0.95
+    Nu: 0.8
+    ballots: 5
+  design_principles:
+  - name: Isolation
+    effect: Reduziert externe Einflüsse
+  - name: Supermajorität
+    effect: Erzwingt Kompromiss (2/3)
+  - name: Geheime Abstimmung
+    effect: Schützt Gewissensfreiheit
+  - name: Iteration
+    effect: Ermöglicht Lernen (unbegrenzte Wahlgänge)
+  - name: Feedback-Signal
+    effect: Koordiniert Erwartungen (Rauch)
+  - name: Zeitdruck-Eskalation
+    effect: Erhöht Einigungsdruck (Fastenregeln)
+  - name: Strafandrohung
+    effect: Garantiert Compliance (Exkommunikation)
+  main_finding:
+    statement: Päpste werden nach Netzwerk-Position gewählt, nicht nach Ideologie
+    ratio_lambda_nu: '4:1'
+    robustness: 85% (Monte Carlo validiert)
+  version_history:
+  - version: '1.0'
+    date: '2025-05-01'
+    changes: Initial model (failed with Leo XIV prediction)
+    accuracy: ~5%
+  - version: '2.0'
+    date: '2025-05-15'
+    changes: Network-centric remodel after Leo XIV election
+    accuracy: 86%
+    key_change: Added Λ (Network Centrality) as dominant factor
+- id: MOD-ESL
+  name: Empirical Stability of Language Framework
+  version: '1.0'
+  created: '2026-01-26'
+  last_updated: '2026-01-26'
+  created_in_session: EBF-S-2026-01-26-OTH-001
+  evolved_in_sessions:
+  - EBF-S-2026-01-26-OTH-001
+  model_type: meta_axiom
+  level: 3
+  question_type: assertion_validation
+  question_template: Ist Aussage [c] epistemisch gerechtfertigt?
+  example_questions:
+  - Ist die assertive Stärke durch Evidenz gedeckt?
+  - Welche Konfidenz ist für diese Aussage angemessen?
+  - Wie kann Overconfidence in AI-Outputs reduziert werden?
+  core_principle:
+    name: ESL Inequality
+    formula: K(c) ≤ M(c)
+    interpretation: Assertive Stärke darf Evidenz-Stärke nicht überschreiten
+    variables:
+      K: Assertive strength (kommunizierte Konfidenz)
+      M: Evidence strength (gerechtfertigte Konfidenz)
+  axioms:
+  - id: ESL-1
+    name: Proportionalität
+    formula: '∀c: K(c) ≤ M(c)'
+    description: Assertive Stärke darf Evidenz-Stärke nicht überschreiten
+  - id: ESL-2
+    name: Evaluierbarkeit
+    formula: c zulässig ⟺ M(c) evaluierbar
+    description: Nur Aussagen mit berechenbarer Evidenz-Stärke
+  - id: ESL-3
+    name: Modellpflicht
+    formula: c ∈ Behavioral → ∃Model(c)
+    description: Verhaltensaussagen erfordern explizites Modell
+  - id: ESL-4
+    name: Externe Inferenz
+    formula: M(c) ⊥ LLM_confidence
+    description: Evidenz-Stärke unabhängig von LLM-Konfidenz
+  - id: ESL-5
+    name: Trennung
+    formula: K(c) ⊥ M(c) berechenbar
+    description: Assertive und Evidenz-Stärke getrennt berechenbar
+  k_extraction:
+    methods:
+    - name: Lexikalische Marker
+      description: Hedging-Wörter zu K-Werten mappen
+      examples:
+        high_k:
+        - definitiv
+        - mit Sicherheit
+        - zweifellos
+        medium_k:
+        - wahrscheinlich
+        - vermutlich
+        low_k:
+        - möglicherweise
+        - eventuell
+    - name: Explizite Wahrscheinlichkeit
+      description: Prozentangaben extrahieren
+      regex: r"(\d+(?:\.\d+)?)\s*%"
+    - name: Speech Act Classification
+      description: Sprechakt-Typ bestimmen
+      types:
+      - assertiv
+      - spekulativ
+      - hedged
+  m_computation:
+    evidence_taxonomy:
+    - source: RCT/Meta-Analyse
+      base_m: 0.9
+      modifiers:
+      - Replikation
+      - Sample Size
+    - source: Peer-reviewed Paper
+      base_m: 0.75
+      modifiers:
+      - Journal Impact
+      - Citations
+    - source: Preprint
+      base_m: 0.55
+      modifiers:
+      - Author Credibility
+    - source: Datenbank/Statistik
+      base_m: 0.85
+      modifiers:
+      - Aktualität
+      - Quelle
+    - source: Expert Opinion
+      base_m: 0.5
+      modifiers:
+      - Konsens-Level
+    - source: Reasoning-Chain
+      base_m: 0.45
+      modifiers:
+      - Chain Length
+      - Premise Quality
+    - source: LLMMC Prior
+      base_m: 0.4
+      modifiers:
+      - Domain Fit
+    - source: Keine Quelle
+      base_m: 0.2
+      modifiers: []
+    bayesian_update:
+      formula: M(c) = P(c|E) = P(E|c) · P(c) / P(E)
+      description: Posterior aus Evidenz berechnen
+  calibration_metrics:
+  - name: ECE
+    full_name: Expected Calibration Error
+    formula: Σ_b (n_b/N) × |accuracy_b - confidence_b|
+  - name: OCR
+    full_name: Overconfidence Rate
+    formula: P(K > M | K > 0.5)
+  - name: OCS
+    full_name: Overconfidence Severity
+    formula: E[K - M | K > M]
+  - name: ESL_Score
+    full_name: Aggregated ESL Quality Score
+    formula: 1 - (0.4·OCR + 0.4·OCS + 0.2·ECE)
+  theory_basis:
+    primary:
+    - theory_id: Bayesian Epistemology
+      authors: Jeffrey, Joyce
+      relevance: K ≈ kommunizierter Credence, M ≈ gerechtfertigter Credence
+    - theory_id: Speech Act Theory
+      authors: Austin, Searle
+      year: 1962, 1969
+      relevance: Felicity Conditions für Assertion
+    secondary:
+    - theory_id: MS-IB-005
+      name: Overconfidence
+      relevance: Systematische Überschätzung eigener Genauigkeit
+    - theory_id: MS-IF-006
+      name: Rational Inattention
+      authors: Sims
+      relevance: Begrenzte kognitive Ressourcen für Kalibrierung
+  ebf_integration:
+    level: 3
+    level_name: META-AXIOM
+    position: Über 10C-Framework, unter Domain Applications
+    comparable_to:
+    - EXC (Exclusion Principle)
+    - EIP (Evidence Integration Pipeline)
+    applies_to: Alle EBF-Outputs
+  validation:
+    status: initial
+    applied_cases: 1
+    last_application: '2026-01-26'
+    monte_carlo:
+      draws: 10000
+      ocr_reduction: 42% → 3%
+      ocs_reduction: 0.28 → 0.04
+      ece_reduction: 0.15 → 0.06
+    notes: Erstellt in STANDARD-Analyse für Beatrix ESL Framework
+  example_results:
+    case: Beatrix ESL Analysis
+    results:
+      pre_esl_overconfidence: 42%
+      post_esl_overconfidence: 3%
+      reduction: ~93%
+      esl_score: 0.88
+  version_history:
+  - version: '1.0'
+    date: '2026-01-26'
+    changes: Initial ESL framework specification with 5 axioms
+    session: EBF-S-2026-01-26-OTH-001
+- id: MOD-NEAR-001
+  name: Nearshoring Location Decision Model
+  version: '1.0'
+  created: '2026-01-26'
+  last_updated: '2026-01-26'
+  created_in_session: EBF-S-2026-01-26-ORG-001
+  evolved_in_sessions:
+  - EBF-S-2026-01-26-ORG-001
+  question_type: location_decision
+  question_template: Welcher Standort ist optimal für [Team-Typ] mit Treibern [X,
+    Y, Z]?
+  example_questions:
+  - Welcher EU-Standort für Nearshoring-Entwickler?
+  - Wo sollten wir ein Remote-Team aufbauen?
+  - Standortvergleich für IT-Nearshoring
+  core_dimensions:
+    primary:
+    - WHAT
+    - WHO
+    - WHERE
+    secondary:
+    - WHEN
+  psi_dimensions:
+  - Ψ_E
+  - Ψ_K
+  - Ψ_I
+  - Ψ_T
+  - Ψ_S
+  variables:
+  - symbol: K
+    name: kosten
+    description: Relative Lohnkosten (Senior Dev Gehalt vs. DE)
+    scale: '[0,1]'
+    source_psi: Ψ_E
+    weight: 0.3
+    group: economic
+  - symbol: T
+    name: talent
+    description: Talent Pool Qualität (Absolventen, Erfahrung, Englisch)
+    scale: '[0,1]'
+    source_psi: Ψ_S
+    weight: 0.3
+    group: human_capital
+  - symbol: F
+    name: flex
+    description: Vertrags-Flexibilität (Contractor-Freundlichkeit)
+    scale: '[0,1]'
+    source_psi: Ψ_I
+    weight: 0.2
+    group: institutional
+  - symbol: C
+    name: kultur
+    description: Kulturelle Kompatibilität mit DE
+    scale: '[0,1]'
+    source_psi: Ψ_K
+    weight: 0.1
+    group: cultural
+  - symbol: R
+    name: risiko
+    description: Rechtssicherheit, EU-Mitgliedschaft, Stabilität
+    scale: '[0,1]'
+    source_psi: Ψ_I
+    weight: 0.1
+    group: risk
+  functional_form:
+    type: weighted_multi_attribute_utility
+    formula: U(Land) = 0.30·K + 0.30·T + 0.20·F + 0.10·C + 0.10·R
+    interpretation: Je höher U, desto besser der Standort
+    weights:
+      economic: 0.3
+      human_capital: 0.3
+      institutional: 0.2
+      cultural: 0.1
+      risk: 0.1
+      total: 1.0
+  data_sources:
+  - source: Eurostat
+    type: official_statistics
+    coverage: EU labor costs
+  - source: Stack Overflow Developer Survey
+    type: survey
+    coverage: Developer demographics
+  - source: Numbeo
+    type: crowdsourced
+    coverage: Cost of living
+  - source: World Bank
+    type: official_statistics
+    coverage: Ease of doing business
+  - source: Glassdoor
+    type: crowdsourced
+    coverage: Salary data
+  validation:
+    status: initial
+    applied_cases: 1
+    last_application: '2026-01-26'
+    notes: Erstellt für Makonis Nearshoring-Analyse
+  example_results:
+    case: Makonis IT Nearshoring (5-10 Devs, EU)
+    results:
+      poland:
+        U: 0.78
+        rank: 1
+      serbia:
+        U: 0.77
+        rank: 2
+      portugal:
+        U: 0.76
+        rank: 3
+      romania:
+        U: 0.77
+        rank: 4
+      bulgaria:
+        U: 0.74
+        rank: 5
+      croatia:
+        U: 0.72
+        rank: 6
+    recommendation: Poland First, Serbia Watch
+  version_history:
+  - version: '1.0'
+    date: '2026-01-26'
+    changes: Initial model for Makonis nearshoring analysis
+    session: EBF-S-2026-01-26-ORG-001
+- id: MOD-IDV-001
+  name: Interdependence Understanding Model
+  version: '2.0'
+  created: '2026-01-26'
+  last_updated: '2026-01-26'
+  created_in_session: EBF-S-2026-01-26-COG-001
+  evolved_in_sessions:
+  - EBF-S-2026-01-26-COG-001
+  question_type: cognitive_capacity
+  question_template: Verstehen Menschen [X] Interdependenzen?
+  example_questions:
+  - Verstehen Menschen Interdependenzen?
+  - Können Menschen komplexe Systeme mental simulieren?
+  - Wie viele Schritte denken Menschen voraus?
+  core_dimensions:
+    primary:
+    - AWARE
+    - HOW
+    secondary:
+    - HIERARCHY
+    - WHO
+  psi_dimensions:
+  - Ψ_C
+  - Ψ_S
+  - Ψ_T
+  - Ψ_I
+  variables:
+  - symbol: κ
+    name: cognitive_capacity
+    description: Verfügbare mentale Ressourcen
+    scale: '[0,1]'
+    source_psi: Ψ_C
+    default: 0.5
+  - symbol: n
+    name: system_complexity
+    description: Anzahl interdependenter Elemente
+    scale: '[1,∞]'
+    source: context
+  - symbol: τ
+    name: temporal_delay
+    description: Feedback-Verzögerung in Perioden
+    scale: '[0,∞]'
+    source_psi: Ψ_T
+  - symbol: σ
+    name: social_distance
+    description: 0=self, 1=abstrakte Andere
+    scale: '[0,1]'
+    source_psi: Ψ_S
+  - symbol: ψ
+    name: feedback_visibility
+    description: 0=versteckt, 1=explizit
+    scale: '[0,1]'
+    source_psi: Ψ_I
+  - symbol: λ
+    name: learning_rate
+    description: Wie schnell verbessert Erfahrung?
+    scale: '[0,1]'
+    default: 0.15
+  - symbol: E
+    name: experience
+    description: Wiederholte Exposition (Trials)
+    scale: '[0,∞]'
+    source: context
+  - symbol: μ
+    name: motivation_factor
+    description: Sensitivität für Stakes
+    scale: '[0,1]'
+    default: 0.25
+  - symbol: S
+    name: stakes
+    description: Was steht auf dem Spiel? (normiert)
+    scale: '[0,∞]'
+    source: context
+  domain_exponents:
+    SOC:
+      alpha: 0.48
+      beta: 0.32
+      gamma: 0.58
+      description: Soziale Interdependenz
+    ECO:
+      alpha: 0.72
+      beta: 0.48
+      gamma: 0.28
+      description: Ökonomische Interdependenz
+    ENV:
+      alpha: 0.82
+      beta: 0.78
+      gamma: 0.42
+      description: Umwelt/Klima Interdependenz
+    TEC:
+      alpha: 0.88
+      beta: 0.42
+      gamma: 0.22
+      description: Technische Systeme
+  functional_form:
+    type: multiplicative_decay
+    formula: V(n) = [(κ + λ·E) · ψ · (1 + μ·S)] / [n^α_d · (1+τ)^β_d · (1+σ)^γ_d]
+    interpretation: Verständnis V ∈ [0,1], sinkt mit Komplexität/Delay/Distanz
+  cognitive_hierarchy:
+    distribution:
+      L0:
+        proportion: 0.21
+        ci_68:
+        - 0.17
+        - 0.25
+      L1:
+        proportion: 0.49
+        ci_68:
+        - 0.43
+        - 0.55
+      L2:
+        proportion: 0.24
+        ci_68:
+        - 0.2
+        - 0.28
+      L3_plus:
+        proportion: 0.06
+        ci_68:
+        - 0.04
+        - 0.08
+    median_level:
+      value: 1.47
+      ci_68:
+      - 1.22
+      - 1.72
+    source: Camerer et al. 2004
+  theory_basis:
+    primary:
+    - theory_id: MS-NE-001
+      name: Dual-System S1/S2
+      authors: Kahneman
+      year: 2011
+      relevance: Kognitive Kapazität begrenzt System 2
+    - theory_id: MS-SI-001
+      name: Strategic Interdependence
+      authors: Nash
+      year: 1950
+      relevance: Game-theoretische Grundlage
+    secondary:
+    - theory_id: PAP-camerer2004cognitive
+      name: Cognitive Hierarchy Model
+      authors: Camerer, Ho, Chong
+      year: 2004
+      relevance: Empirische Level-Verteilung
+    - theory_id: PAP-simon1955behavioral
+      name: Bounded Rationality
+      authors: Simon
+      year: 1955
+      relevance: Fundamentale kognitive Grenzen
+  data_sources:
+  - source: bcm_master.bib
+    type: literature
+    key_papers:
+    - camerer2004cognitive
+    - crawford2013structural
+    - kahneman2011thinking
+    - simon1955behavioral
+    - bosch_nagel_2002_cognitive
+  validation:
+    status: initial
+    applied_cases: 1
+    last_application: '2026-01-26'
+    confidence: 0.85
+    notes: Erstellt für Johannes Luger Analyse zu Interdependenz-Verständnis
+  example_results:
+    situations:
+    - name: Verhandlung 1:1
+      n: 2
+      tau: 0
+      sigma: 0.1
+      V: 0.78
+      interpretation: Gut ✓
+    - name: Teamarbeit (5P)
+      n: 5
+      tau: 1
+      sigma: 0.3
+      V: 0.41
+      interpretation: Mässig ⚠️
+    - name: Markt
+      n: 50
+      tau: 2
+      sigma: 0.6
+      V: 0.12
+      interpretation: Schlecht ❌
+    - name: Klimawandel
+      n: 1000000
+      tau: 30
+      sigma: 0.9
+      V: 0.02
+      interpretation: Minimal ❌❌
+  sensitivity:
+    main_drivers:
+    - parameter: n
+      influence: 0.42
+      description: Komplexität ist dominant
+    - parameter: τ
+      influence: 0.28
+      description: Zeit-Delay stark
+    - parameter: ψ
+      influence: 0.18
+      description: Feedback wichtig
+    - parameter: σ
+      influence: 0.08
+      description: Soziale Distanz moderat
+    - parameter: κ
+      influence: 0.04
+      description: Kapazität kaum limitierend
+  version_history:
+  - version: '1.0'
+    date: '2026-01-26'
+    changes: Initial model with 6 variables
+  - version: '2.0'
+    date: '2026-01-26'
+    changes: Added learning (λ,E), motivation (μ,S), domain-specific exponents
+    session: EBF-S-2026-01-26-COG-001
+
+- id: MOD-PSM-001
+  name: Philoro Strategy Model
+  subtitle: Antifragile Gold Business
+  version: '1.0'
+  created: '2026-01-27'
+  last_updated: '2026-01-27'
+  created_in_session: EBF-S-2026-01-27-ORG-002
+  evolved_in_sessions:
+  - EBF-S-2026-01-27-ORG-002
+
+  model_type: corporate_strategy
+  industry: precious_metals_retail
+  company: philoro Edelmetalle
+
+  question_type: strategy_optimization
+  question_template: Wie kann [Unternehmen] Umsatz-Volatilität reduzieren bei gleichzeitiger CLV-Steigerung?
+  example_questions:
+  - Wie überbrückt Philoro Dürrperioden mit geringer Goldnachfrage?
+  - Welche strategischen Initiativen stabilisieren den Edelmetallhandel?
+  - Wie reduziert ein zyklisches Geschäft seine Volatilität?
+
+  strategic_goal:
+    primary: Umsatz-Volatilität ↓50% bei CLV ↑30% in 3 Jahren
+    kpis:
+    - metric: revenue_volatility
+      current: 0.50
+      target: 0.25
+      unit: coefficient_of_variation
+    - metric: recurring_revenue_share
+      current: 0.05
+      target: 0.25
+      unit: ratio
+    - metric: clv_average
+      current: 850
+      target: 1105
+      unit: EUR
+    - metric: drought_revenue_vs_plateau
+      current: 0.40
+      target: 0.65
+      unit: ratio
+
+  four_pillars:
+  - id: RECURR
+    name: Recurring Revenue
+    target: +25% recurring share
+    primary_10c:
+    - HOW
+    - WHAT
+    initiatives:
+    - id: INI-01
+      name: Sparplan-Default
+      expected_lift: +30-50% Grundumsatz
+    - id: INI-05
+      name: VAULT (Lager-als-Service)
+      expected_lift: 5-10% Recurring
+    - id: INI-07
+      name: Preis-Garantie-Produkt
+      expected_lift: Optionsprämien
+
+  - id: CYCLE
+    name: Counter-Cyclical Triggers
+    target: Dürre-Umsatz > 60% Plateau
+    primary_10c:
+    - WHEN
+    - WHO
+    initiatives:
+    - id: INI-02
+      name: Lebensanlass-Marketing
+      expected_lift: +15-25% in Dürre
+    - id: INI-04
+      name: Rückkauf-Offensive
+      expected_lift: +10-15% Recycling
+    - id: INI-B2B
+      name: B2B-Diversifikation
+      expected_lift: +20-30% stabiler Sockel
+
+  - id: SEGMENT
+    name: Portfolio Balance
+    target: Kein Segment > 40%
+    primary_10c:
+    - WHO
+    - STAGE
+    segment_strategies:
+    - segment: SEG-01
+      name: Sicherheitsorientierte Sparer
+      share: 0.40
+      role: Cash Cow
+      action: Stabilisieren via Sparplan
+    - segment: SEG-02
+      name: Vermögende Diversifizierer
+      share: 0.25
+      role: Star
+      action: Ausbauen via VAULT SWISS/PRIVATE
+    - segment: SEG-03
+      name: Junge Digitalanleger
+      share: 0.20
+      role: Question Mark
+      action: Testen via App/Gamification
+    - segment: SEG-04
+      name: Sammler
+      share: 0.15
+      role: Nische
+      action: Pflegen via Exklusivität
+    - segment: SEG-B1
+      name: B2B Juweliere
+      share_target: 0.10
+      role: New Growth
+      action: Goldwerk-Synergie nutzen
+
+  - id: RELATION
+    name: Lifetime Value
+    target: CLV +30%
+    primary_10c:
+    - AWARE
+    - WHAT
+    initiatives:
+    - id: INI-06
+      name: Content & Community
+      expected_lift: +20% Future Conversion
+    - id: INI-REF
+      name: Empfehlungsprogramm
+      expected_lift: Advocacy-Rate ×2
+
+  core_dimensions:
+    primary:
+    - WHAT
+    - HOW
+    - WHEN
+    - WHO
+    secondary:
+    - AWARE
+    - STAGE
+    - READY
+    extended:
+    - WHERE
+    - HIERARCHY
+
+  psi_dimensions:
+  - Ψ_T
+  - Ψ_E
+  - Ψ_K
+  - Ψ_I
+  - Ψ_S
+  - Ψ_M
+  - Ψ_F
+  - Ψ_C
+
+  utility_function:
+    formula: U = α₁·U_F + α₂·U_S + α₃·U_P + α₄·U_E
+    dimensions:
+    - symbol: U_F
+      name: financial_utility
+      description: Finanzielle Sicherheit, Werterhalt
+      weight_aggregate: 0.35
+      weights_by_segment:
+        SEG-01: 0.45
+        SEG-02: 0.30
+        SEG-03: 0.25
+        SEG-04: 0.20
+    - symbol: U_S
+      name: social_utility
+      description: Status, Vererbung, Familientradition
+      weight_aggregate: 0.25
+      weights_by_segment:
+        SEG-01: 0.20
+        SEG-02: 0.35
+        SEG-03: 0.15
+        SEG-04: 0.40
+    - symbol: U_P
+      name: psychological_utility
+      description: Seelenfrieden, Kontrolle, Autonomie
+      weight_aggregate: 0.25
+      weights_by_segment:
+        SEG-01: 0.25
+        SEG-02: 0.20
+        SEG-03: 0.30
+        SEG-04: 0.25
+    - symbol: U_E
+      name: epistemic_utility
+      description: Wissen, Marktverständnis, Expertise
+      weight_aggregate: 0.15
+      weights_by_segment:
+        SEG-01: 0.10
+        SEG-02: 0.15
+        SEG-03: 0.30
+        SEG-04: 0.15
+
+  # NOTE: Diese Komplementaritäten sind domänenspezifisch (Edelmetall-Handel).
+  # RECURR, CYCLE, SEGMENT, RELATION sind Business-Dimensionen, keine generischen
+  # verhaltensökonomischen Konstrukte. Daher kein PAR-COMP Verweis (PAR-3: Context Indexing).
+  # Quelle: EBF-S-2026-01-XX-FIN-PHI Session (Philoro)
+  complementarity_matrix:
+  - pair: [RECURR, RELATION]
+    gamma_ij: 0.5
+    mechanism: Lager-Kunden haben höheren CLV, kaufen mehr nach
+    strength: STARK
+    domain_specific: true
+  - pair: [CYCLE, SEGMENT]
+    gamma_ij: 0.4
+    mechanism: Lebensanlass-Marketing wirkt unterschiedlich pro Segment
+    strength: KOMPLEMENTÄR
+    domain_specific: true
+  - pair: [RECURR, CYCLE]
+    gamma_ij: 0.3
+    mechanism: Sparplan-Kunden sind auch in Dürrperioden aktiv
+    strength: MODERAT
+    domain_specific: true
+  - pair: [SEGMENT, RELATION]
+    gamma_ij: 0.3
+    mechanism: Segment-spezifische CLV-Strategien
+    strength: MODERAT
+    domain_specific: true
+  - pair: [RECURR, SEGMENT]
+    gamma_ij: 0.2
+    mechanism: Verschiedene Recurring-Produkte pro Segment
+    strength: SCHWACH
+    domain_specific: true
+  - pair: [CYCLE, RELATION]
+    gamma_ij: 0.2
+    mechanism: Content pflegt Beziehung in Dürrephase
+    strength: SCHWACH
+    domain_specific: true
+
+  market_cycle_model:
+    phases:
+    - id: BOOM
+      triggers:
+      - VIX > 25
+      - CPI > 4%
+      - Geopolitical crisis
+      demand_multiplier: 1.6
+      strategy_focus: SEGMENT
+      description: Kapazität nutzen, Neukunden gewinnen
+      duration_months_avg: 11
+    - id: PLATEAU
+      triggers:
+      - VIX 15-25
+      - Mixed signals
+      demand_multiplier: 1.0
+      strategy_focus: RELATION
+      description: Bestandskunden aktivieren
+      duration_months_avg: 15
+    - id: DROUGHT
+      triggers:
+      - VIX < 15
+      - High interest rates
+      - Stability perception
+      demand_multiplier: 0.6
+      strategy_focus: RECURR + CYCLE
+      description: Recurring Revenue, B2B, Rückkauf
+      duration_months_avg: 27
+
+  awareness_by_phase:
+    BOOM:
+      salience: 0.8
+      trust: 0.7
+      recall: 0.8
+      A_total: 0.75
+    PLATEAU:
+      salience: 0.5
+      trust: 0.7
+      recall: 0.6
+      A_total: 0.60
+    DROUGHT:
+      salience: 0.2
+      trust: 0.7
+      recall: 0.3
+      A_total: 0.40
+
+  willingness_model:
+    formula: W(Kauf) = W_base × M_phase × M_segment × M_intervention
+    W_base: 0.15
+    phase_multipliers:
+      BOOM: 2.5
+      PLATEAU: 1.0
+      DROUGHT: 0.4
+    segment_multipliers:
+      SEG-01: 1.2
+      SEG-02: 0.8
+      SEG-03: 1.4
+      SEG-04: 0.6
+    intervention_multipliers:
+      sparplan_active: 3.0
+      vault_customer: 1.8
+      price_alert_active: 2.2
+      life_event: 2.5
+      no_intervention: 1.0
+
+  customer_journey:
+    stages:
+    - id: phi_1
+      name: AWARE
+      conversion_current: 0.08
+      conversion_target: 0.12
+      lever: Content-Strategie
+    - id: phi_2
+      name: CONSIDER
+      conversion_current: 0.15
+      conversion_target: 0.20
+      lever: Default-Nudges
+    - id: phi_3
+      name: FIRST_PURCHASE
+      conversion_current: 0.25
+      conversion_target: 0.45
+      lever: Sparplan + VAULT
+      critical: true
+    - id: phi_4
+      name: REPEAT
+      conversion_current: 0.10
+      conversion_target: 0.20
+      lever: Empfehlungsprogramm
+
+  behavioral_parameters:
+    aggregate:
+      lambda_loss_aversion:
+        value: 2.45
+        range: [1.80, 2.80]
+        note: Überdurchschnittlich hoch - erklärt Safe Haven Preference
+      beta_present_bias:
+        value: 0.88
+        range: [0.75, 0.95]
+        note: Niedrig - langfristig orientiert
+      kappa_default_sensitivity:
+        value: 0.68
+        range: [0.45, 0.80]
+        note: Moderat - Sparpläne als Default wirksam
+      sigma_social_proof:
+        value: 0.55
+        range: [0.40, 0.70]
+        note: Moderat - Testimonials wirken
+    domain_specific:
+      eta_safe_haven_bias:
+        value: 0.78
+        source: Baur & Lucey 2010
+      tau_tangibility_premium:
+        value: 0.65
+        source: philoro market data
+      iota_inflation_sensitivity:
+        value: 0.72
+        source: WGC Reports
+
+  business_parameters:
+    fixed_cost_ratio: 0.35
+    variable_margin_transaction: 0.08
+    variable_margin_recurring: 0.70
+    cycle_amplitude: 0.50
+    cycle_period_months: 36
+    baseline_growth_cagr: 0.05
+
+  profit_model:
+    formula: Π(t) = Σᵢ [ Nᵢ(t) × CLVᵢ × (1 - Churnᵢ)^t ]
+    clv_formula: CLVᵢ = Σₜ [ Wᵢ(t) × AOVᵢ × Marginᵢ ] / (1+r)^t
+    strategic_insight: Shift zu Recurring erhöht CLV überproportional (Margin 70% vs 8%)
+
+  theory_basis:
+    primary:
+    - theory_id: MS-RD-001
+      name: Prospect Theory
+      authors: Kahneman, Tversky
+      year: 1979
+      relevance: Loss Aversion erklärt Safe Haven Verhalten
+    - theory_id: MS-NU-002
+      name: Default Effects
+      authors: Johnson, Goldstein
+      year: 2003
+      relevance: Sparplan-Defaults erhöhen Adoption
+    secondary:
+    - theory_id: MS-TP-001
+      name: Quasi-Hyperbolic Discounting
+      authors: Laibson
+      year: 1997
+      relevance: Commitment-Mechanismen (Sparplan) wirken
+    - theory_id: MS-IN-005
+      name: Motivation Crowding
+      authors: Frey, Jegen
+      year: 2001
+      relevance: WARNUNG bei monetären Referral-Anreizen
+
+  data_sources:
+  - source: philoro_context_schnell.yaml
+    type: context_vector
+    path: data/customers/philoro/
+  - source: BCM2_04_KON_economic.yaml
+    type: context_database
+    coverage: DACH economic factors
+  - source: bcm_master.bib
+    type: literature
+    key_papers:
+    - baur2010gold
+    - lucey2006relationship
+    - johnson2003defaults
+    - laibson1997golden
+
+  validation:
+    status: initial
+    applied_cases: 1
+    last_application: '2026-01-27'
+    notes: Erstellt für Philoro Dürrperioden-Strategie
+
+  implementation_roadmap:
+    phase_1:
+      name: Quick Wins
+      duration_months: 3
+      initiatives: [INI-01, INI-04, INI-06]
+      expected_impact: Recurring +10%
+    phase_2:
+      name: Strukturell
+      duration_months: 6
+      initiatives: [INI-02, INI-05]
+      expected_impact: Volatilität -25%
+    phase_3:
+      name: Transformativ
+      duration_months: 12
+      initiatives: [INI-B2B, INI-07]
+      expected_impact: Ziel erreicht
+
+  version_history:
+  - version: '1.0'
+    date: '2026-01-27'
+    changes: Initial Philoro Strategy Model with 4 pillars
+    session: EBF-S-2026-01-27-ORG-002
+
+- id: MOD-MSR-001
+  name: Mission Statement Resonance Model
+  subtitle: Mitarbeitenden-Resonanz auf Mission Statements
+  version: '1.0'
+  created: '2026-01-28'
+  last_updated: '2026-01-28'
+  created_in_session: EBF-S-2026-01-28-ORG-001
+  evolved_in_sessions:
+  - EBF-S-2026-01-28-ORG-001
+
+  model_type: organizational_behavior
+  industry: public_transport
+  company: Schweizerische Südostbahn AG (SOB)
+
+  question_type: mission_resonance
+  question_template: Wie stark resoniert [Mission Statement] bei [Mitarbeiter-Segment]?
+  example_questions:
+  - Wie gut wird das neue Mission Statement bei Lokführern ankommen?
+  - Welche Mission-Formulierung erzeugt die höchste Resonanz?
+  - Wie unterscheiden sich VR und MA in ihrer Resonanz auf das Mission Statement?
+
+  core_dimensions:
+    primary:
+    - WHAT
+    - WHO
+    secondary:
+    - AWARE
+    - HOW
+    extended:
+    - STAGE
+
+  psi_dimensions:
+  - Ψ_K
+  - Ψ_S
+  - Ψ_I
+  - Ψ_C
+
+  dimensions:
+  - symbol: I
+    name: Identität
+    description: Distinctiveness × Authenticity - Wie einzigartig und authentisch ist das Statement?
+    scale: '[0,1]'
+    components:
+    - distinctiveness: Hebt sich von anderen Unternehmen ab?
+    - authenticity: Passt zur gelebten Unternehmenskultur?
+    weight: 0.25
+
+  - symbol: M
+    name: Bedeutung
+    description: Purpose × Relevance - Vermittelt das Statement Sinn und persönliche Relevanz?
+    scale: '[0,1]'
+    components:
+    - purpose: Gibt Orientierung und Sinn
+    - relevance: Für tägliche Arbeit bedeutsam
+    weight: 0.25
+
+  - symbol: D
+    name: Richtung
+    description: Ambition × Clarity - Ist das Statement ambitioniert und klar verständlich?
+    scale: '[0,1]'
+    components:
+    - ambition: Inspirierend und zukunftsgerichtet
+    - clarity: Eindeutig und verständlich
+    weight: 0.25
+
+  - symbol: A
+    name: Handlung
+    description: Actionability × Coherence - Lässt sich das Statement in Handlung übersetzen?
+    scale: '[0,1]'
+    components:
+    - actionability: In täglicher Arbeit umsetzbar
+    - coherence: Konsistent über alle Bereiche
+    weight: 0.25
+
+  functional_form:
+    type: multiplicative_resonance
+    formula: Resonanz = I × M × D × A
+    score_formula: Score = 1 + 4 × (I × M × D × A)
+    scale: '[1.0, 5.0]'
+    interpretation: |
+      Score 1.0 = Keine Resonanz (alle Dimensionen bei 0)
+      Score 3.0 = Moderate Resonanz (alle bei 0.5)
+      Score 4.0 = Hohe Resonanz (alle bei ~0.71)
+      Score 5.0 = Maximale Resonanz (alle bei 1.0)
+    weights:
+      I: 0.25
+      M: 0.25
+      D: 0.25
+      A: 0.25
+
+  segments:
+  - id: SEG-LOK
+    name: Lokführer
+    proportion: 0.25
+    resonance_profile:
+      I: 0.70
+      M: 0.68
+      D: 0.72
+      A: 0.75
+    characteristics: Operativ, qualitätsbewusst, stolz auf Handwerk
+    delta_vs_baseline: +0.30
+
+  - id: SEG-KS
+    name: Kundenservice
+    proportion: 0.30
+    resonance_profile:
+      I: 0.78
+      M: 0.82
+      D: 0.76
+      A: 0.80
+    characteristics: Kommunikativ, kundenorientiert, Botschafter-Rolle
+    delta_vs_baseline: +0.70
+
+  - id: SEG-MG
+    name: Management
+    proportion: 0.15
+    resonance_profile:
+      I: 0.85
+      M: 0.88
+      D: 0.82
+      A: 0.78
+    characteristics: Strategisch denkend, differenzierungsorientiert
+    delta_vs_baseline: +0.80
+
+  - id: SEG-WS
+    name: Werkstatt
+    proportion: 0.30
+    resonance_profile:
+      I: 0.62
+      M: 0.58
+      D: 0.65
+      A: 0.68
+    characteristics: Technisch, pragmatisch, lösungsorientiert
+    delta_vs_baseline: -0.15
+
+  comparison_results:
+    old_statement:
+      text: "Einsteigen - Gemeinsam Bewegen - Masstäbe setzen"
+      overall_score: 4.02
+      vr_feedback: "Zu technisch, zu nüchtern"
+      ma_feedback: "Gut, aber Teil 3 nicht identitätsstiftend"
+
+    new_statement:
+      text: "Einsteigen - Gemeinsam Bewegen - Wege bahnen"
+      overall_score: 4.26
+      delta: +0.24
+      improvement: "+6%"
+      vr_feedback: "Emotional, visionär, SOB-spezifisch"
+      ma_feedback: "Das kann ich Kunden erzählen!"
+
+    key_drivers:
+    - driver: Bahn-Metapher
+      impact: +0.15
+      explanation: "'bahnen' verbindet direkt mit SOB-Identität (Gleise, Wege)"
+    - driver: Pionier-Geist
+      impact: +0.08
+      explanation: "'Wege bahnen' = aktiv gestalten, nicht nur folgen"
+    - driver: Mehrdeutigkeit
+      impact: +0.06
+      explanation: "Wege für Kunden, MA, Partner, Innovation"
+
+  theory_basis:
+    primary:
+    - theory_id: MS-IB-001
+      name: Identity Economics
+      authors: Akerlof, Kranton
+      year: 2000
+      relevance: Mission als Teil der Organisations-Identität
+
+    - theory_id: MS-SP-007
+      name: Meaning at Work
+      authors: Wrzesniewski, Dutton
+      year: 2001
+      relevance: Purpose und Bedeutung in der Arbeit
+
+    secondary:
+    - theory_id: MS-IF-008
+      name: Social Identity Theory
+      authors: Tajfel, Turner
+      year: 1979
+      relevance: Gruppenidentität und In-Group Pride
+
+  data_sources:
+  - source: sob_context.yaml
+    type: context_vector
+    path: data/customers/sob/
+  - source: SOB Mission Workshop
+    type: primary_research
+    date: '2026-01-28'
+    n_participants: 50
+  - source: VR Feedback Session
+    type: qualitative
+    date: '2026-01-28'
+
+  validation:
+    status: validated
+    applied_cases: 1
+    last_application: '2026-01-28'
+    confidence: 0.85
+    notes: Erstellt für SOB Mission Statement VR-Präsentation, validiert mit MA-Feedback
+
+  outputs:
+  - output_id: OUT-008
+    type: vr_presentation
+    file: outputs/sessions/SOB-Mission-VR-Praesentation.md
+  - output_id: OUT-009
+    type: mission_statement
+    result: "Einsteigen - Gemeinsam Bewegen - Wege bahnen"
+
+  version_history:
+  - version: '1.0'
+    date: '2026-01-28'
+    changes: Initial MSR model for SOB Mission Statement analysis
+    session: EBF-S-2026-01-28-ORG-001
+
+# -----------------------------------------------------------------------------
+# MODEL 9: ECHfP Heizungsersatz-Verhaltensmodell
+# -----------------------------------------------------------------------------
+- id: MOD-ECHfP-001
+  name: ECHfP Heating Replacement Behavioral Model
+  version: '1.0'
+  created: '2026-01-28'
+  last_updated: '2026-01-28'
+  created_in_session: EBF-S-2026-01-28-ENE-001
+  evolved_in_sessions:
+  - EBF-S-2026-01-28-ENE-001
+
+  question_type: behavioral_change
+  question_template: Wie steigern wir [Verhaltensänderung] bei [Zielgruppe]?
+  example_questions:
+  - Wie steigern wir den Heizungsersatz auf erneuerbar bei Hausbesitzern?
+  - Wie aktivieren wir Installateure als Change Agents?
+  - Wie überwinden wir kollektive Entscheidungshürden bei STWE?
+
+  domain: energy
+  customer: BFE
+  project: ECHfP (Energie Schweiz für Private)
+
+  core_dimensions:
+    primary:
+    - WHO
+    - WHAT
+    - WHEN
+    secondary:
+    - HOW
+    - AWARE
+    - READY
+    extended:
+    - STAGE
+    - HIER
+
+  psi_dimensions:
+  - Ψ_I (Regulation/Förderung)
+  - Ψ_S (Soziale Normen/Nachbarschaft)
+  - Ψ_K (Kultur/Werte)
+  - Ψ_E (Economic/Budget)
+  - Ψ_T (Time/Kritische Momente)
+  - Ψ_C (Cognitive/Entscheidungslast)
+
+  segments:
+  - segment_id: SEG_EFH
+    name: Einfamilienhaus-Eigentümer
+    size: "~1.09 Mio Haushalte"
+    parameters:
+      beta: {value: 0.82, ci: [0.75, 0.89]}
+      lambda: {value: 2.1, ci: [1.8, 2.4]}
+      theta: {value: 0.65, ci: [0.58, 0.72]}
+      w_base: {value: 0.35, ci: [0.28, 0.42]}
+    bcj_phase_distribution:
+      unaware: 0.15
+      aware: 0.25
+      considering: 0.30
+      intending: 0.18
+      acting: 0.08
+      maintaining: 0.04
+
+  - segment_id: SEG_MFH
+    name: Mehrfamilienhaus-Eigentümer
+    size: "~202k Eigentümer"
+    parameters:
+      beta: {value: 0.78, ci: [0.70, 0.86]}
+      lambda: {value: 2.3, ci: [2.0, 2.6]}
+      theta: {value: 0.72, ci: [0.65, 0.79]}
+      w_base: {value: 0.28, ci: [0.22, 0.35]}
+
+  - segment_id: SEG_STWE
+    name: Stockwerkeigentümer
+    size: "~495k Eigentümer"
+    parameters:
+      beta: {value: 0.75, ci: [0.68, 0.82]}
+      lambda: {value: 2.5, ci: [2.2, 2.8]}
+      theta: {value: 0.78, ci: [0.72, 0.85]}
+      w_base: {value: 0.22, ci: [0.16, 0.28]}
+    special_factors:
+      collective_decision_threshold: 0.67
+      coordination_cost: 0.45
+      free_rider_risk: 0.35
+
+  - segment_id: SEG_INST
+    name: Installateure (Gatekeeper)
+    size: "~12k Betriebe"
+    role: "Gatekeeper bei 55% Notfall-Ersetzungen"
+    key_insight: "Entscheidet bei Notfall innerhalb 24-48h"
+
+  key_findings:
+  - finding: "Installateur ist Haupthebel (32% Impact)"
+    evidence: "55% der Heizungsersetzungen sind Notfälle"
+    implication: "M6 Installateur-Aktivierung als Top-Priorität"
+
+  - finding: "STWE hat höchste Barrieren"
+    evidence: "θ_STWE = 0.78, collective_decision_threshold = 67%"
+    implication: "M8 STWE-Facilitierung als eigenständige Intervention"
+
+  - finding: "Nachbarschafts-Effekte stark"
+    evidence: "Social influence SEG_EFH = 0.68"
+    implication: "M7 Nachbarschafts-Cluster für Peer-Effekte"
+
+  monte_carlo:
+    draws: 10000
+    baseline_scenario:
+      mean: 0.71
+      ci_95: [0.65, 0.77]
+    with_new_interventions:
+      mean: 0.78
+      ci_95: [0.682, 0.824]
+    p_goal_75: 0.51
+
+  intervention_portfolio:
+    existing:
+    - id: M1
+      name: Information
+      target_10c: AWARE
+    - id: M2
+      name: Beratung
+      target_10c: READY
+    - id: M3
+      name: Förderung
+      target_10c: "WHAT (u_F)"
+    - id: M4
+      name: Trigger-Marketing
+      target_10c: WHEN
+    - id: M5
+      name: Digital
+      target_10c: AWARE
+
+    proposed_new:
+    - id: M6
+      name: Installateur-Aktivierung
+      target_10c: "WHO (Gatekeeper)"
+      expected_impact: 0.32
+      budget_share: 0.35
+    - id: M7
+      name: Nachbarschafts-Cluster
+      target_10c: "WHAT (u_S)"
+      expected_impact: 0.24
+      budget_share: 0.25
+    - id: M8
+      name: STWE-Facilitierung
+      target_10c: "HOW (γ)"
+      expected_impact: 0.18
+      budget_share: 0.20
+
+  crowding_out_analysis:
+    risk_combination: "u_S + u_F"
+    gamma: -0.20
+    mitigation: "Sequenzielle Kommunikation (erst Social, dann Financial)"
+
+  theory_basis:
+    primary:
+    - theory_id: MS-TP-001
+      name: Quasi-Hyperbolic Discounting
+      authors: Laibson
+      year: 1997
+      relevance: Present Bias bei Investitionsentscheidungen
+
+    - theory_id: MS-RD-001
+      name: Prospect Theory
+      authors: Kahneman, Tversky
+      year: 1979
+      relevance: Verlustaversion bei Status-Quo-Bias
+
+    secondary:
+    - theory_id: MS-SP-001
+      name: Inequity Aversion
+      authors: Fehr, Schmidt
+      year: 1999
+      relevance: Fairness bei Kosten-Nutzen-Verteilung
+
+    - theory_id: MS-NU-002
+      name: Default Effects
+      authors: Johnson, Goldstein
+      year: 2003
+      relevance: Choice Architecture bei Installateur-Empfehlungen
+
+  data_sources:
+  - source: BCM2_INDIV_BFE_behavioral.yaml
+    type: context_vector
+    path: data/dr-datareq/sources/clients/bfe/external/
+  - source: BFE Studien 2020-2025
+    type: secondary_research
+  - source: EnergieSchweiz Roadmap 2021-2024
+    type: project_documentation
+
+  validation:
+    status: pending
+    confidence: 0.75
+    notes: Erstvalidierung mit historischen Daten, Feldvalidierung 2026-2027 geplant
+
+  outputs:
+  - output_id: OUT-ECHfP-001
+    type: context_analysis_report
+    file: outputs/sessions/EBF-S-2026-01-28-ENE-001/F1_kontextanalyse_echfp_v1.md
+
+  version_history:
+  - version: '1.0'
+    date: '2026-01-28'
+    changes: Initial ECHfP behavioral model for heating replacement
+    session: EBF-S-2026-01-28-ENE-001
+
+- id: MOD-CPS-001
+  name: Complex Problem Solving 10C Mapping
+  version: '1.0'
+  created: '2026-01-28'
+  last_updated: '2026-01-28'
+  created_in_session: EBF-S-2026-01-28-EDU-001
+  evolved_in_sessions:
+  - EBF-S-2026-01-28-EDU-001
+  question_type: cognitive_process_mapping
+  question_template: Wie kann [Prozess] im 10C-Framework abgebildet werden?
+  example_questions:
+  - Gibt es ein Modell des Complex Problem Solving?
+  - Wie passt CPS in das EBF?
+  - Welche 10C-Dimensionen sind für Problemlösen relevant?
+
+  description: |
+    Complex Problem Solving (CPS) ist keine separate Theorie im EBF, sondern eine
+    spezifische KONFIGURATION von 6 der 10 CORE-Dimensionen. Das Modell integriert
+    die CPS-Forschung (Dörner, Funke, Greiff) mit dem 10C-Framework.
+
+  core_dimensions:
+    primary:
+    - AWARE
+    - HOW
+    - WHEN
+    secondary:
+    - READY
+    - STAGE
+    - WHAT
+    extended:
+    - HIERARCHY
+
+  psi_dimensions:
+  - Ψ_C (Cognitive Load)
+  - Ψ_T (Temporal/Dynamik)
+  - Ψ_I (Institutional/Information)
+
+  variables:
+  - symbol: A
+    name: awareness_capacity
+    description: Begrenzte kognitive Kapazität unter Load
+    scale: '[0,1]'
+    formula: A(Ψ_load) = A_max × exp(-k × Ψ_load)
+    default_value: 0.85
+    source: sweller1988cognitive
+
+  - symbol: η
+    name: intransparency
+    description: Grad der Undurchsichtigkeit des Problemsystems
+    scale: '[0,1]'
+    components:
+    - η_Anfang (Startzustand unklar)
+    - η_Verlauf (Effekte nicht sichtbar)
+    default_value: 0.55
+    source: doerner1983lohhausen
+
+  - symbol: γ_avg
+    name: connectivity
+    description: Durchschnittliche Vernetzung der Problemvariablen
+    scale: '[-1,1]'
+    default_value: 0.45
+    ci_68: '[0.33, 0.57]'
+    source: funke2001dynamic
+
+  - symbol: δ
+    name: feedback_delay
+    description: Verzögerung zwischen Aktion und sichtbarem Effekt
+    scale: '[0,∞) Schritte'
+    default_value: 5
+    range: '[3, 8]'
+    source: microdynamValidation
+
+  - symbol: θ
+    name: action_threshold
+    description: Handlungsschwelle (Satisficing)
+    scale: '[0,1]'
+    default_value: 0.55
+    ci_68: '[0.45, 0.65]'
+    source: PAP-simon1955behavioral
+
+  - symbol: τ
+    name: learning_rate
+    description: Lerngeschwindigkeit pro Iteration
+    scale: '[0,1]'
+    default_value: 0.15
+    ci_68: '[0.10, 0.20]'
+    source: LLMMC_prior
+
+  core_formula:
+    name: CPS Utility Function
+    latex: U_{CPS}(t) = A(\Psi_{load}) \times (1-\eta) \times [U_D + \sum \gamma_{ij} \times (\frac{dX_i}{dt} \times \frac{dX_j}{dt})]
+    components:
+    - A(Ψ_load): Awareness filter (cognitive capacity)
+    - (1-η): Transparency factor
+    - U_D: Development utility (competence motivation)
+    - Σγ_ij: Connectivity term (variable interactions)
+    - dX/dt: Dynamics term (system eigendynamics)
+
+  action_condition:
+    latex: WAX(U_{CPS}, \delta) \geq \theta(\Psi_{uncertainty})
+    interpretation: Handlung erfolgt wenn Willingness die Schwelle übersteigt
+
+  sensitivity_analysis:
+    method: Parameter variation ±20%
+    results:
+    - parameter: η
+      influence_pct: 42
+      interpretation: Intransparenz ist Haupttreiber
+    - parameter: γ_avg
+      influence_pct: 28
+      interpretation: Vernetzungsgrad zweitwichtigster Faktor
+    - parameter: A_max
+      influence_pct: 17
+      interpretation: Awareness-Kapazität moderater Einfluss
+    - parameter: δ
+      influence_pct: 10
+      interpretation: Feedback-Delay geringerer Einfluss
+    - parameter: θ
+      influence_pct: 3
+      interpretation: Schwelle minimal relevant
+
+  intervention_priorities:
+    description: Basierend auf Sensitivitätsanalyse
+    ranked:
+    - rank: 1
+      target: η↓
+      intervention_type: Transparenz erhöhen
+      examples:
+      - Visualisierung (Concept Maps)
+      - System Dynamics Diagramme
+      - Real-time Dashboards
+      effect_stars: 5
+    - rank: 2
+      target: γ→
+      intervention_type: Vernetzung verstehen
+      examples:
+      - "'Was beeinflusst was?'-Training"
+      - Sensitivity Analysis üben
+      - Kausaldiagramme erstellen
+      effect_stars: 4
+    - rank: 3
+      target: A↑
+      intervention_type: Cognitive Load reduzieren
+      examples:
+      - Chunking (Teilprobleme)
+      - Externe Speicher (Notizen)
+      - Zeitdruck reduzieren
+      effect_stars: 3
+    - rank: 4
+      target: δ↓
+      intervention_type: Feedback beschleunigen
+      examples:
+      - Simulation vor Realität
+      - Rapid Prototyping
+      - A/B Testing
+      effect_stars: 2
+
+  theory_foundation:
+    primary:
+    - theory_id: MS-NE-001
+      name: Dual-System (S1/S2)
+      authors: Kahneman
+      year: 2011
+      relevance: Cognitive Load bestimmt System-Aktivierung
+
+    secondary:
+    - theory_id: external_doerner
+      name: Logik des Misslingens
+      authors: Dörner
+      year: 1989
+      relevance: 5 Qualitäten komplexer Probleme (Komplexität, Vernetztheit, Dynamik, Intransparenz, Polytelie)
+
+    - theory_id: external_funke
+      name: MicroDYN Approach
+      authors: Funke, Greiff
+      year: 2013
+      relevance: Empirische CPS-Messung, Acquisition + Application
+
+    - theory_id: external_sweller
+      name: Cognitive Load Theory
+      authors: Sweller
+      year: 1988
+      relevance: Arbeitsgedächtnis-Kapazität und Problemlösen
+
+  framework_comparison:
+    ebf_10c:
+      focus: Utility-basiert (Warum handeln?)
+      dimensions: 10 COREs
+      intransparency: Explizit modelliert (η)
+      strength: Erklärt Mechanismen
+    pisa_2015:
+      focus: Kompetenz-basiert (Was können?)
+      dimensions: 12-Zellen-Matrix (4 kognitiv × 3 sozial)
+      intransparency: Implizit in Aufgaben
+      strength: Misst Outcomes
+
+  data_sources:
+  - source: sweller1988cognitive
+    type: bib_key
+    path: bibliography/appendix_AU_references.bib
+  - source: PAP-simon1955behavioral
+    type: bib_key
+    path: bibliography/bcm_master.bib
+  - source: PAP-kahneman2003maps
+    type: bib_key
+    path: bibliography/bcm_master.bib
+  - source: Greiff et al. (2013)
+    type: external_paper
+    doi: 10.1037/a0030473
+  - source: Funke (2017)
+    type: external_paper
+    url: https://pmc.ncbi.nlm.nih.gov/articles/PMC5504467/
+
+  validation:
+    status: theoretical
+    confidence: 0.70
+    notes: Mapping basiert auf Literatur-Integration, empirische Feldvalidierung ausstehend
+
+  outputs:
+  - output_id: OUT-CPS-001
+    type: session_report
+    file: outputs/sessions/EBF-S-2026-01-28-EDU-001/F1_cps_10c_mapping_v1.md
+
+  version_history:
+  - version: '1.0'
+    date: '2026-01-28'
+    changes: Initial CPS 10C Mapping based on Dörner/Funke/Greiff integration
+    session: EBF-S-2026-01-28-EDU-001
+
+# =============================================================================
+# MODEL: Time-Intensive Goods Substitution (Platform Economics)
+# =============================================================================
+- id: MOD-TA-001
+  name: Time-Intensive Goods Substitution Model
+  version: '1.0'
+  created: '2026-01-28'
+  last_updated: '2026-01-28'
+  created_in_session: EBF-S-2026-01-28-MKT-001
+  evolved_in_sessions:
+    - EBF-S-2026-01-28-MKT-001
+
+  question_type: substitution_analysis
+  question_template: "Wie substituieren Konsumenten zwischen [Produkt A] und [Produkt B] wenn Zeit der primäre Kostenfaktor ist?"
+  example_questions:
+    - "Wie substituieren User zwischen Facebook und Instagram?"
+    - "Wie substituieren User zwischen TikTok und YouTube?"
+    - "Wie substituieren Konsumenten zwischen Netflix und linearem TV?"
+
+  core_dimensions:
+    primary:
+      - WHEN
+      - WHAT
+    secondary:
+      - WHO
+      - WHERE
+    extended:
+      - AWARE
+
+  psi_dimensions:
+    - Ψ_T  # Zeit als primärer Constraint
+    - Ψ_M  # Technologie/Plattform
+    - Ψ_S  # Soziale Nutzung
+    - Ψ_C  # Kognitive Belastung
+
+  variables:
+    - symbol: s_T
+      name: time_share
+      description: "Anteil der Zeitkosten am Gesamtpreis: s_T = (W·t_i) / π_i"
+      scale: '[0,1]'
+      source_psi: Ψ_T
+      weight: 0.30
+      group: core_beckerian
+
+    - symbol: D_ij
+      name: diversion_ratio
+      description: "Substitutionsrate: D_ij = (∂q_j/∂p_i) / (-∂q_i/∂p_i)"
+      scale: '[0,1]'
+      source_psi: Ψ_T
+      weight: 0.25
+      group: core_beckerian
+
+    - symbol: W
+      name: shadow_wage
+      description: "Schattenpreis der Zeit (Opportunitätskosten)"
+      scale: '[0,∞)'
+      source_psi: Ψ_E
+      weight: 0.15
+      group: core_beckerian
+
+    - symbol: ε_ad
+      name: ad_elasticity
+      description: "Preiselastizität bezüglich Ad Load"
+      scale: '[-∞,0]'
+      source_psi: Ψ_M
+      weight: 0.10
+      group: platform_specific
+      typical_value: "niedrig (≈ -0.1 bis -0.3)"
+
+    - symbol: t_i
+      name: time_per_use
+      description: "Zeitaufwand pro Nutzungseinheit"
+      scale: '[0,∞)'
+      source_psi: Ψ_T
+      weight: 0.10
+      group: platform_specific
+
+    - symbol: π_i
+      name: full_price
+      description: "Voller Preis = p_monetary + W·t_i"
+      scale: '[0,∞)'
+      source_psi: Ψ_E
+      weight: 0.10
+      group: core_beckerian
+
+  functional_form:
+    type: beckerian_diversion
+    formula: "D_ij ∝ f(|s_T^i - s_T^j|) mit ∂D_ij/∂|Δs_T| > 0"
+    interpretation: "Produkte mit ähnlichen Zeit-Anteilen haben höhere Diversion Ratios"
+    key_prediction: "Bei p_monetary ≈ 0 (kostenlose Plattformen): s_T → 1, Substitution basiert primär auf Zeit"
+
+  theory_basis:
+    primary:
+      - theory_id: MS-TA-001
+        name: "Time Allocation Theory"
+        authors: "Becker"
+        year: 1965
+        relevance: "Foundational model - Zeit als knappe Ressource mit Opportunitätskosten"
+
+      - theory_id: MS-TA-002
+        name: "Time-Intensive Goods & Market Competition"
+        authors: "Goodman et al."
+        year: 2026
+        relevance: "Extension to digital platforms - Field experiment validation"
+
+    secondary:
+      - theory_id: MS-TA-003
+        name: "Attention Economy"
+        authors: "Simon"
+        year: 1971
+        relevance: "Information abundance creates attention scarcity"
+
+  data_sources:
+    - source: "PAP-goodman2026timeintensive"
+      type: bib_key
+      path: bibliography/bcm_master.bib
+      finding: "Low ad elasticity, time shares predict diversion"
+
+    - source: "PAP-becker1965theory"
+      type: bib_key
+      path: bibliography/bcm_master.bib
+      finding: "Household production function, shadow price of time"
+
+  application_domains:
+    - domain: DIGITAL
+      description: "Social Media Platforms"
+      examples: ["Facebook", "Instagram", "TikTok", "YouTube"]
+      
+    - domain: ANTITRUST
+      description: "Merger/De-merger Analysis"
+      examples: ["FTC Meta case", "Platform market definition"]
+      
+    - domain: ATTENTION
+      description: "Attention Markets"
+      examples: ["Streaming services", "News platforms", "Gaming"]
+
+  policy_implications:
+    - implication: "FTC De-Merger"
+      description: "Hohe Diversion Ratios zwischen Facebook/Instagram → De-merger könnte Wettbewerb erhöhen"
+      
+    - implication: "Market Definition"
+      description: "Traditionelle SSNIP-Tests (5% Preiserhöhung) versagen bei p≈0; Zeit-basierte Tests nötig"
+      
+    - implication: "Ad Load Pricing"
+      description: "Niedrige Elastizität → Plattformen haben erhebliche Marktmacht bei Ad Load"
+
+  validation:
+    status: empirically_validated
+    method: field_experiment
+    sample_size: "> 10,000"
+    confidence: 0.85
+    applied_cases: 1
+    notes: "Two field experiments on Facebook and Instagram users"
+
+  outputs:
+    - output_id: OUT-TA-001
+      type: theory_integration
+      file: null
+      description: "Theory catalog integration (MS-TA-001, MS-TA-002, MS-TA-003)"
+
+  version_history:
+    - version: '1.0'
+      date: '2026-01-28'
+      changes: "Initial model based on Goodman et al. (2026) NBER WP 34743"
+      session: EBF-S-2026-01-28-MKT-001
+
+# ==============================================================================
+# MOD-HMWM-001: Holistic Migration Welfare Model (Switzerland)
+# Integriert: Dustmann (20) + Beerli (3) + Eichenberger (8) + Type Diff (12) + Integration (12) = 55 Papers
+# ==============================================================================
+
+- id: MOD-HMWM-001
+  name: "Holistic Migration Welfare Model"
+  version: '3.3'
+  created: '2026-01-29'
+  last_updated: '2026-01-29'
+  created_in_session: EBF-S-2026-01-29-MIG-001
+  evolved_in_sessions:
+    - EBF-S-2026-01-29-MIG-001
+
+  question_type: welfare_impact_analysis
+  question_template: "Wie beeinflusst Migration den Nutzen von [Bevölkerungsgruppe] in [Region]?"
+  example_questions:
+    - "Wie beeinflusst Migration den Nutzen der Schweizer Bevölkerung?"
+    - "Was sind die Wohlfahrtseffekte der EU-Personenfreizügigkeit?"
+    - "Wie unterscheiden sich Migrations-Effekte zwischen Kantonen?"
+    - "Warum divergieren ökonomische Realität und politische Wahrnehmung?"
+
+  core_dimensions:
+    primary:
+      - WHAT    # Utility-Dimensionen (FEPSDE)
+      - HOW     # Komplementarität Native-Immigrant
+      - AWARE   # Wahrnehmung vs. Realität
+    secondary:
+      - WHO     # Segmente (Hoch/Niedrigqual, Rentner, Junge)
+      - WHEN    # Adjustment Time (4 Jahre)
+      - WHERE   # Kantonale Heterogenität
+    extended:
+      - STAGE   # Integration Timeline (10-15 Jahre)
+      - HIERARCHY # Political Feedback Loop
+
+  psi_dimensions:
+    - Ψ_I    # Institutions (AFMP, Bilaterale)
+    - Ψ_S    # Social (Narrative, SVP)
+    - Ψ_K    # Culture (Sprachregionen)
+    - Ψ_C    # Cognitive (Wahrnehmungsverzerrung)
+    - Ψ_T    # Temporal (Adjustment)
+    - Ψ_E    # Economic (Housing, Fiscal)
+    - Ψ_F    # Physical (Kantone, Border)
+
+  segments:
+    - id: HQ
+      name: "Hochqualifizierte"
+      proportion: 0.35
+      delta_U_actual: +0.28
+      delta_U_perceived: +0.08
+      characteristics: "Komplementär zu Migranten, profitiert von Spezialisierung"
+      narrative_vulnerability: "niedrig"
+
+    - id: NQ
+      name: "Niedrigqualifizierte"
+      proportion: 0.25
+      delta_U_actual: +0.05
+      delta_U_perceived: -0.42
+      characteristics: "Höchste Narrativ-Vulnerabilität, Mieter, Housing-betroffen"
+      narrative_vulnerability: "sehr hoch"
+
+    - id: RT
+      name: "Rentner/Pensionierte"
+      proportion: 0.25
+      delta_U_actual: +0.12
+      delta_U_perceived: -0.28
+      characteristics: "Nostalgie-Effekt, oft Eigentümer, AHV-Beitragszahler"
+      narrative_vulnerability: "hoch"
+
+    - id: JE
+      name: "Junge Erwachsene (18-35)"
+      proportion: 0.15
+      delta_U_actual: +0.22
+      delta_U_perceived: +0.05
+      characteristics: "Kosmopolitisch, mobile, Mieter"
+      narrative_vulnerability: "niedrig"
+
+  cantons:
+    - id: TI
+      name: "Tessin"
+      grenzgaenger: 68000
+      grenzgaenger_growth: "+85%"
+      delta_U_actual: +0.08
+      delta_U_perceived: -0.45
+      vulnerability: "sehr_hoch"
+      notes: "Höchste Grenzgänger-Dichte + niedrigste FOCJ-Autonomie"
+
+    - id: GE
+      name: "Genf"
+      grenzgaenger: 105000
+      grenzgaenger_growth: "+40%"
+      delta_U_actual: +0.25
+      delta_U_perceived: -0.08
+      vulnerability: "niedrig"
+      notes: "Kosmopolitisch, hohe FOCJ-Autonomie"
+
+    - id: ZH
+      name: "Zürich"
+      grenzgaenger: 45000
+      grenzgaenger_growth: "+25%"
+      delta_U_actual: +0.28
+      delta_U_perceived: +0.02
+      vulnerability: "niedrig"
+      notes: "Hochqualifiziert, starke Wirtschaft"
+
+    - id: BS
+      name: "Basel-Stadt"
+      grenzgaenger: 35000
+      grenzgaenger_growth: "+60%"
+      delta_U_actual: +0.22
+      delta_U_perceived: -0.15
+      vulnerability: "mittel"
+
+    - id: BE
+      name: "Bern"
+      grenzgaenger: 12000
+      grenzgaenger_growth: "+15%"
+      delta_U_actual: +0.15
+      delta_U_perceived: -0.18
+      vulnerability: "mittel"
+
+  # === v3.0: MIGRANT TYPE DIFFERENTIATION ===
+  migrant_types:
+    - id: GRZ
+      name: "Grenzgänger / Cross-Border Workers"
+      description: "Arbeiten in CH, wohnen im Ausland (FR, DE, IT, AT)"
+      proportion: 0.20
+      skill_composition: "67% hochqualifiziert (Beerli 2021)"
+      delta_U_native_actual: "+0.02"
+      delta_U_native_perceived: "-0.15"
+      fiscal_contribution: "positive (Steuern, keine Infrastruktur)"
+      key_papers:
+        - "PAP-lalive2010gravity"
+        - "PAP-weiss2018border"
+        - "PAP-beerli2021abolition"
+      trajectory: "stable_high"
+      notes: "Positiv selektiert, +35% Lohnprämie vs. Bleiben im Herkunftsland"
+
+    - id: EU_H
+      name: "EU Hochqualifizierte"
+      description: "Permanente EU-Migranten mit tertiärer Bildung"
+      proportion: 0.35
+      skill_composition: "100% tertiär definitionsgemäß"
+      delta_U_native_actual: "+0.05"
+      delta_U_native_perceived: "+0.02"
+      fiscal_contribution: "strongly_positive"
+      key_papers:
+        - "PAP-lerch2025highskilled"
+        - "PAP-kerr2010labor"
+        - "PAP-bratsberg2014immigrants"
+      trajectory: "stable_high"
+      notes: "56% aller Immigranten 2010-2018 (Lerch). Brain Gain für CH."
+
+    - id: EU_N
+      name: "EU Niedrigqualifizierte"
+      description: "Permanente EU-Migranten ohne tertiäre Bildung"
+      proportion: 0.15
+      skill_composition: "sekundär oder weniger"
+      delta_U_native_actual: "-0.006"
+      delta_U_native_perceived: "-0.25"
+      fiscal_contribution: "neutral_to_positive"
+      key_papers:
+        - "PAP-dustmann2013effect"
+        - "PAP-bratsberg2014immigrants"
+      trajectory: "stable_medium"
+      notes: "Leicht negativer Lohneffekt für native Niedrigqualifizierte"
+
+    - id: FAM
+      name: "Familiennachzug"
+      description: "Nachzug von Ehepartnern, Kindern, Eltern"
+      proportion: 0.12
+      skill_composition: "gemischt, tendenziell niedriger als Hauptantragsteller"
+      delta_U_native_actual: "+0.01"
+      delta_U_native_perceived: "-0.20"
+      fiscal_contribution: "initially_negative_converging"
+      key_papers:
+        - "PAP-frattini2024migrants"
+        - "PAP-amuedo2024family"
+        - "PAP-bratsberg2017refugees"
+      trajectory: "stable_medium"
+      notes: "Tied movers earn 15% less. 20pp employment gap vs labor migrants."
+
+    - id: ASY
+      name: "Asylsuchende / Flüchtlinge"
+      description: "Humanitäre Migration, Schutzstatus"
+      proportion: 0.08
+      skill_composition: "heterogen, oft nicht direkt einsetzbar"
+      delta_U_native_actual: "+0.018"
+      delta_U_native_perceived: "-0.45"
+      fiscal_contribution: "negative_short_term_converging"
+      key_papers:
+        - "PAP-foged2016immigrants"
+        - "PAP-bratsberg2017refugees"
+      trajectory: "hump_then_reversal"
+      trajectory_details:
+        peak_years: 10
+        reversal_pattern: "employment declines after year 10"
+      notes: "Refugees INCREASE native wages +1.8% (Foged & Peri). Höchste Narrative-Vulnerabilität."
+
+    - id: DRT
+      name: "Drittstaaten Hochqualifizierte"
+      description: "Nicht-EU hochqualifizierte Migranten (Kontingente)"
+      proportion: 0.10
+      skill_composition: "sehr hoch (Kontingent-Selektion)"
+      delta_U_native_actual: "+0.05"
+      delta_U_native_perceived: "+0.05"
+      fiscal_contribution: "strongly_positive"
+      key_papers:
+        - "PAP-beine2024braindrain"
+        - "PAP-kerr2010labor"
+      trajectory: "stable_high"
+      notes: "Brain Gain für CH UND Herkunftsland (9:1 Bildungsmultiplikator)"
+
+  variables:
+    # === FEPSDE Utility Dimensions ===
+    - symbol: "ΔU_F"
+      name: "financial_utility_change"
+      description: "Veränderung der finanziellen Utility durch Migration"
+      scale: '[-1,1]'
+      source_psi: Ψ_E
+      weight: 0.25
+      group: utility_actual
+
+    - symbol: "ΔU_E"
+      name: "experiential_utility_change"
+      description: "Veränderung der Erlebnis-Utility (incl. Dichtestress)"
+      scale: '[-1,1]'
+      source_psi: Ψ_F
+      weight: 0.20
+      group: utility_actual
+
+    - symbol: "ΔU_P"
+      name: "psychological_utility_change"
+      description: "Veränderung der psychologischen Utility (Identität)"
+      scale: '[-1,1]'
+      source_psi: Ψ_C
+      weight: 0.18
+      group: utility_actual
+
+    - symbol: "ΔU_S"
+      name: "social_utility_change"
+      description: "Veränderung der sozialen Utility (Kohäsion)"
+      scale: '[-1,1]'
+      source_psi: Ψ_S
+      weight: 0.15
+      group: utility_actual
+
+    - symbol: "ΔU_D"
+      name: "developmental_utility_change"
+      description: "Veränderung der Entwicklungs-Utility (Innovation)"
+      scale: '[-1,1]'
+      source_psi: Ψ_K
+      weight: 0.12
+      group: utility_actual
+
+    - symbol: "ΔU_X"
+      name: "existential_utility_change"
+      description: "Veränderung der existenziellen Utility (Kultur)"
+      scale: '[-1,1]'
+      source_psi: Ψ_K
+      weight: 0.10
+      group: utility_actual
+
+    # === Narrative Function ===
+    - symbol: "N_d"
+      name: "narrative_function"
+      description: "Narrative-bedingte Wahrnehmungsverzerrung pro Dimension"
+      scale: '[-0.5,0.5]'
+      source_psi: Ψ_S
+      weight: null
+      group: perception
+      notes: "N_d = f(media, SVP_discourse, density_stress_frame)"
+
+    # === Housing Effects (Grossmann 2023) ===
+    - symbol: "η_sfh"
+      name: "housing_elasticity_sfh"
+      description: "Immigration-Housing Elastizität für Einfamilienhäuser"
+      value: 0.043
+      source: "PAP-grossmann2023housing"
+      group: housing
+
+    - symbol: "η_apt"
+      name: "housing_elasticity_apt"
+      description: "Immigration-Housing Elastizität für Wohnungen"
+      value: 0.059
+      source: "PAP-grossmann2023housing"
+      group: housing
+
+    - symbol: "η_rent"
+      name: "housing_elasticity_rent"
+      description: "Immigration-Mieten Elastizität"
+      value: 0.074
+      source: "PAP-grossmann2023housing"
+      group: housing
+
+    # === Fiscal Effects (Eichenberger 2014) ===
+    - symbol: "κ_debt"
+      name: "debt_capitalization"
+      description: "Schulden-Housing Kapitalisierungselastizität"
+      value: "[0.15, 0.25]"
+      source: "PAP-eichenberger2014housing"
+      group: fiscal
+
+    # === Labor Market (Dustmann) ===
+    - symbol: "γ_wage_low"
+      name: "wage_effect_low_skill"
+      description: "Lohneffekt für Niedrigqualifizierte"
+      value: -0.006
+      source: "PAP-dustmann2013effect"
+      group: labor
+
+    - symbol: "γ_wage_high"
+      name: "wage_effect_high_skill"
+      description: "Lohneffekt für Hochqualifizierte"
+      value: +0.05
+      source: "PAP-beerli2021abolition"
+      group: labor
+
+    # === Adjustment Dynamics (Dustmann 2017) ===
+    - symbol: "λ"
+      name: "adjustment_speed"
+      description: "Anpassungsgeschwindigkeit lokaler Arbeitsmärkte"
+      value: 0.25
+      unit: "per_year"
+      interpretation: "4 Jahre für vollständige Anpassung"
+      source: "PAP-dustmann2017labor"
+      group: dynamics
+
+    # === Political Feedback (Portmann 2012) ===
+    - symbol: "ρ_pol"
+      name: "political_alignment"
+      description: "Voter-Legislator Präferenz-Alignment"
+      value: 0.168
+      source: "PAP-portmann2012voters"
+      group: political
+
+  functional_form:
+    type: "holistic_welfare_with_narrative_and_migrant_types"
+
+    main_equation: |
+      ΔU_total(i,k,m,t) = Σ_d [ ω_d(i) · (ΔU_d_actual(k,m,t) + N_d(m,t)) ]
+                         + Σ_{d1<d2} [ γ(d1,d2) · ΔU_d1 · ΔU_d2 ]
+                         + ΔU_housing(k,t)
+                         + ΔU_fiscal(k,m,t)
+
+    migrant_type_equation: |
+      ΔU_d_actual(k,m,t) = θ_m · ΔU_d_base(k,t)
+      WHERE m ∈ {GRZ, EU_H, EU_N, FAM, ASY, DRT}
+      AND θ_m = type-specific multiplier
+
+    fiscal_by_type_equation: |
+      ΔU_fiscal(k,m,t) = {
+        GRZ:  strongly_positive (taxes, no infrastructure)
+        EU_H: strongly_positive (high taxes, low usage)
+        EU_N: neutral_to_positive
+        FAM:  initially_negative → converging
+        ASY:  negative_short_term → hump(10y) → declining
+        DRT:  strongly_positive
+      }
+
+    integration_trajectory_equation: |
+      Employment(m,t) = {
+        LABOR (GRZ, EU_H, EU_N, DRT): stable_high(t)
+        FAMILY (FAM): stable_medium(t)
+        REFUGEE (ASY): hump(peak=10y, then_reversal)
+      }
+
+    housing_equation: |
+      ΔU_housing(k,t) = -η · ΔP_housing(k,t) / Income(i)
+      WHERE η ∈ {0.043 (SFH), 0.059 (APT), 0.074 (RENT)}
+
+    fiscal_equation: |
+      ΔU_fiscal(k,t) = Taxes_paid(migrant) - Infrastructure_used(migrant)
+
+    narrative_equation: |
+      N_d(t) = β_media · Media_coverage(t) + β_svp · SVP_discourse(t) + ε
+
+    political_feedback: |
+      Vote_SVP(k,t+1) = β_0 + β_1 · ΔU_perceived(k,t) + β_2 · N_d(t)
+      Policy(t+2) = ρ_pol · Vote_SVP(k,t+1)
+
+    interpretation: |
+      Wahrgenommener Nutzen = Tatsächlicher Nutzen + Narrative Verzerrung
+      Migration ist objektiv positiv (ΔU_actual > 0) aber subjektiv negativ (ΔU_perceived < 0)
+      Das Paradox erklärt politische Destabilisierung trotz ökonomischem Gewinn
+
+  theory_basis:
+    primary:
+      - theory_id: MS-LM-001
+        name: "Labor Market Complementarity"
+        authors: "Dustmann, Card, Peri"
+        year: "2013-2017"
+        relevance: "Natives und Immigrants sind imperfekte Substitute"
+
+      - theory_id: MS-MG-001
+        name: "Migration Economics"
+        authors: "Dustmann et al."
+        year: "1994-2022"
+        relevance: "Umfassende Migrationsökonomie"
+
+      - theory_id: MS-FE-001
+        name: "Fiscal Federalism / FOCJ"
+        authors: "Frey, Eichenberger"
+        year: "1994-1999"
+        relevance: "Jurisdiktionaler Wettbewerb erklärt kantonale Heterogenität"
+
+    secondary:
+      - theory_id: MS-NR-001
+        name: "Narrative Economics"
+        authors: "Shiller, Beerli"
+        year: "2019-2025"
+        relevance: "Narrative formen Wahrnehmung unabhängig von Fakten"
+
+      - theory_id: MS-HO-001
+        name: "Housing Economics"
+        authors: "Grossmann, Eichenberger"
+        year: "2014-2023"
+        relevance: "Migration kapitalisiert in Housing-Preise"
+
+      - theory_id: MS-PO-001
+        name: "Political Representation"
+        authors: "Portmann, Stadelmann, Eichenberger"
+        year: 2012
+        relevance: "Voter-Präferenzen transmittieren zu Policy"
+
+  data_sources:
+    - source: "bcm_master.bib"
+      type: literature
+      count: 43
+      breakdown:
+        dustmann_papers: 20
+        beerli_papers: 3
+        eichenberger_papers: 8
+        migrant_type_papers: 12
+        notes: "Type papers: Foged, Bratsberg, Frattini, Amuedo, Beine, Lalive, Weiss"
+
+    - source: "data/paper-intake/2026/"
+      type: PIPs
+      count: 28
+      files: "PIP-2026-01-28-002 to PIP-2026-01-29-012"
+
+    - source: "BCM2_04_KON_*.yaml"
+      type: context_database
+      coverage: "404 Swiss context factors"
+
+  key_findings:
+    paradox:
+      description: "Migration ist objektiv positiv aber subjektiv negativ"
+      delta_U_actual: "+0.19"
+      delta_U_perceived: "-0.12"
+      explanation: "Narrative Function N_d dominiert Wahrnehmung"
+
+    housing_effect:
+      description: "Housing-Kosten sind größter realer negativer Effekt"
+      mechanism: "+1% Ausländer → +7.4% Mieten"
+      affected_segments: ["Niedrigqualifizierte Mieter", "Junge Erwachsene"]
+
+    cantonal_heterogeneity:
+      description: "TI vulnerabel, GE/ZH resilient"
+      driver: "FOCJ-Autonomie + Grenzgänger-Dichte"
+
+    political_feedback:
+      description: "Negative Wahrnehmung → SVP-Stimmen → Restriktive Politik"
+      quantification: "+6pp SVP seit 2000 in Grenzregionen"
+      source: "PAP-alrababah2024freemovement"
+
+  beatrix_implications:
+    primary_target: AWARE
+    intervention_focus: "Narrative-Korrektur statt Lohnpolitik"
+
+    recommendations:
+      - target: "AWARE"
+        action: "Faktenbasierte Kommunikation über tatsächliche Effekte"
+        expected_effect: "ΔN_d = -0.10 → ΔU_perceived = +0.08"
+
+      - target: "WHO"
+        action: "Segment-spezifische Kommunikation"
+        details: "Niedrigqualifizierte: Komplementarität; Rentner: AHV-Beitrag"
+
+      - target: "WHERE"
+        action: "Kantonal differenzierte Strategie"
+        details: "TI: intensive Intervention; GE/ZH: light touch"
+
+      - target: "WHEN"
+        action: "Timing vor negativen Narrativen"
+        details: "Proaktive Kommunikation, nicht reaktiv"
+
+    not_recommended:
+      - intervention: "Lohnpolitik"
+        reason: "Lohneffekte sind bereits positiv für 85%"
+
+      - intervention: "Generische Kampagnen"
+        reason: "Ignoriert Segment- und Kantonal-Heterogenität"
+
+  validation:
+    status: "literature_validated"
+    method: "31 peer-reviewed papers"
+    confidence: 0.85
+    applied_cases: 0
+    notes: "Model built from comprehensive literature synthesis; awaiting field application"
+
+  outputs:
+    - output_id: OUT-HMWM-001
+      type: model_documentation
+      file: "data/model-registry.yaml"
+      description: "Full model specification"
+
+    - output_id: OUT-HMWM-002
+      type: paper_intake
+      file: "data/paper-intake/2026/"
+      description: "25 PIPs for integrated papers"
+# -----------------------------------------------------------------------------
+# MOD-012: Fiscal Behavior Model (FBM-CH) - Fiskalische Disziplin Schweiz
+# -----------------------------------------------------------------------------
+- id: MOD-012
+  name: "Fiscal Behavior Model (FBM-CH)"
+  version: '1.0'
+  created: '2026-01-29'
+  last_updated: '2026-01-29'
+  created_in_session: EBF-S-2026-01-29-POL-001
+
+  question_type: policy_analysis
+  question_template: "Warum [Verhalten X] trotz [Wissen Y]?"
+  example_questions:
+    - "Warum keine fiskalische Disziplin trotz Wissen um Endlichkeit?"
+    - "Warum keine Klimapolitik trotz wissenschaftlichem Konsens?"
+    - "Warum keine Pensionsreform trotz demografischem Wandel?"
+
+  core_dimensions:
+    primary: [WHO, WHAT, AWARE]
+    secondary: [WHEN, HOW]
+
+  psi_dimensions: [Ψ_I, Ψ_S, Ψ_C, Ψ_T]
+
+  actors:
+    - id: P
+      name: "Politiker"
+      utility: "U_P = f(Wiederwahl, Prestige, Macht)"
+      horizon: "4 Jahre (Wahlperiode)"
+    - id: B
+      name: "Bürokratie"
+      utility: "U_B = f(Budget, Personal, Autonomie)"
+      horizon: "unbegrenzt"
+    - id: L
+      name: "Lobbys"
+      utility: "U_L = f(Subventionen, Regulierung, Zugang)"
+      horizon: "unbegrenzt"
+    - id: W
+      name: "Wähler"
+      utility: "U_W = f(Leistungen - Steuern)"
+      horizon: "1 Jahr"
+    - id: Z
+      name: "Zukünftige Generationen"
+      utility: "nicht repräsentiert"
+      horizon: "keine Stimme"
+
+  blockades:
+    - id: M1
+      name: "Konzentrierte Vorteile vs. diffuse Kosten"
+      formula: "P(Ausgabe) = (Lobby-Intensität × Sichtbarkeit_Nutzen) / (Wähler-Widerstand × Sichtbarkeit_Kosten)"
+    - id: M2
+      name: "Fiscal Illusion"
+      parameter: φ_FI
+      description: "Wahre Kosten werden unterschätzt"
+    - id: M3
+      name: "Zeithorizont-Asymmetrie"
+      parameter: τ_horizon
+      description: "Politiker 4J vs. Schulden 30J"
+    - id: M4
+      name: "Common Pool Problem"
+      description: "Tragik der Allmende beim Budget"
+    - id: M5
+      name: "Verlustaversion"
+      parameter: λ_loss
+      description: "Kürzungen 2.25× schmerzhafter"
+    - id: M6
+      name: "Komplexitäts-Schleier"
+      parameter: κ_komp
+      description: "< 1% versteht Bundesbudget"
+
+  variables:
+    - symbol: φ_FI
+      name: fiscal_illusion
+      description: "Grad der Kostenunterschätzung"
+      scale: '[0,1]'
+      default: 0.65
+    - symbol: β_hyp
+      name: hyperbolic_discounting
+      description: "Gegenwarts-Bias"
+      scale: '[0,1]'
+      default: 0.70
+    - symbol: κ_komp
+      name: complexity_understanding
+      description: "Budgetverständnis"
+      scale: '[0,1]'
+      default: 0.25
+    - symbol: λ_loss
+      name: loss_aversion
+      description: "Verlustaversions-Koeffizient"
+      scale: '[1,∞]'
+      default: 2.25
+    - symbol: σ_lobby
+      name: lobby_sensitivity
+      description: "Politiker-Sensitivität für Lobbys"
+      scale: '[0,1]'
+      default: 0.75
+    - symbol: ρ_diffus
+      name: diffuse_weight
+      description: "Gewicht diffuser Steuerzahler"
+      scale: '[0,1]'
+      default: 0.20
+    - symbol: θ_schuld
+      name: schuldenbremse_effectiveness
+      description: "Effektivität der Schuldenbremse"
+      scale: '[0,1]'
+      default: 0.85
+
+  theory_basis:
+    primary:
+      - theory_id: MS-PC-001
+        name: "Public Choice Theory"
+        authors: "Buchanan, Tullock"
+        year: 1962
+        relevance: "Politiker als rationale Akteure"
+      - theory_id: MS-RD-001
+        name: "Prospect Theory"
+        authors: "Kahneman, Tversky"
+        year: 1979
+        relevance: "Verlustaversion bei Kürzungen"
+    secondary:
+      - theory_id: MS-NU-001
+        name: "Fiscal Illusion"
+        authors: "Buchanan"
+        year: 1967
+        relevance: "Systematische Kostenunterschätzung"
+
+  application_domains:
+    - domain: POL
+      description: "Fiskalpolitik"
+      examples: ["Schweizer Bundeshaushalt", "Kantonale Budgets"]
+    - domain: ORG
+      description: "Organisationsbudgets"
+      examples: ["Unternehmensbudgetierung"]
+
+  interventions_designed: 12
+  intervention_categories:
+    unmittelbar: ["Steuerzahler-Quittung", "Ausgaben-Ampel", "Sunset Clauses"]
+    kurzfristig: ["Effizienz-Benchmark", "Generationen-Check", "PAYGO"]
+    mittelfristig: ["Bürgerbudget", "Schuldenbremse 2.0", "Ausgaben-Referendum"]
+    langfristig: ["Fiskalische Bildung", "Fiskalrat", "Dezentralisierung"]
+
+  validation:
+    status: theoretical
+    method: literature_synthesis
+    confidence: 0.70
+    notes: "Basiert auf Public Choice und Behavioral Economics Literatur"
+
+  version_history:
+    - version: '1.0'
+      date: '2026-01-29'
+      changes: "Initial model with Dustmann (20) + Beerli (3) papers"
+      variables: 12
+      session: EBF-S-2026-01-29-MIG-001
+
+    - version: '2.0'
+      date: '2026-01-29'
+      changes: "Extended with Eichenberger (8) papers: Housing, Fiscal, Political"
+      variables: 17
+      new_components:
+        - "Housing elasticities (η_sfh, η_apt, η_rent)"
+        - "Fiscal capitalization (κ_debt)"
+        - "Political alignment (ρ_pol)"
+        - "FOCJ cantonal competition"
+      session: EBF-S-2026-01-29-MIG-001
+
+    - version: '3.0'
+      date: '2026-01-29'
+      changes: "Major extension with MIGRANT TYPE DIFFERENTIATION (m dimension)"
+      variables: 23
+      new_dimension: "m ∈ {GRZ, EU_H, EU_N, FAM, ASY, DRT}"
+      new_components:
+        - "6 migrant types with type-specific parameters"
+        - "Integration trajectories by admission class"
+        - "Fiscal contribution by type"
+        - "Refugee hump pattern (Bratsberg)"
+        - "Brain gain mechanism for DRT (Beine)"
+        - "Cross-border worker selection (Lalive)"
+      new_papers: 12
+      key_papers:
+        - "PAP-foged2016immigrants: Refugees increase native wages +1.8%"
+        - "PAP-bratsberg2017refugees: Integration trajectory by admission class"
+        - "PAP-beine2024braindrain: Brain gain 9:1 multiplier"
+        - "PAP-frattini2024migrants: EU employment gap 8.6pp"
+        - "PAP-lalive2010gravity: Grenzgänger wage premium +35%"
+      session: EBF-S-2026-01-29-MIG-001
+
+    - version: '3.1'
+      date: '2026-01-29'
+      changes: "INTEGRATION INTERVENTION MODULE - policy-malleable trajectories"
+      variables: 28
+      new_module: "Integration Intervention Economics"
+      new_components:
+        - "Language training effectiveness (β_lang = permanent positive)"
+        - "Early intervention effect (employment doubling: 30% vs 15%)"
+        - "ALMP effectiveness by type (wage subsidies > training > public employment)"
+        - "Policy effectiveness matrix (language + strong markets work; welfare cuts don't)"
+        - "Work-First vs. Language-First trade-offs"
+        - "Civic integration practical skills component"
+        - "Asylum waiting time effects"
+        - "Corrected fiscal impact estimates"
+      new_papers: 12
+      key_papers:
+        - "PAP-foged2024language: Language training permanent earnings effect (RDD)"
+        - "PAP-dahlberg2024labor: RCT Sweden - early intervention doubles employment"
+        - "PAP-foged2024comparing: Policy comparison - what works, what doesn't"
+        - "PAP-aslund2016integrating: +43% earnings over 10 years with customized plans"
+        - "PAP-butschek2014almp: Meta-analysis - only wage subsidies work confidently"
+        - "PAP-clemens2024fiscal: Corrected fiscal effect +$128k even for low-skilled"
+      key_findings:
+        what_works:
+          - "Language training (permanent effect)"
+          - "Early intensive intervention (160h more → 2x employment)"
+          - "Placement in strong labor markets"
+          - "Wage subsidies"
+          - "Customized individual plans (+43% earnings)"
+        what_does_not_work:
+          - "Welfare cuts (no integration improvement)"
+          - "Refugee clustering (no network benefit)"
+          - "Public employment programs (negative effect)"
+          - "Generic one-size-fits-all programs"
+      hmwm_implications:
+        - "ASY trajectory is policy-malleable, not deterministic"
+        - "Timing matters: early intervention prevents 10-year reversal"
+        - "Intensity matters: 160h more training doubles outcomes"
+        - "Location matters: strong labor markets (ZH, GE) > weak (TI)"
+        - "Fiscal calculations must include intervention ROI"
+      session: EBF-S-2026-01-29-MIG-001
+
+    - version: '3.2'
+      date: '2026-01-29'
+      changes: "NEGATIVE INCENTIVES MODULE - welfare cuts backfire, deterrence ineffective"
+      variables: 32
+      new_module: "Economics of Negative Incentives"
+      new_components:
+        - "Welfare cuts backfire (β_welfare_cut = NEGATIVE)"
+        - "Detention does not deter (no effect on unauthorized migration)"
+        - "Deportation costs > benefits (GDP -1.2% to -7.4%)"
+        - "Asylum processing time costs (-4.5pp employment per year)"
+        - "Optimal refugee placement (+40-70% employment via ML)"
+        - "Fiscal ROI of negative incentives (NEGATIVE for welfare cuts)"
+      new_papers: 6
+      key_papers:
+        - "PAP-andersen2024startaid: Danish Start Aid - 40% cut → +5pp employment BUT +12pp crime, -$12k ROI"
+        - "PAP-east2023deportation: Secure Communities - no native benefits, high costs"
+        - "PAP-hainmueller2016asylum: Swiss asylum lottery - -4.5pp employment per wait year"
+        - "PAP-bansak2018asylum: Optimal placement +40-70% employment (Switzerland +70%!)"
+        - "PAP-fasani2021detention: UK detention - no deterrence, negative integration effects"
+        - "PAP-borjas1999welfare: Early welfare magnet - superseded by Agersnap"
+      key_findings:
+        negative_incentives_that_backfire:
+          - "Welfare cuts: +5pp employment BUT +5-12pp crime, -6mo education, -$12k ROI"
+          - "Detention: No deterrence effect, negative mental health and integration"
+          - "Slow asylum processing: -4.5pp employment per year (Swiss evidence)"
+          - "Mass deportation: GDP -1.2% to -7.4%, no native wage benefit"
+        policies_that_work_instead:
+          - "Fast asylum processing: Reduces uncertainty, improves outcomes"
+          - "Optimal placement: ML algorithm +40-70% employment (CH: +70%!)"
+          - "Early intervention: Prevents negative trajectory"
+          - "Language + strong labor market: Proven effective"
+        welfare_magnet_reality:
+          - "Agersnap 2020: Welfare does attract some migration (elasticity 1.3)"
+          - "BUT: Labor market conditions matter more than welfare"
+          - "Welfare cuts do NOT improve integration - they worsen it"
+      hmwm_implications:
+        - "Negative incentives have negative fiscal ROI"
+        - "Costs of unintended consequences exceed savings"
+        - "Deterrence policies are ineffective and expensive"
+        - "Time delays are costly - not neutral"
+        - "Evidence-based policy: Invest in integration, not deterrence"
+      session: EBF-S-2026-01-29-MIG-001
+
+    - version: '3.3'
+      date: '2026-01-29'
+      changes: "VALIDATION & META-ANALYSIS MODULE - parameter confirmation"
+      variables: 34
+      new_module: "Meta-Analytical Validation"
+      new_components:
+        - "Native-immigrant elasticity of substitution = 14 (Caiumi/Peri 2024)"
+        - "Meta-effect immigration = positive significant (41 studies, 1459 estimates)"
+        - "Low-skilled wage effect USA = +1.7% to +2.6% (counter-intuitive!)"
+        - "No publication bias in immigration literature"
+        - "European policy synthesis (63 studies, Kiviholma 2026)"
+        - "Complementarity persistent over 22 years (2000-2022)"
+      new_papers: 3
+      key_papers:
+        - "PAP-caiumi2024redux: Peri Redux - elasticity substitution = 14, low-skilled benefit most"
+        - "PAP-luz2025metaanalysis: 41 studies, 1459 estimates, positive significant effect"
+        - "PAP-kiviholma2026laborpolicies: 63 European policy studies, systematic review"
+      validation_findings:
+        complementarity_confirmed:
+          - "σ_substitution = 14 → Natives and immigrants are complements"
+          - "Complementarity is persistent (2000-2022) and possibly increasing"
+          - "Even low-skilled natives benefit (+1.7-2.6%)"
+        meta_evidence:
+          - "41 studies, 1459 estimates → positive and significant"
+          - "No publication bias detected"
+          - "Heterogeneity explained by characteristics (supports type differentiation)"
+        policy_synthesis:
+          - "63 European studies on immigrant employment policies"
+          - "33 use experimental/quasi-experimental methods"
+          - "Language training and integration programs confirmed effective"
+      hmwm_implications:
+        - "HMWM complementarity assumption VALIDATED by Caiumi/Peri"
+        - "Positive overall effect CONFIRMED by meta-analysis"
+        - "Type differentiation SUPPORTED by heterogeneity findings"
+        - "Integration policies VALIDATED by Kiviholma systematic review"
+        - "Model predictions consistent with global evidence"
+      session: EBF-S-2026-01-29-MIG-001
+      changes: "Initial model for Swiss fiscal discipline analysis"
+      session: EBF-S-2026-01-29-POL-001
+
+- id: MOD-ZIN-001
+  name: Kreislaufwirtschaft Behavior Dynamics ODE Model
+  version: '1.0'
+  created: '2026-02-02'
+  last_updated: '2026-02-02'
+  created_in_session: EBF-S-2026-02-02-ORG-ZIN003
+  evolved_in_sessions:
+    - EBF-S-2026-02-02-ORG-ZIN003
+  customer: Zindel United
+  project: ZIN003
+  project_name: Kreislaufwirtschaft Verhaltensänderung
+  question_type: behavior_change_process
+  question_template: "Wie entwickelt sich [Verhaltensänderung] über Zeit bei [Organisation] unter [Interventionen]?"
+  example_questions:
+    - "Wie schnell adoptiert Zindel United Kreislaufwirtschafts-Praktiken?"
+    - "Welche Interventions-Sequenz maximiert nachhaltige Verhaltensänderung?"
+    - "Wann wird kritische Masse erreicht für Transfer zu anderen Standorten?"
+  core_dimensions:
+    primary:
+      - WHAT
+      - WHO
+      - HOW
+      - STAGE
+    secondary:
+      - AWARE
+      - READY
+      - WHEN
+    extended:
+      - WHERE
+      - HIERARCHY
+  psi_dimensions:
+    - Ψ_I
+    - Ψ_S
+    - Ψ_C
+    - Ψ_K
+    - Ψ_E
+    - Ψ_T
+    - Ψ_M
+    - Ψ_F
+  context_factors_used: 983
+  context_source: "data/customers/zindel-united/kontextvektoren/"
+  cva_level: VERTIEFT
+  functional_form:
+    type: ode_system
+    description: "5-variable coupled ODE system for behavior change dynamics"
+    state_variables:
+      - symbol: U
+        name: Total Utility
+        description: "Aggregierte Utility aus allen 6 FEPSDE-Dimensionen"
+        initial: 0.15
+        equation: "dU/dt = Σα_d·(1+I+γ)·(1-R)·(1+H) - Σδ_d·U_d"
+      - symbol: A
+        name: Adoption
+        description: "Anteil der Personen mit neuem Verhalten"
+        initial: 0.05
+        equation: "dA/dt = β·(U+I)·A·(1-A)·(1-0.3R)·(1+M)"
+        functional_form: "S-curve (Bass Diffusion)"
+      - symbol: R
+        name: Resistance
+        description: "Widerstand gegen Veränderung"
+        initial: 0.60
+        equation: "dR/dt = -ρ·evidence·R + r·setback·(1-R)"
+      - symbol: H
+        name: Habit Strength
+        description: "Automatisierungsgrad des neuen Verhaltens"
+        initial: 0.00
+        equation: "dH/dt = η·A·(1+I_D)·(1-H)"
+        note: "Lally et al. (2010): 66 Tage zur Gewohnheit"
+      - symbol: M
+        name: Momentum
+        description: "Organisationale Dynamik/Schwung"
+        initial: 0.10
+        equation: "dM/dt = μ·success·(1-M) - friction·M"
+  utility_dimensions:
+    - symbol: U_F
+      name: Financial Utility
+      weight: 0.20
+      alpha: 0.10
+      delta: 0.03
+      source: "ROI studies, Thaler & Sunstein (2008)"
+      context_adjustment: "+0.02 (ROI 6.2% in CH CE)"
+    - symbol: U_E
+      name: Emotional Utility
+      weight: 0.15
+      alpha: 0.15
+      delta: 0.08
+      source: "Kahneman (2011), Affect heuristic"
+      context_adjustment: "+0.03 (Familienunternehmen, hohe Identifikation)"
+    - symbol: U_P
+      name: Physical/Effort Utility
+      weight: 0.15
+      alpha: 0.04
+      delta: 0.02
+      source: "Deci & Ryan (2000), Effort studies"
+      context_adjustment: "-0.01 (Baubranche = physisch anspruchsvoll)"
+    - symbol: U_S
+      name: Social Utility
+      weight: 0.20
+      alpha: 0.15
+      delta: 0.06
+      source: "Cialdini (2007), Social proof studies"
+      context_adjustment: "+0.05 (9-köpfiges Kernteam, starke Teamkultur)"
+    - symbol: U_D
+      name: Development Utility
+      weight: 0.15
+      alpha: 0.10
+      delta: 0.04
+      source: "Dweck (2006), Growth mindset"
+      context_adjustment: "+0.02 (Innovationskultur: Invias AG, TorAlva)"
+    - symbol: U_X
+      name: Existential Utility
+      weight: 0.15
+      alpha: 0.10
+      delta: 0.02
+      source: "Frankl (1959), Meaning literature"
+      context_adjustment: "+0.04 (8. Generation, «Zukunft bauen» Narrativ)"
+  complementarity_matrix:
+    - pair: [Social, Existential]
+      gamma_ij: 0.35
+      parameter_ref: PAR-COMP-001  # Analog zu Identity×Social
+      mechanism: "Team-Erleben verstärkt Sinn-Erleben stark"
+      source: "Grant (2013), Prosocial motivation"
+    - pair: [Development, Existential]
+      gamma_ij: 0.40
+      mechanism: "Lernen verstärkt Purpose stark"
+      source: "Deci & Ryan (2000), SDT"
+      domain_specific: true  # PORR-spezifisch, kein generischer PAR-COMP
+    - pair: [Financial, Social]
+      gamma_ij: -0.15
+      parameter_ref: PAR-COMP-002  # Basis: -0.68, hier gedämpft wegen Multi-Faktor-Modell
+      context_adjustment: "Gedämpft von -0.68 auf -0.15 (Financial als EIN Faktor unter vielen)"
+      mechanism: "ACHTUNG: Zu starker Geld-Fokus kann Soziales untergraben"
+      source: "Frey & Jegen (2001), Crowding-out"
+      warning: "CRITICAL - Financial incentives ERST ab Monat 6!"
+    - pair: [Social, Development]
+      gamma_ij: 0.25
+      parameter_ref: PAR-COMP-006
+      mechanism: "Team-Lernen verstärkt sich gegenseitig"
+      source: "Bandura (1977), Social learning"
+    - pair: [Financial, Physical]
+      gamma_ij: 0.20
+      parameter_ref: PAR-COMP-007
+      mechanism: "Kostenersparnis motiviert Aufwandsreduktion"
+      source: "Behavioral economics standard"
+    - pair: [Emotional, Development]
+      gamma_ij: 0.30
+      parameter_ref: PAR-COMP-008
+      mechanism: "Positive Emotionen fördern Lernbereitschaft"
+      source: "Fredrickson (2001), Broaden-and-build"
+  process_parameters:
+    adoption:
+      beta: 0.50
+      description: "S-Curve Adoption Rate"
+      source: "Bass (1969), Rogers (2003)"
+      context_adjustment: "+0.1 (starke Führung durch Andreas Zindel)"
+    resistance:
+      rho: 0.04
+      description: "Resistance Decay Rate"
+      source: "Rogers (2003), Innovation resistance"
+      context_adjustment: "+0.01 (Innovationsgeschichte: Prix SVC)"
+    setback_sensitivity:
+      r: 0.15
+      description: "Wie stark springt Widerstand nach Rückschlägen zurück"
+    habit_formation:
+      eta: 0.015
+      unit: "per day"
+      monthly_equivalent: 0.45
+      description: "Lally et al. (2010): 66 Tage zur Gewohnheit"
+    momentum:
+      mu: 0.08
+      friction: 0.05
+      description: "Momentum Build-up und natürlicher Decay"
+  stage_thresholds:
+    theta_1:
+      name: "Kick-off → Umsetzung"
+      value: 0.25
+      expected_timing: "Ende Monat 2 (März 2026)"
+    theta_2:
+      name: "Umsetzung → Stabilisierung"
+      value: 0.55
+      expected_timing: "Ende Monat 5 (Juli 2026)"
+    theta_3:
+      name: "Stabilisierung → Transfer"
+      value: 0.80
+      expected_timing: "Ende Monat 7 (September 2026)"
+  context_elasticities:
+    alpha_psi_I: 0.80
+    alpha_psi_S: 1.20
+    alpha_psi_C: 0.60
+    alpha_psi_K: 1.10
+    alpha_psi_E: 0.70
+    alpha_psi_T: 0.90
+    alpha_psi_M: 0.85
+    alpha_psi_F: 0.75
+    notes:
+      - "Social (Ψ_S) stärkste Amplifikation bei Zindel (Teamkultur)"
+      - "Cultural (Ψ_K) stark durch 8. Generation Familienunternehmen"
+      - "Material (Ψ_M) gut durch TABREC/Logbau Infrastruktur"
+  intervention_timing:
+    critical_rule: "Financial incentives ERST ab Monat 6 - CROWDING-OUT Gefahr!"
+    optimal_sequence:
+      month_1_2: "Social (I_S=0.3) + Development (I_D=0.3)"
+      month_3_5: "Social erhöhen (I_S=0.4), Development reduzieren (I_D=0.15)"
+      month_6_plus: "Financial einführen (I_F=0.1), Social reduzieren (I_S=0.2)"
+  theory_basis:
+    primary:
+      - theory_id: MS-SP-001
+        name: Inequity Aversion
+        authors: Fehr, Schmidt
+        year: 1999
+        relevance: "Teamdynamik und faire Verteilung"
+      - theory_id: MS-IN-005
+        name: Motivation Crowding
+        authors: Frey, Jegen
+        year: 2001
+        relevance: "Finanzielle Anreize verdrängen intrinsische Motivation"
+      - theory_id: MS-NU-002
+        name: Habit Formation
+        authors: Lally et al.
+        year: 2010
+        relevance: "66 Tage zur Automatisierung"
+    secondary:
+      - theory_id: MS-IB-001
+        name: Identity Economics
+        authors: Akerlof, Kranton
+        year: 2000
+        relevance: "Familienunternehmen-Identität verstärkt Commitment"
+      - theory_id: MS-IF-001
+        name: Diffusion of Innovations
+        authors: Rogers
+        year: 2003
+        relevance: "S-Curve Adoption, Resistance Decay"
+      - theory_id: MS-SP-004
+        name: Self-Determination Theory
+        authors: Deci, Ryan
+        year: 2000
+        relevance: "Intrinsische Motivation für nachhaltige Veränderung"
+  data_sources:
+    - source: "CV_ZIN003_01_unternehmen.yaml"
+      type: context_vector
+      factors: 150
+    - source: "CV_ZIN003_02_branchen_ch.yaml"
+      type: context_vector
+      factors: 150
+    - source: "CV_ZIN003_03_kreislaufwirtschaft.yaml"
+      type: context_vector
+      factors: 183
+    - source: "CV_ZIN003_04_branchen_global.yaml"
+      type: context_vector
+      factors: 160
+    - source: "CV_ZIN003_05_wettbewerber_ch.yaml"
+      type: context_vector
+      factors: 120
+    - source: "CV_ZIN003_06_wettbewerber_global.yaml"
+      type: context_vector
+      factors: 100
+    - source: "CV_ZIN003_07_graubuenden_regional.yaml"
+      type: context_vector
+      factors: 120
+    - source: "ZindelUnited_ZIN003_Kreislaufwirtschaft_profile.yaml"
+      type: project_profile
+    - source: bcm_master.bib
+      type: literature
+      key_papers:
+        - thaler2008nudge
+        - fehr1999theory
+        - frey2001motivation
+        - lally2010habits
+        - rogers2003diffusion
+        - cialdini2007influence
+        - deci2000selfdetermination
+  validation:
+    status: initial
+    simulation_runs: 4
+    last_application: '2026-02-02'
+    monte_carlo: false
+    notes: "Erstellt mit LLMMC + Bayesian Update, 983 Kontextfaktoren"
+  predictions:
+    scenarios:
+      - name: "Szenario 1: Der Beweis ist da"
+        probability: "50-60%"
+        adoption_final: 1.00
+        stage_final: 4
+        description: "Alle Erfolge treten ein, volle Adoption, Transfer möglich"
+      - name: "Szenario 2: Fast geschafft"
+        probability: "25-30%"
+        adoption_final: 0.995
+        stage_final: 4
+        description: "Kleinere Rückschläge, aber Stabilisierung gelingt"
+      - name: "Szenario 3: Technisch ok"
+        probability: "10-15%"
+        adoption_final: 0.523
+        stage_final: 2
+        description: "Piloten gelingen, aber kein Momentum für Skalierung"
+      - name: "Szenario 4: Kein Nutzen"
+        probability: "5-10%"
+        adoption_final: 0.216
+        stage_final: 1
+        description: "Starke Widerstände, Projekt stagniert"
+    early_indicators:
+      month_2:
+        - indicator: "CU-Piloten starten"
+          signal: "Readiness > 0.25"
+        - indicator: "Erste Quick Wins dokumentiert"
+          signal: "Momentum steigt"
+      month_3:
+        - indicator: "Team-Engagement in Retrospektiven"
+          signal: "Adoption > 0.15"
+        - indicator: "Widerstand sinkt sichtbar"
+          signal: "Resistance < 0.5"
+      month_5:
+        - indicator: "≥2 Piloten zeigen messbaren Nutzen"
+          signal: "Adoption > 0.40"
+        - indicator: "Routine erkennbar"
+          signal: "Habit > 0.3"
+  kpi_mapping:
+    - model_var: Adoption
+      kpi: "% Mitarbeiter mit regelmässiger CU-Praxis"
+    - model_var: Resistance
+      kpi: "Umfrage: «Wie skeptisch bist du?» (invertiert)"
+    - model_var: Habit
+      kpi: "Automatisierungsgrad (ohne Reminder)"
+    - model_var: Momentum
+      kpi: "# positive Stories im Intranet / Monat"
+    - model_var: Stage
+      kpi: "Phase gemäss Projektplan"
+  version_history:
+    - version: '1.0'
+      date: '2026-02-02'
+      changes: "Initial ODE model with 40 parameters, LLMMC + Bayesian Update"
+      variables: 40
+      context_factors: 983
+      formula: "5-variable coupled ODE system"
+      session: EBF-S-2026-02-02-ORG-ZIN003
+
+- id: MOD-PMWT-001
+  name: Pharma-MFN Welfare Transfer Model
+  version: '1.0'
+  created: '2026-02-04'
+  last_updated: '2026-02-04'
+  created_in_session: EBF-S-2026-02-04-POL-001
+  question_type: welfare_transfer_analysis
+  question_template: "Welche Wohlfahrtstransfers entstehen durch Policy X?"
+  example_questions:
+    - "Welche Gefahr besteht für Prämienzahler durch Trump MFN-Policy?"
+    - "Wer gewinnt, wer verliert bei Medikamentenpreis-Erhöhungen?"
+  core_dimensions:
+    primary:
+      - WHO
+      - WHAT
+    secondary:
+      - WHEN
+      - HOW
+      - HIERARCHY
+  psi_dimensions:
+    - Ψ_I
+    - Ψ_E
+    - Ψ_S
+    - Ψ_T
+    - Ψ_K
+  theoretical_basis:
+    - name: "Public Choice Theory"
+      author: "Olson"
+      year: 1965
+      key_insight: "Concentrated benefits, diffuse costs"
+    - name: "Regulatory Capture"
+      author: "Stigler"
+      year: 1971
+      key_insight: "Regulation serves the regulated"
+    - name: "Rent-Seeking"
+      author: "Tullock"
+      year: 1980
+      key_insight: "Resources flow to lobbying, not production"
+  variables:
+    - symbol: Q_CH_patent
+      name: patented_medicines_volume
+      description: "Volume of patent-protected medicines in CH"
+      unit: "CHF"
+      value: 4900000000
+      source: "BAG/Interpharma"
+    - symbol: τ_Ausland
+      name: foreign_shareholder_share
+      description: "Share of profits flowing to foreign shareholders"
+      unit: "percentage"
+      value: 0.63
+      source: "Financial reports"
+    - symbol: ε
+      name: spillover_elasticity
+      description: "How much CH price change affects US MFN reference"
+      unit: "elasticity"
+      value: 0.12
+      source: "NBER/Literature"
+  formulas:
+    welfare_change_payers: "ΔW_Prämienzahler = -ΔP_CH × Q_CH_patent"
+    welfare_change_pharma: "ΔW_Pharma = +ΔP_CH × Q_CH_patent × (1 + ε × Q_US/Q_CH)"
+    net_welfare_ch: "Netto_CH = ΔW_Prämienzahler + (1-τ_Ausland) × ΔW_Pharma_CH"
+  scenarios:
+    - id: S0
+      name: "Status Quo"
+      delta_p: 0
+      probability: 0.20
+    - id: S1
+      name: "Moderate"
+      delta_p: 0.05
+      probability: 0.35
+    - id: S2
+      name: "Medium"
+      delta_p: 0.10
+      probability: 0.30
+    - id: S3
+      name: "Aggressive"
+      delta_p: 0.20
+      probability: 0.15
+  key_findings:
+    - "Expected additional cost for premium payers: 380 Mio. CHF/year"
+    - "Per capita burden: 3.60 CHF/month"
+    - "Net welfare loss for Switzerland: 180-240 Mio. CHF/year"
+    - "Standort-Argument is economically invalid (rent-seeking)"
+  validation_status: "initial"
+  version_history:
+    - version: '1.0'
+      date: '2026-02-04'
+      changes: "Initial welfare transfer model for Trump MFN policy analysis"
+      session: EBF-S-2026-02-04-POL-001
+
+- id: MOD-FIN-BUBBLE-001
+  name: "AI Bubble Diagnostic & Prognostic Model (ABDPM)"
+  version: '1.1'
+  created: '2026-02-04'
+  last_updated: '2026-02-04'
+  created_in_session: EBF-S-2026-02-04-FIN-001
+  question_type: bubble_diagnosis_prognosis
+  question_template: "Gibt es eine [X]-Bubble und wie wahrscheinlich platzt sie in [T]?"
+  example_questions:
+    - "Gibt es eine AI-Bubble und platzt sie in 6 Monaten?"
+    - "Ist der Kryptomarkt überhitzt?"
+  core_dimensions:
+    primary:
+      - WHAT
+      - WHEN
+      - HOW
+    secondary:
+      - AWARE
+      - WHO
+  psi_dimensions:
+    - Ψ_E
+    - Ψ_T
+    - Ψ_C
+    - Ψ_I
+    - Ψ_G
+    - Ψ_M
+    - Ψ_S
+    - Ψ_F
+  components:
+    - name: "Kindleberger-Minsky 5-Phasen"
+      type: "qualitative"
+      output: "phase_score [0-1]"
+    - name: "Lamont 4 Horsemen"
+      type: "checklist"
+      output: "lamont_score [0-1]"
+    - name: "Circular Financing Risk Score"
+      type: "quantitative"
+      output: "cfrs [0-1]"
+    - name: "Shiller CAPE Ratio"
+      type: "quantitative"
+      output: "cape_score [0-1]"
+    - name: "Credit Spread Complacency"
+      type: "quantitative"
+      output: "complacency_score [0-1]"
+    - name: "Insider Selling"
+      type: "quantitative"
+      output: "insider_score [0-1]"
+  formulas:
+    diagnose: "B_score = Σ(wᵢ × componentᵢ)"
+    prognose: "P(Crash) = 1 - Π[1 - P(Tᵢ) × P(Crash|Tᵢ)]"
+  weights:
+    phase: 0.20
+    lamont: 0.20
+    cfrs: 0.20
+    cape: 0.15
+    complacency: 0.15
+    insider: 0.10
+  interpretation:
+    b_score_below_50: "Keine Blase"
+    b_score_50_70: "Überhitzung"
+    b_score_70_85: "Blase (frühe Phase)"
+    b_score_above_85: "Kritische Blase"
+  theory_support:
+    - "MS-IB-005: Overconfidence"
+    - "MS-BF-007: Overreaction"
+    - "MS-BF-006: Momentum"
+  external_theories:
+    - author: "Kindleberger"
+      work: "Manias, Panics, and Crashes"
+      contribution: "5-Phasen Bubble-Modell"
+    - author: "Lamont"
+      work: "4 Horsemen Framework"
+      contribution: "Bubble-Diagnose-Kriterien"
+  validation_status: "initial"
+  version_history:
+    - version: '1.0'
+      date: '2026-02-04'
+      changes: "Initial bubble model with 6 components"
+    - version: '1.1'
+      date: '2026-02-04'
+      changes: "Added Credit Spreads, Insider Selling, extended triggers"
+      session: EBF-S-2026-02-04-FIN-001
+
+# ============================================================================
+# BMW COMPLIANCE MODEL - PRJ-BMW-001
+# Created: 2026-02-05 in Session EBF-S-2026-02-05-ORG-001
+# ============================================================================
+- id: MOD-ORG-BMW-001
+  name: BMW Product Compliance Behavioral Model
+  version: '1.0'
+  created: '2026-02-05'
+  last_updated: '2026-02-05'
+  created_in_session: EBF-S-2026-02-05-ORG-001
+  project_ref: PRJ-BMW-001
+  deliverable_ref: DEL-3
+  
+  # Model Classification
+  question_type: process_compliance
+  question_template: "Wie hoch ist P(Compliance) in einem 5-Phasen Prozess unter Kontext Ψ?"
+  example_questions:
+    - "Wie wahrscheinlich ist vollständige Produkt-Compliance bei BMW?"
+    - "Welche Phase ist der grösste Compliance-Engpass?"
+    - "Wie wirkt Zeitdruck auf Compliance-Verhalten?"
+  
+  # 10C Core Dimensions
+  core_dimensions:
+    primary:
+      - WHAT    # Utility dimensions (u_F, u_S, W_base, u_R, u_E, u_A)
+      - WHEN    # Context (Ψ-Dimensions)
+      - HOW     # Complementarity (γ)
+    secondary:
+      - WHO     # Hierarchy levels
+      - AWARE   # Compliance awareness
+      - STAGE   # 5-Phase Process
+  
+  # Extended Ψ-Dimensions (11 statt 8)
+  psi_dimensions:
+    - id: Ψ_I
+      name: institutional
+      description: "Regeldichte, Prozessformalisierung"
+      bmw_value: 0.78
+    - id: Ψ_Sp
+      name: social_peer
+      description: "Kollegennormen, Team-Verhalten"
+      bmw_value: 0.62
+    - id: Ψ_Sv
+      name: social_superior
+      description: "Vorgesetzten-Erwartungen, Führungsverhalten"
+      bmw_value: 0.68
+    - id: Ψ_C
+      name: cognitive
+      description: "Kognitive Belastung, Komplexität"
+      bmw_value: 0.70
+    - id: Ψ_K
+      name: cultural
+      description: "Unternehmenskultur, Werte"
+      bmw_value: 0.72
+    - id: Ψ_E
+      name: economic
+      description: "Budget, Ressourcen"
+      bmw_value: 0.68
+    - id: Ψ_Tp
+      name: temporal_project
+      description: "Projektdruck, Deadline-Nähe"
+      bmw_value: 0.75
+    - id: Ψ_Tq
+      name: temporal_quarter
+      description: "Quartalszyklus, Berichtsperioden"
+      bmw_value: 0.65
+    - id: Ψ_M
+      name: material
+      description: "Werkzeuge, IT-Systeme, Prozess-Tools"
+      bmw_value: 0.73
+    - id: Ψ_F
+      name: physical
+      description: "Arbeitsumgebung, Standort"
+      bmw_value: 0.58
+    - id: Ψ_H
+      name: hierarchy
+      description: "Hierarchie-Distanz, Entscheidungsebenen"
+      bmw_value: 0.65
+  
+  # Utility Variables (6 Dimensionen)
+  utility_dimensions:
+    - symbol: u_F
+      name: financial
+      description: "Monetäre Anreize, Boni, Karriere"
+      weight_beta: 0.40
+    - symbol: u_S
+      name: social
+      description: "Soziale Anerkennung, Peer-Reputation"
+      weight_beta: 0.55
+    - symbol: W_base
+      name: identity
+      description: "Ingenieur-Identität, Qualitätsbewusstsein"
+      weight_beta: 0.70
+    - symbol: u_R
+      name: risk
+      description: "Risikoaversion, Unsicherheit"
+      weight_beta: -0.35
+    - symbol: u_E
+      name: effort
+      description: "Aufwand, Prozesskosten"
+      weight_beta: -0.60
+    - symbol: u_A
+      name: autonomy
+      description: "Handlungsfreiheit, Selbstbestimmung"
+      weight_beta: 0.25
+  
+  # 5-Phase Process Model
+  process_phases:
+    - phase: P1
+      name: ERKENNEN
+      description: "Compliance-Relevanz erkennen"
+      baseline_alpha: 0.77
+      key_drivers: ["Ψ_C", "AWARE"]
+    - phase: P2
+      name: BEWERTEN
+      description: "Risiko und Handlungsbedarf bewerten"
+      baseline_alpha: 0.62
+      key_drivers: ["W_base", "u_R"]
+    - phase: P3
+      name: ENTSCHEIDEN
+      description: "Compliance-konforme Entscheidung treffen"
+      baseline_alpha: 0.43
+      key_drivers: ["Ψ_Tp", "Ψ_H", "u_E"]
+      critical: true
+    - phase: P4
+      name: HANDELN
+      description: "Entscheidung umsetzen"
+      baseline_alpha: 0.69
+      key_drivers: ["u_E", "Ψ_M"]
+    - phase: P5
+      name: MELDEN
+      description: "Compliance dokumentieren und melden"
+      baseline_alpha: 0.31
+      key_drivers: ["u_E", "Ψ_Sv"]
+      critical: true
+  
+  # Complementarity Matrix (γ)
+  complementarity:
+    - pair: ["u_F", "u_S"]
+      gamma: -0.25
+      effect: "crowding_out"
+      source: "PAR-COMP-002"
+    - pair: ["W_base", "Ψ_Tp"]
+      gamma: -0.45
+      effect: "identity_under_pressure"
+      source: "LLMMC"
+    - pair: ["u_S", "Ψ_Sv"]
+      gamma: 0.50
+      effect: "leadership_amplifies_social"
+      source: "LLMMC"
+    - pair: ["W_base", "u_S"]
+      gamma: 0.35
+      effect: "identity_social_synergy"
+      source: "PAR-COMP-001"
+    - pair: ["u_E", "Ψ_H"]
+      gamma: 0.30
+      effect: "bureaucracy_compounds_effort"
+      source: "LLMMC"
+  
+  # Context Modifiers (δ)
+  context_modifiers:
+    - dimension: Ψ_Tp
+      delta: -0.45
+      interpretation: "Zeitdruck reduziert Compliance stark"
+    - dimension: Ψ_H
+      delta: -0.20
+      interpretation: "Hierarchie-Distanz erschwert Compliance"
+    - dimension: Ψ_Sv
+      delta: 0.35
+      interpretation: "Aktive Führung erhöht Compliance"
+  
+  # Functional Form (4-Level Hierarchical)
+  functional_form:
+    type: hierarchical_multiplicative
+    levels:
+      - level: 1
+        name: process
+        formula: "P = P₁ × P₂ × P₃ × P₄ × P₅"
+      - level: 2
+        name: phase
+        formula: "Pₖ = σ(Uₖᶜᵒᵐᵖˡʸ - Uₖⁿᵒⁿ⁻ᶜᵒᵐᵖˡʸ)"
+      - level: 3
+        name: utility
+        formula: "Uₖ = α₀ᵏ + Σᵢ βᵢuᵢ + Σᵢⱼ γᵢⱼuᵢuⱼ"
+      - level: 4
+        name: context
+        formula: "uᵢ(Ψ) = uᵢ⁰ × exp(Σⱼ δⱼΔΨⱼ)"
+  
+  # Predictions
+  predictions:
+    baseline:
+      p_full_compliance: 0.043
+      ci_95: [0.021, 0.078]
+    scenarios:
+      - name: high_pressure
+        condition: "Ψ_Tp = 0.9"
+        p_full_compliance: 0.031
+        delta_relative: -0.28
+      - name: active_leadership
+        condition: "Ψ_Sv = 0.85"
+        p_full_compliance: 0.098
+        delta_relative: 1.28
+      - name: identity_intervention
+        condition: "W_base activated"
+        p_full_compliance: 0.112
+        delta_relative: 1.60
+    hypotheses:
+      - id: H1
+        statement: "Effort-Reduktion in P5 erhöht Meldequote"
+        expected_effect: "+17pp in P5"
+      - id: H2
+        statement: "Peer-Normen in P3 erhöhen Entscheidungsqualität"
+        expected_effect: "+12pp in P3"
+      - id: H3
+        statement: "Zeitdruck × Hierarchie verstärkt Non-Compliance"
+        expected_effect: "-15pp in P3 (Interaktion)"
+      - id: H4
+        statement: "Ingenieur-Identität puffert Zeitdruck"
+        expected_effect: "Ψ_Tp-Effekt halbiert"
+  
+  # Validation
+  validation_status: initial
+  validation_plan:
+    - method: retrospective
+      description: "Historische Compliance-Fälle nach Phase kodieren"
+      validates: ["V1"]
+    - method: survey
+      description: "Ψ-Dimensionen pro Abteilung erheben"
+      validates: ["V2", "V3"]
+    - method: quasi_experiment
+      description: "Pilot-Intervention A/B-Vergleich"
+      validates: ["H1", "H2", "H4"]
+  
+  # Theory Support
+  theory_support:
+    - "MS-SP-001: Inequity Aversion (Fehr & Schmidt 1999)"
+    - "MS-IB-001: Identity Economics (Akerlof & Kranton 2000)"
+    - "MS-TP-001: Quasi-Hyperbolic Discounting (Laibson 1997)"
+  
+  # External Benchmarks
+  benchmarks:
+    - source: "Dieselgate Studies (VW 2015)"
+      value: "3-5%"
+      comparison: "consistent"
+    - source: "Fehr et al. (2022) Org-Compliance"
+      value: "4-8%"
+      comparison: "consistent"
+    - source: "ISO 26262 Audit Reports"
+      value: "8-12%"
+      comparison: "higher (formalized)"
+    - source: "Aviation Safety Compliance"
+      value: "15-25%"
+      comparison: "target benchmark"
+  
+  # Version History
+  version_history:
+    - version: '1.0'
+      date: '2026-02-05'
+      changes: "Initial 5-phase hierarchical compliance model for BMW"
+      session: EBF-S-2026-02-05-ORG-001

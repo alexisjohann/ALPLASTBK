@@ -1,0 +1,258 @@
+name: Paper Inbox Processor
+
+on:
+  push:
+    paths:
+      - 'papers/inbox/*.pdf'
+  workflow_dispatch:
+    inputs:
+      process_all:
+        description: 'Process all PDFs in inbox (not just new ones)'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  process-papers:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 2  # Need previous commit to detect new files
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pyyaml
+
+      - name: Process inbox papers
+        run: |
+          cat > process_inbox.py << 'SCRIPT'
+          #!/usr/bin/env python3
+          """
+          Paper Inbox Processor
+          =====================
+          Processes PDFs in papers/inbox/, extracts metadata,
+          searches Crossref for DOI, and adds to papers-to-integrate.yaml
+          """
+
+          import os
+          import re
+          import sys
+          import glob
+          import requests
+          import yaml
+          from datetime import datetime
+          from pathlib import Path
+
+          INBOX_DIR = Path("papers/inbox")
+          YAML_PATH = Path("data/papers-to-integrate.yaml")
+          CROSSREF_API = "https://api.crossref.org/works"
+          HEADERS = {
+              "User-Agent": "EBF-Research/1.0 (mailto:research@fehradvice.com)"
+          }
+
+          def parse_filename(filename):
+              """
+              Parse filename like 'fehr_2024_cooperation.pdf'
+              Returns: (author, year, title_hint)
+              """
+              name = Path(filename).stem  # Remove .pdf
+              parts = name.split('_')
+
+              if len(parts) >= 3:
+                  author = parts[0]
+                  year = parts[1] if parts[1].isdigit() else None
+                  title_hint = '_'.join(parts[2:])
+                  return author, year, title_hint
+              elif len(parts) == 2:
+                  author = parts[0]
+                  if parts[1].isdigit():
+                      return author, parts[1], None
+                  else:
+                      return author, None, parts[1]
+              else:
+                  return name, None, None
+
+          def search_crossref(author, year=None, title_hint=None):
+              """Search Crossref for paper metadata."""
+              query_parts = [author]
+              if title_hint:
+                  query_parts.append(title_hint.replace('_', ' '))
+
+              params = {
+                  "query.author": author,
+                  "rows": 5
+              }
+
+              if title_hint:
+                  params["query.bibliographic"] = title_hint.replace('_', ' ')
+
+              try:
+                  resp = requests.get(CROSSREF_API, params=params, headers=HEADERS, timeout=30)
+                  items = resp.json().get("message", {}).get("items", [])
+
+                  for item in items:
+                      # Check year match if provided
+                      if year:
+                          item_year = item.get("published", {}).get("date-parts", [[None]])[0][0]
+                          if item_year and str(item_year) != str(year):
+                              continue
+
+                      return item
+
+                  # Return first result if no exact match
+                  return items[0] if items else None
+
+              except Exception as e:
+                  print(f"  Crossref error: {e}")
+                  return None
+
+          def format_paper(filename, crossref_data=None):
+              """Create paper entry for YAML."""
+              author, year, title_hint = parse_filename(filename)
+
+              if crossref_data:
+                  authors = crossref_data.get("author", [])
+                  author_list = [f"{a.get('given', '')} {a.get('family', '')}".strip() for a in authors]
+                  title = crossref_data.get("title", [""])[0]
+                  year = crossref_data.get("published", {}).get("date-parts", [[year]])[0][0]
+                  doi = crossref_data.get("DOI", "")
+                  journal = crossref_data.get("container-title", [""])[0]
+                  url = crossref_data.get("URL", "")
+              else:
+                  author_list = [author.title()]
+                  title = title_hint.replace('_', ' ').title() if title_hint else filename
+                  doi = ""
+                  journal = ""
+                  url = ""
+
+              # Generate bibtex_key
+              first_author = author.lower()
+              title_word = title.split()[0].lower() if title else "paper"
+              title_word = re.sub(r'[^a-z]', '', title_word)
+              bibtex_key = f"{first_author}{year or 'nd'}{title_word}"
+
+              return {
+                  "bibtex_key": bibtex_key,
+                  "doi": doi,
+                  "status": "PENDING",
+                  "priority": "MEDIUM",
+                  "added": datetime.now().strftime("%Y-%m-%d"),
+                  "title": title,
+                  "authors": author_list,
+                  "year": year,
+                  "source": "PDF_UPLOAD",
+                  "journal": journal,
+                  "url": url,
+                  "pdf_path": f"papers/inbox/{filename}",
+                  "target": None,
+                  "use_for": [],
+                  "theory_support": [],
+                  "eip": {"pro": [], "contra": [], "decision": None, "rationale": ""},
+                  "notes": f"Uploaded PDF: {filename}"
+              }
+
+          def main():
+              process_all = os.environ.get("PROCESS_ALL", "false").lower() == "true"
+
+              print("=== Paper Inbox Processor ===\n")
+
+              # Get PDF files
+              pdf_files = list(INBOX_DIR.glob("*.pdf"))
+
+              if not pdf_files:
+                  print("No PDF files in inbox.")
+                  return
+
+              print(f"Found {len(pdf_files)} PDF(s) in inbox\n")
+
+              # Load existing YAML
+              with open(YAML_PATH, "r") as f:
+                  data = yaml.safe_load(f)
+
+              if data.get("papers") is None:
+                  data["papers"] = []
+
+              existing_keys = {p.get("bibtex_key") for p in data["papers"]}
+              existing_pdfs = {p.get("pdf_path") for p in data["papers"]}
+
+              new_papers = []
+
+              for pdf_path in pdf_files:
+                  filename = pdf_path.name
+                  pdf_rel_path = f"papers/inbox/{filename}"
+
+                  print(f"Processing: {filename}")
+
+                  # Skip if already processed
+                  if pdf_rel_path in existing_pdfs and not process_all:
+                      print("  → Already in queue, skipping\n")
+                      continue
+
+                  # Parse filename
+                  author, year, title_hint = parse_filename(filename)
+                  print(f"  Author: {author}, Year: {year}, Hint: {title_hint}")
+
+                  # Search Crossref
+                  print("  Searching Crossref...", end=" ")
+                  crossref_data = search_crossref(author, year, title_hint)
+
+                  if crossref_data:
+                      print(f"✓ Found DOI: {crossref_data.get('DOI', 'N/A')}")
+                  else:
+                      print("✗ Not found (will add without DOI)")
+
+                  # Create paper entry
+                  paper = format_paper(filename, crossref_data)
+
+                  # Check for duplicate bibtex_key
+                  if paper["bibtex_key"] in existing_keys:
+                      paper["bibtex_key"] = f"{paper['bibtex_key']}_pdf"
+
+                  new_papers.append(paper)
+                  print(f"  → Added as: {paper['bibtex_key']}\n")
+
+              if new_papers:
+                  data["papers"].extend(new_papers)
+
+                  # Update statistics
+                  data["metadata"]["statistics"]["total"] = len(data["papers"])
+                  data["metadata"]["statistics"]["by_status"]["PENDING"] = len(
+                      [p for p in data["papers"] if p.get("status") == "PENDING"]
+                  )
+                  data["metadata"]["last_updated"] = datetime.now().strftime("%Y-%m-%d")
+
+                  with open(YAML_PATH, "w") as f:
+                      yaml.dump(data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+
+                  print(f"Added {len(new_papers)} paper(s) to {YAML_PATH}")
+              else:
+                  print("No new papers to add.")
+
+          if __name__ == "__main__":
+              main()
+          SCRIPT
+
+          PROCESS_ALL="${{ inputs.process_all }}" python process_inbox.py
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/papers-to-integrate.yaml
+          git diff --staged --quiet || git commit -m "feat(papers): Process inbox PDFs
+
+          Automated processing of papers/inbox/ PDFs.
+          - Extract metadata from filename
+          - Search Crossref for DOI
+          - Add to papers-to-integrate.yaml
+
+          https://claude.ai/code/session_01TGmFwDNt6H1UEYrdCHZeh2"
+          git push

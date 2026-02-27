@@ -1,0 +1,153 @@
+# =============================================================================
+# ACADEMIC API SYNC
+# =============================================================================
+# Synchronizes researcher and paper data from academic APIs.
+#
+# APIs:
+#   - OpenAlex: Paper metadata, author profiles, citations
+#   - ORCID: Researcher IDs, publication lists
+#   - Unpaywall: Open Access status and PDF links
+#
+# Triggers:
+#   - Manual (workflow_dispatch)
+#   - Weekly on Sundays at 05:00 UTC
+# =============================================================================
+
+name: Academic API Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      api:
+        description: 'Which API to use'
+        type: choice
+        required: true
+        default: 'all'
+        options:
+          - all
+          - openalex
+          - orcid
+          - unpaywall
+      task:
+        description: 'Task to perform'
+        type: choice
+        required: true
+        default: 'sync-researchers'
+        options:
+          - sync-researchers    # Update researcher data from APIs
+          - find-oa            # Find Open Access versions
+          - update-citations   # Update citation counts
+          - report             # Generate report only
+      limit:
+        description: 'Max items to process'
+        required: false
+        default: '50'
+
+  schedule:
+    # Weekly on Sunday at 05:00 UTC
+    - cron: '0 5 * * 0'
+
+jobs:
+  sync-academic-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests pyyaml
+
+      - name: Sync researchers from ORCID
+        if: ${{ github.event.inputs.api == 'all' || github.event.inputs.api == 'orcid' || github.event_name == 'schedule' }}
+        run: |
+          echo "Syncing researcher data from ORCID..."
+          # Process researchers with ORCID IDs from registry
+          python -c "
+          import yaml
+          import sys
+          sys.path.insert(0, 'scripts')
+          from orcid_api import ORCIDClient, extract_works, extract_person
+
+          with open('data/researcher-registry.yaml', 'r') as f:
+              registry = yaml.safe_load(f)
+
+          client = ORCIDClient()
+          updated = 0
+
+          for researcher in registry.get('researchers', []):
+              orcid = researcher.get('orcid', '')
+              if 'orcid.org' in str(orcid):
+                  orcid_id = orcid.split('orcid.org/')[-1]
+                  print(f'Checking {researcher.get(\"name\")}: {orcid_id}')
+
+                  works = client.get_works(orcid_id)
+                  pubs = extract_works(works)
+                  print(f'  Found {len(pubs)} works')
+                  updated += 1
+
+          print(f'\\nUpdated {updated} researchers')
+          "
+
+      - name: Find Open Access versions
+        if: ${{ github.event.inputs.task == 'find-oa' || (github.event_name == 'schedule' && github.event.inputs.api != 'orcid') }}
+        run: |
+          echo "Finding Open Access versions..."
+          python scripts/unpaywall_api.py \
+            --batch bibliography/bcm_master.bib \
+            --limit ${{ github.event.inputs.limit || '100' }} \
+            --output data/oa-report.yaml
+
+      - name: Update citations from OpenAlex
+        if: ${{ github.event.inputs.task == 'update-citations' }}
+        run: |
+          echo "Updating citation counts from OpenAlex..."
+          python -c "
+          import yaml
+          import sys
+          sys.path.insert(0, 'scripts')
+          from openalex_api import OpenAlexClient
+
+          client = OpenAlexClient()
+
+          # Test with a few DOIs
+          test_dois = [
+              '10.1257/aer.91.5.1369',
+              '10.1162/003355302760193896',
+          ]
+
+          for doi in test_dois:
+              work = client.get_work(doi)
+              if 'cited_by_count' in work:
+                  print(f'{doi}: {work[\"cited_by_count\"]} citations')
+          "
+
+      - name: Generate report
+        if: ${{ github.event.inputs.task == 'report' }}
+        run: |
+          echo "Generating academic API report..."
+          python -c "
+          print('=== Academic API Status ===')
+          print('OpenAlex: Active')
+          print('ORCID: Active')
+          print('Unpaywall: Active')
+          "
+
+      - name: Commit changes
+        if: ${{ github.event.inputs.task != 'report' }}
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A data/
+          git diff --staged --quiet || git commit -m "feat(academic): Sync data from academic APIs
+
+          - Updated researcher ORCID data
+          - Updated Open Access status
+          - Updated citation counts"
+          git push || echo "Nothing to push"

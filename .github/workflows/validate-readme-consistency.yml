@@ -1,0 +1,78 @@
+name: README Consistency Validation
+
+on:
+  pull_request:
+    paths:
+      - 'README.md'
+      - 'chapters/README.md'
+      - 'appendices/README.md'
+      - 'docs/README.md'
+      - 'data/**'
+      - '.github/workflows/validate-readme-consistency.yml'
+  workflow_dispatch:
+
+jobs:
+  validate-readme:
+    runs-on: ubuntu-latest
+    name: Validate README Consistency
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Run README Validation Script
+        run: |
+          python scripts/validate_readme_consistency.py
+        continue-on-error: false
+
+      - name: Check Validation Report
+        run: |
+          if [ -f quality/readme-validation-report.json ]; then
+            echo "✅ Validation report generated"
+            cat quality/readme-validation-report.json | jq '.summary'
+          else
+            echo "⚠️ Validation report not found"
+            exit 1
+          fi
+
+      - name: Fail on Critical Errors
+        run: |
+          if [ -f quality/readme-validation-report.json ]; then
+            ERROR_COUNT=$(cat quality/readme-validation-report.json | jq '.summary.errors')
+            if [ "$ERROR_COUNT" -gt 0 ]; then
+              echo "❌ README Validation Failed: $ERROR_COUNT errors found"
+              cat quality/readme-validation-report.json | jq '.errors'
+              exit 1
+            fi
+          fi
+
+      - name: Report Results
+        if: always()
+        run: |
+          echo "## README Consistency Check 📋"
+          echo ""
+          if [ -f quality/readme-validation-report.json ]; then
+            SUMMARY=$(cat quality/readme-validation-report.json | jq '.summary')
+            PASSED=$(echo $SUMMARY | jq '.passed')
+            WARNINGS=$(echo $SUMMARY | jq '.warnings')
+            ERRORS=$(echo $SUMMARY | jq '.errors')
+
+            echo "**Validation Results:**"
+            echo "- ✅ Passed: $PASSED"
+            echo "- ⚠️  Warnings: $WARNINGS"
+            echo "- ❌ Errors: $ERRORS"
+            echo ""
+
+            if [ "$ERRORS" -eq 0 ]; then
+              echo "**Status:** ✅ PASSED"
+            else
+              echo "**Status:** ❌ FAILED"
+            fi
+          fi

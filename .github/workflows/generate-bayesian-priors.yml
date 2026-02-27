@@ -1,0 +1,60 @@
+name: Generate Bayesian Priors
+
+on:
+  schedule:
+    # Weekly on Mondays at 03:00 UTC (after paper robustness validation)
+    - cron: '0 3 * * 1'
+
+  workflow_dispatch:
+
+jobs:
+  generate-priors:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml numpy scipy
+
+      - name: Generate Bayesian priors
+        run: |
+          cd /home/runner/work/complementarity-context-framework/complementarity-context-framework
+          python scripts/generate_bayesian_priors.py
+
+      - name: Check if priors changed
+        id: priors-changed
+        run: |
+          if git diff --quiet outputs/bayesian-priors/; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit updated priors
+        if: steps.priors-changed.outputs.changed == 'true'
+        run: |
+          git config user.name "Claude Code Bot"
+          git config user.email "claude-code@anthropic.com"
+          git add outputs/bayesian-priors/
+          git commit -m "chore: Update Bayesian priors from paper robustness scores"
+          git push
+
+      - name: Report summary
+        run: |
+          echo "✅ Bayesian priors generation complete"
+          echo "Changed: ${{ steps.priors-changed.outputs.changed }}"
+          if [ -f "outputs/bayesian-priors/2026-01-14_priors.md" ]; then
+            echo ""
+            echo "Generated priors:"
+            head -20 outputs/bayesian-priors/2026-01-14_priors.md
+          fi

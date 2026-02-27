@@ -1,0 +1,754 @@
+% =============================================================================
+% BM PREDICT-FCT: Forecast Methodology
+% =============================================================================
+% Category: PREDICT
+% Version: 1.0
+% Created: 2026-01-30
+% Dependencies: V (CORE-WHEN), BBB (CORE-WHERE), AN (METHOD-LLMMC)
+% Primary Chapter: N/A (Cross-cutting methodology)
+% =============================================================================
+
+\chapter{Forecast Methodology}
+\label{app:forecast-methodology}
+
+% -----------------------------------------------------------------------------
+% METADATA BLOCK
+% -----------------------------------------------------------------------------
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Appendix Metadata]
+\begin{tabular}{ll}
+\textbf{Code:} & BM \\
+\textbf{Category:} & PREDICT-FCT \\
+\textbf{Title:} & Forecast Methodology \\
+\textbf{Version:} & 1.0 \\
+\textbf{Created:} & 2026-01-30 \\
+\textbf{Status:} & Active \\
+\end{tabular}
+\end{tcolorbox}
+
+% -----------------------------------------------------------------------------
+% CROSS-REFERENCE MAP
+% -----------------------------------------------------------------------------
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Cross-Reference Map]
+\textbf{Dependencies:}
+\begin{itemize}
+    \item Appendix V (CORE-WHEN): Context dimensions $\Psi$
+    \item Appendix BBB (CORE-WHERE): Parameter sources
+    \item Appendix AN (METHOD-LLMMC): LLM Monte Carlo estimation
+    \item Appendix MS (REF-MODELSPACE): Theory catalog
+\end{itemize}
+
+\textbf{Related Appendices:}
+\begin{itemize}
+    \item Appendix S (PREDICT-FALSIFY): Falsifiable predictions
+    \item Appendix EEE (METHOD-DESIGN): Model design workflow
+    \item Appendix GGG (METHOD-CONFIG): Configuration defaults
+\end{itemize}
+\end{tcolorbox}
+
+% -----------------------------------------------------------------------------
+% ABSTRACT
+% -----------------------------------------------------------------------------
+\begin{abstract}
+This appendix documents the EBF forecast methodology for systematic prediction tracking, probability updating, and calibration measurement. It covers political referenda, geopolitical events, economic forecasts, and behavioral predictions. The methodology emphasizes: (1) precise resolution criteria defined \textit{ex ante}, (2) probability history tracking for Bayesian updating, (3) conditional scenario analysis, and (4) post-hoc calibration via Brier scores and log loss. The framework integrates with the EBF 10C dimensions and context analysis ($\Psi$-framework) to ensure forecasts are grounded in behavioral economics principles.
+\end{abstract}
+
+% -----------------------------------------------------------------------------
+% QUICK REFERENCE
+% -----------------------------------------------------------------------------
+\begin{tcolorbox}[colback=green!5!white,colframe=green!75!black,title=Quick Reference]
+\textbf{Key Concepts in this Appendix:}
+\begin{itemize}
+    \item \textbf{Forecast Registry:} Primary database \texttt{forecast-registry.yaml}
+    \item \textbf{Four-Database Architecture:} Forecast $\rightarrow$ Session $\rightarrow$ Model $\rightarrow$ Output
+    \item \textbf{Brier Score:} $BS = (P - O)^2$ where $O \in \{0,1\}$
+    \item \textbf{Probability History:} Time-series $\mathcal{H} = \{(t_i, P_i, \text{CI}_i, R_i)\}$
+    \item \textbf{Resolution Criteria:} Ex-ante definition of event occurrence
+    \item \textbf{Conditional Scenarios:} $P(E) = \sum_i P(S_i) \cdot P(E|S_i)$
+\end{itemize}
+
+\textbf{ID Conventions:}
+\begin{itemize}
+    \item Forecast: \texttt{FCT-\{DOMAIN\}-\{YYYY\}-\{NNN\}}
+    \item Session: \texttt{EBF-S-\{YYYY\}-\{MM\}-\{DD\}-\{DOMAIN\}-\{NNN\}}
+\end{itemize}
+\end{tcolorbox}
+
+% =============================================================================
+% SECTION 1: INTRODUCTION
+% =============================================================================
+\section{Introduction}
+\label{sec:fct-intro}
+
+\subsection{The Fundamental Question}
+
+\begin{tcolorbox}[colback=yellow!10!white,colframe=yellow!50!black,title=Central Question]
+\textbf{How do we systematically track, update, and calibrate probabilistic forecasts within the EBF framework?}
+\end{tcolorbox}
+
+% -----------------------------------------------------------------------------
+% SCOPE BOX
+% -----------------------------------------------------------------------------
+\begin{tcolorbox}[colback=orange!5!white,colframe=orange!75!black,title=Appendix Scope]
+\textbf{Appendix Scope:} This appendix establishes a systematic methodology for tracking, updating, and evaluating probabilistic forecasts.
+
+\textbf{Ziel:} Systematische Methodik für Forecast-Tracking, -Updating und -Evaluation.
+
+\textbf{In-Scope:}
+\begin{itemize}
+    \item Forecast Registry architecture and ID conventions
+    \item Probability history tracking and Bayesian updating
+    \item Calibration metrics (Brier Score, Log Loss)
+    \item Conditional scenario analysis
+    \item Integration with EBF 10C and $\Psi$-dimensions
+\end{itemize}
+
+\textbf{Out-of-Scope:}
+\begin{itemize}
+    \item Domain-specific models (see MOD-015, MOD-GEO-001)
+    \item Parameter estimation (see Appendix AN: METHOD-LLMMC)
+    \item General prediction theory (see Appendix S: PREDICT-FALSIFY)
+\end{itemize}
+
+\textbf{Deliverables / Lieferobjekte:}
+\begin{itemize}
+    \item FCT-1 to FCT-5: Five axioms for forecast methodology
+    \item Four-database architecture specification
+    \item Update and resolution workflows
+    \item Worked examples (political referendum, geopolitical event)
+\end{itemize}
+\end{tcolorbox}
+
+Forecasting is inherently uncertain, but \textit{systematic} forecasting enables learning. The EBF Forecast Protocol addresses three challenges:
+
+\begin{enumerate}
+    \item \textbf{Tracking:} Recording predictions with precise resolution criteria
+    \item \textbf{Updating:} Bayesian probability revision as new information arrives
+    \item \textbf{Calibrating:} Measuring forecast accuracy to improve future models
+\end{enumerate}
+
+\subsection{Scope and Domains}
+
+The EBF supports forecasts across six domains:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Domain} & \textbf{Description} & \textbf{Example} \\
+\midrule
+POL & Political referenda, elections & SRG Initiative, 10-Million \\
+GEO & Geopolitical events, conflicts & Iran attack, Ukraine \\
+ECO & Economic forecasts & Recession, inflation \\
+FIN & Financial market predictions & Interest rates, FX \\
+BEH & Behavioral predictions & Adoption, compliance \\
+ORG & Organizational outcomes & Projects, M\&A \\
+\bottomrule
+\end{tabular}
+\caption{EBF Forecast Domains}
+\label{tab:forecast-domains}
+\end{table}
+
+% =============================================================================
+% SECTION 2: AXIOMS
+% =============================================================================
+\section{Axioms}
+\label{sec:fct-axioms}
+
+\begin{axiom}[FCT-1: Resolution Criteria Ex Ante]
+\label{ax:fct-1}
+Every forecast must define precise resolution criteria \textit{before} the event:
+\begin{itemize}
+    \item What counts as ``Yes'' (event occurred)?
+    \item What counts as ``No'' (event did not occur)?
+    \item What actors/actions are included/excluded?
+    \item What is the time horizon?
+\end{itemize}
+\end{axiom}
+
+\begin{axiom}[FCT-2: Probability History]
+\label{ax:fct-2}
+Every forecast maintains a time-series of probability estimates:
+\[
+\mathcal{H} = \{(t_i, P_i, \text{CI}_i, R_i)\}_{i=1}^{n}
+\]
+where $t_i$ is the date, $P_i$ the probability, $\text{CI}_i$ the confidence interval, and $R_i$ the reasoning.
+\end{axiom}
+
+\begin{axiom}[FCT-3: Bayesian Updating]
+\label{ax:fct-3}
+New information triggers probability revision via Bayes' rule:
+\[
+P(\text{Event}|\text{New Info}) = \frac{P(\text{New Info}|\text{Event}) \cdot P(\text{Event})}{P(\text{New Info})}
+\]
+Updates must document the prior, likelihood, and posterior explicitly.
+\end{axiom}
+
+\begin{axiom}[FCT-4: Calibration Measurement]
+\label{ax:fct-4}
+After resolution, forecasts are evaluated using:
+\begin{itemize}
+    \item \textbf{Brier Score:} $BS = (P - O)^2$ where $O \in \{0, 1\}$
+    \item \textbf{Log Loss:} $LL = -[O \log(P) + (1-O) \log(1-P)]$
+    \item \textbf{Direction Correct:} Did $P > 0.5$ match $O = 1$?
+\end{itemize}
+\end{axiom}
+
+\begin{axiom}[FCT-5: Four-Database Architecture]
+\label{ax:fct-5}
+Every forecast must be recorded in four databases:
+\begin{enumerate}
+    \item \texttt{forecast-registry.yaml} (primary)
+    \item \texttt{model-building-session.yaml}
+    \item \texttt{model-registry.yaml} (if new model)
+    \item \texttt{output-registry.yaml}
+\end{enumerate}
+Cross-references via \texttt{forecast\_registry\_link} ensure traceability.
+\end{axiom}
+
+% =============================================================================
+% SECTION 3: METHODOLOGY
+% =============================================================================
+\section{Methodology}
+\label{sec:fct-methodology}
+
+\subsection{Forecast Types}
+
+\subsubsection{Type 1: Fixed-Date Events (Referenda)}
+
+Political referenda have a known resolution date:
+
+\begin{itemize}
+    \item \textbf{Question:} Will initiative X pass on date Y?
+    \item \textbf{Model:} Referendum Dynamics Model (MOD-015)
+    \item \textbf{Data:} Polls, historical corrections, segment analysis
+    \item \textbf{Resolution:} Official BFS result
+\end{itemize}
+
+\textbf{Example:} SRG-Halbierungsinitiative (FCT-POL-2026-001)
+\begin{itemize}
+    \item Event date: March 8, 2026
+    \item Forecast: 52.1\% NEIN [48.1\%-56.5\%]
+    \item P(NEIN) = 62.4\%
+\end{itemize}
+
+\subsubsection{Type 2: Time-Horizon Events (Geopolitical)}
+
+Geopolitical events have uncertain timing:
+
+\begin{itemize}
+    \item \textbf{Question:} Will event X occur within time horizon T?
+    \item \textbf{Model:} Game-theoretic (sequential games, backward induction)
+    \item \textbf{Data:} Intelligence, statements, troop movements
+    \item \textbf{Resolution:} Event occurrence or horizon expiration
+\end{itemize}
+
+\textbf{Example:} Iran Attack (FCT-GEO-2026-001)
+\begin{itemize}
+    \item Time horizon: End of 2026
+    \item Short-term (48h): 18\% [12\%-25\%]
+    \item Annual: 35\% [20\%-55\%]
+    \item Trigger scenarios with conditional probabilities
+\end{itemize}
+
+\subsection{Probability History Structure}
+
+Each forecast maintains a probability history:
+
+\begin{verbatim}
+probability_history:
+  - date: "2026-01-28"
+    probability: 0.18
+    confidence_interval: [0.12, 0.25]
+    confidence: "MEDIUM"
+    reasoning: |
+      [Detailed reasoning for this estimate]
+    key_drivers:
+      positive: ["Driver 1", "Driver 2"]
+      negative: ["Driver 3", "Driver 4"]
+    trigger_scenarios:
+      - trigger: "Event A"
+        p_given_trigger: 0.60
+    updated_by: "Session ID or Update Reason"
+\end{verbatim}
+
+\subsection{Conditional Scenarios}
+
+For complex forecasts, decompose into conditional probabilities:
+
+\[
+P(\text{Attack}) = \sum_i P(\text{Scenario}_i) \cdot P(\text{Attack}|\text{Scenario}_i)
+\]
+
+\textbf{Example:}
+\begin{table}[h]
+\centering
+\begin{tabular}{llll}
+\toprule
+\textbf{Scenario} & $P(\text{Scenario})$ & $P(\text{Attack}|\text{Scenario})$ & \textbf{Combined} \\
+\midrule
+Iran Breakout & 0.40 & 0.70 & 0.28 \\
+Status Quo & 0.50 & 0.15 & 0.075 \\
+Diplomatic Deal & 0.10 & 0.02 & 0.002 \\
+\midrule
+\textbf{Total} & 1.00 & - & \textbf{0.357} \\
+\bottomrule
+\end{tabular}
+\caption{Conditional Scenario Analysis}
+\label{tab:conditional-scenarios}
+\end{table}
+
+% =============================================================================
+% SECTION 4: CALIBRATION
+% =============================================================================
+\section{Calibration}
+\label{sec:fct-calibration}
+
+\subsection{Brier Score}
+
+The Brier Score measures forecast accuracy:
+
+\[
+BS = \frac{1}{N} \sum_{i=1}^{N} (P_i - O_i)^2
+\]
+
+\begin{itemize}
+    \item $BS = 0$: Perfect forecast
+    \item $BS = 0.25$: Random guessing (for 50/50 events)
+    \item $BS = 1$: Worst possible forecast
+\end{itemize}
+
+\subsection{Log Loss}
+
+Log loss penalizes overconfident wrong forecasts:
+
+\[
+LL = -\frac{1}{N} \sum_{i=1}^{N} [O_i \log(P_i) + (1-O_i) \log(1-P_i)]
+\]
+
+\subsection{Calibration Curve}
+
+A well-calibrated forecaster has:
+\[
+\text{Fraction Correct}(P) \approx P
+\]
+
+For example, events forecasted at 70\% should occur about 70\% of the time.
+
+% =============================================================================
+% SECTION 5: DATABASE ARCHITECTURE
+% =============================================================================
+\section{Database Architecture}
+\label{sec:fct-database}
+
+\subsection{Four-Database Model}
+
+\begin{figure}[h]
+\centering
+\begin{verbatim}
+                    ┌─────────────────────────┐
+                    │  1. FORECAST-REGISTRY   │
+                    │  FCT-XXX-YYYY-NNN       │
+                    │  (Primary)              │
+                    └───────────┬─────────────┘
+                                │
+         ┌──────────────────────┼──────────────────────┐
+         │                      │                      │
+         ▼                      ▼                      ▼
+  ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
+  │ 2. SESSION  │      │ 3. MODEL    │      │ 4. OUTPUT   │
+  │ EBF-S-...   │      │ MOD-XXX-NNN │      │ EBF-OUT-... │
+  └─────────────┘      └─────────────┘      └─────────────┘
+\end{verbatim}
+\caption{Four-Database Architecture}
+\label{fig:four-db}
+\end{figure}
+
+\subsection{Cross-References}
+
+All databases link via \texttt{forecast\_registry\_link}:
+
+\begin{verbatim}
+# In model-building-session.yaml:
+forecast_registry_link: "FCT-GEO-2026-001"
+
+# In output-registry.yaml:
+forecast_registry_link: "FCT-GEO-2026-001"
+\end{verbatim}
+
+\subsection{ID Conventions}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Type} & \textbf{Format} & \textbf{Example} \\
+\midrule
+Forecast & FCT-\{DOMAIN\}-\{YYYY\}-\{NNN\} & FCT-GEO-2026-001 \\
+Session & EBF-S-\{YYYY\}-\{MM\}-\{DD\}-\{DOMAIN\}-\{NNN\} & EBF-S-2026-01-28-GEO-001 \\
+Model & MOD-\{DOMAIN\}-\{NNN\} & MOD-GEO-001 \\
+Output & EBF-OUT-\{DOMAIN\}-\{NNN\} & EBF-OUT-GEO-001 \\
+\bottomrule
+\end{tabular}
+\caption{ID Conventions}
+\label{tab:id-conventions}
+\end{table}
+
+% =============================================================================
+% SECTION 6: WORKED EXAMPLES
+% =============================================================================
+\section{Worked Examples}
+\label{sec:fct-examples}
+
+\subsection{Example 1: Political Referendum (SRG-Halbierung)}
+
+\textbf{Setup:}
+\begin{itemize}
+    \item Question: Will the SRG initiative pass on March 8, 2026?
+    \item Model: Referendum Dynamics Model Extended (MOD-015)
+    \item Data: gfs.bern, Tamedia, Sotomo polls
+\end{itemize}
+
+\textbf{Analysis:}
+\begin{enumerate}
+    \item Weighted baseline from polls: 49.2\% NEIN, 48.4\% JA
+    \item Historical correction: -7pp for JA (No-Billag, RTVG, Medienpaket)
+    \item Mobilization asymmetry: +3pp for NEIN
+    \item Monte Carlo simulation: N=10,000
+\end{enumerate}
+
+\textbf{Result:}
+\[
+P(\text{NEIN}) = 52.1\% \quad [48.1\%, 56.5\%]
+\]
+\[
+P(\text{Ablehnung}) = 62.4\%
+\]
+
+\subsection{Example 2: Geopolitical Event (Iran Attack)}
+
+\textbf{Setup:}
+\begin{itemize}
+    \item Question: Will US/Israel attack Iranian nuclear facilities in 2026?
+    \item Model: Sequential Game with Backward Induction (MOD-GEO-001)
+    \item Data: Troop movements, statements, IAEA reports
+\end{itemize}
+
+\textbf{Analysis:}
+\begin{enumerate}
+    \item Game-theoretic equilibrium: Negotiate $\rightarrow$ Deal
+    \item Short-term (48h): P = 18\%
+    \item Trigger scenarios: Proxy attack (+42pp), Breakout (+52pp)
+    \item Annual cumulative: P = 35\%
+\end{enumerate}
+
+\textbf{Result:}
+\[
+P(\text{Attack}|48h) = 18\% \quad [12\%, 25\%]
+\]
+\[
+P(\text{Attack}|2026) = 35\% \quad [20\%, 55\%]
+\]
+
+% =============================================================================
+% SECTION 7: UPDATE WORKFLOW
+% =============================================================================
+\section{Update Workflow}
+\label{sec:fct-update}
+
+\subsection{When to Update}
+
+\begin{itemize}
+    \item New polls (political forecasts)
+    \item Significant events (geopolitical)
+    \item IAEA reports, troop movements
+    \item High-level statements
+    \item Time decay (approaching deadline)
+\end{itemize}
+
+\subsection{Update Protocol}
+
+\begin{enumerate}
+    \item Add new entry to \texttt{probability\_history}
+    \item Document reasoning (what changed?)
+    \item Update \texttt{key\_drivers}
+    \item Revise \texttt{conditional\_scenarios} if needed
+    \item Update \texttt{forecast\_updated} date
+    \item Commit with message: \texttt{update(forecast): FCT-XXX reason}
+\end{enumerate}
+
+% =============================================================================
+% SECTION 8: RESOLUTION WORKFLOW
+% =============================================================================
+\section{Resolution Workflow}
+\label{sec:fct-resolution}
+
+\subsection{After Event Occurs}
+
+\begin{verbatim}
+actual_outcome:
+  resolved: true
+  date: "2026-03-08"
+  result: "nein"  # or "ja", "attack", "no_attack"
+  details: "52.1% NEIN, 44.9% JA"
+  source: "BFS"
+
+calibration:
+  brier_score: 0.001  # (0.521 - 0.521)²
+  log_loss: 0.65
+  direction_correct: true
+  within_ci: true
+\end{verbatim}
+
+\subsection{Aggregate Calibration}
+
+Update \texttt{calibration\_summary} in forecast-registry.yaml:
+
+\begin{verbatim}
+calibration_summary:
+  total_forecasts: 3
+  resolved_forecasts: 1
+  pending_forecasts: 2
+  metrics:
+    brier_score: 0.001
+    avg_log_loss: 0.65
+  by_domain:
+    POL:
+      count: 2
+      resolved: 1
+      avg_brier: 0.001
+\end{verbatim}
+
+% =============================================================================
+% SECTION 9: INTEGRATION WITH EBF
+% =============================================================================
+\section{Integration with EBF Framework}
+\label{sec:fct-ebf}
+
+\subsection{10C Mapping}
+
+Forecasts map to 10C dimensions:
+
+\begin{itemize}
+    \item \textbf{WHO:} Actors, segments, stakeholders
+    \item \textbf{WHAT:} Utility dimensions at stake
+    \item \textbf{HOW:} Interaction structure (game theory)
+    \item \textbf{WHEN:} Context dimensions ($\Psi$)
+    \item \textbf{WHERE:} Parameter sources (BBB)
+    \item \textbf{AWARE:} Information, salience
+    \item \textbf{READY:} Willingness thresholds
+    \item \textbf{STAGE:} Decision stage in journey
+\end{itemize}
+
+\subsection{$\Psi$-Dimensions in Forecasting}
+
+Context dimensions affect forecast parameters:
+
+\begin{itemize}
+    \item $\Psi_I$ (Institutional): Voting rules, defaults
+    \item $\Psi_S$ (Social): Social pressure, norms
+    \item $\Psi_K$ (Cultural): Values, traditions
+    \item $\Psi_T$ (Temporal): Time pressure, deadlines
+    \item $\Psi_E$ (Economic): Resources, constraints
+\end{itemize}
+
+% =============================================================================
+% SECTION 10: RESULTS
+% =============================================================================
+\section{Results}
+\label{sec:fct-results}
+
+\subsection{Current Forecast Portfolio}
+
+As of January 2026, the EBF Forecast Registry contains:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llllr}
+\toprule
+\textbf{ID} & \textbf{Domain} & \textbf{Event} & \textbf{Status} & \textbf{P(Event)} \\
+\midrule
+FCT-POL-2025-001 & POL & 10-Million Initiative & PENDING & 48\% JA \\
+FCT-POL-2026-001 & POL & SRG-Halbierung & PENDING & 37.6\% JA \\
+FCT-GEO-2026-001 & GEO & Iran Attack (48h) & PENDING & 18\% \\
+\bottomrule
+\end{tabular}
+\caption{Current Forecast Portfolio (January 2026)}
+\label{tab:forecast-portfolio}
+\end{table}
+
+\subsection{Calibration Results}
+
+No forecasts have been resolved yet. After resolution, calibration metrics will be computed:
+
+\begin{itemize}
+    \item \textbf{Aggregate Brier Score:} Target $BS < 0.15$
+    \item \textbf{Calibration Curve:} Target $|\text{Predicted} - \text{Actual}| < 5\%$ per decile
+    \item \textbf{Direction Accuracy:} Target $> 80\%$ correct direction calls
+\end{itemize}
+
+\subsection{Key Findings}
+
+\begin{enumerate}
+    \item \textbf{Political Referenda:} Historical corrections are significant ($-7$pp for media initiatives)
+    \item \textbf{Geopolitical Events:} Trigger scenarios drive most of the variance
+    \item \textbf{Four-Database Architecture:} Cross-referencing ensures traceability
+\end{enumerate}
+
+% =============================================================================
+% SECTION 11: IMPLICATIONS
+% =============================================================================
+\section{Implications}
+\label{sec:fct-implications}
+
+\subsection{For EBF Practice}
+
+\begin{enumerate}
+    \item \textbf{Every model produces forecasts:} The model-building workflow (Appendix EEE) should always generate testable predictions
+    \item \textbf{Forecasts must be tracked:} Ad-hoc predictions without registry entries violate FCT-5
+    \item \textbf{Updates are learning opportunities:} Each probability update documents what changed and why
+    \item \textbf{Calibration drives improvement:} Post-resolution analysis identifies systematic biases
+\end{enumerate}
+
+\subsection{For Decision-Making}
+
+\begin{enumerate}
+    \item \textbf{Probability ranges matter:} Point estimates are less useful than confidence intervals
+    \item \textbf{Conditional scenarios enable planning:} Decomposition into $P(S_i) \cdot P(E|S_i)$ supports contingency planning
+    \item \textbf{Trigger events deserve monitoring:} High-impact triggers (e.g., proxy attack: $+42$pp) should be tracked
+\end{enumerate}
+
+\subsection{For Research}
+
+\begin{enumerate}
+    \item \textbf{Transparent methodology:} All assumptions, models, and data sources are documented
+    \item \textbf{Reproducible analysis:} Probability histories enable replication
+    \item \textbf{Cumulative learning:} Calibration metrics aggregate across forecasts
+\end{enumerate}
+
+% =============================================================================
+% SECTION 12: SUMMARY
+% =============================================================================
+\section{Summary}
+\label{sec:fct-summary}
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Summary]
+\textbf{Core Contributions:}
+\begin{enumerate}
+    \item \textbf{Five Axioms (FCT-1 to FCT-5):} Formal requirements for EBF-compliant forecasts
+    \item \textbf{Four-Database Architecture:} Systematic tracking across forecast, session, model, and output registries
+    \item \textbf{Probability History:} Time-series tracking with Bayesian updating
+    \item \textbf{Calibration Framework:} Brier Score, Log Loss, and calibration curves
+    \item \textbf{Workflows:} Create, update, and resolve protocols
+\end{enumerate}
+
+\textbf{Key Takeaways:}
+\begin{itemize}
+    \item Forecasts are \textit{systematically tracked}, not ad-hoc predictions
+    \item Resolution criteria are defined \textit{ex ante}, not post-hoc
+    \item Calibration enables \textit{learning and improvement} over time
+    \item Integration with 10C and $\Psi$-dimensions grounds forecasts in behavioral economics
+\end{itemize}
+\end{tcolorbox}
+
+% =============================================================================
+% SECTION 13: CRITICAL FOUNDATIONS
+% =============================================================================
+\section{Critical Foundations}
+\label{sec:fct-foundations}
+
+This appendix builds on foundational work in:
+
+\begin{enumerate}
+    \item \textbf{Proper Scoring Rules} \citep{brier1950verification, good1952rational}: Mathematical foundations for measuring forecast accuracy
+    \item \textbf{Superforecasting} \citep{tetlock2015superforecasting}: Empirical evidence that calibrated forecasters outperform experts
+    \item \textbf{Bayesian Updating} \citep{bayes1763essay}: Probability revision with new information
+    \item \textbf{Game Theory} \citep{selten1965spieltheoretische}: Strategic interaction modeling for geopolitical forecasts
+    \item \textbf{EBF Context Framework} (Appendix V): $\Psi$-dimensions affect forecast parameters
+\end{enumerate}
+
+\subsection{Theoretical Grounding}
+
+The forecast methodology is grounded in three principles:
+
+\begin{description}
+    \item[Coherence:] Probabilities must satisfy the Kolmogorov axioms
+    \item[Calibration:] Predicted probabilities should match actual frequencies
+    \item[Resolution:] Forecasts should discriminate between events and non-events
+\end{description}
+
+% =============================================================================
+% SECTION 14: OPEN ISSUES
+% =============================================================================
+\section{Open Issues}
+\label{sec:fct-open-issues}
+
+\begin{enumerate}
+    \item \textbf{Small Sample Size:} With only 3 forecasts, calibration metrics are not yet statistically meaningful
+
+    \item \textbf{Domain-Specific Calibration:} Different domains (POL, GEO, ECO) may require different calibration standards
+
+    \item \textbf{Trigger Scenario Validation:} Conditional probabilities $P(E|S_i)$ are difficult to validate empirically
+
+    \item \textbf{Model Selection:} Which model to use for which domain? (see Appendix EEE for guidance)
+
+    \item \textbf{Automation:} Should probability updates be triggered automatically by news events?
+
+    \item \textbf{Ensemble Forecasting:} Should we combine multiple models for the same forecast?
+
+    \item \textbf{Long-Horizon Forecasts:} How to handle forecasts with $T > 1$ year?
+\end{enumerate}
+
+\subsection{Future Work}
+
+\begin{itemize}
+    \item Implement automated calibration dashboards
+    \item Develop domain-specific scoring rules
+    \item Integrate with external prediction markets for validation
+    \item Build ensemble models combining multiple forecasting approaches
+\end{itemize}
+
+% =============================================================================
+% REFERENCES
+% =============================================================================
+\section{References}
+\label{sec:fct-references}
+
+\nocite{bcm_master}
+
+Key references for forecast methodology:
+\begin{itemize}
+    \item Tetlock, P. E. (2005). Expert Political Judgment
+    \item Tetlock, P. E. \& Gardner, D. (2015). Superforecasting
+    \item Brier, G. W. (1950). Verification of Forecasts
+    \item Good, I. J. (1952). Rational Decisions (Log Loss)
+    \item Gneiting, T. \& Raftery, A. E. (2007). Strictly Proper Scoring Rules
+\end{itemize}
+
+% =============================================================================
+% GLOSSARY
+% =============================================================================
+\section{Glossary}
+\label{sec:fct-glossary}
+
+See Appendix G (Glossary) for comprehensive definitions. Key terms:
+
+\begin{description}
+    \item[Brier Score] Quadratic scoring rule: $(P - O)^2$
+    \item[Calibration] Alignment between predicted probabilities and actual frequencies
+    \item[Log Loss] Logarithmic scoring rule penalizing overconfidence
+    \item[Probability History] Time-series of probability estimates for a forecast
+    \item[Resolution Criteria] Ex-ante definition of what counts as event occurrence
+\end{description}
+
+% =============================================================================
+% CHANGELOG
+% =============================================================================
+\section*{Changelog}
+
+\begin{tabular}{lll}
+\textbf{Version} & \textbf{Date} & \textbf{Changes} \\
+\hline
+1.0 & 2026-01-30 & Initial version \\
+\end{tabular}
+
+\end{document}

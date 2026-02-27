@@ -1,0 +1,3416 @@
+# =============================================================================
+# PARAMETER REGISTRY (BBB - CORE-WHERE)
+# =============================================================================
+# "Woher die Zahlen?" - Zentrale Sammlung aller verhaltensökonomischen Parameter
+#
+# SUPERKEY REFERENCES:
+#   - source_session: Verbindet mit model-building-session.yaml
+#   - source_model: Verbindet mit model-registry.yaml
+#   - source_project: Verbindet mit intervention-registry.yaml
+#
+# PARAMETER TYPES:
+#   - BEHAVIORAL: Verhaltensökonomische Parameter (λ, β, γ, φ, etc.)
+#   - CONTEXTUAL: Kontext-spezifische Faktoren (τ, trust, etc.)
+#   - INTERVENTION: Interventions-Effektstärken (E_i)
+#   - COMPLEMENTARITY: Interaktionseffekte (γ_ij)
+#
+# UPDATE FLOW:
+#   Literatur → LLMMC Prior → Bayesian Posterior → Empirische Validierung
+#
+# Version: 1.0
+# Date: January 2026
+# =============================================================================
+
+metadata:
+  total_parameters: 94
+  last_updated: "2026-02-06"
+  version: "1.16"
+  domains_covered: ["FIN", "HLT", "ENV", "ORG", "DIGITAL", "ANTITRUST", "ATTENTION", "POL", "EDU", "ADDICTION", "SOCIAL", "LABOR", "MIGRATION", "SPATIAL", "INFO", "ADVICE", "AUSTRIA", "MORAL", "NETWORK", "WELFARE", "ETH", "PSYCHOLOGY", "SKILLS", "MEASUREMENT", "VIRTUE", "CHARACTER", "CRISIS", "MARKETING", "CUSTOMER_SERVICE", "CX", "ENTREPRENEURSHIP"]
+  changelog:
+    - version: "1.16"
+      date: "2026-02-06"
+      changes: "Added PAR-ENT-001 to PAR-ENT-003 (Entrepreneurship Parameters) from Zellweger & Zenger (2023) AMR 'Entrepreneurs as Scientists'. Theory MS-ENT-001/MS-ENT-002/MS-ENT-003 (CAT-27). FOUNDATIONAL FRAMEWORK parameters: Product-Market Fit (PMF) = correlation(V_E, V_M), Approval Threshold τ_approve = 0.60-0.80 (Camuffo et al. 2020), Rejection Threshold τ_reject = 0.40 (Csaszar et al. 2006). ALL PARAMETERS ARE INFORMED PRIORS - paper establishes framework, not point estimates."
+    - version: "1.15"
+      date: "2026-02-05"
+      changes: "Added PAR-CX-001 to PAR-CX-004 (Customer Experience Parameters) from Schögel & Herhausen (2024) 'The Customer Experience Navigator'. Theory MS-CJ-001/MS-CX-001/MS-CX-002 (CAT-26). KEY CONCEPTS: Basic n (critical Interaction Hubs, variable per company), MOT timing (ZMOT/FMOT/SMOT weights), Interaction Hub identification (frequency/breadth/depth), Kano categories (basic/satisfier/delighter allocation)."
+    - version: "1.14"
+      date: "2026-02-05"
+      changes: "Added PAR-CM-001 to PAR-CM-007 (Crisis Management Parameters) from Herhausen et al. (2019) 'Detecting, Preventing, and Mitigating Online Firestorms'. Theory MS-CM-001 (CAT-24). KEY FINDINGS: Arousal drives virality (β=0.186), Tie strength largest effect (β=1.432), SURPRISING Explanation > Empathy for high-arousal. TIMING CRITICAL: Compensation late=good, early=bad; Apology early=good, late=bad."
+    - version: "1.13"
+      date: "2026-02-05"
+      changes: "Added PAR-VE-001 to PAR-VE-006 (Virtue Ethics Parameters) from Heckman, Galaty & Tian (2023) NBER WP 31258 'The Economic Approach to Personality, Character and Virtue'. Theory MS-VE-001/MS-VE-002/MS-VE-003 (CAT-23). KEY CONCEPTS: Traits are actions (not endowments), Self-control S_t (δ_S~0.15), Habituation K_t (δ_K~0.035), Golden mean σ*. FOUNDATIONAL BRIDGE: Economics ↔ Psychology ↔ Philosophy."
+    - version: "1.12"
+      date: "2026-02-05"
+      changes: "Added PAR-SF-001 to PAR-SF-005 (Skill Formation Parameters) from Heckman et al. (2026) NBER WP 34737 'Measuring the Growth of Skills'. Theory MS-SF-002/MS-SF-003. KEY FINDINGS: Dynamic complementarity confirmed for language/cognitive but NOT fine motor. Common scale assumption REJECTED for language/cognitive. Skills EMERGE at each level (not more of same). Disadvantaged children benefit most (γ_low > γ_normal > γ_high)."
+    - version: "1.11"
+      date: "2026-02-05"
+      changes: "Added PAR-MR-001 to PAR-MR-004 (Moral Reasoning Parameters) from Bénabou, Falk & Henkel (2024) 'Ends versus Means'. Theory MS-MR-001 (CAT-22). KEY FINDING: No stable moral types (r_EVM≈0.035), EVM orthogonal to prosociality (r≈0.025). θ_lying=0.44, θ_bribe=0.38."
+    - version: "1.10"
+      date: "2026-02-05"
+      changes: "Added PAR-BEH-016 (λ_R rejection sensitivity) and PAR-BEH-017 (α rejection scaling) from Bénabou et al. (2022) 'It Hurts To Ask'. Theory MS-IB-018. Domain-specific values for welfare, workplace, healthcare, family contexts."
+
+# =============================================================================
+# BEHAVIORAL PARAMETERS
+# =============================================================================
+
+behavioral_parameters:
+
+  # ---------------------------------------------------------------------------
+  # Loss Aversion (λ)
+  # ---------------------------------------------------------------------------
+  - id: PAR-BEH-001
+    symbol: λ
+    name: "Loss Aversion Coefficient"
+    description: "Verhältnis der Gewichtung von Verlusten zu Gewinnen"
+
+    values:
+      literature:
+        mean: 2.25
+        ci_95: [1.5, 3.0]
+        source: "PAP-kahneman1979prospect"
+        note: "Original Kahneman & Tversky (1979)"
+
+      dach_adjusted:
+        mean: 2.35
+        ci_68: [2.1, 2.6]
+        source: "BCM2_04_KON_socio_cultural.yaml"
+        note: "DACH-Kontext leicht höher"
+
+      domain_specific:
+        finance: {mean: 2.4, ci_68: [2.1, 2.7]}
+        health: {mean: 1.8, ci_68: [1.5, 2.1]}
+        career: {mean: 2.8, ci_68: [2.4, 3.2]}
+        relationships: {mean: 3.0, ci_68: [2.5, 3.5]}
+
+    applicable_domains: ["FIN", "HLT", "ORG", "REL"]
+    last_updated: "2026-01-25"
+    updated_by_session: null
+
+    literature_sources:
+      - key: "PAP-kahneman1979prospect"
+        finding: "λ ≈ 2.25"
+      - key: "PAP-tversky1992advances"
+        finding: "λ ∈ [2.0, 2.5]"
+
+  # ---------------------------------------------------------------------------
+  # Crowding-Out Coefficient (φ)
+  # ---------------------------------------------------------------------------
+  - id: PAR-BEH-002
+    symbol: φ_crowding
+    name: "Motivation Crowding-Out Coefficient"
+    description: "Reduktion intrinsischer Motivation durch extrinsische Anreize"
+
+    values:
+      literature:
+        mean: 0.65
+        ci_95: [0.50, 0.80]
+        source: "frey2001motivation"
+        note: "Frey & Jegen (2001) Meta-Analyse"
+
+      dach_adjusted:
+        mean: 0.68
+        ci_68: [0.58, 0.78]
+        source: "EBF-S-2026-01-25-FIN-002"
+        note: "UBS Referral Analysis"
+
+      domain_specific:
+        finance_referral: {mean: 0.68, ci_68: [0.58, 0.78]}
+        health_donation: {mean: 0.55, ci_68: [0.45, 0.65]}
+        education: {mean: 0.72, ci_68: [0.62, 0.82]}
+
+    applicable_domains: ["FIN", "HLT", "EDU", "ORG"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-FIN-002"
+
+    critical_warning: "NIEMALS monetäre Anreize mit intrinsischer Motivation kombinieren"
+
+    literature_sources:
+      - key: "frey2001motivation"
+        finding: "Extrinsische Anreize reduzieren intrinsische Motivation um 50-80%"
+      - key: "gneezy2000pay"
+        finding: "Kleine Zahlungen können backfiren"
+      - key: "ariely2009doing"
+        finding: "Image motivation vs. monetary incentives"
+
+  # ---------------------------------------------------------------------------
+  # Hyperbolic Discounting (β)
+  # ---------------------------------------------------------------------------
+  - id: PAR-BEH-003
+    symbol: β
+    name: "Present Bias / Hyperbolic Discounting"
+    description: "Übergewichtung sofortiger vs. verzögerter Belohnungen"
+
+    values:
+      literature:
+        mean: 0.70
+        ci_95: [0.60, 0.85]
+        source: "laibson1997golden"
+        note: "β=1 wäre exponentiell, β<1 ist hyperbolisch"
+
+      dach_adjusted:
+        mean: 0.75
+        ci_68: [0.68, 0.82]
+        source: "PRJ-001"
+        note: "bAV Opt-Out Projekt"
+
+      domain_specific:
+        finance_savings: {mean: 0.70, ci_68: [0.62, 0.78]}
+        health_exercise: {mean: 0.65, ci_68: [0.55, 0.75]}
+        finance_retirement: {mean: 0.72, ci_68: [0.65, 0.79]}
+
+    applicable_domains: ["FIN", "HLT"]
+    last_updated: "2026-01-25"
+    updated_by_session: null
+
+    literature_sources:
+      - key: "laibson1997golden"
+        finding: "β ≈ 0.70 für Finanzentscheidungen"
+      - key: "PAP-odonoghue1999doing"
+        finding: "Naive vs. sophisticated agents"
+
+  # ---------------------------------------------------------------------------
+  # Addiction Parameters from Hai & Heckman (2022)
+  # ---------------------------------------------------------------------------
+  - id: PAR-BEH-004
+    symbol: δ_q
+    name: "Addiction Stock Depreciation Rate"
+    description: "Jährliche Abbaurate des Sucht-Stocks (q)"
+
+    values:
+      literature:
+        mean: 0.433
+        se: 0.0049
+        source: "PAP-hai2025cigarette"
+        note: "Hai & Heckman (2022) NLSY97 structural estimation"
+
+      interpretation:
+        half_life_years: 2.3
+        note: "Sucht-Stock halbiert sich in ~2.3 Jahren"
+
+    applicable_domains: ["HLT", "EDU"]
+    last_updated: "2026-01-31"
+
+    literature_sources:
+      - key: "PAP-hai2025cigarette"
+        finding: "δ_q = 0.433 (SE 0.0049)"
+
+  - id: PAR-BEH-005
+    symbol: κ_q
+    name: "Addiction Effect on Discount Factor"
+    description: "Reduktion des Diskontfaktors β pro Sucht-Stock-Einheit"
+
+    values:
+      literature:
+        mean: 0.00038
+        se: 0.000046
+        source: "PAP-hai2025cigarette"
+        note: "0.038% β-Reduktion pro Einheit Addiction Stock"
+
+      cumulative_effect:
+        lifetime_utility_loss: 0.0095
+        note: "~0.95% kumulative Utility-Reduktion über Lebenszeit"
+
+    applicable_domains: ["HLT", "EDU"]
+    last_updated: "2026-01-31"
+
+    literature_sources:
+      - key: "PAP-hai2025cigarette"
+        finding: "κ_q = 0.00038 causes endogenous myopia"
+
+  - id: PAR-BEH-006
+    symbol: ν_n
+    name: "Non-Cognitive Effect on Smoking Utility"
+    description: "Effekt von nicht-kognitiven Fähigkeiten auf Raucher-Nutzen"
+
+    values:
+      literature:
+        mean: -0.00816
+        se: 0.002
+        source: "PAP-hai2025cigarette"
+        note: "1 SD Non-Cog ≈ 1 Jahr Bildung für Rauch-Reduktion"
+
+      comparison:
+        cognitive_effect: 0.0
+        note: "Kognitive Fähigkeiten haben KEINEN direkten Effekt"
+
+    applicable_domains: ["HLT", "EDU"]
+    last_updated: "2026-01-31"
+
+    literature_sources:
+      - key: "PAP-hai2025cigarette"
+        finding: "ν_n = -0.00816, ν_c ≈ 0 (not significant)"
+
+  - id: PAR-BEH-007
+    symbol: ν_e
+    name: "Education Effect on Smoking Utility"
+    description: "Effekt von Bildung auf Raucher-Nutzen"
+
+    values:
+      literature:
+        mean: -0.0048
+        se: 0.0004
+        source: "PAP-hai2025cigarette"
+        note: "4 Jahre Bildung kompensieren 1 Jahr Rauchen (ν_q/ν_e ≈ 4)"
+
+    applicable_domains: ["HLT", "EDU"]
+    last_updated: "2026-01-31"
+
+    literature_sources:
+      - key: "PAP-hai2025cigarette"
+        finding: "ν_e = -0.0048"
+
+  - id: PAR-BEH-008
+    symbol: κ_r
+    name: "Base Discount Rate"
+    description: "Basis-Diskontrate ohne Sucht-Effekte"
+
+    values:
+      literature:
+        mean: 0.0249
+        se: 0.0009
+        source: "PAP-hai2025cigarette"
+        note: "Impliziertes β = 0.9754 für Nicht-Süchtige mit Durchschnittsfähigkeiten"
+
+      comparison:
+        keane_wolpin: {range: [0.9758, 0.9922]}
+        johnson: 0.97
+        note: "Konsistent mit früheren Schätzungen"
+
+    applicable_domains: ["HLT", "EDU", "FIN"]
+    last_updated: "2026-01-31"
+
+    literature_sources:
+      - key: "PAP-hai2025cigarette"
+        finding: "κ_r = 0.0249"
+      - key: "keanewolpin1997"
+        finding: "β ∈ [0.9758, 0.9922]"
+
+  # ---------------------------------------------------------------------------
+  # Identity Parameters (Akerlof & Kranton 2000)
+  # ---------------------------------------------------------------------------
+  - id: PAR-BEH-009
+    symbol: I_s
+    name: "Identity Loss from Own Prescription Violation"
+    description: "Utility-Verlust wenn eigenes Verhalten von Identitäts-Vorschriften abweicht"
+
+    values:
+      literature:
+        mean: 0.3
+        ci_95: [0.1, 0.5]
+        source: "PAP-akerlof2000identity"
+        note: "Akerlof & Kranton (2000): Loss from violating prescriptions for own category"
+
+      domain_specific:
+        gender_workplace: {mean: 0.35, ci_68: [0.2, 0.5], note: "Women in 'men's jobs'"}
+        poverty_exclusion: {mean: 0.4, ci_68: [0.25, 0.55], note: "Green identity for excluded groups"}
+        household_division: {mean: 0.25, ci_68: [0.15, 0.35], note: "Housework norms"}
+
+    applicable_domains: ["ORG", "SOCIAL", "LABOR"]
+    last_updated: "2026-01-31"
+    theory_support: "MS-IB-001"
+
+    literature_sources:
+      - key: "PAP-akerlof2000identity"
+        finding: "I_s enters U_j as disutility from own violation"
+
+  - id: PAR-BEH-010
+    symbol: I_o
+    name: "Identity Externality from Others' Violations"
+    description: "Utility-Verlust wenn andere gegen Identitäts-Vorschriften verstossen"
+
+    values:
+      literature:
+        mean: 0.2
+        ci_95: [0.1, 0.3]
+        source: "PAP-akerlof2000identity"
+        note: "Akerlof & Kranton (2000): Loss when others violate prescriptions"
+
+      domain_specific:
+        workplace_harassment: {mean: 0.25, ci_68: [0.15, 0.35], note: "Men's I_o from women in 'men's jobs'"}
+        social_exclusion: {mean: 0.3, ci_68: [0.2, 0.4], note: "I_o^R determines Green-Red equilibrium"}
+
+    applicable_domains: ["ORG", "SOCIAL", "LABOR"]
+    last_updated: "2026-01-31"
+    theory_support: "MS-IB-001"
+
+    literature_sources:
+      - key: "PAP-akerlof2000identity"
+        finding: "I_o creates identity externalities in social interactions"
+
+  - id: PAR-BEH-011
+    symbol: r
+    name: "Social Exclusion Cost"
+    description: "Utility-Verlust durch Ausgrenzung bei Wahl der dominanten Identität"
+
+    values:
+      literature:
+        mean: null
+        note: "Context-dependent, varies by group and setting"
+        source: "PAP-akerlof2000identity"
+
+      domain_specific:
+        green_identity: {note: "r = loss from exclusion when choosing Green identity"}
+        red_identity: {note: "High r leads to rational choice of oppositional Red identity"}
+
+    equilibrium_conditions:
+      all_green: "r < I_o^R"
+      mixed: "intermediate r"
+      all_red: "high r + high I_o^G"
+
+    applicable_domains: ["SOCIAL", "EDUCATION", "POVERTY"]
+    last_updated: "2026-01-31"
+    theory_support: "MS-IB-001"
+
+    literature_sources:
+      - key: "PAP-akerlof2000identity"
+        finding: "r determines Green-Red equilibrium selection"
+
+  # ---------------------------------------------------------------------------
+  # Inequity Aversion - Disadvantageous (α_FS)
+  # ---------------------------------------------------------------------------
+  - id: PAR-BEH-012
+    symbol: α_FS
+    name: "Disadvantageous Inequity Aversion"
+    description: "Disutility from being behind others (earning less than peers)"
+
+    paper_notation:
+      original_symbol: "α"
+      source_paper: "PAP-fehr1999theory"
+      context: "Fehr-Schmidt (1999) Inequity Aversion Model"
+      translation_note: "EBF uses α_FS (FS=Fehr-Schmidt) to distinguish from other α-family parameters"
+
+    formal_definition:
+      equation: "U_i(x) = x_i - α_FS × max{x_j - x_i, 0} - β_FS × max{x_i - x_j, 0}"
+      where:
+        x_i: "Own payoff"
+        x_j: "Other's payoff"
+        α_FS: "Disadvantageous inequity aversion, α_FS ≥ 0"
+        β_FS: "Advantageous inequity aversion, 0 ≤ β_FS < 1"
+      interpretation: "α_FS measures how much the agent dislikes earning LESS than others"
+      source_equation: "Equation (1) in Fehr & Schmidt (1999)"
+      unit: "dimensionless weight"
+
+    values:
+      literature:
+        mean: 0.85
+        ci_95: [0.5, 4.0]
+        source: "PAP-fehr1999theory"
+        note: "Fehr & Schmidt (1999) - heterogeneous distribution"
+
+      distribution:
+        selfish: {share: 0.30, alpha_FS: 0.0}
+        moderate: {share: 0.30, alpha_FS: 0.5}
+        fair: {share: 0.30, alpha_FS: 1.0}
+        strong: {share: 0.10, alpha_FS: 4.0}
+
+      domain_specific:
+        ultimatum_game: {mean: 1.0, ci_68: [0.5, 2.0]}
+        workplace: {mean: 0.8, ci_68: [0.4, 1.2]}
+        public_goods: {mean: 0.7, ci_68: [0.3, 1.1]}
+
+    constraints:
+      - "α_FS ≥ β_FS (being behind hurts more than being ahead)"
+      - "α_FS ≥ 0"
+
+    applicable_domains: ["SOCIAL", "ORG", "FIN", "PUBLIC_GOODS"]
+    last_updated: "2026-02-05"
+    theory_support: "MS-SP-001"
+
+    literature_sources:
+      - key: "PAP-fehr1999theory"
+        finding: "α_FS ≈ 0.85 mean, heterogeneous: 30% selfish, 70% inequity averse"
+      - key: "PAP-bolton2000erc"
+        finding: "Similar predictions with relative payoff model"
+
+  # ---------------------------------------------------------------------------
+  # Inequity Aversion - Advantageous (β)
+  # ---------------------------------------------------------------------------
+  - id: PAR-BEH-013
+    symbol: β_FS
+    name: "Advantageous Inequity Aversion"
+    description: "Disutility from being ahead of others (earning more than peers)"
+
+    paper_notation:
+      original_symbol: "β"
+      source_paper: "PAP-fehr1999theory"
+      context: "Fehr-Schmidt (1999) Inequity Aversion Model"
+      translation_note: "EBF uses β_FS (FS=Fehr-Schmidt) to distinguish from β (present bias, PAR-BEH-003)"
+
+    formal_definition:
+      equation: "U_i(x) = x_i - α_FS × max{x_j - x_i, 0} - β_FS × max{x_i - x_j, 0}"
+      where:
+        x_i: "Payoff to individual i"
+        x_j: "Payoff to other individual j"
+        α_FS: "Disadvantageous inequity aversion (envy, being behind)"
+        β_FS: "Advantageous inequity aversion (guilt, being ahead)"
+      interpretation: "β_FS measures disutility from guilt when earning more than peers; always weaker than α_FS (envy)"
+      source_equation: "Equation (4) in Fehr & Schmidt (1999)"
+      unit: "dimensionless, bounded [0,1)"
+
+    values:
+      literature:
+        mean: 0.315
+        ci_95: [0.0, 0.6]
+        source: "PAP-fehr1999theory"
+        note: "Fehr & Schmidt (1999) - always less than α_FS"
+
+      distribution:
+        selfish: {share: 0.30, beta_FS: 0.0}
+        moderate: {share: 0.30, beta_FS: 0.25}
+        fair: {share: 0.30, beta_FS: 0.5}
+        strong: {share: 0.10, beta_FS: 0.6}
+
+      domain_specific:
+        dictator_game: {mean: 0.4, ci_68: [0.2, 0.6]}
+        workplace: {mean: 0.25, ci_68: [0.1, 0.4]}
+        public_goods: {mean: 0.3, ci_68: [0.15, 0.45]}
+
+    constraints:
+      - "0 ≤ β_FS < 1"
+      - "β_FS ≤ α_FS (advantageous inequity aversion weaker than disadvantageous)"
+
+    applicable_domains: ["SOCIAL", "ORG", "FIN", "PUBLIC_GOODS"]
+    last_updated: "2026-02-05"
+    theory_support: "MS-SP-001"
+
+    literature_sources:
+      - key: "PAP-fehr1999theory"
+        finding: "β_FS ≈ 0.315 mean, constraint 0 ≤ β_FS < 1"
+      - key: "PAP-charness2002understanding"
+        finding: "Confirms β_FS < α_FS in distribution games"
+
+  # ---------------------------------------------------------------------------
+  # Image Concern (μ)
+  # ---------------------------------------------------------------------------
+  - id: PAR-BEH-014
+    symbol: μ
+    name: "Image Concern"
+    description: "Strength of social or self-image motivation in moral decisions"
+
+    formal_definition:
+      equation: "U_S(h; g, w) = (gw - c)h + μ × φ(F)"
+      where:
+        U_S: "Sender's utility from helping decision"
+        g: "Generosity type of Sender, g ∈ [0, ḡ]"
+        w: "Need level of Receiver, w ∈ [0, w̄]"
+        c: "Cost of helping"
+        h: "Help provided, h ∈ {0, 1}"
+        μ: "Weight on image payoff, μ ≥ 0"
+        φ: "Image payoff function from outcome F ∈ {Accept, Reject, No-interaction, Offer}"
+      interpretation: "μ captures how much the Sender cares about appearing generous (social image) or feeling generous (self-image)"
+      source_equation: "Equation (2) in Bénabou, Jaroszewicz & Loewenstein (2022); see also Bénabou & Tirole (2006)"
+      unit: "dimensionless weight, μ ≥ 0"
+
+    values:
+      literature:
+        mean: 0.40
+        ci_95: [0.20, 0.60]
+        source: "PAP-benabou_2018_narratives"
+        note: "Normalized weight on v̂(a) in utility"
+
+      by_visibility:
+        public:
+          mean: 0.55
+          ci_68: [0.40, 0.70]
+          psi_conditions:
+            Ψ_S: "high_observability"       # Others can see and judge
+            Ψ_I: "attribution_enabled"      # Identity linked to action
+            Ψ_C: "reputation_salient"       # Thinking about how others see me
+          measurement_context:
+            study_type: "lab_experiment"
+            source: "Ariely, Bracha & Meier (2009)"
+            countries: ["USA"]
+            examples: ["Dictator game with audience", "Public charity events"]
+        private:
+          mean: 0.30
+          ci_68: [0.15, 0.45]
+          psi_conditions:
+            Ψ_S: "anonymous"                # No social observation
+            Ψ_I: "no_attribution"           # Actions not linked to identity
+            Ψ_C: "self_image_only"          # Only internal evaluation
+          measurement_context:
+            study_type: "lab_experiment"
+            source: "Bénabou & Tirole (2006)"
+            countries: ["USA", "Europe"]
+            examples: ["Anonymous donation", "Double-blind experiment"]
+        social_media:
+          mean: 0.65
+          ci_68: [0.50, 0.80]
+          psi_conditions:
+            Ψ_S: "viral_potential"          # Actions may spread widely
+            Ψ_F: "digital_permanent"        # Recorded and searchable
+            Ψ_I: "public_record"            # Creates permanent attribution
+            Ψ_C: "impression_management"    # Active self-presentation
+          measurement_context:
+            study_type: "field_data"
+            source: "Inferred from social media behavior studies"
+            countries: ["Global"]
+            examples: ["Public charity posts", "Virtue signaling"]
+
+      domain_specific:
+        charitable_giving:
+          mean: 0.50
+          ci_68: [0.35, 0.65]
+          psi_conditions:
+            Ψ_S: "social_approval"          # Giving is socially valued
+            Ψ_I: "tax_deductible"           # Institutional incentive
+            Ψ_K: "philanthropy_norm"        # Cultural expectation
+          measurement_context:
+            study_type: "field_experiment"
+            source: "DellaVigna, List & Malmendier (2012)"
+            countries: ["USA"]
+            examples: ["Door-to-door fundraising", "Charity auctions"]
+        prosocial_behavior:
+          mean: 0.45
+          ci_68: [0.30, 0.60]
+          psi_conditions:
+            Ψ_S: "reciprocity_context"      # Expectation of future return
+            Ψ_C: "warm_glow"                # Internal satisfaction from helping
+            Ψ_K: "cooperation_norm"         # Social norm of mutual aid
+          measurement_context:
+            study_type: "lab_experiment"
+            source: "Andreoni (1990) warm glow"
+            countries: ["USA"]
+            examples: ["Public goods game", "Helping experiments"]
+        moral_licensing:
+          mean: 0.35
+          ci_68: [0.20, 0.50]
+          psi_conditions:
+            Ψ_C: "self_permission"          # Prior good deed activates license
+            Ψ_S: "moral_credit_account"     # Mental accounting of moral acts
+            Ψ_I: "no_external_monitoring"   # No accountability
+          measurement_context:
+            study_type: "lab_experiment"
+            source: "Sachdeva, Iliev & Medin (2009)"
+            countries: ["USA"]
+            examples: ["Post-donation indulgence", "Green licensing"]
+        helping_behavior:
+          mean: 0.40
+          ci_68: [0.25, 0.55]
+          psi_conditions:
+            Ψ_S: "dyadic_relationship"      # One-on-one helping context
+            Ψ_C: "beneficiary_visible"      # Recipient is identifiable
+            Ψ_I: "no_formal_obligation"     # Helping is discretionary
+          measurement_context:
+            study_type: "theoretical"
+            source: "Bénabou, Jaroszewicz & Loewenstein (2022)"
+            countries: ["Theoretical model"]
+            note: "Fear of Asking paper - μ as image concern in helping game"
+
+    key_equation: "U = (ve - c/β)a + μv̂(a)"
+    interaction_with_beta: "μ compensates for low β (self-control)"
+    constraints:
+      - "μ > 0"
+      - "Higher μ → more prosocial behavior when observed"
+
+    applicable_domains: ["SOCIAL", "MORAL", "CHARITY", "PUBLIC_GOODS"]
+    last_updated: "2026-02-04"
+    theory_support: "MS-IB-002, MS-IB-013"
+
+    literature_sources:
+      - key: "PAP-benabou_2018_narratives"
+        finding: "Image utility μv̂(a) drives moral behavior"
+      - key: "PAP-ariely2009doing"
+        finding: "Visibility increases prosocial behavior"
+      - key: "PAP-benabou2006incentives"
+        finding: "Image motivation can be crowded out by incentives"
+
+  # ---------------------------------------------------------------------------
+  # Network Persistence (ρ)
+  # ---------------------------------------------------------------------------
+  - id: PAR-BEH-015
+    symbol: ρ
+    name: "Network Persistence / Segregation"
+    description: "Correlation of moral types on social network (homophily)"
+
+    values:
+      literature:
+        mean: 0.60
+        ci_95: [0.30, 0.90]
+        source: "PAP-benabou_2018_narratives"
+        note: "Pr[i+1 ∈ A | i ∈ A] = ρ in Markov chain"
+
+      by_network_type:
+        family: {mean: 0.85, ci_68: [0.75, 0.95], note: "High homophily"}
+        workplace: {mean: 0.55, ci_68: [0.40, 0.70], note: "Moderate mixing"}
+        social_media: {mean: 0.70, ci_68: [0.55, 0.85], note: "Filter bubbles"}
+        random: {mean: 0.50, ci_68: [0.45, 0.55], note: "No segregation"}
+
+    key_insight: "Lower ρ → more mixing → more prosocial behavior"
+    polarization_effect: "Gaps in narrative awareness U-shaped in ρ, minimum at ρ=0.5"
+
+    influence_factor:
+      formula: "N⁻_A = π(1-x) / [1 - ρ(1-x)]"
+      interpretation: "Social multiplier for negative narrative transmission"
+
+    constraints:
+      - "ρ ∈ [0, 1]"
+      - "ρ = 0: random mixing"
+      - "ρ = 1: complete segregation"
+
+    applicable_domains: ["SOCIAL", "NETWORK", "POLARIZATION", "MORAL"]
+    last_updated: "2026-02-04"
+    theory_support: "MS-IB-013"
+
+    literature_sources:
+      - key: "PAP-benabou_2018_narratives"
+        finding: "Network structure determines viral spread of moral narratives"
+      - key: "PAP-mcpherson2001birds"
+        finding: "Homophily in social networks"
+
+  # ---------------------------------------------------------------------------
+  # Rejection Sensitivity (λ_R) - Fear of Asking
+  # ---------------------------------------------------------------------------
+  - id: PAR-BEH-016
+    symbol: λ_R
+    name: "Rejection Sensitivity"
+    description: "Loss aversion coefficient specific to social rejection in help-seeking"
+
+    formal_definition:
+      equation: "ψ(reject) = -λ_R × α × [g̃ - ḡ_N]"
+      where:
+        ψ: "Psychological payoff function from outcome F ∈ {Accept, Reject, No-interaction}"
+        g̃: "Generosity threshold below which Sender rejects (endogenous)"
+        ḡ_N: "Average generosity conditional on no offer being made"
+        λ_R: "Rejection sensitivity coefficient, λ_R > 1"
+      interpretation: "Rejection causes utility loss proportional to λ_R; when λ_R > 1, rejection hurts more than acceptance pleases"
+      source_equation: "Equation (5) in Bénabou, Jaroszewicz & Loewenstein (2022)"
+      unit: "dimensionless ratio"
+
+    values:
+      literature:
+        mean: 2.0
+        ci_95: [1.5, 3.0]
+        source: "PAP-benabou_2022_hurts_ask"
+        note: "Bénabou, Jaroszewicz & Loewenstein (2022)"
+        measurement_context:
+          study_type: "theoretical_calibration"
+          basis: "Meta-analysis of welfare take-up, workplace studies"
+          countries: ["USA", "UK", "EU"]
+
+      domain_specific:
+        welfare_takeup:
+          mean: 2.5
+          ci_68: [2.0, 3.0]
+          psi_conditions:
+            Ψ_I: "bureaucratic"          # Institutional: formal application process
+            Ψ_S: "high_stigma"           # Social: welfare stigma visible
+            Ψ_K: "individualistic"       # Cultural: self-reliance norm
+          measurement_context:
+            study_type: "field_data"
+            source: "Currie (2006) welfare take-up rates"
+            countries: ["USA"]
+            note: "Eligible non-claimants reveal high λ_R"
+
+        workplace_help:
+          mean: 1.8
+          ci_68: [1.4, 2.2]
+          psi_conditions:
+            Ψ_I: "professional_norms"    # Institutional: competence expectations
+            Ψ_S: "moderate_visibility"   # Social: colleagues may observe
+            Ψ_C: "competence_threat"     # Cognitive: self-image at stake
+          measurement_context:
+            study_type: "lab_experiment"
+            source: "Flynn & Lake (2008)"
+            countries: ["USA"]
+            sample: "MBA students, professionals"
+
+        healthcare:
+          mean: 2.2
+          ci_68: [1.8, 2.6]
+          psi_conditions:
+            Ψ_I: "medical_authority"     # Institutional: doctor-patient hierarchy
+            Ψ_S: "private_but_recorded"  # Social: medical records persist
+            Ψ_C: "identity_threat"       # Cognitive: diagnosis = identity label
+          measurement_context:
+            study_type: "observational"
+            source: "Oster, Shoulson & Dorsey (2013)"
+            countries: ["USA"]
+            note: "Genetic testing avoidance"
+
+        family_support:
+          mean: 1.5
+          ci_68: [1.2, 1.8]
+          psi_conditions:
+            Ψ_I: "informal"              # Institutional: no formal rules
+            Ψ_S: "high_trust"            # Social: established relationship
+            Ψ_K: "reciprocity_norm"      # Cultural: mutual support expected
+          measurement_context:
+            study_type: "survey"
+            source: "Inferred from intergenerational transfer studies"
+            countries: ["DACH", "USA"]
+            note: "Lower rejection risk in close relationships"
+
+    key_insight: "Higher λ_R → higher asking threshold w* → less help-seeking even when needed"
+
+    interaction_with:
+      - symbol: "α_R"
+        type: "multiplicative"
+        formula: "w* = λ_R × α_R × [M⁺_N(ĝ) - ḡ_N]"
+        interpretation: "Total asking cost is λ_R × α_R"
+
+    constraints:
+      - "λ_R ≥ 1 (rejection is never preferred)"
+      - "λ_R > λ (general) when rejection is identity-threatening"
+
+    applicable_domains: ["SOCIAL", "WELFARE", "HLT", "ORG"]
+    last_updated: "2026-02-05"
+    theory_support: "MS-IB-018"
+    updated_by_session: "EBF-S-2026-02-04-SOC-002"
+
+    literature_sources:
+      - key: "PAP-benabou_2022_hurts_ask"
+        finding: "Fear of rejection creates non-monotonic asking in need"
+      - key: "PAP-flynn2008help"
+        finding: "People systematically underestimate others' willingness to help"
+
+  # ---------------------------------------------------------------------------
+  # Rejection Scaling (α) - Fear of Asking
+  # ---------------------------------------------------------------------------
+  - id: PAR-BEH-017
+    symbol: α_R
+    name: "Rejection Information Scaling"
+    description: "How much information about valuation is revealed by rejection"
+
+    paper_notation:
+      original_symbol: "α"
+      source_paper: "PAP-benabou_2022_hurts_ask"
+      context: "Bénabou, Jaroszewicz & Loewenstein (2022) Fear of Asking Model"
+      translation_note: "EBF uses α_R (R=Rejection) to distinguish from α_FS (Fehr-Schmidt inequity aversion, PAR-BEH-012)"
+
+    formal_definition:
+      equation: "w* = λ_R × α_R × [M⁺_N(ĝ(w*)) - ḡ_N]"
+      where:
+        w*: "Asking threshold - critical need level above which Receiver asks for help"
+        M⁺_N: "Conditional mean generosity E[g | g < ĝ, no offer] given rejection"
+        ĝ: "Inferred generosity threshold ĝ(w*) = c / E[w | w < w*]"
+        α_R: "Information scaling parameter, α_R ∈ [0,1]"
+      interpretation: "α_R measures how informative rejection is about the Sender's valuation; α_R=0 means rejection reveals nothing, α_R=1 means full revelation"
+      source_equation: "Equation (7) in Bénabou, Jaroszewicz & Loewenstein (2022)"
+      unit: "dimensionless, bounded [0,1]"
+
+    values:
+      literature:
+        mean: 0.5
+        ci_95: [0.2, 0.8]
+        source: "PAP-benabou_2022_hurts_ask"
+        note: "Depends on context and relationship type"
+        measurement_context:
+          study_type: "theoretical_derivation"
+          basis: "Model calibration across relationship types"
+
+      by_context:
+        anonymous_process:
+          mean: 0.2
+          ci_68: [0.1, 0.3]
+          psi_conditions:
+            Ψ_I: "anonymous"             # Institutional: identity hidden
+            Ψ_S: "no_relationship"       # Social: no prior connection
+            Ψ_F: "digital_remote"        # Physical: online/automated
+          measurement_context:
+            examples: ["Online application", "Lottery system", "Random assignment"]
+            note: "Rejection reveals nothing about personal valuation"
+
+        bureaucratic:
+          mean: 0.3
+          ci_68: [0.2, 0.4]
+          psi_conditions:
+            Ψ_I: "rule_based"            # Institutional: explicit criteria
+            Ψ_S: "impersonal"            # Social: agent follows rules
+            Ψ_C: "attributable_to_rules" # Cognitive: rejection = didn't meet criteria
+          measurement_context:
+            examples: ["Welfare office", "Bank loan", "University admission"]
+            note: "Partial signal - rules may be pretext"
+
+        professional:
+          mean: 0.5
+          ci_68: [0.35, 0.65]
+          psi_conditions:
+            Ψ_I: "professional_norms"    # Institutional: workplace hierarchy
+            Ψ_S: "ongoing_relationship"  # Social: repeated interaction
+            Ψ_C: "mixed_attribution"     # Cognitive: competence + relationship unclear
+          measurement_context:
+            examples: ["Manager-employee", "Colleague help", "Mentor request"]
+            source: "Flynn & Lake (2008)"
+            note: "Rejection = competence signal + relationship signal"
+
+        personal_visible:
+          mean: 0.7
+          ci_68: [0.55, 0.85]
+          psi_conditions:
+            Ψ_I: "informal"              # Institutional: no formal rules
+            Ψ_S: "known_relationship"    # Social: established connection
+            Ψ_C: "high_attribution"      # Cognitive: rejection = they don't care
+          measurement_context:
+            examples: ["Friends", "Extended family", "Neighbors"]
+            note: "Rejection strongly signals low valuation"
+
+        intimate:
+          mean: 0.9
+          ci_68: [0.80, 0.95]
+          psi_conditions:
+            Ψ_I: "none"                  # Institutional: no external constraints
+            Ψ_S: "intimate_bond"         # Social: deep relationship
+            Ψ_C: "full_attribution"      # Cognitive: rejection = they don't love me
+          measurement_context:
+            examples: ["Spouse", "Parent-child", "Best friend"]
+            note: "Rejection is identity-shattering"
+
+    key_insight: "Lower α_R → asking less costly → interventions should reduce informativeness of rejection"
+
+    intervention_levers:
+      - name: "Anonymization"
+        effect: "α_R ↓ 0.3-0.5"
+        mechanism: "Rejection cannot be attributed to personal valuation"
+      - name: "Standardized criteria"
+        effect: "α_R ↓ 0.2-0.4"
+        mechanism: "Rejection attributed to rules, not relationship"
+      - name: "Proactive offers"
+        effect: "Bypasses α_R entirely"
+        mechanism: "No asking needed, eliminates rejection risk"
+
+    constraints:
+      - "α_R ∈ [0, 1]"
+      - "α_R = 0: rejection reveals nothing about relationship"
+      - "α_R = 1: rejection fully reveals low valuation"
+
+    applicable_domains: ["SOCIAL", "WELFARE", "HLT", "ORG"]
+    last_updated: "2026-02-05"
+    theory_support: "MS-IB-018"
+    updated_by_session: "EBF-S-2026-02-04-SOC-002"
+
+    literature_sources:
+      - key: "PAP-benabou_2022_hurts_ask"
+        finding: "Asking threshold w* proportional to α_R"
+      - key: "PAP-bohns2010underestimate"
+        finding: "Requesters overestimate rejection probability"
+
+# =============================================================================
+# CONTEXTUAL PARAMETERS (Swiss/DACH specific)
+# =============================================================================
+
+contextual_parameters:
+
+  # ---------------------------------------------------------------------------
+  # Finance Taboo (τ)
+  # ---------------------------------------------------------------------------
+  - id: PAR-CTX-001
+    symbol: τ_taboo
+    name: "Finance Discussion Taboo"
+    description: "Kulturelle Zurückhaltung bei Finanzthemen"
+
+    values:
+      switzerland:
+        mean: 0.72
+        ci_68: [0.65, 0.79]
+        source: "BCM2_04_KON_socio_cultural.yaml"
+      germany:
+        mean: 0.68
+        ci_68: [0.60, 0.76]
+      austria:
+        mean: 0.65
+        ci_68: [0.58, 0.72]
+      usa:
+        mean: 0.45
+        ci_68: [0.38, 0.52]
+
+    applicable_domains: ["FIN"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-FIN-002"
+
+    implications:
+      - "CH: Weniger aber qualitativ hochwertigere Empfehlungen"
+      - "Subtile Interventionen bevorzugen"
+
+  # ---------------------------------------------------------------------------
+  # Institutional Trust
+  # ---------------------------------------------------------------------------
+  - id: PAR-CTX-002
+    symbol: trust_inst
+    name: "Institutional Trust"
+    description: "Vertrauen in Finanzinstitutionen"
+
+    values:
+      switzerland:
+        mean: 0.78
+        ci_68: [0.72, 0.84]
+        source: "BCM2_04_KON_socio_cultural.yaml"
+      germany:
+        mean: 0.62
+        ci_68: [0.55, 0.69]
+      austria:
+        mean: 0.65
+        ci_68: [0.58, 0.72]
+
+    applicable_domains: ["FIN"]
+    last_updated: "2026-01-25"
+
+  # ---------------------------------------------------------------------------
+  # Privacy Norm
+  # ---------------------------------------------------------------------------
+  - id: PAR-CTX-003
+    symbol: privacy_norm
+    name: "Privacy Norm Strength"
+    description: "Stärke der Privatsphäre-Norm"
+
+    values:
+      switzerland:
+        mean: 0.85
+        ci_68: [0.80, 0.90]
+        source: "BCM2_04_KON_socio_cultural.yaml"
+      germany:
+        mean: 0.82
+        ci_68: [0.76, 0.88]
+
+    applicable_domains: ["FIN", "HLT"]
+    last_updated: "2026-01-25"
+
+# =============================================================================
+# GERMAN CARE SYSTEM PARAMETERS (SGB XI)
+# =============================================================================
+
+german_care_parameters:
+
+  # ---------------------------------------------------------------------------
+  # NBA Module Weights
+  # ---------------------------------------------------------------------------
+  - id: PAR-HLT-001
+    symbol: w_nba
+    name: "NBA Module Weights"
+    description: "Gewichtung der 6 NBA-Module für Pflegegrad-Berechnung"
+
+    values:
+      module_1_mobility: {weight: 0.10, max_points: 15}
+      module_2_cognitive: {weight: 0.15, max_points: 33}
+      module_3_behavioral: {weight: 0.15, max_points: 65}
+      module_4_selfcare: {weight: 0.40, max_points: 40}
+      module_5_treatment: {weight: 0.20, max_points: 50}
+      module_6_daily: {weight: 0.15, max_points: 18}
+      note: "Module 2 und 3 werden zusammen gewichtet (höherer Wert zählt)"
+
+    source: "SGB XI, NBA-Richtlinien 2017"
+    applicable_domains: ["HLT"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-HLT-001"
+
+  # ---------------------------------------------------------------------------
+  # Pflegegrad Thresholds
+  # ---------------------------------------------------------------------------
+  - id: PAR-HLT-002
+    symbol: θ_pg
+    name: "Pflegegrad Point Thresholds"
+    description: "Punktgrenzen für Pflegegrade 1-5"
+
+    values:
+      PG1: {min: 12.5, max: 26.99, description: "Geringe Beeinträchtigung"}
+      PG2: {min: 27.0, max: 47.49, description: "Erhebliche Beeinträchtigung"}
+      PG3: {min: 47.5, max: 69.99, description: "Schwere Beeinträchtigung"}
+      PG4: {min: 70.0, max: 89.99, description: "Schwerste Beeinträchtigung"}
+      PG5: {min: 90.0, max: 100, description: "Schwerste mit besonderer Versorgung"}
+
+    source: "SGB XI §15"
+    applicable_domains: ["HLT"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-HLT-001"
+
+  # ---------------------------------------------------------------------------
+  # Care Benefits by Grade (Stand: Januar 2026)
+  # ---------------------------------------------------------------------------
+  - id: PAR-HLT-003
+    symbol: L_pg
+    name: "Pflegeleistungen nach Pflegegrad"
+    description: "Monatliche/Jährliche Leistungen der Pflegekasse"
+
+    values:
+      PG2:
+        Pflegegeld: {value: 332, unit: "EUR/Monat"}
+        Sachleistungen: {value: 761, unit: "EUR/Monat"}
+        Verhinderungspflege: {value: 1612, unit: "EUR/Jahr"}
+        Entlastungsbetrag: {value: 125, unit: "EUR/Monat"}
+        Entlastungsbudget_ab_Juli_2025: {value: 3539, unit: "EUR/Jahr"}
+      PG3:
+        Pflegegeld: {value: 573, unit: "EUR/Monat"}
+        Sachleistungen: {value: 1432, unit: "EUR/Monat"}
+        Verhinderungspflege: {value: 1612, unit: "EUR/Jahr"}
+        Entlastungsbetrag: {value: 125, unit: "EUR/Monat"}
+        Entlastungsbudget_ab_Juli_2025: {value: 3539, unit: "EUR/Jahr"}
+      PG4:
+        Pflegegeld: {value: 765, unit: "EUR/Monat"}
+        Sachleistungen: {value: 1778, unit: "EUR/Monat"}
+        Verhinderungspflege: {value: 1612, unit: "EUR/Jahr"}
+        Entlastungsbetrag: {value: 125, unit: "EUR/Monat"}
+        Entlastungsbudget_ab_Juli_2025: {value: 3539, unit: "EUR/Jahr"}
+      PG5:
+        Pflegegeld: {value: 947, unit: "EUR/Monat"}
+        Sachleistungen: {value: 2200, unit: "EUR/Monat"}
+        Verhinderungspflege: {value: 1612, unit: "EUR/Jahr"}
+        Entlastungsbetrag: {value: 125, unit: "EUR/Monat"}
+        Entlastungsbudget_ab_Juli_2025: {value: 3539, unit: "EUR/Jahr"}
+
+    source: "GKV-Spitzenverband, Stand Januar 2026"
+    applicable_domains: ["HLT"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-HLT-001"
+
+  # ---------------------------------------------------------------------------
+  # Nursing Home Costs by State (Eigenanteil)
+  # ---------------------------------------------------------------------------
+  - id: PAR-HLT-004
+    symbol: c_heim
+    name: "Pflegeheim-Eigenanteil nach Bundesland"
+    description: "Durchschnittlicher Eigenanteil für vollstationäre Pflege"
+
+    values:
+      hessen: {mean: 3229, unit: "EUR/Monat", source: "AOK Pflegenavigator 2025"}
+      bayern: {mean: 2700, unit: "EUR/Monat"}
+      nordrhein_westfalen: {mean: 2850, unit: "EUR/Monat"}
+      baden_wuerttemberg: {mean: 3100, unit: "EUR/Monat"}
+      niedersachsen: {mean: 2400, unit: "EUR/Monat"}
+      sachsen: {mean: 1900, unit: "EUR/Monat"}
+      bundesschnitt: {mean: 2764, unit: "EUR/Monat"}
+
+    note: "Eigenanteil = Einrichtungseinheitlicher Eigenanteil + Unterkunft + Verpflegung + Investitionskosten"
+    source: "AOK Pflegenavigator, vdek Statistik 2025"
+    applicable_domains: ["HLT"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-HLT-001"
+
+  # ---------------------------------------------------------------------------
+  # 24h Care Costs
+  # ---------------------------------------------------------------------------
+  - id: PAR-HLT-005
+    symbol: c_24h
+    name: "24-Stunden-Pflege Kosten"
+    description: "Netto-Kosten für 24h-Betreuung nach Abzug der Pflegeleistungen"
+
+    values:
+      brutto_kosten:
+        osteuropaeisch_basis: {range: [2200, 2800], unit: "EUR/Monat"}
+        osteuropaeisch_qualifiziert: {range: [2800, 3500], unit: "EUR/Monat"}
+        deutsch_legal: {range: [4500, 6000], unit: "EUR/Monat"}
+
+      netto_nach_abzug:
+        PG3_kombinationsleistung: {mean: 1398, unit: "EUR/Monat", note: "Brutto 2500 - 716 Sachleistungen - 386 Pflegegeld"}
+        PG4_kombinationsleistung: {mean: 1178, unit: "EUR/Monat", note: "Brutto 2500 - 889 Sachleistungen - 433 Pflegegeld"}
+        PG4_mit_verhinderungspflege: {mean: 1044, unit: "EUR/Monat", note: "Zusätzlich 134€/Monat aus Verhinderungspflege"}
+
+    source: "Verbraucherzentrale, 24h-Pflege-Check 2025"
+    applicable_domains: ["HLT"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-HLT-001"
+
+  # ---------------------------------------------------------------------------
+  # Waiting Times for Dementia Care
+  # ---------------------------------------------------------------------------
+  - id: PAR-HLT-006
+    symbol: t_wait
+    name: "Wartezeiten Demenz-Pflegeheim"
+    description: "Durchschnittliche Wartezeiten für Demenz-spezialisierte Einrichtungen"
+
+    values:
+      urban:
+        mean: 9
+        range: [6, 12]
+        unit: "Monate"
+      rural:
+        mean: 6
+        range: [3, 9]
+        unit: "Monate"
+      specialized_dementia:
+        mean: 14
+        range: [9, 18]
+        unit: "Monate"
+
+    source: "Alzheimer Gesellschaft, BPA 2025"
+    note: "Frühzeitige Wartelisten-Anmeldung empfohlen"
+    applicable_domains: ["HLT"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-HLT-001"
+
+  # ---------------------------------------------------------------------------
+  # Höherstufung Success Rates
+  # ---------------------------------------------------------------------------
+  - id: PAR-HLT-007
+    symbol: p_success
+    name: "Höherstufungs-Erfolgsraten"
+    description: "Wahrscheinlichkeit erfolgreicher Höherstufung"
+
+    values:
+      erstantrag_demenz:
+        mean: 0.72
+        ci_68: [0.65, 0.80]
+        source: "MDK-Statistik 2024"
+
+      widerspruch_erfolg:
+        mean: 0.45
+        ci_68: [0.40, 0.50]
+        source: "Verbraucherzentrale 2025"
+
+      mit_pflegetagebuch:
+        mean: 0.82
+        ci_68: [0.75, 0.88]
+        source: "Pflegestützpunkt-Erfahrungswerte"
+
+    implications:
+      - "Pflegetagebuch erhöht Erfolgswahrscheinlichkeit um ~10pp"
+      - "Widerspruch lohnt sich in fast 50% der Fälle"
+
+    applicable_domains: ["HLT"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-HLT-001"
+
+  # ---------------------------------------------------------------------------
+  # Kombinationsleistung Formula
+  # ---------------------------------------------------------------------------
+  - id: PAR-HLT-008
+    symbol: k_kombi
+    name: "Kombinationsleistung Berechnungsformel"
+    description: "Berechnung des anteiligen Pflegegelds bei Kombinationsleistung"
+
+    values:
+      formula: "Pflegegeld_anteilig = Pflegegeld_voll × (1 - Sachleistung_genutzt / Sachleistung_max)"
+      example_PG3:
+        Sachleistungen_voll: 1432
+        Sachleistungen_genutzt: 716
+        Pflegegeld_voll: 573
+        Pflegegeld_anteilig: 286
+        calculation: "573 × (1 - 716/1432) = 573 × 0.5 = 286€"
+
+    source: "SGB XI §38"
+    applicable_domains: ["HLT"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-HLT-001"
+
+# =============================================================================
+# TIME ALLOCATION PARAMETERS (CAT-17: Household Economics)
+# =============================================================================
+# Based on Becker (1965) and Goodman et al. (2026)
+# Reference: MS-TA-001, MS-TA-002, MS-TA-003
+
+time_allocation_parameters:
+
+  # ---------------------------------------------------------------------------
+  # Shadow Price of Time (W)
+  # ---------------------------------------------------------------------------
+  - id: PAR-TA-001
+    symbol: W
+    name: "Shadow Price of Time"
+    description: "Opportunitätskosten der Zeit, approximiert durch Stundenlohn"
+
+    values:
+      literature:
+        mean: "wage_rate"
+        note: "W = marginal wage rate (Becker 1965)"
+        source: "PAP-becker1965theory"
+
+      dach_median:
+        switzerland:
+          mean: 42.50
+          unit: "CHF/h"
+          source: "BFS Lohnstrukturerhebung 2024"
+        germany:
+          mean: 24.00
+          unit: "EUR/h"
+          source: "Destatis 2024"
+        austria:
+          mean: 26.50
+          unit: "EUR/h"
+          source: "Statistik Austria 2024"
+
+      by_education:
+        tertiary: {multiplier: 1.8, note: "Hochschulabschluss"}
+        secondary: {multiplier: 1.0, note: "Referenzkategorie"}
+        primary: {multiplier: 0.7, note: "Ohne Berufsabschluss"}
+
+    applicable_domains: ["DIGITAL", "LABOR", "HOUSEHOLD"]
+    last_updated: "2026-01-28"
+    updated_by_session: "EBF-S-2026-01-28-MKT-001"
+
+    literature_sources:
+      - key: "PAP-becker1965theory"
+        finding: "Time valued at marginal wage rate"
+      - key: "PAP-goodman2026timeintensive"
+        finding: "Shadow wage determines time cost share"
+
+  # ---------------------------------------------------------------------------
+  # Time Share (s_T)
+  # ---------------------------------------------------------------------------
+  - id: PAR-TA-002
+    symbol: s_T
+    name: "Time Cost Share"
+    description: "Anteil der Zeitkosten am vollen Preis: s_T = (W·t) / π"
+
+    values:
+      literature:
+        formula: "s_T = (W·t_i) / (p_i + W·t_i)"
+        source: "PAP-goodman2026timeintensive"
+
+      by_product_type:
+        free_digital_platforms:
+          mean: 0.99
+          ci_68: [0.95, 1.00]
+          note: "p_monetary ≈ 0 → s_T → 1"
+          examples: ["Facebook", "Instagram", "TikTok", "YouTube"]
+
+        streaming_subscription:
+          mean: 0.85
+          ci_68: [0.75, 0.92]
+          note: "Geringe monatliche Gebühr, viel Zeit"
+          examples: ["Netflix", "Spotify"]
+
+        traditional_goods:
+          mean: 0.30
+          ci_68: [0.15, 0.45]
+          note: "Höhere monetäre Kosten relativ zu Zeit"
+          examples: ["Restaurants", "Kino"]
+
+    key_insight: "Produkte mit ähnlichen s_T haben höhere Diversion Ratios"
+    applicable_domains: ["DIGITAL", "ANTITRUST", "CONSUMER"]
+    last_updated: "2026-01-28"
+    updated_by_session: "EBF-S-2026-01-28-MKT-001"
+
+    literature_sources:
+      - key: "PAP-goodman2026timeintensive"
+        finding: "Time shares predict substitution patterns"
+      - key: "PAP-becker1965theory"
+        finding: "Full price = monetary price + time cost"
+
+  # ---------------------------------------------------------------------------
+  # Diversion Ratio (D_ij)
+  # ---------------------------------------------------------------------------
+  - id: PAR-TA-003
+    symbol: D_ij
+    name: "Diversion Ratio"
+    description: "Anteil der von Produkt i abgewanderten Nachfrage, der zu Produkt j geht"
+
+    values:
+      formula: "D_ij = (∂q_j/∂p_i) / (-∂q_i/∂p_i)"
+      interpretation: "D_ij ∈ [0,1], höher = stärkere Substitution"
+
+      facebook_instagram:
+        mean: 0.65
+        ci_68: [0.55, 0.75]
+        source: "PAP-goodman2026timeintensive"
+        note: "Hohe Substitution aufgrund ähnlicher s_T"
+
+      facebook_offline:
+        mean: 0.20
+        ci_68: [0.12, 0.28]
+        source: "PAP-goodman2026timeintensive"
+        note: "Niedrigere Substitution zu Offline-Aktivitäten"
+
+    beckerian_prediction: "D_ij ↑ wenn |s_T^i - s_T^j| ↓"
+    antitrust_implication: "Hohe D_ij → enge Marktabgrenzung → Merger-Bedenken"
+    applicable_domains: ["DIGITAL", "ANTITRUST"]
+    last_updated: "2026-01-28"
+    updated_by_session: "EBF-S-2026-01-28-MKT-001"
+
+    literature_sources:
+      - key: "PAP-goodman2026timeintensive"
+        finding: "Facebook-Instagram D ≈ 0.65"
+
+  # ---------------------------------------------------------------------------
+  # Ad Load Elasticity (ε_ad)
+  # ---------------------------------------------------------------------------
+  - id: PAR-TA-004
+    symbol: ε_ad
+    name: "Ad Load Elasticity"
+    description: "Preiselastizität der Nachfrage bezüglich Ad Load"
+
+    values:
+      literature:
+        mean: -0.15
+        ci_95: [-0.30, -0.05]
+        source: "PAP-goodman2026timeintensive"
+        interpretation: "Sehr unelastisch - User tolerieren hohe Ad Loads"
+
+      by_platform:
+        social_media:
+          mean: -0.12
+          ci_68: [-0.20, -0.05]
+          note: "Facebook, Instagram - sehr unelastisch"
+        video_streaming:
+          mean: -0.25
+          ci_68: [-0.35, -0.15]
+          note: "YouTube - etwas elastischer"
+
+    policy_implication: "Niedrige Elastizität → Plattformen haben Marktmacht bei Ad Load"
+    applicable_domains: ["DIGITAL", "ANTITRUST", "ADVERTISING"]
+    last_updated: "2026-01-28"
+    updated_by_session: "EBF-S-2026-01-28-MKT-001"
+
+    literature_sources:
+      - key: "PAP-goodman2026timeintensive"
+        finding: "Users exhibit low elasticity to ad load"
+
+  # ---------------------------------------------------------------------------
+  # Attention Budget (A_max)
+  # ---------------------------------------------------------------------------
+  - id: PAR-TA-005
+    symbol: A_max
+    name: "Daily Attention Budget"
+    description: "Verfügbare Aufmerksamkeitszeit pro Tag (begrenzte Ressource)"
+
+    values:
+      literature:
+        mean: 720
+        unit: "Minuten/Tag"
+        note: "≈ 12 Stunden wache, nicht-arbeitende Zeit"
+        source: "simon1971designing"
+
+      by_segment:
+        young_adults_18_29:
+          social_media: {mean: 147, unit: "min/day"}
+          total_screen: {mean: 420, unit: "min/day"}
+          source: "eMarketer 2025"
+        adults_30_49:
+          social_media: {mean: 95, unit: "min/day"}
+          total_screen: {mean: 310, unit: "min/day"}
+        adults_50_plus:
+          social_media: {mean: 52, unit: "min/day"}
+          total_screen: {mean: 240, unit: "min/day"}
+
+    simon_insight: "Wealth of information creates poverty of attention"
+    applicable_domains: ["DIGITAL", "ATTENTION", "MEDIA"]
+    last_updated: "2026-01-28"
+    updated_by_session: "EBF-S-2026-01-28-MKT-001"
+
+    literature_sources:
+      - key: "PAP-simon1971designing"
+        finding: "Attention is the scarce resource in information-rich world"
+
+# =============================================================================
+# INTERVENTION EFFECT PARAMETERS
+# =============================================================================
+
+intervention_parameters:
+
+  # ---------------------------------------------------------------------------
+  # Default Effect
+  # ---------------------------------------------------------------------------
+  - id: PAR-INT-001
+    symbol: E_default
+    name: "Default Effect Strength"
+    description: "Effektstärke von Opt-Out Defaults"
+
+    values:
+      literature:
+        mean: 0.35
+        ci_95: [0.25, 0.45]
+        source: "johnson2003defaults"
+
+      dach_observed:
+        mean: 0.42
+        ci_68: [0.35, 0.49]
+        source: "PRJ-001"
+        note: "bAV Opt-Out: Stärker als US-Literatur"
+        n_observations: 312
+
+      adjustment_factor_dach: 1.20
+
+    applicable_domains: ["FIN", "HLT", "ORG"]
+    last_updated: "2026-01-25"
+    updated_by_project: "PRJ-001"
+
+    literature_sources:
+      - key: "johnson2003defaults"
+        finding: "Defaults increase participation by 25-50%"
+      - key: "PAP-madrian2001power"
+        finding: "401k default enrollment: +35pp"
+
+  # ---------------------------------------------------------------------------
+  # Social Norm Effect
+  # ---------------------------------------------------------------------------
+  - id: PAR-INT-002
+    symbol: E_social_norm
+    name: "Social Norm Effect"
+    description: "Effektstärke von deskriptiven sozialen Normen"
+
+    values:
+      literature:
+        mean: 0.020
+        ci_95: [0.015, 0.030]
+        source: "PAP-allcott2011social"
+        note: "Opower Energy Reports"
+
+      dach_observed:
+        mean: 0.018
+        ci_68: [0.014, 0.022]
+        source: "PRJ-003"
+        note: "Energie-Feedback leicht unter US-Werten"
+        n_observations: 450
+
+      adjustment_factor_dach: 0.90
+
+    applicable_domains: ["ENV", "HLT", "FIN"]
+    last_updated: "2026-01-25"
+    updated_by_project: "PRJ-003"
+
+  # ---------------------------------------------------------------------------
+  # Identity Activation Effect
+  # ---------------------------------------------------------------------------
+  - id: PAR-INT-003
+    symbol: E_identity
+    name: "Identity Activation Effect"
+    description: "Effektstärke von Identitäts-basierten Interventionen"
+
+    values:
+      literature:
+        mean: 0.22
+        ci_95: [0.15, 0.30]
+        source: "PAP-akerlof2000economics"
+
+      dach_estimated:
+        mean: 0.253
+        ci_68: [0.182, 0.324]
+        source: "EBF-S-2026-01-25-FIN-002"
+        note: "LLMMC + Bayesian für UBS Referral"
+
+    applicable_domains: ["FIN", "HLT", "ORG"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-FIN-002"
+
+  # ---------------------------------------------------------------------------
+  # Warm Glow Effect
+  # ---------------------------------------------------------------------------
+  - id: PAR-INT-004
+    symbol: E_warmglow
+    name: "Warm Glow Effect"
+    description: "Intrinsische Belohnung durch prosoziales Verhalten"
+
+    values:
+      literature:
+        mean: 0.12
+        ci_95: [0.08, 0.18]
+        source: "PAP-andreoni1990impure"
+
+      combined_with_social:
+        mean: 0.144
+        ci_68: [0.098, 0.190]
+        source: "EBF-S-2026-01-25-FIN-002"
+        note: "Social Proof + Warm Glow kombiniert"
+
+    applicable_domains: ["FIN", "HLT", "ENV"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-FIN-002"
+
+# =============================================================================
+# COMPLEMENTARITY PARAMETERS (γ)
+# =============================================================================
+
+complementarity_parameters:
+
+  # ---------------------------------------------------------------------------
+  # Identity × Social
+  # ---------------------------------------------------------------------------
+  - id: PAR-COMP-001
+    symbol: γ_identity_social
+    name: "Identity × Social Complementarity"
+    description: "Synergie zwischen Identitäts- und Sozial-Interventionen"
+
+    value:
+      mean: 0.35
+      ci_68: [0.25, 0.45]
+      source: "EBF-S-2026-01-25-FIN-002"
+
+    mechanism: "Identität wird durch soziale Bestätigung verstärkt"
+    interaction_type: "synergy"
+
+    applicable_domains: ["FIN", "ORG"]
+    last_updated: "2026-01-25"
+
+  # ---------------------------------------------------------------------------
+  # Social × Financial (NEGATIVE!)
+  # ---------------------------------------------------------------------------
+  - id: PAR-COMP-002
+    symbol: γ_social_financial
+    name: "Social × Financial Complementarity"
+    description: "CROWDING-OUT: Monetäre Anreize untergraben soziale Motivation"
+
+    value:
+      mean: -0.68
+      ci_68: [-0.78, -0.58]
+      source: "frey2001motivation"
+
+    mechanism: "Extrinsische Belohnung zerstört intrinsische Motivation"
+    interaction_type: "interference"
+
+    critical_warning: "NIEMALS Social + Financial kombinieren!"
+
+    applicable_domains: ["FIN", "HLT", "EDU"]
+    last_updated: "2026-01-25"
+
+  # ---------------------------------------------------------------------------
+  # Reputation × Standards
+  # ---------------------------------------------------------------------------
+  - id: PAR-COMP-003
+    symbol: γ_reputation_standards
+    name: "Reputation × Standards Complementarity"
+    description: "Synergie zwischen Reputation-Dashboard und transparenten Standards"
+
+    value:
+      literature: 0.25
+      observed: 0.32
+      ci_68: [0.22, 0.42]
+      source: "PRJ-005"
+      note: "Workplace Cooperation: Stärker als erwartet"
+
+    mechanism: "Klare Regeln ermöglichen Reputation-basierte Durchsetzung"
+    interaction_type: "synergy"
+
+    applicable_domains: ["ORG"]
+    last_updated: "2026-01-25"
+    updated_by_project: "PRJ-005"
+
+  # ---------------------------------------------------------------------------
+  # Social × Warm Glow
+  # ---------------------------------------------------------------------------
+  - id: PAR-COMP-004
+    symbol: γ_social_warmglow
+    name: "Social × Warm Glow Complementarity"
+    description: "Synergie zwischen sozialer Anerkennung und intrinsischem Wohlgefühl"
+
+    value:
+      mean: 0.28
+      ci_68: [0.18, 0.38]
+      source: "andreoni1990impure"
+
+    mechanism: "Soziale Anerkennung aktiviert und verstärkt Warm Glow Gefühle"
+    interaction_type: "synergy"
+
+    applicable_domains: ["FIN", "HLT", "ORG"]
+    last_updated: "2026-02-04"
+
+  # ---------------------------------------------------------------------------
+  # Identity × Warm Glow
+  # ---------------------------------------------------------------------------
+  - id: PAR-COMP-005
+    symbol: γ_identity_warmglow
+    name: "Identity × Warm Glow Complementarity"
+    description: "Synergie zwischen Identitäts-Konsistenz und intrinsischer Belohnung"
+
+    value:
+      mean: 0.22
+      ci_68: [0.12, 0.32]
+      source: "akerlof2000economics"
+
+    mechanism: "Kompetenz-Identität führt zu stärkerem Warm Glow bei Hilfsbereitschaft"
+    interaction_type: "synergy"
+
+    applicable_domains: ["FIN", "ORG", "EDU"]
+    last_updated: "2026-02-04"
+
+  # ---------------------------------------------------------------------------
+  # Social × Development (FEPSDE)
+  # ---------------------------------------------------------------------------
+  - id: PAR-COMP-006
+    symbol: γ_social_development
+    name: "Social × Development Complementarity"
+    description: "Synergie zwischen sozialen Beziehungen und persönlicher Entwicklung"
+
+    value:
+      mean: 0.25
+      ci_68: [0.15, 0.35]
+      source: "ryff1989happiness"
+
+    mechanism: "Positive soziale Beziehungen fördern persönliches Wachstum"
+    interaction_type: "synergy"
+
+    applicable_domains: ["HLT", "EDU", "ORG"]
+    last_updated: "2026-02-04"
+
+  # ---------------------------------------------------------------------------
+  # Financial × Physical (FEPSDE)
+  # ---------------------------------------------------------------------------
+  - id: PAR-COMP-007
+    symbol: γ_financial_physical
+    name: "Financial × Physical Complementarity"
+    description: "Moderate Synergie zwischen finanzieller Sicherheit und physischem Wohlbefinden"
+
+    value:
+      mean: 0.20
+      ci_68: [0.10, 0.30]
+      source: "kahneman2010high"
+
+    mechanism: "Finanzielle Ressourcen ermöglichen bessere Gesundheitsversorgung"
+    interaction_type: "synergy"
+
+    applicable_domains: ["HLT", "FIN"]
+    last_updated: "2026-02-04"
+
+  # ---------------------------------------------------------------------------
+  # Emotional × Development (FEPSDE)
+  # ---------------------------------------------------------------------------
+  - id: PAR-COMP-008
+    symbol: γ_emotional_development
+    name: "Emotional × Development Complementarity"
+    description: "Synergie zwischen emotionaler Stabilität und persönlichem Wachstum"
+
+    value:
+      mean: 0.30
+      ci_68: [0.20, 0.40]
+      source: "ryff2014know"
+
+    mechanism: "Emotionale Balance ermöglicht Fokus auf Entwicklungsziele"
+    interaction_type: "synergy"
+
+    applicable_domains: ["HLT", "EDU"]
+    last_updated: "2026-02-04"
+
+# =============================================================================
+# AGGREGATED LEARNINGS FROM PROJECTS
+# =============================================================================
+
+project_learnings:
+
+  dach_adjustments:
+    - parameter: "E_default"
+      literature: 0.35
+      observed_dach: 0.42
+      factor: 1.20
+      source_project: "PRJ-001"
+      confidence: "medium"
+      n_projects: 1
+
+    - parameter: "E_social_norm"
+      literature: 0.020
+      observed_dach: 0.018
+      factor: 0.90
+      source_project: "PRJ-003"
+      confidence: "medium"
+      n_projects: 1
+
+    - parameter: "E_gamification"
+      literature: 0.06
+      observed_dach: 0.03
+      factor: 0.50
+      source_project: "PRJ-002"
+      confidence: "medium"
+      note: "Crowding-Out bei Erwachsenen stärker"
+      n_projects: 1
+
+  design_principles:
+    - principle: "Max 3 sichtbare Interventionen gleichzeitig"
+      source: "PRJ-002"
+      evidence: "23% Reaktanz bei 5 Interventionen"
+
+    - principle: "Gamification nur für extrinsisch motivierte Segmente"
+      source: "PRJ-002"
+      evidence: "Crowding-Out bei health-conscious"
+
+    - principle: "NIEMALS monetäre Referral-Programme"
+      source: "EBF-S-2026-01-25-FIN-002"
+      evidence: "φ_crowding = 0.68"
+
+# =============================================================================
+# REAL ESTATE PARAMETERS (NEW - from EBF-S-2026-01-25-FIN-001)
+# =============================================================================
+
+real_estate_parameters:
+
+  # ---------------------------------------------------------------------------
+  # Capitalization Rate (κ_cap)
+  # ---------------------------------------------------------------------------
+  - id: PAR-RE-001
+    symbol: κ_cap
+    name: "Kapitalisierungssatz Schweiz"
+    description: "Kapitalisierungssatz für Ertragswertmethode bei Mietobjekten"
+
+    values:
+      literature:
+        mean: 0.040
+        ci_95: [0.035, 0.050]
+        source: "ubs_real_estate_focus_2025"
+        note: "UBS Swiss Real Estate Focus 2025"
+
+      regional:
+        premium_urban: {mean: 0.035, ci_68: [0.030, 0.040], note: "Zürich, Basel, Genf"}
+        standard_rural: {mean: 0.045, ci_68: [0.040, 0.050], note: "Ländliche Gebiete"}
+        seelage_bodensee: {mean: 0.040, ci_68: [0.0375, 0.0425], note: "Bodensee-Südufer"}
+
+    applicable_domains: ["FIN"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-FIN-001"
+
+    literature_sources:
+      - key: "ubs_real_estate_focus_2025"
+        finding: "κ ∈ [3.5%, 5.0%] depending on location"
+
+  # ---------------------------------------------------------------------------
+  # Seelage Premium (π_sea)
+  # ---------------------------------------------------------------------------
+  - id: PAR-RE-002
+    symbol: π_sea
+    name: "Seelage-Prämie Schweiz"
+    description: "Preisaufschlag für Seelage-Immobilien"
+
+    values:
+      literature:
+        mean: 0.30
+        ci_95: [0.20, 0.50]
+        source: "neho_thurgau_2025"
+        note: "neho.ch Marktdaten Thurgau"
+
+      by_row:
+        first_row: {mean: 0.50, ci_68: [0.40, 0.60], note: "Direkter Seezugang"}
+        second_row: {mean: 0.25, ci_68: [0.20, 0.30], note: "50-100m vom See"}
+        third_row: {mean: 0.10, ci_68: [0.05, 0.15], note: "100-200m vom See"}
+
+    applicable_domains: ["FIN"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-FIN-001"
+
+    literature_sources:
+      - key: "neho_thurgau_2025"
+        finding: "Seelage +20-50% über Standardpreis"
+      - key: "realadvisor_thurgau_2025"
+        finding: "Bodensee-Premium stabil bei 25-30%"
+
+  # ---------------------------------------------------------------------------
+  # Flexibility Premium (α_flex)
+  # ---------------------------------------------------------------------------
+  - id: PAR-RE-003
+    symbol: α_flex
+    name: "Flexibilitätsprämie EFH/MFH"
+    description: "Anteil der Differenz zwischen Marktwert und Ertragswert bei dual nutzbaren Objekten"
+
+    values:
+      llmmc_estimate:
+        mean: 0.35
+        ci_68: [0.25, 0.45]
+        source: "EBF-S-2026-01-25-FIN-001"
+        note: "LLMMC-Schätzung basierend auf Optionswert-Theorie"
+
+      formula: "V_hybrid = V_ertrag + α × (V_markt - V_ertrag)"
+
+    mechanism: "Flexibilität erweitert Käuferkreis (Investoren + Eigennutzer)"
+    applicable_domains: ["FIN"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-FIN-001"
+
+  # ---------------------------------------------------------------------------
+  # Demographic Risk Factor - Babyboomer (δ_demo)
+  # ---------------------------------------------------------------------------
+  - id: PAR-RE-004
+    symbol: δ_demo
+    name: "Babyboomer-Effekt Schweiz"
+    description: "Erwarteter Preiseffekt durch Erbschaftswelle 2030-2045"
+
+    values:
+      literature:
+        mean: -0.10
+        ci_95: [-0.15, -0.05]
+        source: "swissinfo_demografie_2024"
+        note: "swissinfo.ch Demografischer Wandel"
+
+      by_location:
+        urban_centers: {mean: -0.05, ci_68: [-0.08, -0.02], note: "Zürich, Basel, Genf"}
+        suburban: {mean: -0.10, ci_68: [-0.13, -0.07], note: "Agglomerationen"}
+        rural_small: {mean: -0.15, ci_68: [-0.20, -0.10], note: "Kleine Gemeinden <2000 Einw."}
+
+      timeline:
+        start_year: 2030
+        peak_year: 2037
+        end_year: 2045
+        properties_affected: 400000
+
+    applicable_domains: ["FIN"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-FIN-001"
+
+    literature_sources:
+      - key: "swissinfo_demografie_2024"
+        finding: "400k+ Immobilien in Erbmasse 2030-2045"
+      - key: "BCM2_04_KON_demographic"
+        finding: "Peak-Jahrgang 1964, Pensionierung 2029"
+
+  # ---------------------------------------------------------------------------
+  # Energy Risk Factor - Gas Heating (ε_gas)
+  # ---------------------------------------------------------------------------
+  - id: PAR-RE-005
+    symbol: ε_gas
+    name: "Gasheizungs-Abschlag"
+    description: "Wertabschlag für Immobilien mit fossiler Heizung"
+
+    values:
+      current:
+        mean: -0.05
+        ci_68: [-0.08, -0.02]
+        source: "houzy_2026"
+        note: "Houzy Prognose 2026"
+
+      projected_2030:
+        mean: -0.10
+        ci_68: [-0.15, -0.05]
+        note: "Erwarteter Abschlag nach MuKEn-Verschärfung"
+
+      mitigation:
+        waermepumpe_cost: {min: 50000, max: 70000, currency: "CHF"}
+        roi_years: 5
+        value_recovery: 0.08
+
+    applicable_domains: ["FIN", "ENV"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-FIN-001"
+
+    literature_sources:
+      - key: "houzy_2026"
+        finding: "Fossile Heizungen -5% bis -10% Wertabschlag"
+
+  # ---------------------------------------------------------------------------
+  # m² Price Thurgau (p_m2_tg)
+  # ---------------------------------------------------------------------------
+  - id: PAR-RE-006
+    symbol: p_m2_tg
+    name: "Quadratmeterpreis Thurgau"
+    description: "Durchschnittlicher Quadratmeterpreis für Wohnimmobilien im Kanton Thurgau"
+
+    values:
+      current:
+        mean: 7300
+        ci_68: [6500, 8100]
+        currency: "CHF"
+        source: "neho_thurgau_2025"
+        note: "neho.ch Durchschnitt Kanton Thurgau"
+
+      seelage_adjusted:
+        mean: 9250
+        ci_68: [8500, 10000]
+        currency: "CHF"
+        note: "Mit Seelage-Prämie 2. Reihe (+25%)"
+
+    applicable_domains: ["FIN"]
+    last_updated: "2026-01-25"
+    updated_by_session: "EBF-S-2026-01-25-FIN-001"
+
+    literature_sources:
+      - key: "neho_thurgau_2025"
+        finding: "CHF 7'300/m² Durchschnitt"
+      - key: "realadvisor_thurgau_2025"
+        finding: "CHF 7'000-8'000/m² Range"
+
+  # ---------------------------------------------------------------------------
+  # Fiscal Behavior Parameters (POL) - EBF-S-2026-01-29-POL-001
+  # ---------------------------------------------------------------------------
+  - id: PAR-POL-001
+    symbol: φ_FI
+    name: "Fiscal Illusion"
+    description: "Grad der Unterschätzung wahrer Staatskosten durch Wähler"
+
+    values:
+      literature:
+        mean: 0.65
+        ci_95: [0.50, 0.80]
+        source: "PAP-buchanan1967public"
+        note: "Buchanan (1967), Oates (1988)"
+      ch_adjusted:
+        mean: 0.62
+        ci_68: [0.55, 0.70]
+        source: "EBF-S-2026-01-29-POL-001"
+        note: "CH etwas niedriger wegen direkter Demokratie"
+
+    applicable_domains: ["POL", "ORG"]
+    last_updated: "2026-01-29"
+    updated_by_session: "EBF-S-2026-01-29-POL-001"
+
+  - id: PAR-POL-002
+    symbol: σ_lobby
+    name: "Lobby Sensitivity"
+    description: "Politiker-Sensitivität für Lobby-Interessen vs. diffuse Wähler"
+
+    values:
+      literature:
+        mean: 0.75
+        ci_95: [0.60, 0.90]
+        source: "PAP-olson1965logic"
+        note: "Olson (1965) Logic of Collective Action"
+      ch_adjusted:
+        mean: 0.72
+        ci_68: [0.65, 0.80]
+        source: "EBF-S-2026-01-29-POL-001"
+        note: "CH Milizsystem reduziert leicht"
+
+    applicable_domains: ["POL"]
+    last_updated: "2026-01-29"
+    updated_by_session: "EBF-S-2026-01-29-POL-001"
+
+  - id: PAR-POL-003
+    symbol: ρ_diffus
+    name: "Diffuse Interest Weight"
+    description: "Gewicht diffuser Steuerzahler-Interessen in politischen Entscheidungen"
+
+    values:
+      literature:
+        mean: 0.20
+        ci_95: [0.10, 0.35]
+        source: "PAP-olson1965logic"
+        note: "Kollektives Handlungsproblem"
+      ch_adjusted:
+        mean: 0.25
+        ci_68: [0.18, 0.32]
+        source: "EBF-S-2026-01-29-POL-001"
+        note: "CH höher wegen Referenden"
+
+    applicable_domains: ["POL"]
+    last_updated: "2026-01-29"
+    updated_by_session: "EBF-S-2026-01-29-POL-001"
+
+  - id: PAR-POL-004
+    symbol: θ_schuld
+    name: "Schuldenbremse Effectiveness"
+    description: "Effektivität der Schweizer Schuldenbremse (0=unwirksam, 1=perfekt)"
+
+    values:
+      ch_specific:
+        mean: 0.85
+        ci_68: [0.75, 0.92]
+        source: "EBF-S-2026-01-29-POL-001"
+        note: "Empirisch validiert seit 2003"
+
+    applicable_domains: ["POL"]
+    last_updated: "2026-01-29"
+    updated_by_session: "EBF-S-2026-01-29-POL-001"
+
+  - id: PAR-POL-005
+    symbol: κ_komp
+    name: "Budget Complexity Understanding"
+    description: "Anteil der Stimmbürger, die das Bundesbudget verstehen"
+
+    values:
+      ch_specific:
+        mean: 0.25
+        ci_68: [0.15, 0.35]
+        source: "EBF-S-2026-01-29-POL-001"
+        note: "< 1% vollständig, ~25% grundlegend"
+
+    applicable_domains: ["POL"]
+    last_updated: "2026-01-29"
+    updated_by_session: "EBF-S-2026-01-29-POL-001"
+
+# =============================================================================
+# ADVICE AND INFORMATION PARAMETERS
+# =============================================================================
+
+advice_parameters:
+
+  # ---------------------------------------------------------------------------
+  # Belief Update Rate (α_update)
+  # ---------------------------------------------------------------------------
+  - id: PAR-ADV-001
+    symbol: α_update
+    name: "Belief Update Rate"
+    description: "Rate at which individuals update beliefs about advice quality based on observed performance"
+
+    values:
+      literature:
+        mean: 0.50
+        ci_95: [0.40, 0.60]
+        source: "PAP-bregolin2026advice"
+        note: "50% of participants are non-updaters"
+
+      by_type:
+        updaters: {value: 1.0, share: 0.50}
+        non_updaters: {value: 0.0, share: 0.50}
+        note: "Bimodal distribution - either fully Bayesian or no updating"
+
+    applicable_domains: ["INFO", "ADVICE", "FINANCE", "HEALTH"]
+    last_updated: "2026-01-31"
+
+    literature_sources:
+      - key: "PAP-bregolin2026advice"
+        finding: "~50% do not update beliefs about advice quality"
+      - key: "PAP-grether1980bayes"
+        finding: "Systematic deviations from Bayesian updating"
+
+  # ---------------------------------------------------------------------------
+  # Hot-Hand Sensitivity (γ_hothand)
+  # ---------------------------------------------------------------------------
+  - id: PAR-ADV-002
+    symbol: γ_hothand
+    name: "Hot-Hand Sensitivity"
+    description: "Sensitivity of advice demand to recent performance streaks (hot-hand fallacy strength)"
+
+    values:
+      literature:
+        positive: true
+        source: "PAP-bregolin2026advice"
+        note: "Significant positive effect of recent correct predictions on demand"
+
+      behavioral_bias:
+        direction: "positive"
+        effect: "Streaks increase demand even when uninformative"
+        note: "Consistent with Gilovich et al. (1985) hot-hand findings"
+
+    applicable_domains: ["INFO", "ADVICE", "FINANCE", "SPORTS"]
+    last_updated: "2026-01-31"
+
+    literature_sources:
+      - key: "PAP-bregolin2026advice"
+        finding: "Hot-hand fallacy in advice purchasing"
+      - key: "gilovich1985hot"
+        finding: "Hot hand in basketball - misperception of random sequences"
+      - key: "rabin2002inference"
+        finding: "Law of small numbers - overinference from short samples"
+
+  # ---------------------------------------------------------------------------
+  # Advice Demand Independence (δ_alignment)
+  # ---------------------------------------------------------------------------
+  - id: PAR-ADV-003
+    symbol: δ_alignment
+    name: "Prior-Advice Alignment Effect"
+    description: "Effect of advice alignment with prior beliefs on demand (0 = no effect, predicted by rational models)"
+
+    values:
+      literature:
+        mean: 0.0
+        ci_95: [-0.10, 0.10]
+        source: "PAP-bregolin2026advice"
+        note: "No significant difference between confirmatory and contrarian advice demand"
+
+      theoretical_prediction:
+        rational_model: "positive (prefer confirmatory)"
+        actual: "null (no preference)"
+        note: "Challenges standard models of information acquisition"
+
+    applicable_domains: ["INFO", "ADVICE", "DECISION"]
+    last_updated: "2026-01-31"
+
+    literature_sources:
+      - key: "PAP-bregolin2026advice"
+        finding: "Demand does NOT depend on confirmatory vs contrarian"
+
+# =============================================================================
+# LABOR MARKET PARAMETERS
+# =============================================================================
+
+labor_market_parameters:
+
+  # ---------------------------------------------------------------------------
+  # Inverse Labor Demand Elasticity (φ)
+  # ---------------------------------------------------------------------------
+  - id: PAR-LM-001
+    symbol: φ
+    name: "Inverse Labor Demand Elasticity"
+    description: "Inverse Elastizität der Arbeitsnachfrage - misst wie stark Löhne auf Arbeitsangebotsschocks reagieren"
+
+    values:
+      literature:
+        mean: -1.95
+        ci_95: [-2.5, -1.4]
+        source: "PAP-dustmann2025immigration"
+        note: "Dustmann et al. (2025) - Germany estimates"
+
+      cross_country:
+        germany: {mean: -1.95, ci_68: [-2.3, -1.6]}
+        us: {mean: -1.8, ci_68: [-2.2, -1.4]}
+        note: "Similar magnitudes across countries"
+
+    applicable_domains: ["LABOR", "MIGRATION", "MACRO"]
+    last_updated: "2026-01-31"
+
+    literature_sources:
+      - key: "PAP-dustmann2025immigration"
+        finding: "φ = -1.95 (inverse labor demand elasticity)"
+      - key: "PAP-dustmann2017labor"
+        finding: "Consistent with QJE 2017 estimates"
+
+  # ---------------------------------------------------------------------------
+  # Place-Based Labor Supply Elasticity (η̄_P)
+  # ---------------------------------------------------------------------------
+  - id: PAR-LM-002
+    symbol: η̄_P
+    name: "Place-Based Labor Supply Elasticity"
+    description: "Elastizität des Arbeitsangebots auf regionaler Ebene - wie stark reagieren Arbeitnehmer auf lokale Lohnänderungen durch Umzug"
+
+    values:
+      literature:
+        mean: 4.64
+        ci_95: [3.5, 5.8]
+        source: "PAP-dustmann2025immigration"
+        note: "Dustmann et al. (2025) - Regionale Anpassung"
+
+      interpretation:
+        note: "Höhere Werte = stärkere Relokation als Reaktion auf Lohnschocks"
+
+    applicable_domains: ["LABOR", "MIGRATION", "SPATIAL"]
+    last_updated: "2026-01-31"
+
+    literature_sources:
+      - key: "PAP-dustmann2025immigration"
+        finding: "η̄_P = 4.64 (place-based supply elasticity)"
+
+  # ---------------------------------------------------------------------------
+  # Worker-Level Labor Supply Elasticity (η̄_E)
+  # ---------------------------------------------------------------------------
+  - id: PAR-LM-003
+    symbol: η̄_E
+    name: "Worker-Level Labor Supply Elasticity"
+    description: "Elastizität des Arbeitsangebots auf Arbeitnehmerebene - wie stark reagieren individuelle Arbeitnehmer auf Lohnänderungen"
+
+    values:
+      literature:
+        mean: 3.68
+        ci_95: [2.8, 4.6]
+        source: "PAP-dustmann2025immigration"
+        note: "Dustmann et al. (2025) - Worker-level estimates"
+
+      comparison:
+        note: "η̄_E < η̄_P weil place-based auch Relokation erfasst"
+
+    applicable_domains: ["LABOR", "MIGRATION"]
+    last_updated: "2026-01-31"
+
+    literature_sources:
+      - key: "PAP-dustmann2025immigration"
+        finding: "η̄_E = 3.68 (worker-level supply elasticity)"
+
+  # ---------------------------------------------------------------------------
+  # Displacement Effect
+  # ---------------------------------------------------------------------------
+  - id: PAR-LM-004
+    symbol: δ_disp
+    name: "Native Displacement Effect"
+    description: "Anteil der Einheimischen, die eine Region aufgrund von Immigration verlassen"
+
+    values:
+      literature:
+        mean: 0.139
+        ci_95: [0.08, 0.20]
+        source: "PAP-dustmann2025immigration"
+        note: "Dustmann et al. (2025) - Germany"
+
+      interpretation:
+        note: "Pro 100 Immigranten verlassen ~14 Einheimische die Region"
+
+    applicable_domains: ["LABOR", "MIGRATION", "SPATIAL"]
+    last_updated: "2026-01-31"
+
+    literature_sources:
+      - key: "PAP-dustmann2025immigration"
+        finding: "Displacement effect = 0.139"
+      - key: "PAP-dustmann2017labor"
+        finding: "~3 natives leave per 10 immigrants (QJE 2017)"
+
+  # ---------------------------------------------------------------------------
+  # Regional Employment Effect
+  # ---------------------------------------------------------------------------
+  - id: PAR-LM-005
+    symbol: ε_reg
+    name: "Regional Employment Effect of Immigration"
+    description: "Gesamteffekt von Immigration auf regionale Beschäftigung Einheimischer"
+
+    values:
+      literature:
+        mean: -0.873
+        ci_95: [-1.1, -0.6]
+        source: "PAP-dustmann2025immigration"
+        note: "Dustmann et al. (2025) - Negative = Einheimische verlassen Region"
+
+      decomposition:
+        displacement: 0.139
+        crowding_out: 0.546
+        pure_wage_effect: 0.188
+        note: "Regional effect = Displacement + Crowding-out + Pure wage effect"
+
+    applicable_domains: ["LABOR", "MIGRATION", "SPATIAL", "POL"]
+    last_updated: "2026-01-31"
+
+    literature_sources:
+      - key: "PAP-dustmann2025immigration"
+        finding: "Regional employment effect = -0.873"
+
+# =============================================================================
+# SUPERKEY INDEX
+# =============================================================================
+
+superkey_index:
+  by_session:
+    "EBF-S-2026-01-25-FIN-001":
+      - PAR-RE-001   # κ_cap (Kapitalisierungssatz)
+      - PAR-RE-002   # π_sea (Seelage-Prämie)
+      - PAR-RE-003   # α_flex (Flexibilitätsprämie)
+      - PAR-RE-004   # δ_demo (Babyboomer-Effekt)
+      - PAR-RE-005   # ε_gas (Gasheizungs-Abschlag)
+      - PAR-RE-006   # p_m2_tg (Quadratmeterpreis Thurgau)
+
+    "EBF-S-2026-01-25-FIN-002":
+      - PAR-BEH-002  # φ_crowding
+      - PAR-CTX-001  # τ_taboo
+      - PAR-INT-003  # E_identity
+      - PAR-INT-004  # E_warmglow
+      - PAR-COMP-001 # γ_identity_social
+    "EBF-S-2026-01-25-HLT-001":
+      - PAR-HLT-001  # w_nba (NBA Module Weights)
+      - PAR-HLT-002  # θ_pg (Pflegegrad Thresholds)
+      - PAR-HLT-003  # L_pg (Care Benefits)
+      - PAR-HLT-004  # c_heim (Nursing Home Costs)
+      - PAR-HLT-005  # c_24h (24h Care Costs)
+      - PAR-HLT-006  # t_wait (Waiting Times)
+      - PAR-HLT-007  # p_success (Höherstufung Success Rates)
+      - PAR-HLT-008  # k_kombi (Kombinationsleistung)
+
+  by_project:
+    "PRJ-001":
+      - PAR-BEH-003  # β
+      - PAR-INT-001  # E_default
+    "PRJ-002":
+      - PAR-INT-002  # E_social_norm (adjusted)
+    "PRJ-003":
+      - PAR-INT-002  # E_social_norm
+    "PRJ-005":
+      - PAR-COMP-003 # γ_reputation_standards
+    "PRJ-007":
+      - PAR-HLT-001  # w_nba
+      - PAR-HLT-002  # θ_pg
+      - PAR-HLT-003  # L_pg
+      - PAR-HLT-004  # c_heim
+      - PAR-HLT-005  # c_24h
+      - PAR-HLT-006  # t_wait
+      - PAR-HLT-007  # p_success
+      - PAR-HLT-008  # k_kombi
+
+  by_model:
+    "EBF-MOD-002":
+      - PAR-RE-001   # κ_cap
+      - PAR-RE-002   # π_sea
+      - PAR-RE-003   # α_flex
+      - PAR-RE-004   # δ_demo
+      - PAR-RE-005   # ε_gas
+      - PAR-RE-006   # p_m2_tg
+
+    "EBF-MOD-REF-001":
+      - PAR-BEH-002
+      - PAR-CTX-001
+      - PAR-CTX-002
+      - PAR-CTX-003
+      - PAR-INT-003
+      - PAR-INT-004
+      - PAR-COMP-001
+      - PAR-COMP-002
+    "EBF-MOD-NBA-001":
+      - PAR-HLT-001
+      - PAR-HLT-002
+      - PAR-HLT-003
+      - PAR-HLT-004
+      - PAR-HLT-005
+      - PAR-HLT-006
+      - PAR-HLT-007
+      - PAR-HLT-008
+
+# =============================================================================
+# CONSUMER BEHAVIOR & FOOD CHOICE PARAMETERS
+# Source: Giner, Nauges & Hassett (2025) - OECD EPIC Survey
+# =============================================================================
+
+consumer_parameters:
+  - id: PAR-CON-001
+    symbol: "π_class"
+    name: "Consumer Segment Distribution"
+    description: "Share of consumers in each latent class (food choices)"
+
+    values:
+      literature:
+        class_1: 0.41
+        class_2: 0.21
+        class_3: 0.26
+        class_4: 0.12
+        ci_95: "N=8261, 9 OECD countries"
+        source: "PAP-giner2025sustainable"
+      cross_country:
+        switzerland_class4: 0.32
+        usa_class4: 0.03
+        france_class3: 0.47
+        source: "PAP-giner2025sustainable"
+
+    applicable_domains: ["CONSUMER", "FOOD", "ENVIRONMENT"]
+    last_updated: "2026-01-31"
+    updated_by_session: "EBF-S-2026-01-31-CON-001"
+
+    literature_sources:
+      - key: "PAP-giner2025sustainable"
+        finding: "Latent class analysis reveals 4 consumer profiles: Class 1 (41%) high meat/occasional sustainable, Class 2 (21%) low meat/budget-driven, Class 3 (26%) meat paradox, Class 4 (12%) consistent environmentalists"
+
+  - id: PAR-CON-002
+    symbol: "CDI"
+    name: "Cognitive Dissonance Index"
+    description: "Share of consumers with attitude-behavior gap (high environmental concern + high meat consumption)"
+
+    values:
+      literature:
+        mean: 0.26
+        class_3_concern: 0.84
+        class_3_meat: 0.90
+        source: "PAP-giner2025sustainable"
+
+    applicable_domains: ["CONSUMER", "PSYCHOLOGY", "ENVIRONMENT"]
+    last_updated: "2026-01-31"
+    updated_by_session: "EBF-S-2026-01-31-CON-001"
+
+    literature_sources:
+      - key: "PAP-giner2025sustainable"
+        finding: "Class 3 (26% of sample) reports 84% environmental concern but 90% frequent meat consumption - demonstrating cognitive dissonance"
+
+  - id: PAR-CON-003
+    symbol: "α_tax"
+    name: "Meat Tax Support"
+    description: "Share of consumers supporting meat/seafood tax by segment"
+
+    values:
+      literature:
+        class_1: 0.16
+        class_2: 0.25
+        class_3: 0.26
+        class_4: 0.36
+        mean_all: 0.22
+        source: "PAP-giner2025sustainable"
+
+    applicable_domains: ["POLICY", "FOOD", "TAX"]
+    last_updated: "2026-01-31"
+    updated_by_session: "EBF-S-2026-01-31-CON-001"
+
+    literature_sources:
+      - key: "PAP-giner2025sustainable"
+        finding: "Even most environmentally consistent segment (Class 4) shows only 36% support for meat tax. Strong heterogeneity by segment."
+
+  - id: PAR-CON-004
+    symbol: "ρ_concern"
+    name: "Environmental Concern to Behavior Correlation"
+    description: "Weak correlation between environmental concern and meat reduction"
+
+    values:
+      literature:
+        concerned_frequent_meat: 0.22
+        unconcerned_frequent_meat: 0.28
+        gap: 0.06
+        source: "PAP-giner2025sustainable"
+
+    applicable_domains: ["CONSUMER", "ENVIRONMENT", "AWARE"]
+    last_updated: "2026-01-31"
+    updated_by_session: "EBF-S-2026-01-31-CON-001"
+
+    literature_sources:
+      - key: "PAP-giner2025sustainable"
+        finding: "Environmental concern reduces frequent meat consumption by only 6 percentage points (22% vs 28%). Concern is necessary but not sufficient for behavior change."
+
+# =============================================================================
+# POLITICAL PSYCHOLOGY PARAMETERS (Austria/DACH)
+# =============================================================================
+
+  - id: PAR-PP-001
+    symbol: "π_extreme"
+    name: "Extreme Right Prevalence (Austria)"
+    description: "Anteil der Bevölkerung mit rechtsextremen Einstellungen (hohe RWA + SDO)"
+
+    values:
+      austria_2024:
+        mean: 0.10
+        ci_68: [0.08, 0.12]
+        source: "PAP-doew2024rechtsextremismus"
+        n: 2198
+
+    applicable_domains: ["POL", "AUSTRIA"]
+    last_updated: "2026-02-02"
+    updated_by_session: "manual"
+
+    literature_sources:
+      - key: "PAP-doew2024rechtsextremismus"
+        finding: "10% der österreichischen Bevölkerung als rechtsextrem klassifiziert. 58% davon wählen FPÖ."
+
+  - id: PAR-PP-002
+    symbol: "π_replacement"
+    name: "Great Replacement Belief Prevalence (Austria)"
+    description: "Anteil der Bevölkerung, der an 'Großen Austausch' glaubt"
+
+    values:
+      austria_2024:
+        mean: 0.47
+        ci_68: [0.44, 0.50]
+        source: "PAP-doew2024rechtsextremismus"
+        n: 2198
+      europe_range:
+        min: 0.20
+        max: 0.47
+        source: "PAP-herold2025replacement"
+        note: "Austria highest in Europe"
+
+    applicable_domains: ["POL", "AUSTRIA", "EUROPE"]
+    last_updated: "2026-02-02"
+    updated_by_session: "manual"
+
+    literature_sources:
+      - key: "PAP-doew2024rechtsextremismus"
+        finding: "47% der Österreicher glauben, dass Einheimische durch Migranten ersetzt werden."
+      - key: "PAP-herold2025replacement"
+        finding: "Austria has highest prevalence of Great Replacement belief in Europe (47%)."
+
+  - id: PAR-PP-003
+    symbol: "π_remigration"
+    name: "Remigration Support (Austria)"
+    description: "Anteil der Bevölkerung, der umfassende Remigration unterstützt"
+
+    values:
+      austria_2024:
+        mean: 0.50
+        ci_68: [0.47, 0.53]
+        source: "PAP-doew2024rechtsextremismus"
+        n: 2198
+
+    applicable_domains: ["POL", "AUSTRIA"]
+    last_updated: "2026-02-02"
+    updated_by_session: "manual"
+
+    literature_sources:
+      - key: "PAP-doew2024rechtsextremismus"
+        finding: "50% unterstützen umfassende Remigration."
+
+  - id: PAR-PP-004
+    symbol: "ρ_fpoe_extreme"
+    name: "FPÖ Share Among Extreme Right"
+    description: "Anteil der Rechtsextremen, die FPÖ wählen"
+
+    values:
+      austria_2024:
+        mean: 0.58
+        ci_68: [0.54, 0.62]
+        source: "PAP-doew2024rechtsextremismus"
+
+    applicable_domains: ["POL", "AUSTRIA"]
+    last_updated: "2026-02-02"
+    updated_by_session: "manual"
+
+    implications:
+      - "~6% der Gesamtbevölkerung = Hard-Core FPÖ (0.10 × 0.58)"
+      - "Diese 6% sind durch Kommunikation kaum erreichbar"
+
+    literature_sources:
+      - key: "PAP-doew2024rechtsextremismus"
+        finding: "58% der als rechtsextrem Klassifizierten wählen FPÖ."
+
+  - id: PAR-PP-005
+    symbol: "π_antisemitism"
+    name: "Antisemitism Prevalence (Austria)"
+    description: "Anteil der Bevölkerung mit antisemitischen Einstellungen"
+
+    values:
+      austria_2022:
+        mean: 0.31
+        ci_68: [0.28, 0.34]
+        source: "PAP-ifes2022antisemitismus"
+
+    applicable_domains: ["POL", "AUSTRIA"]
+    last_updated: "2026-02-02"
+    updated_by_session: "manual"
+
+    literature_sources:
+      - key: "PAP-ifes2022antisemitismus"
+        finding: "31% der Österreicher stimmen antisemitischen Aussagen zu. Starke Korrelation mit Verschwörungsmentalität."
+
+  # ---------------------------------------------------------------------------
+  # Moral Reasoning Parameters (MR) - EBF-S-2026-02-05-ETH-001
+  # Source: Bénabou, Falk & Henkel (2024) "Ends versus Means"
+  # ---------------------------------------------------------------------------
+  - id: PAR-MR-001
+    symbol: "θ_lying"
+    name: "Deontological Choice Rate (Lying)"
+    description: "Proportion choosing truth-telling over beneficial lies in Lying Game EVM"
+
+    values:
+      laboratory:
+        mean: 0.44
+        ci_95: [0.39, 0.49]
+        source: "benabou_2024_ends_means"
+
+    applicable_domains: ["ETH", "ORG", "SOCIAL"]
+    last_updated: "2026-02-05"
+    updated_by_session: "EBF-S-2026-02-05-ETH-001"
+
+    literature_sources:
+      - key: "benabou_2024_ends_means"
+        finding: "44% chose truth-telling (deontological) over welfare-maximizing lies in EVM Lying Game."
+
+  - id: PAR-MR-002
+    symbol: "θ_bribe"
+    name: "Deontological Choice Rate (Bribe)"
+    description: "Proportion refusing bribes that benefit charity in Bribe Game EVM"
+
+    values:
+      laboratory:
+        mean: 0.38
+        ci_95: [0.33, 0.43]
+        source: "benabou_2024_ends_means"
+
+    applicable_domains: ["ETH", "ORG", "POL"]
+    last_updated: "2026-02-05"
+    updated_by_session: "EBF-S-2026-02-05-ETH-001"
+
+    literature_sources:
+      - key: "benabou_2024_ends_means"
+        finding: "38% refused bribes (deontological) even when accepting would benefit charity."
+
+  - id: PAR-MR-003
+    symbol: "r_EVM"
+    name: "Cross-EVM Context Correlation"
+    description: "Average correlation of deontological choices across different EVM contexts"
+
+    values:
+      laboratory:
+        mean: 0.035
+        ci_95: [-0.02, 0.09]
+        source: "benabou_2024_ends_means"
+        note: "Effectively zero - no stable moral types"
+
+    applicable_domains: ["ETH", "PSYCHOLOGY"]
+    last_updated: "2026-02-05"
+    updated_by_session: "EBF-S-2026-02-05-ETH-001"
+
+    literature_sources:
+      - key: "benabou_2024_ends_means"
+        finding: "Cross-context EVM correlations near zero (r≈0.035). KEY NEGATIVE RESULT: No stable Kantian vs Utilitarian types."
+
+  - id: PAR-MR-004
+    symbol: "r_EVM_pro"
+    name: "EVM-Prosociality Correlation"
+    description: "Correlation between moral reasoning (EVM) and prosocial behavior"
+
+    values:
+      laboratory:
+        mean: 0.025
+        ci_95: [-0.03, 0.08]
+        source: "benabou_2024_ends_means"
+        note: "Effectively zero - orthogonal constructs"
+
+    applicable_domains: ["ETH", "PSYCHOLOGY", "SOCIAL"]
+    last_updated: "2026-02-05"
+    updated_by_session: "EBF-S-2026-02-05-ETH-001"
+
+    literature_sources:
+      - key: "benabou_2024_ends_means"
+        finding: "EVM choices uncorrelated with dictator game, public goods, trust game. KEY INSIGHT: Ends-vs-means reasoning is ORTHOGONAL to self-vs-other tradeoffs."
+
+# =============================================================================
+# METHODOLOGY PARAMETERS
+# =============================================================================
+
+methodology_parameters:
+
+  - id: PAR-EC-001
+    symbol: "P1-P4"
+    name: "Policy Questions Framework"
+    description: "Four fundamental policy questions for causal inference"
+
+    components:
+      P1: "Treatment on Treated (TT) - E[Y₁-Y₀|D=1]"
+      P2: "Treatment on Untreated (TUT) - E[Y₁-Y₀|D=0]"
+      P3: "Policy Forecast - External validity to new context"
+      P4: "New Policy Effects - Never-implemented policies"
+
+    applicable_to:
+      - "All intervention evaluations"
+      - "Causal inference methodology"
+      - "External validity assessment"
+
+    key_insight: |
+      Only structural econometric models can answer all four policy questions.
+      Neyman-Rubin limited to P1-P2. Pearl DAG nonparametric and cannot handle simultaneity.
+      Fixing ≠ Conditioning: E[Y|fix(D=1)] ≠ E[Y|D=1]
+
+    last_updated: "2026-02-05"
+    source_paper: "PAP-heckman2024causality"
+    theory_id: "MS-EC-001"
+
+    literature_sources:
+      - key: "PAP-heckman2024causality"
+        finding: "Thought experiments are the foundation of econometric causality"
+      - key: "PAP-heckman2022econometrics"
+        finding: "Comprehensive framework comparison of three approaches"
+
+# =============================================================================
+# SKILL FORMATION PARAMETERS
+# =============================================================================
+
+skill_formation_parameters:
+
+  - id: PAR-SF-001
+    symbol: "DC_lang"
+    name: "Dynamic Complementarity (Language)"
+    description: "Whether early investment raises learning rate at later stages for language skills"
+
+    values:
+      china_reach:
+        effect: "positive"
+        significance: "p < 0.05 at levels 8, 9, 11"
+        measure: "Time to first mastery (trials until first success)"
+        source: "PAP-heckman2026skills"
+        note: "Full curriculum exposure children require fewer trials"
+      level_specific:
+        level_8: {full_exposure: 2.079, late_entry: 2.367, p_value: 0.024}
+        level_9: {full_exposure: 1.496, late_entry: 1.686, p_value: 0.017}
+        level_11: {full_exposure: 1.348, late_entry: 1.698, p_value: 0.000}
+
+    applicable_domains: ["EDUCATION", "DEVELOPMENT", "SKILLS"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-heckman2026skills"
+    theory_id: "MS-SF-003"
+
+  - id: PAR-SF-002
+    symbol: "DC_cog"
+    name: "Dynamic Complementarity (Cognitive)"
+    description: "Whether early investment raises learning rate at later stages for cognitive skills"
+
+    values:
+      china_reach:
+        effect: "positive"
+        significance: "Comparable to language skills"
+        measure: "Time to first mastery"
+        source: "PAP-heckman2026skills"
+
+    applicable_domains: ["EDUCATION", "DEVELOPMENT", "SKILLS"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-heckman2026skills"
+    theory_id: "MS-SF-003"
+
+  - id: PAR-SF-003
+    symbol: "DC_motor"
+    name: "Dynamic Complementarity (Fine Motor)"
+    description: "Whether early investment raises learning rate for fine motor skills"
+
+    values:
+      china_reach:
+        effect: "null"
+        significance: "Not significant"
+        source: "PAP-heckman2026skills"
+        note: "NO evidence of dynamic complementarity for fine motor skills"
+
+    applicable_domains: ["EDUCATION", "DEVELOPMENT", "SKILLS"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-heckman2026skills"
+    theory_id: "MS-SF-003"
+    key_insight: "Domain-specific heterogeneity: DC exists for language/cognitive but NOT for fine motor"
+
+  - id: PAR-SF-004
+    symbol: "CSA"
+    name: "Common Scale Assumption Validity"
+    description: "Whether skills at different developmental levels can be measured on common scale"
+
+    values:
+      language: {valid: false, result: "REJECTED"}
+      cognitive: {valid: false, result: "REJECTED"}
+      fine_motor: {valid: true, result: "NOT REJECTED"}
+      source: "PAP-heckman2026skills"
+      test: "Stochastic learning model (Heckman & Zhou 2026)"
+
+    applicable_domains: ["MEASUREMENT", "PSYCHOMETRICS", "EDUCATION"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-heckman2026skills"
+    theory_id: "MS-SF-002"
+    key_insight: "Skills EMERGE at each level - value-added on common scales invalid for language/cognitive"
+
+  - id: PAR-SF-005
+    symbol: "γ_catch"
+    name: "Catch-Up Effect by Ability"
+    description: "Ability-differentiated catch-up through dynamic complementarity"
+
+    values:
+      pattern: "γ_low > γ_normal > γ_high (disadvantaged benefit most)"
+      implication: "Gap between ability groups NARROWS at later stages"
+      source: "PAP-heckman2026skills"
+
+    applicable_domains: ["EDUCATION", "INEQUALITY", "POLICY"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-heckman2026skills"
+    theory_id: "MS-SF-003"
+
+# =============================================================================
+# VIRTUE ETHICS & CHARACTER PARAMETERS
+# =============================================================================
+# From Heckman, Galaty & Tian (2023) "The Economic Approach to Personality,
+# Character and Virtue" (NBER WP 31258)
+# Theory: MS-VE-001, MS-VE-002, MS-VE-003 (CAT-23)
+#
+# ⚠️ WICHTIG - FOUNDATIONAL PAPER CAVEAT:
+# Dieses Paper ist ein FOUNDATIONAL PAPER (Level 5), vergleichbar mit:
+#   - Kahneman & Tversky (1979) für Prospect Theory
+#   - Becker (1965) für Household Production
+#   - Cunha & Heckman (2007) für Skill Formation Technology
+#
+# Das Paper etabliert das THEORETISCHE GERÜST für Parameterschätzung.
+# Die hier genannten numerischen Werte (δ_S ≈ 0.15, δ_K ≈ 0.035) sind
+# INFORMED PRIORS aus verwandter Literatur (Ego Depletion, Habit Formation),
+# NICHT direkte Schätzungen aus diesem Paper.
+#
+# Für EBF: Diese Priors werden via LLMMC verwendet und durch empirische
+# Daten aus Interventionsstudien (Perry, Jamaica, ABC, China REACH)
+# bayesianisch aktualisiert.
+# =============================================================================
+
+virtue_ethics_parameters:
+
+  - id: PAR-VE-001
+    symbol: "θ"
+    name: "Trait Parameter"
+    description: "Stable behavioral dispositions that produce measured behavior"
+
+    values:
+      definition: "θ in Measured Behavior equation B = f(θ, e, h)"
+      key_insight: "Traits are ACTIONS (produced behaviors), not fixed endowments"
+      evolution: "θ_{t+1} = g(θ_t, e_t, h_t) - traits evolve through effort and situations"
+      source: "PAP-heckman2023virtue"
+
+    applicable_domains: ["PSYCHOLOGY", "EDUCATION", "INTERVENTION", "POLICY"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-heckman2023virtue"
+    theory_id: "MS-VE-001"
+    key_insight: "Personality is MALLEABLE - traits can be shaped by investment and own effort"
+
+  - id: PAR-VE-002
+    symbol: "ψ"
+    name: "Preference Parameter"
+    description: "What the person values (very stable valuation weights)"
+
+    values:
+      definition: "ψ in Utility function U(a, ψ, θ, h)"
+      stability: "Very stable - more stable than traits"
+      distinction: "Preferences (what you value) ≠ Traits (how you typically behave)"
+      source: "PAP-heckman2023virtue"
+
+    applicable_domains: ["ECONOMICS", "PSYCHOLOGY", "POLICY"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-heckman2023virtue"
+    theory_id: "MS-VE-001"
+    key_insight: "Distinguish preferences from traits operationally through stake/situation variation"
+
+  - id: PAR-VE-003
+    symbol: "e"
+    name: "Effort Parameter"
+    description: "Exertion to meet situational demands"
+
+    values:
+      definition: "e in Measured Behavior equation B = f(θ, e, h)"
+      optimization: "e* = argmax[V(B) - c(e)] where V(B)=value, c(e)=effort cost"
+      stakes_effect: "High stakes → High effort → Behavior may not reflect true traits"
+      source: "PAP-heckman2023virtue"
+
+    applicable_domains: ["PSYCHOLOGY", "EDUCATION", "LABOR"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-heckman2023virtue"
+    theory_id: "MS-VE-001"
+    key_insight: "Effort mediates trait-behavior relationship; high stakes distort trait measurement"
+
+  - id: PAR-VE-004
+    symbol: "S_t"
+    name: "Self-Control Stock"
+    description: "Depletable resource for resisting temptation"
+
+    values:
+      dynamics: "S_{t+1} = (1-δ_S)S_t + ι(rest_t) + investment_t"
+      depreciation_rate:
+        δ_S: {mean: 0.15, range: [0.10, 0.20], unit: "per period"}
+        note: "⚠️ INFORMED PRIOR from Ego Depletion literature (Baumeister et al.), NOT direct estimate from this paper"
+        prior_sources: ["baumeister1998ego", "baumeister2007strength", "hagger2010ego"]
+      constraint: "a* = argmax U(a) s.t. S_t ≥ c(a, a_temptation)"
+      recovery: "ι() = restoration function from rest"
+      source: "PAP-heckman2023virtue"
+      estimation_status: "FRAMEWORK ONLY - paper provides structure, not point estimates"
+
+    applicable_domains: ["PSYCHOLOGY", "HEALTH", "ADDICTION", "EDUCATION"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-heckman2023virtue"
+    theory_id: "MS-VE-002"
+    key_insight: "Self-control is like a muscle - fatigues with use, recovers with rest, grows with training"
+
+  - id: PAR-VE-005
+    symbol: "K_t"
+    name: "Habituation Stock"
+    description: "Accumulated practice that makes virtuous action easier"
+
+    values:
+      dynamics: "K_{t+1} = (1-δ_K)K_t + h(a_t)"
+      depreciation_rate:
+        δ_K: {mean: 0.035, range: [0.02, 0.05], unit: "per period"}
+        note: "⚠️ INFORMED PRIOR from Habit Formation literature, NOT direct estimate from this paper"
+        prior_sources: ["duckworth2007grit", "neal2006habits", "wood2016psychology"]
+      effect_on_cost: "Cost(virtuous action) = c(a)/(1 + K_t)"
+      implication: "Higher K_t → lower cost → more likely to act virtuously"
+      source: "PAP-heckman2023virtue"
+      estimation_status: "FRAMEWORK ONLY - paper provides structure, not point estimates"
+
+    applicable_domains: ["PSYCHOLOGY", "EDUCATION", "HEALTH", "CHARACTER"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-heckman2023virtue"
+    theory_id: "MS-VE-003"
+    key_insight: "Character formation = converting effortful virtue into habitual virtue (Aristotle)"
+
+  - id: PAR-VE-006
+    symbol: "σ*"
+    name: "Ideal Point (Golden Mean)"
+    description: "Optimal trait level between excess and deficiency"
+
+    values:
+      definition: "σ* = argmax U(σ) where U(θ) = -|θ - σ*|"
+      aristotelian_origin: "Virtue as mean between extremes (Nicomachean Ethics)"
+      examples:
+        courage: {deficiency: "cowardice", mean: "courage", excess: "recklessness"}
+        generosity: {deficiency: "stinginess", mean: "generosity", excess: "prodigality"}
+        temperance: {deficiency: "insensibility", mean: "temperance", excess: "self-indulgence"}
+      source: "PAP-heckman2023virtue"
+
+    applicable_domains: ["ETHICS", "PSYCHOLOGY", "EDUCATION", "PHILOSOPHY"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-heckman2023virtue"
+    theory_id: "MS-VE-001"
+    key_insight: "Virtue is moderation - the optimal trait level is interior, not extreme"
+
+  # ---------------------------------------------------------------------------
+  # Crisis Management Parameters (from Herhausen et al. 2019)
+  # ---------------------------------------------------------------------------
+  - id: PAR-CM-001
+    symbol: "β_arousal_high"
+    name: "High-Arousal Emotion Virality Coefficient"
+    description: "Effect of high-arousal emotions (anger, fear, excitement) on virality"
+
+    values:
+      literature:
+        mean: 0.186
+        significance: "p < 0.001"
+        source: "PAP-herhausen2019firestorms"
+        note: "Negative binomial regression, 472,995 posts, 89 brands"
+
+    applicable_domains: ["DIGITAL", "MARKETING", "CRISIS"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-herhausen2019firestorms"
+    theory_id: "MS-CM-001"
+    key_insight: "High-arousal emotions drive virality; low-arousal emotions (β=0.026, NS) do not"
+
+  - id: PAR-CM-002
+    symbol: "β_tie_strength"
+    name: "Structural Tie Strength Virality Coefficient"
+    description: "Effect of strong social ties on content spread"
+
+    values:
+      literature:
+        mean: 1.432
+        significance: "p < 0.001"
+        source: "PAP-herhausen2019firestorms"
+        note: "Largest effect size in firestorm model"
+
+    applicable_domains: ["DIGITAL", "NETWORK", "SOCIAL"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-herhausen2019firestorms"
+    theory_id: "MS-CM-001"
+    key_insight: "Strong ties amplify spread more than emotional content (1.432 vs 0.186)"
+
+  - id: PAR-CM-003
+    symbol: "β_empathy"
+    name: "Empathy Response Effectiveness"
+    description: "Effect of empathy response on reducing virality"
+
+    values:
+      literature:
+        mean: -0.069
+        significance: "p < 0.001"
+        source: "PAP-herhausen2019firestorms"
+        note: "Empathy reduces virality"
+      context_dependent:
+        high_arousal: {effectiveness: "lower", note: "Explanation more effective"}
+        low_arousal: {effectiveness: "higher", note: "Empathy more effective"}
+
+    applicable_domains: ["DIGITAL", "CRISIS", "CUSTOMER_SERVICE"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-herhausen2019firestorms"
+    theory_id: "MS-CM-001"
+    key_insight: "SURPRISING: Explanation > Empathy for high-arousal crises"
+
+  - id: PAR-CM-004
+    symbol: "β_explanation"
+    name: "Explanation Response Effectiveness"
+    description: "Effect of explanation response on virality"
+
+    values:
+      literature:
+        mean: -0.011
+        significance: "NS"
+        source: "PAP-herhausen2019firestorms"
+        note: "Direct effect NS, but interaction with arousal is significant"
+      context_dependent:
+        high_arousal: {effectiveness: "high", note: "Addresses cognitive needs"}
+        low_arousal: {effectiveness: "low", note: "Empathy better"}
+
+    applicable_domains: ["DIGITAL", "CRISIS", "CUSTOMER_SERVICE"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-herhausen2019firestorms"
+    theory_id: "MS-CM-001"
+    key_insight: "Explanation works for high-arousal because it addresses cognitive uncertainty"
+
+  - id: PAR-CM-005
+    symbol: "β_compensation"
+    name: "Compensation Timing Effect"
+    description: "Differential effect of early vs late compensation"
+
+    values:
+      literature:
+        early: {mean: 0.098, significance: "p < 0.001", note: "INCREASES virality"}
+        late: {mean: -0.058, significance: "p < 0.001", note: "DECREASES virality"}
+        source: "PAP-herhausen2019firestorms"
+
+    applicable_domains: ["DIGITAL", "CRISIS", "CUSTOMER_SERVICE"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-herhausen2019firestorms"
+    theory_id: "MS-CM-001"
+    key_insight: "COUNTERINTUITIVE: Early compensation backfires (perceived as admission of guilt)"
+
+  - id: PAR-CM-006
+    symbol: "β_apology"
+    name: "Apology Timing Effect"
+    description: "Differential effect of early vs late apology"
+
+    values:
+      literature:
+        early: {mean: -0.058, significance: "p < 0.001", note: "DECREASES virality"}
+        late: {mean: 0.105, significance: "p < 0.001", note: "INCREASES virality"}
+        source: "PAP-herhausen2019firestorms"
+
+    applicable_domains: ["DIGITAL", "CRISIS", "CUSTOMER_SERVICE"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-herhausen2019firestorms"
+    theory_id: "MS-CM-001"
+    key_insight: "Apology: early = good, late = too late (seems insincere)"
+
+  - id: PAR-CM-007
+    symbol: "β_channel"
+    name: "Channel Change Timing Effect"
+    description: "Differential effect of early vs late channel change"
+
+    values:
+      literature:
+        early: {mean: -0.081, significance: "p < 0.001", note: "DECREASES virality"}
+        late: {mean: 0.096, significance: "p < 0.001", note: "INCREASES virality"}
+        source: "PAP-herhausen2019firestorms"
+
+    applicable_domains: ["DIGITAL", "CRISIS", "CUSTOMER_SERVICE"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-herhausen2019firestorms"
+    theory_id: "MS-CM-001"
+    key_insight: "Channel change: early = de-escalates, late = seems evasive"
+
+  # ---------------------------------------------------------------------------
+  # Customer Experience Parameters (CX) - Schögel & Herhausen 2024
+  # ---------------------------------------------------------------------------
+  - id: PAR-CX-001
+    symbol: "n"
+    name: "Basic n - Critical Interaction Hubs Count"
+    description: "Number of critical touchpoints to optimize (company-specific)"
+
+    values:
+      literature:
+        range: "variable"
+        typical_range: [3, 15]
+        source: "PAP-schoegel2024cxnavigator"
+        note: "n is NOT a fixed number - varies by industry, company size, customer complexity"
+      industry_ranges:
+        retail: {typical: [5, 10], note: "Multiple touchpoints, frequent interactions"}
+        b2b_services: {typical: [3, 7], note: "Fewer but deeper touchpoints"}
+        e_commerce: {typical: [7, 15], note: "Many digital touchpoints"}
+        banking: {typical: [4, 8], note: "Mix of digital and physical"}
+
+    applicable_domains: ["CX", "MARKETING", "DIGITAL", "RETAIL", "B2B"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-schoegel2024cxnavigator"
+    theory_id: "MS-CX-002"
+    key_insight: "Focus creates disproportionate returns - optimize n critical hubs, not all touchpoints"
+
+  - id: PAR-CX-002
+    symbol: "α_MOT"
+    name: "Moment of Truth Phase Importance"
+    description: "Relative importance weights for ZMOT, FMOT, SMOT phases"
+
+    values:
+      literature:
+        zmot_weight: {mean: 0.30, note: "Research phase - critical for awareness"}
+        fmot_weight: {mean: 0.35, note: "Purchase decision - conversion critical"}
+        smot_weight: {mean: 0.35, note: "Usage experience - loyalty critical"}
+        source: "PAP-schoegel2024cxnavigator"
+        note: "Weights vary by industry and customer segment"
+      industry_specific:
+        high_involvement: {zmot: 0.35, fmot: 0.30, smot: 0.35, note: "Extended research"}
+        low_involvement: {zmot: 0.20, fmot: 0.45, smot: 0.35, note: "Quick decisions"}
+        subscription: {zmot: 0.25, fmot: 0.25, smot: 0.50, note: "Retention-focused"}
+
+    applicable_domains: ["CX", "MARKETING", "DIGITAL", "RETAIL"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-schoegel2024cxnavigator"
+    theory_id: "MS-CX-002"
+    key_insight: "Moments of Truth disproportionately influence customer decisions"
+
+  - id: PAR-CX-003
+    symbol: "f_hub"
+    name: "Interaction Hub Frequency Threshold"
+    description: "Minimum touchpoint frequency to qualify as Interaction Hub"
+
+    values:
+      literature:
+        threshold_percentile: {mean: 80, note: "Top 20% by frequency"}
+        cross_segment_requirement: {min: 2, note: "Must serve ≥2 segments"}
+        phase_coverage: {min: 2, note: "Must span ≥2 journey phases"}
+        source: "PAP-schoegel2024cxnavigator"
+      identification_criteria:
+        frequency: "High traffic volume"
+        breadth: "Cross-segment relevance"
+        depth: "Multiple journey phase coverage"
+        impact: "Disproportionate CX influence"
+
+    applicable_domains: ["CX", "MARKETING", "DIGITAL"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-schoegel2024cxnavigator"
+    theory_id: "MS-CX-002"
+    key_insight: "Interaction Hubs are high-frequency, cross-segment touchpoints"
+
+  - id: PAR-CX-004
+    symbol: "κ_kano"
+    name: "Kano Category Distribution"
+    description: "Expected distribution of touchpoints across Kano categories"
+
+    values:
+      literature:
+        basic_expectations: {mean: 0.40, note: "Must-haves - absence creates dissatisfaction"}
+        satisfiers: {mean: 0.35, note: "One-dimensional - more is better"}
+        delighters: {mean: 0.25, note: "Attractive - presence creates delight"}
+        source: "PAP-schoegel2024cxnavigator"
+      strategic_allocation:
+        fix_first: "Basic expectations (40%) - ensure parity"
+        optimize_second: "Satisfiers (35%) - competitive advantage"
+        innovate_third: "Delighters (25%) - differentiation"
+
+    applicable_domains: ["CX", "MARKETING", "PRODUCT", "SERVICE"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-schoegel2024cxnavigator"
+    theory_id: "MS-CX-001"
+    key_insight: "Kano categories guide resource allocation - fix basics before delighting"
+
+  # ---------------------------------------------------------------------------
+  # Customer Journey Segmentation Parameters (PAR-CJ-001 to PAR-CJ-004)
+  # Source: Herhausen et al. (2019) Journal of Retailing
+  # ---------------------------------------------------------------------------
+
+  - id: PAR-CJ-001
+    symbol: "β_JS"
+    name: "Journey Satisfaction Effect on Loyalty"
+    description: "Effect of journey satisfaction on store loyalty, varying by customer segment"
+
+    values:
+      literature:
+        full_sample: {mean: 0.21, ci_95: [0.15, 0.27], sig: "***", source: "PAP-herhausen2019loyalty"}
+        store_focused: {mean: 0.11, ci_95: [0.02, 0.20], sig: "*", note: "Minimal effect"}
+        pragmatic_online: {mean: 0.13, ci_95: [0.04, 0.22], sig: "**"}
+        extensive_online: {mean: 0.21, ci_95: [0.10, 0.32], sig: "***"}
+        multiple_touchpoint: {mean: 0.58, ci_95: [0.45, 0.71], sig: "***", note: "HIGHEST - Journey is crucial"}
+        online_to_offline: {mean: 0.24, ci_95: [0.12, 0.36], sig: "***"}
+      key_finding: "Journey satisfaction most important for multiple touchpoint shoppers (β=0.58***)"
+
+    applicable_domains: ["RETAIL", "CX", "MARKETING", "LOYALTY"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-herhausen2019loyalty"
+    theory_id: "MS-CJ-002"
+    key_insight: "Journey experience matters most for cross-channel shoppers; barely matters for store-focused"
+
+  - id: PAR-CJ-002
+    symbol: "β_PS"
+    name: "Product Satisfaction Effect on Loyalty"
+    description: "Effect of product satisfaction on store loyalty, varying by customer segment"
+
+    values:
+      literature:
+        full_sample: {mean: 0.28, ci_95: [0.22, 0.34], sig: "***", source: "PAP-herhausen2019loyalty"}
+        store_focused: {mean: 0.40, ci_95: [0.31, 0.49], sig: "***", note: "HIGHEST - Product is crucial"}
+        pragmatic_online: {mean: 0.43, ci_95: [0.35, 0.51], sig: "***", note: "Product is crucial"}
+        extensive_online: {mean: 0.28, ci_95: [0.17, 0.39], sig: "***"}
+        multiple_touchpoint: {mean: 0.01, ci_95: [-0.12, 0.14], sig: "NS", note: "NO EFFECT - counterintuitive"}
+        online_to_offline: {mean: 0.17, ci_95: [0.05, 0.29], sig: "***"}
+      key_finding: "Product satisfaction has ZERO effect for multiple touchpoint shoppers (β=0.01, NS)"
+
+    applicable_domains: ["RETAIL", "CX", "MARKETING", "LOYALTY"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-herhausen2019loyalty"
+    theory_id: "MS-CJ-002"
+    key_insight: "Product quality drives loyalty for store-focused; irrelevant for multi-channel shoppers"
+
+  - id: PAR-CJ-003
+    symbol: "β_INS"
+    name: "Customer Inspiration Effect on Loyalty"
+    description: "Effect of customer inspiration on store loyalty, varying by customer segment"
+
+    values:
+      literature:
+        full_sample: {mean: 0.07, ci_95: [0.02, 0.12], sig: "**", source: "PAP-herhausen2019loyalty"}
+        store_focused: {mean: 0.15, ci_95: [0.06, 0.24], sig: "***", note: "Inspiration matters"}
+        pragmatic_online: {mean: 0.03, ci_95: [-0.05, 0.11], sig: "NS", note: "No effect"}
+        extensive_online: {mean: 0.03, ci_95: [-0.07, 0.13], sig: "NS", note: "No effect"}
+        multiple_touchpoint: {mean: 0.12, ci_95: [0.01, 0.23], sig: "**", note: "Inspiration matters"}
+        online_to_offline: {mean: 0.20, ci_95: [0.09, 0.31], sig: "***", note: "HIGHEST - Inspiration crucial"}
+      key_finding: "Customer inspiration matters for experiential segments (store-focused, MTP, O2O)"
+
+    applicable_domains: ["RETAIL", "CX", "MARKETING", "INSPIRATION"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-herhausen2019loyalty"
+    theory_id: "MS-CJ-002"
+    key_insight: "Inspiration drives loyalty for webroomers (O2O); no effect for pragmatic/extensive online"
+
+  - id: PAR-CJ-004
+    symbol: "π_segment"
+    name: "Customer Journey Segment Distribution"
+    description: "Relative size of 5 customer journey segments in DACH retail market"
+
+    values:
+      literature:
+        store_focused: {mean: 0.22, range: [0.20, 0.24], note: "Prefer physical stores"}
+        pragmatic_online: {mean: 0.31, range: [0.30, 0.32], note: "Largest segment - efficient online"}
+        extensive_online: {mean: 0.16, range: [0.15, 0.17], note: "Heavy online research"}
+        multiple_touchpoint: {mean: 0.15, range: [0.14, 0.16], note: "Multi-channel, high mobile"}
+        online_to_offline: {mean: 0.16, range: [0.15, 0.17], note: "Webroomers"}
+        source: "PAP-herhausen2019loyalty"
+      sample_details:
+        sample_1_2013: {n: 2443}
+        sample_2_2016: {n: 2649}
+        total: 5092
+        time_consistency: "Segments stable across 3-year gap"
+
+    applicable_domains: ["RETAIL", "CX", "MARKETING", "SEGMENTATION"]
+    last_updated: "2026-02-05"
+    source_paper: "PAP-herhausen2019loyalty"
+    theory_id: "MS-CJ-002"
+    key_insight: "Pragmatic online is largest (31%); multi-channel smallest but journey-sensitive (15%)"
+
+  # ---------------------------------------------------------------------------
+  # Entrepreneurship Parameters (from Zellweger & Zenger 2023 AMR)
+  # FOUNDATIONAL FRAMEWORK - Informed Priors (no point estimates in paper)
+  # ---------------------------------------------------------------------------
+
+  - id: PAR-ENT-001
+    symbol: PMF
+    name: "Product-Market Fit"
+    description: "Correlation between entrepreneur belief model V(E) and market model V(M). Measures the fit between what the entrepreneur believes is valuable and what the market actually values."
+
+    values:
+      literature:
+        definition: "correlation(V_E, V_M)"
+        range: "[0, 1]"
+        source: "PAP-zellweger2023entrepreneurs"
+        note: "Theoretical framework parameter. V(E) = Needs(E) × Features(E), V(M) = Needs(M) × Features(M). PMF = correlation(V_E, V_M). No point estimate - correlation is venture-specific."
+        parameter_type: "informed_prior"
+      context_specific:
+        early_stage_startup:
+          typical_range: "[0.1, 0.4]"
+          note: "Pre-testing; high uncertainty, belief largely untested"
+        post_mvp:
+          typical_range: "[0.3, 0.7]"
+          note: "After initial testing cycles; belief partially validated"
+        product_market_fit_achieved:
+          typical_range: "[0.7, 1.0]"
+          note: "Strong validation from market testing"
+
+    formal_definition:
+      belief_model: "V(E) = Needs(E) × Features(E)"
+      market_model: "V(M) = Needs(M) × Features(M)"
+      fit_measure: "V ∝ correlation(V(E), V(M))"
+      endogenous_uncertainty: "V(E) is self-selected from myriad imaginable beliefs"
+
+    applicable_domains: ["ENTREPRENEURSHIP", "STRATEGY", "INNOVATION"]
+    last_updated: "2026-02-06"
+    source_paper: "PAP-zellweger2023entrepreneurs"
+    theory_id: "MS-ENT-002"
+    key_insight: "Product-market fit is formalized as correlation between entrepreneur's belief model and market reality. The belief is endogenously chosen, creating endogenous uncertainty distinct from exogenous market uncertainty."
+
+  - id: PAR-ENT-002
+    symbol: τ_approve
+    name: "Approval Threshold"
+    description: "Minimum proportion of positive evaluations required to retain an entrepreneurial belief. Below this threshold but above rejection threshold, the entrepreneur is in a zone of ambiguity."
+
+    values:
+      literature:
+        range: "0.60-0.80"
+        source: "PAP-zellweger2023entrepreneurs"
+        note: "Informed prior from Camuffo et al. (2020) and Csaszar et al. (2006), cited in paper p. 394. Not a direct estimate from this paper."
+        parameter_type: "informed_prior"
+        original_sources:
+          - "Camuffo, Cordova, Gambardella & Spina (2020) Management Science"
+          - "Csaszar, Eggers & Fahlenbrach (2006)"
+      context_specific:
+        high_stakes_venture:
+          value: 0.80
+          note: "Higher threshold when costs of false positive are high"
+        low_cost_experiment:
+          value: 0.60
+          note: "Lower threshold acceptable when testing is cheap"
+
+    relationship_to_errors:
+      type_1_error: "False positive - accepting a belief that should be rejected"
+      type_2_error: "False negative - rejecting a belief that should be accepted"
+      tradeoff: "Higher τ_approve reduces Type 1 errors but increases Type 2 errors"
+
+    applicable_domains: ["ENTREPRENEURSHIP", "STRATEGY", "INNOVATION"]
+    last_updated: "2026-02-06"
+    source_paper: "PAP-zellweger2023entrepreneurs"
+    theory_id: "MS-ENT-001"
+    key_insight: "Approval threshold defines when positive feedback is sufficient to continue investing in a belief. Connected to bias-variance tradeoff in belief updating."
+
+  - id: PAR-ENT-003
+    symbol: τ_reject
+    name: "Rejection Threshold"
+    description: "Maximum proportion of positive evaluations below which an entrepreneurial belief is rejected or substantially revised. Between τ_reject and τ_approve lies a zone of ambiguity requiring further testing."
+
+    values:
+      literature:
+        value: 0.40
+        source: "PAP-zellweger2023entrepreneurs"
+        note: "Informed prior from Csaszar et al. (2006), cited in paper p. 394. Not a direct estimate from this paper."
+        parameter_type: "informed_prior"
+        original_sources:
+          - "Csaszar, Eggers & Fahlenbrach (2006)"
+      context_specific:
+        risk_tolerant_entrepreneur:
+          value: 0.30
+          note: "More risk-tolerant entrepreneurs may set lower rejection threshold"
+        risk_averse_entrepreneur:
+          value: 0.50
+          note: "Risk-averse entrepreneurs may set higher rejection threshold"
+
+    zone_of_ambiguity:
+      lower_bound: "τ_reject (0.40)"
+      upper_bound: "τ_approve (0.60-0.80)"
+      interpretation: "Between thresholds: gather more data, run additional experiments"
+      heuristic_response: "Stage investment, partition sample, seek disconfirming evidence"
+
+    applicable_domains: ["ENTREPRENEURSHIP", "STRATEGY", "INNOVATION"]
+    last_updated: "2026-02-06"
+    source_paper: "PAP-zellweger2023entrepreneurs"
+    theory_id: "MS-ENT-001"
+    key_insight: "Below rejection threshold, entrepreneur should pivot or abandon belief. The gap between τ_reject and τ_approve creates a zone of ambiguity where further experimentation is rational."
+
+  # ===========================================================================
+  # PAR-TP: Technology, Power & Institutional Direction
+  # Source: Acemoglu & Johnson (2023) "Power and Progress"
+  # FRAMEWORK ONLY - informed priors, NOT direct estimates
+  # ===========================================================================
+
+  - id: PAR-TP-001
+    symbol: β_bandwagon
+    name: "Productivity Bandwagon Strength"
+    description: "Strength of the productivity-to-wage transmission mechanism. Conditional on technology type and institutional context."
+    estimation_status: "FRAMEWORK ONLY - paper provides structure, not point estimates"
+
+    values:
+      literature:
+        task_creating_technology:
+          estimate: "β > 0 (positive)"
+          conditions: "Competitive labor market, technology creates new tasks"
+          source: "acemoglu2023power, Chapter 1"
+          note: "⚠️ INFORMED PRIOR - no point estimate in source paper"
+        so_so_automation:
+          estimate: "β ≤ 0 (zero or negative)"
+          conditions: "Automation without significant productivity gains"
+          source: "acemoglu2023power, Chapter 9"
+          note: "⚠️ INFORMED PRIOR - qualitative from historical analysis"
+        pure_automation:
+          estimate: "β < 0 (negative for displaced workers)"
+          conditions: "Robot adoption without task creation"
+          source: "acemoglu2023power + PAP-acemoglu2020robots"
+          note: "Supported by Acemoglu & Restrepo (2020): each robot per 1000 workers reduces employment-to-population ratio by 0.2pp"
+      prior_sources: ["PAP-acemoglu2020robots", "PAP-acemoglu2022tasks", "PAP-acemoglu2019automation"]
+
+    psi_modifiers:
+      Ψ_I: "Labor market institutions (union density, minimum wage, employment protection)"
+      Ψ_S: "Social norms around technology adoption and worker dignity"
+      Ψ_K: "Cultural attitudes toward automation vs. human labor"
+
+    applicable_domains: ["LABOR", "TECHNOLOGY", "INNOVATION", "DEVELOPMENT"]
+    last_updated: "2026-02-07"
+    source_paper: "acemoglu2023power"
+    theory_id: "MS-TP-001"
+    key_insight: "The bandwagon is not a law of nature but a conditional mechanism. Technology that creates new tasks activates the bandwagon; technology that merely automates does not."
+
+  - id: PAR-TP-002
+    symbol: α_vision
+    name: "Narrative/Vision Influence on Technology Direction"
+    description: "How strongly dominant narratives (techno-optimism, disruption ideology) shape the direction of technological development."
+    estimation_status: "FRAMEWORK ONLY - paper provides structure, not point estimates"
+
+    values:
+      literature:
+        dominant_techno_optimism:
+          estimate: "high (α → 1)"
+          conditions: "Elite-dominated discourse, Silicon Valley narrative"
+          source: "acemoglu2023power, Chapters 2-3"
+          note: "⚠️ INFORMED PRIOR - qualitative from historical/narrative analysis"
+        contested_narrative:
+          estimate: "moderate (α ≈ 0.5)"
+          conditions: "Active counter-narrative from labor, civil society"
+          source: "acemoglu2023power, Chapter 7"
+          note: "⚠️ INFORMED PRIOR - Progressive Era historical evidence"
+      prior_sources: ["acemoglu2023power"]
+
+    ebf_mapping: "AWARE dimension - A(technology) shaped by dominant vision"
+    applicable_domains: ["TECHNOLOGY", "INNOVATION", "POLICY", "MEDIA"]
+    last_updated: "2026-02-07"
+    source_paper: "acemoglu2023power"
+    theory_id: "MS-TP-002"
+    key_insight: "Visions are not neutral descriptions of technology - they are persuasion tools that channel investment and policy toward specific technology directions."
+
+  - id: PAR-TP-003
+    symbol: θ_countervailing
+    name: "Countervailing Power Effectiveness"
+    description: "Threshold at which organized countervailing powers (labor, democratic institutions, civil society) can redirect technology toward shared prosperity."
+    estimation_status: "FRAMEWORK ONLY - paper provides structure, not point estimates"
+
+    values:
+      literature:
+        strong_countervailing:
+          estimate: "θ > threshold → shared prosperity"
+          conditions: "Strong unions + democratic government + civil society"
+          source: "acemoglu2023power, Chapter 7"
+          historical_reference: "USA 1935-1975: New Deal + unions → wage growth = productivity growth"
+          note: "⚠️ INFORMED PRIOR - qualitative from historical evidence"
+        weak_countervailing:
+          estimate: "θ < threshold → elite capture"
+          conditions: "Weak unions, captured regulators, fragmented civil society"
+          source: "acemoglu2023power, Chapters 4, 8-10"
+          historical_reference: "Medieval agriculture, digital era post-1980"
+          note: "⚠️ INFORMED PRIOR - historical pattern analysis"
+      prior_sources: ["acemoglu2023power", "PAP-acemoglu2012nations", "PAP-acemoglu2001colonial"]
+
+    three_pillars:
+      organized_labor: "Union density, collective bargaining coverage"
+      democratic_institutions: "Regulatory capacity, responsive governance"
+      civil_society: "Independent media, advocacy organizations, public discourse"
+
+    applicable_domains: ["LABOR", "TECHNOLOGY", "POLICY", "DEVELOPMENT", "INSTITUTIONS"]
+    last_updated: "2026-02-07"
+    source_paper: "acemoglu2023power"
+    theory_id: "MS-TP-003"
+    key_insight: "Countervailing powers are necessary but not sufficient. They must reach critical mass AND be directed at technology policy (not just redistribution after the fact)."
+
+# =============================================================================
+# TEMPLATE FOR NEW PARAMETERS
+# =============================================================================
+# Copy this template when adding a new parameter:
+#
+#   - id: PAR-XXX-NNN
+#     symbol: <greek_letter>
+#     name: "Parameter Name"
+#     description: "What it measures"
+#
+#     values:
+#       literature:
+#         mean: 0.XX
+#         ci_95: [0.XX, 0.XX]
+#         source: "bibtex_key"
+#       dach_adjusted:
+#         mean: 0.XX
+#         ci_68: [0.XX, 0.XX]
+#         source: "session_or_project_id"
+#
+#     applicable_domains: ["FIN", "HLT", ...]
+#     last_updated: "YYYY-MM-DD"
+#     updated_by_session: "EBF-S-..."
+#
+#     literature_sources:
+#       - key: "bibtex_key"
+#         finding: "What the paper found"

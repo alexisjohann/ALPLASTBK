@@ -1,0 +1,349 @@
+---
+# Capital Expenditure Allocation Model Template
+# Parametric template for capex planning and ROI analysis
+# Model Version: 1.0.0
+
+model:
+  id: "CAM-1.0"
+  name: "Capex Allocation Model"
+  type: "Investment Planning & ROI Analysis"
+  version: "1.0.0"
+  created_date: "2026-01-15"
+  status: "VALIDATED"
+
+  description: |
+    Capex allocation model optimizes capital investment across strategic initiatives
+    (ERP, IoT, Recycling Expansion, Geographic Expansion, etc.) over 11-year period.
+    Includes phase-based budgeting, ROI analysis, and payback period calculations.
+
+  # ============================================================================
+  # MATHEMATICAL FORMULATION
+  # ============================================================================
+
+  mathematical_formulation:
+
+    formula_1_total_capex_budget:
+      latex: "\\text{Capex}_{total} = \\sum_{i} \\text{Capex}_{initiative,i}"
+      description: "Total capex across all strategic initiatives"
+      where:
+        Capex_total: "Total capital expenditure over planning period"
+        Capex_initiative_i: "Capex allocated to initiative i"
+
+    formula_2_phase_based_allocation:
+      latex: "\\text{Capex}_{p,i} = \\text{Capex}_{i} \\times \\text{Allocation}_{p,i}\\%"
+      description: "Capex allocation by phase and initiative"
+
+    formula_3_roi_calculation:
+      latex: "\\text{ROI} = \\frac{\\text{Benefits} - \\text{Capex}}{\\text{Capex}} \\times 100\\%"
+      description: "Return on investment"
+
+    formula_4_payback_period:
+      latex: "\\text{Payback} = \\frac{\\text{Capex}}{\\text{Annual Benefit}} \\text{ (years)}"
+      description: "Years to recover capex investment"
+
+  # ============================================================================
+  # PARAMETERS
+  # ============================================================================
+
+  parameters:
+
+    input_parameters:
+
+      total_capex_11_years_eur_m:
+        description: "Total capex budget for 11-year planning period"
+        type: "float"
+        unit: "EUR Millions"
+        template_default: 550
+        validation_rules:
+          min: 100
+          max: 2000
+
+      planning_period: "2024-2035 (11 years)"
+
+      capex_by_initiative:
+        description: "Strategic capex initiatives and budgets"
+        type: "dict of floats"
+        unit: "EUR Millions"
+        template_default: "See below"
+
+        initiatives:
+
+          erp_transformation:
+            name: "ERP Transformation (SAP S/4HANA)"
+            total_budget_eur_m: 35
+            phase_1_allocation_percent: 40
+            phase_2_allocation_percent: 40
+            phase_3_allocation_percent: 20
+            phase_1_capex_eur_m: 14
+            phase_2_capex_eur_m: 14
+            phase_3_capex_eur_m: 7
+            description: "Global ERP platform deployment across 240 plants"
+            timeline: "2025-2035 (pilots 2025, full rollout 2027-2029)"
+            plant_coverage_target: "95% by 2035"
+            expected_benefits_eur_m: 150
+            payback_years: 4
+            roi_percent: 328
+            dependencies: "IT talent acquisition (150+ specialists)"
+
+          iot_deployment:
+            name: "IoT & Predictive Maintenance"
+            total_budget_eur_m: 25
+            phase_1_allocation_percent: 20
+            phase_2_allocation_percent: 40
+            phase_3_allocation_percent: 40
+            phase_1_capex_eur_m: 5
+            phase_2_capex_eur_m: 10
+            phase_3_capex_eur_m: 10
+            description: "IoT sensors and predictive maintenance across plants"
+            timeline: "2025-2035 (pilots 2025, scale 2027+)"
+            plant_coverage_target: "80% by 2035 (200 plants)"
+            expected_benefits_eur_m: 80
+            payback_years: 3
+            roi_percent: 220
+            benefit_breakdown:
+              - "Downtime reduction: 10% → 5% = €30M"
+              - "Maintenance cost: -20% = €50M"
+
+          data_platform:
+            name: "Data Platform & Advanced Analytics"
+            total_budget_eur_m: 15
+            phase_1_allocation_percent: 50
+            phase_2_allocation_percent: 30
+            phase_3_allocation_percent: 20
+            phase_1_capex_eur_m: 7.5
+            phase_2_capex_eur_m: 4.5
+            phase_3_capex_eur_m: 3
+            description: "Snowflake data warehouse + ML models for demand forecasting"
+            timeline: "2025-2035 (foundation 2025, analytics 2027+)"
+            expected_benefits_eur_m: 100
+            payback_years: 3
+            roi_percent: 567
+            benefit_breakdown:
+              - "Demand forecasting accuracy +20%: €60M"
+              - "Pricing optimization: €40M"
+
+          cybersecurity:
+            name: "Cybersecurity & Compliance"
+            total_budget_eur_m: 20
+            phase_1_allocation_percent: 30
+            phase_2_allocation_percent: 40
+            phase_3_allocation_percent: 30
+            description: "Zero-trust architecture, compliance automation"
+            timeline: "2025-2035 (continuous)"
+            expected_benefits_eur_m: "Risk mitigation (not quantified)"
+            payback_years: "N/A"
+            roi_percent: "N/A"
+
+          recycling_capacity_expansion:
+            name: "Recycling Capacity Expansion"
+            total_budget_eur_m: 60
+            phase_1_allocation_percent: 10
+            phase_2_allocation_percent: 60
+            phase_3_allocation_percent: 30
+            phase_1_capex_eur_m: 6
+            phase_2_capex_eur_m: 36
+            phase_3_capex_eur_m: 18
+            description: "Scale recycling from 350K to 700K tonnes/year"
+            timeline: "Phase 1: 350K→380K, Phase 2: 380K→500K, Phase 3: 500K→700K"
+            capex_per_tonne_increase: 75  # EUR thousands
+            capacity_expansion_targets:
+              phase_1_end: 380
+              phase_2_end: 500
+              phase_3_end: 700
+            expected_benefits_eur_m: 200
+            payback_years: 5
+            roi_percent: 233
+            benefit_breakdown:
+              - "Recycled material revenue: €1.1B by 2035 (margin 22%)"
+              - "Carbon credit value: €10-20M/year"
+
+          geographic_expansion:
+            name: "Geographic Expansion (APAC, AMET)"
+            total_budget_eur_m: 60
+            phase_1_allocation_percent: 10
+            phase_2_allocation_percent: 50
+            phase_3_allocation_percent: 40
+            phase_1_capex_eur_m: 6
+            phase_2_capex_eur_m: 30
+            phase_3_capex_eur_m: 24
+            description: "New plant capex (Thailand, Vietnam, India, Egypt, South Africa)"
+            plants:
+              - name: "Thailand plant"
+                capex_eur_m: 20
+                location: "Thailand"
+                timeline: "2025"
+                capacity_tons: 50
+                expected_revenue_2026_eur_m: 30
+
+              - name: "Vietnam plant"
+                capex_eur_m: 12
+                location: "Vietnam"
+                timeline: "2027"
+                capacity_tons: 50
+                expected_revenue_2029_eur_m: 25
+
+              - name: "India pharma hub"
+                capex_eur_m: 15
+                location: "India (Hyderabad)"
+                timeline: "2027"
+                capacity_tons: 40
+                expected_revenue_2029_eur_m: 20
+
+              - name: "Egypt operations"
+                capex_eur_m: 8
+                location: "Egypt"
+                timeline: "2027"
+                capacity_tons: 30
+                expected_revenue_2029_eur_m: 15
+
+              - name: "South Africa recycling"
+                capex_eur_m: 5
+                location: "South Africa"
+                timeline: "2028"
+                capacity_tons: 35
+                expected_revenue_2030_eur_m: 10
+
+            expected_benefits_eur_m: 350
+            payback_years: 6
+            roi_percent: 483
+
+          maintenance_capex:
+            name: "Maintenance Capex (Existing Operations)"
+            total_budget_eur_m: 335
+            phase_1_allocation_percent: 30
+            phase_2_allocation_percent: 35
+            phase_3_allocation_percent: 35
+            description: "Ongoing capex for 200 existing plants"
+            annual_average_eur_m: 30.5
+            includes:
+              - "Equipment replacement"
+              - "Machinery upgrades"
+              - "Safety & compliance"
+              - "Quality improvements"
+            expected_benefits_eur_m: 100
+            payback_years: 4
+
+      phase_based_budgeting:
+        phase_1_2025_2026:
+          total_budget_eur_m: 180
+          annual_average: 90
+          quarterly_pace_eur_m: 22.5
+          allocation_by_initiative:
+            - "ERP: €14M (8%)"
+            - "IoT: €5M (3%)"
+            - "Data: €7.5M (4%)"
+            - "Cybersecurity: €6M (3%)"
+            - "Recycling: €6M (3%)"
+            - "Geographic: €6M (3%)"
+            - "Maintenance: €135M (75%)"
+
+        phase_2_2027_2029:
+          total_budget_eur_m: 230
+          annual_average: 77
+          quarterly_pace_eur_m: 19.2
+          allocation_by_initiative:
+            - "ERP: €14M (6%)"
+            - "IoT: €10M (4%)"
+            - "Data: €4.5M (2%)"
+            - "Cybersecurity: €9M (4%)"
+            - "Recycling: €36M (16%)"
+            - "Geographic: €30M (13%)"
+            - "Maintenance: €127M (55%)"
+
+        phase_3_2030_2035:
+          total_budget_eur_m: 140
+          annual_average: 23
+          quarterly_pace_eur_m: 5.8
+          allocation_by_initiative:
+            - "ERP: €7M (5%)"
+            - "IoT: €10M (7%)"
+            - "Data: €3M (2%)"
+            - "Cybersecurity: €6M (4%)"
+            - "Recycling: €18M (13%)"
+            - "Geographic: €24M (17%)"
+            - "Maintenance: €72M (52%)"
+
+  # ============================================================================
+  # OUTPUTS
+  # ============================================================================
+
+  outputs:
+
+    output_1_capex_roadmap:
+      name: "Capex Investment Roadmap (2024-2035)"
+      format: "Table"
+      columns:
+        - "Year"
+        - "Phase"
+        - "Total Capex"
+        - "Strategic %"
+        - "Maintenance %"
+      example_rows:
+        - "2025 | Phase 1 | €90M | 25% | 75%"
+        - "2029 | Phase 2 | €77M | 45% | 55%"
+        - "2035 | Phase 3 | €23M | 48% | 52%"
+
+    output_2_cumulative_investment:
+      name: "Cumulative Investment by Initiative"
+      format: "Table"
+      columns:
+        - "Initiative"
+        - "Budget"
+        - "Expected Benefits"
+        - "ROI %"
+        - "Payback Years"
+      example_rows:
+        - "ERP | €35M | €150M | 328% | 4 years"
+        - "Recycling | €60M | €200M | 233% | 5 years"
+        - "Geographic | €60M | €350M | 483% | 6 years"
+
+    output_3_roi_analysis:
+      name: "ROI Analysis Summary"
+      metrics:
+        total_capex_11_years: "€550M"
+        total_expected_benefits: "€980M"
+        total_roi_percent: 78
+        weighted_payback_years: 4.5
+        npv_at_10_percent_discount: "€350M+"
+
+    output_4_capex_pace:
+      name: "Annual Capex Pace (Quarterly)"
+      format: "Chart"
+      shows: |
+        - X-axis: Quarters (Q1 2025 - Q4 2035)
+        - Y-axis: Quarterly capex (€M)
+        - Bars colored by initiative
+        - Target pace overlay
+
+  # ============================================================================
+  # IMPLEMENTATION
+  # ============================================================================
+
+  implementation:
+
+    language: "Python 3.8+"
+    dependencies:
+      - "pandas"
+      - "numpy"
+      - "pyyaml"
+
+    code_template: |
+      # See: scripts/models/capex_allocation.py
+      # Function: project_capex(parameters)
+      # Input: YAML config with initiatives, phase allocation
+      # Output: Annual/quarterly capex roadmap with ROI analysis
+
+  metadata:
+    model_version: "1.0.0"
+    template_version: "1.0.0"
+    created_date: "2026-01-15"
+    validation_status: "VALIDATED"
+    board_approval_date: "2025-12-28"
+
+    notes: |
+      This template supports capex planning and ROI justification.
+      Use for:
+      - Budget allocation across initiatives
+      - ROI analysis and prioritization
+      - Cash flow forecasting
+      - Capital discipline (stay within €50M/year average)

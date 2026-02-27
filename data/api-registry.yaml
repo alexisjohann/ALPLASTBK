@@ -1,0 +1,715 @@
+# =============================================================================
+# API REGISTRY - External Service Integrations
+# =============================================================================
+# SuperKey Format: API-{CATEGORY}-{SEQ}
+# Categories:
+#   BIB  - Bibliography (CrossRef, OpenAlex, Semantic Scholar)
+#   CTX  - Context Data (BFS, ESS, WVS, etc.) - BCM2 integrations
+#   VAL  - Validation (ORCID, DOI.org)
+#
+# This registry tracks all external API integrations in the EBF framework.
+# =============================================================================
+
+metadata:
+  version: "2.0"
+  last_updated: "2026-01-27"
+  maintainer: "EBF Team"
+  appendix_ref: "BM (METHOD-API)"
+
+# =============================================================================
+# SUMMARY STATISTICS
+# =============================================================================
+summary:
+  total_apis: 89
+  by_category:
+    BIB: 4
+    CTX: 84
+    VAL: 1
+  by_status:
+    ACTIVE: 1
+    DOCUMENTED: 84  # In BCM2, not yet GitHub Action
+    PLANNED: 4
+
+# =============================================================================
+# BIBLIOGRAPHY APIs (BIB)
+# =============================================================================
+bibliography_apis:
+  - id: API-BIB-001
+    name: CrossRef
+    category: BIB
+    description: "DOI metadata lookup for academic publications (primary source)"
+    status: ACTIVE
+    endpoint:
+      base_url: "https://api.crossref.org"
+      works_endpoint: "/works"
+      docs_url: "https://api.crossref.org/swagger-ui/index.html"
+    authentication:
+      type: none
+      polite_pool: true
+      user_agent_required: true
+      user_agent_format: "EBF-Research (mailto:research@fehradvice.com)"
+    rate_limits:
+      requests_per_second: 50
+      our_delay_ms: 500
+      polite_pool_bonus: "faster responses with User-Agent email"
+
+    # Query Parameters
+    query_params:
+      search:
+        - query           # Full-text search
+        - query.title     # Title search
+        - query.author    # Author search
+        - query.affiliation
+        - query.bibliographic
+      filters:
+        - type            # e.g., "journal-article", "posted-content"
+        - from-pub-date   # YYYY-MM-DD
+        - until-pub-date  # YYYY-MM-DD
+        - prefix          # DOI prefix, e.g., "10.3386" for NBER
+        - publisher-name
+        - issn
+        - container-title
+      pagination:
+        rows: 20           # Default, max 1000
+        offset: 0          # For small sets
+        cursor: "*"        # For large sets (preferred)
+        cursor_note: "Use cursor=* for pagination, then use next-cursor from response"
+
+    # DOI Patterns for specific publishers
+    doi_patterns:
+      NBER:
+        prefix: "10.3386"
+        format: "10.3386/wXXXXX"
+        example: "10.3386/w12345"
+        coverage: "Almost all NBER Working Papers have DOIs"
+      SSRN:
+        prefix: "10.2139"
+        format: "10.2139/ssrn.XXXXXXX"
+        example: "10.2139/ssrn.1234567"
+        coverage: "Many but not all SSRN papers (Elsevier DOIs)"
+        note: "If no DOI, paper cannot be found via Crossref"
+      AER:
+        prefix: "10.1257"
+        format: "10.1257/aer.XXXXXXX"
+      ECONOMETRICA:
+        prefix: "10.3982"
+        format: "10.3982/ECTA"
+
+    # Usage examples
+    usage_examples:
+      - name: "Get paper by DOI"
+        url: "https://api.crossref.org/works/10.3386/w12345"
+        method: GET
+      - name: "Search by title"
+        url: "https://api.crossref.org/works?query.title=prospect+theory"
+        method: GET
+      - name: "All NBER papers from 2024"
+        url: "https://api.crossref.org/works?filter=prefix:10.3386,from-pub-date:2024-01-01&cursor=*"
+        method: GET
+      - name: "Search by author"
+        url: "https://api.crossref.org/works?query.author=Kahneman&rows=50"
+        method: GET
+
+    # Error handling
+    error_handling:
+      no_doi_found: "Explicitly state: 'Kein DOI → nicht über Crossref auffindbar'"
+      fallback_apis:
+        - OpenAlex
+        - Semantic Scholar
+        - Google Scholar (manual)
+      no_hallucination: "NEVER invent DOIs. If not found, say so."
+
+    # Integration
+    github_action:
+      workflow: ".github/workflows/doi-lookup-batch.yml"
+    scripts:
+      - "scripts/lookup_paper_dois.py"
+      - "scripts/batch_doi_by_journal.py"
+
+    metrics:
+      first_used: "2026-01-27"
+      papers_resolved: 0  # TODO: track
+
+  - id: API-BIB-002
+    name: OpenAlex
+    category: BIB
+    description: "Open catalog of scholarly papers, authors, institutions"
+    status: PLANNED
+    endpoint:
+      base_url: "https://api.openalex.org"
+      docs_url: "https://docs.openalex.org"
+
+  - id: API-BIB-003
+    name: Semantic Scholar
+    category: BIB
+    description: "AI-powered academic search with paper embeddings"
+    status: PLANNED
+    endpoint:
+      base_url: "https://api.semanticscholar.org"
+
+  - id: API-BIB-004
+    name: DOI.org
+    category: BIB
+    description: "DOI resolution and validation"
+    status: PLANNED
+    endpoint:
+      base_url: "https://doi.org"
+
+# =============================================================================
+# CONTEXT APIs (CTX) - Swiss Federal Government
+# =============================================================================
+context_apis_swiss_gov:
+  - id: API-CTX-001
+    name: BFS (Bundesamt für Statistik)
+    category: CTX
+    subcategory: swiss_gov
+    description: "Swiss Federal Statistical Office - demographics, economy, society"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.bfs.admin.ch"
+      api_url: "https://www.pxweb.bfs.admin.ch/api/v1"
+      docs_url: "https://www.bfs.admin.ch/bfs/de/home/dienstleistungen/forschung/api.html"
+    authentication:
+      type: none
+    bcm2_integration:
+      reference_count: 124
+      files:
+        - "BCM2_04_KON_demographic.yaml"
+        - "BCM2_04_KON_economic.yaml"
+        - "BCM2_04_KON_socio_cultural.yaml"
+      factor_prefixes: ["CH-DEM-", "CH-ECO-", "CH-SOC-"]
+
+  - id: API-CTX-002
+    name: SNB (Schweizerische Nationalbank)
+    category: CTX
+    subcategory: swiss_gov
+    description: "Swiss National Bank - monetary data, exchange rates, banking"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://data.snb.ch"
+      api_url: "https://data.snb.ch/api/v1"
+    bcm2_integration:
+      reference_count: 9
+      files: ["BCM2_04_KON_economic.yaml"]
+      factor_prefixes: ["CH-ECO-"]
+
+  - id: API-CTX-003
+    name: BFE (Bundesamt für Energie)
+    category: CTX
+    subcategory: swiss_gov
+    description: "Swiss Federal Office of Energy - energy statistics"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.bfe.admin.ch"
+    bcm2_integration:
+      reference_count: 10
+      files: ["BCM2_04_KON_tech_ecological.yaml"]
+      factor_prefixes: ["CH-TEC-"]
+
+  - id: API-CTX-004
+    name: BSV (Bundesamt für Sozialversicherungen)
+    category: CTX
+    subcategory: swiss_gov
+    description: "Social insurance statistics - AHV, IV, pension"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.bsv.admin.ch"
+    bcm2_integration:
+      reference_count: 9
+      files: ["BCM2_04_KON_demographic.yaml", "BCM2_04_KON_economic.yaml"]
+
+  - id: API-CTX-005
+    name: BAFU (Bundesamt für Umwelt)
+    category: CTX
+    subcategory: swiss_gov
+    description: "Environment statistics - climate, biodiversity, waste"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.bafu.admin.ch"
+    bcm2_integration:
+      reference_count: 5
+      files: ["BCM2_04_KON_tech_ecological.yaml"]
+
+  - id: API-CTX-006
+    name: SECO (Staatssekretariat für Wirtschaft)
+    category: CTX
+    subcategory: swiss_gov
+    description: "Economic policy, labor market, trade"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.seco.admin.ch"
+    bcm2_integration:
+      reference_count: 4
+      files: ["BCM2_04_KON_economic.yaml"]
+
+  - id: API-CTX-007
+    name: SEM (Staatssekretariat für Migration)
+    category: CTX
+    subcategory: swiss_gov
+    description: "Migration and asylum statistics"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.sem.admin.ch"
+    bcm2_integration:
+      reference_count: 3
+      files: ["BCM2_04_KON_demographic.yaml"]
+
+  - id: API-CTX-008
+    name: BAKOM (Bundesamt für Kommunikation)
+    category: CTX
+    subcategory: swiss_gov
+    description: "Telecommunications, media, broadband"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.bakom.admin.ch"
+    bcm2_integration:
+      reference_count: 4
+      files: ["BCM2_04_KON_tech_ecological.yaml"]
+
+  - id: API-CTX-009
+    name: ESTV (Eidg. Steuerverwaltung)
+    category: CTX
+    subcategory: swiss_gov
+    description: "Tax statistics and policy"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.estv.admin.ch"
+    bcm2_integration:
+      reference_count: 4
+      files: ["BCM2_04_KON_economic.yaml"]
+
+  - id: API-CTX-010
+    name: EFV (Eidg. Finanzverwaltung)
+    category: CTX
+    subcategory: swiss_gov
+    description: "Federal finance statistics"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.efv.admin.ch"
+    bcm2_integration:
+      reference_count: 3
+      files: ["BCM2_04_KON_economic.yaml", "BCM2_04_KON_institutional_political.yaml"]
+
+  - id: API-CTX-011
+    name: NCSC (Nationales Zentrum für Cybersicherheit)
+    category: CTX
+    subcategory: swiss_gov
+    description: "Cybersecurity statistics"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.ncsc.admin.ch"
+    bcm2_integration:
+      reference_count: 4
+      files: ["BCM2_04_KON_tech_ecological.yaml"]
+
+  - id: API-CTX-012
+    name: EDÖB (Datenschutzbeauftragter)
+    category: CTX
+    subcategory: swiss_gov
+    description: "Data protection statistics"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.edoeb.admin.ch"
+    bcm2_integration:
+      reference_count: 6
+      files: ["BCM2_04_KON_institutional_political.yaml"]
+
+  - id: API-CTX-013
+    name: OBSAN (Schweizerisches Gesundheitsobservatorium)
+    category: CTX
+    subcategory: swiss_gov
+    description: "Health observatory statistics"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.obsan.admin.ch"
+    bcm2_integration:
+      reference_count: 3
+      files: ["BCM2_04_KON_socio_cultural.yaml"]
+
+  - id: API-CTX-014
+    name: ARE (Bundesamt für Raumentwicklung)
+    category: CTX
+    subcategory: swiss_gov
+    description: "Spatial development, mobility"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.are.admin.ch"
+    bcm2_integration:
+      reference_count: 2
+      files: ["BCM2_04_KON_tech_ecological.yaml"]
+
+# =============================================================================
+# CONTEXT APIs (CTX) - International Surveys
+# =============================================================================
+context_apis_surveys:
+  - id: API-CTX-020
+    name: World Values Survey (WVS)
+    category: CTX
+    subcategory: survey
+    description: "Cross-cultural values and beliefs - 100+ countries"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.worldvaluessurvey.org"
+      docs_url: "https://www.worldvaluessurvey.org/WVSContents.jsp"
+    bcm2_integration:
+      reference_count: 18
+      files: ["BCM2_04_KON_socio_cultural.yaml"]
+      factor_prefixes: ["CH-SOC-", "CH-REL-"]
+    psi_dimensions: ["Ψ_K (cultural)", "Ψ_S (social)"]
+
+  - id: API-CTX-021
+    name: European Social Survey (ESS)
+    category: CTX
+    subcategory: survey
+    description: "European attitudes, beliefs, behaviors"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.europeansocialsurvey.org"
+    bcm2_integration:
+      reference_count: 10
+      files: ["BCM2_04_KON_socio_cultural.yaml", "BCM2_04_KON_institutional_political.yaml"]
+    psi_dimensions: ["Ψ_K (cultural)", "Ψ_I (institutional)"]
+
+  - id: API-CTX-022
+    name: Eurobarometer
+    category: CTX
+    subcategory: survey
+    description: "EU public opinion surveys"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://europa.eu/eurobarometer/"
+    bcm2_integration:
+      reference_count: 2
+      files: ["BCM2_04_KON_institutional_political.yaml"]
+
+  - id: API-CTX-023
+    name: Edelman Trust Barometer
+    category: CTX
+    subcategory: survey
+    description: "Global trust in institutions"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.edelman.com"
+    bcm2_integration:
+      reference_count: 4
+      files: ["BCM2_04_KON_institutional_political.yaml"]
+    psi_dimensions: ["Ψ_I (institutional)"]
+
+# =============================================================================
+# CONTEXT APIs (CTX) - Swiss Research Institutes
+# =============================================================================
+context_apis_research:
+  - id: API-CTX-030
+    name: gfs.bern
+    category: CTX
+    subcategory: research_ch
+    description: "Swiss political research and polls"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.gfsbern.ch"
+    bcm2_integration:
+      reference_count: 12
+      files: ["BCM2_04_KON_institutional_political.yaml", "BCM2_04_KON_socio_cultural.yaml"]
+
+  - id: API-CTX-031
+    name: Sotomo
+    category: CTX
+    subcategory: research_ch
+    description: "Swiss opinion research, political analysis"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://sotomo.ch"
+    bcm2_integration:
+      reference_count: 5
+      files: ["BCM2_04_KON_socio_cultural.yaml"]
+
+  - id: API-CTX-032
+    name: ETH CSS (Center for Security Studies)
+    category: CTX
+    subcategory: research_ch
+    description: "Security and defense research"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://css.ethz.ch"
+    bcm2_integration:
+      reference_count: 4
+      files: ["BCM2_04_KON_institutional_political.yaml"]
+
+  - id: API-CTX-033
+    name: ZHAW (Zürcher Hochschule für Angewandte Wissenschaften)
+    category: CTX
+    subcategory: research_ch
+    description: "Applied research - various domains"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.zhaw.ch"
+    bcm2_integration:
+      reference_count: 9
+      files: ["BCM2_04_KON_socio_cultural.yaml", "BCM2_04_KON_tech_ecological.yaml"]
+
+  - id: API-CTX-034
+    name: Avenir Suisse
+    category: CTX
+    subcategory: research_ch
+    description: "Liberal think tank - economic policy"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.avenir-suisse.ch"
+    bcm2_integration:
+      reference_count: 3
+      files: ["BCM2_04_KON_economic.yaml", "BCM2_04_KON_institutional_political.yaml"]
+
+  - id: API-CTX-035
+    name: fög (Forschungszentrum Öffentlichkeit und Gesellschaft)
+    category: CTX
+    subcategory: research_ch
+    description: "Media quality research"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.foeg.uzh.ch"
+    bcm2_integration:
+      reference_count: 2
+      files: ["BCM2_04_KON_socio_cultural.yaml"]
+
+  - id: API-CTX-036
+    name: Economiesuisse
+    category: CTX
+    subcategory: research_ch
+    description: "Swiss business federation - economic data"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.economiesuisse.ch"
+    bcm2_integration:
+      reference_count: 5
+      files: ["BCM2_04_KON_economic.yaml"]
+
+# =============================================================================
+# CONTEXT APIs (CTX) - International Organizations
+# =============================================================================
+context_apis_international:
+  - id: API-CTX-040
+    name: Eurostat
+    category: CTX
+    subcategory: international
+    description: "EU statistics"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://ec.europa.eu/eurostat"
+      api_url: "https://ec.europa.eu/eurostat/api"
+    bcm2_integration:
+      reference_count: 3
+      files: ["BCM2_04_KON_economic.yaml", "BCM2_04_KON_tech_ecological.yaml"]
+
+  - id: API-CTX-041
+    name: OECD
+    category: CTX
+    subcategory: international
+    description: "OECD statistics - economic, social, environmental"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.oecd.org"
+      api_url: "https://data.oecd.org"
+    bcm2_integration:
+      reference_count: 3
+      files: ["BCM2_04_KON_economic.yaml"]
+
+  - id: API-CTX-042
+    name: World Bank (Governance Indicators)
+    category: CTX
+    subcategory: international
+    description: "Worldwide governance indicators"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://info.worldbank.org/governance/wgi/"
+    bcm2_integration:
+      reference_count: 4
+      files: ["BCM2_04_KON_institutional_political.yaml"]
+
+  - id: API-CTX-043
+    name: Transparency International
+    category: CTX
+    subcategory: international
+    description: "Corruption perception index"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.transparency.org"
+    bcm2_integration:
+      reference_count: 2
+      files: ["BCM2_04_KON_institutional_political.yaml"]
+
+  - id: API-CTX-044
+    name: World Justice Project
+    category: CTX
+    subcategory: international
+    description: "Rule of law index"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://worldjusticeproject.org/"
+    bcm2_integration:
+      reference_count: 3
+      files: ["BCM2_04_KON_institutional_political.yaml"]
+
+  - id: API-CTX-045
+    name: Reporters Without Borders
+    category: CTX
+    subcategory: international
+    description: "Press freedom index"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://rsf.org"
+    bcm2_integration:
+      reference_count: 1
+      files: ["BCM2_04_KON_institutional_political.yaml"]
+
+  - id: API-CTX-046
+    name: MIPEX (Migration Policy Index)
+    category: CTX
+    subcategory: international
+    description: "Migration integration policy"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.mipex.eu"
+    bcm2_integration:
+      reference_count: 2
+      files: ["BCM2_04_KON_demographic.yaml"]
+
+  - id: API-CTX-047
+    name: Global Innovation Index
+    category: CTX
+    subcategory: international
+    description: "Innovation rankings"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.globalinnovationindex.org"
+    bcm2_integration:
+      reference_count: 2
+      files: ["BCM2_04_KON_tech_ecological.yaml"]
+
+  - id: API-CTX-048
+    name: UN E-Government Survey
+    category: CTX
+    subcategory: international
+    description: "E-government development index"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://publicadministration.un.org/egovkb/"
+    bcm2_integration:
+      reference_count: 1
+      files: ["BCM2_04_KON_tech_ecological.yaml"]
+
+# =============================================================================
+# CONTEXT APIs (CTX) - Industry / Private Sector
+# =============================================================================
+context_apis_industry:
+  - id: API-CTX-050
+    name: Comparis
+    category: CTX
+    subcategory: industry
+    description: "Swiss comparison platform - insurance, finance"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.comparis.ch"
+    bcm2_integration:
+      reference_count: 4
+      files: ["BCM2_04_KON_economic.yaml"]
+
+  - id: API-CTX-051
+    name: WEMF (Werbemedienforschung)
+    category: CTX
+    subcategory: industry
+    description: "Swiss media research"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://wemf.ch"
+    bcm2_integration:
+      reference_count: 2
+      files: ["BCM2_04_KON_socio_cultural.yaml"]
+
+  - id: API-CTX-052
+    name: Startupticker
+    category: CTX
+    subcategory: industry
+    description: "Swiss startup ecosystem"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.startupticker.ch"
+    bcm2_integration:
+      reference_count: 3
+      files: ["BCM2_04_KON_economic.yaml"]
+
+  - id: API-CTX-053
+    name: Swiss Sustainable Finance
+    category: CTX
+    subcategory: industry
+    description: "Sustainable finance data"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://www.sustainablefinance.ch"
+    bcm2_integration:
+      reference_count: 3
+      files: ["BCM2_04_KON_economic.yaml"]
+
+  - id: API-CTX-054
+    name: Gesundheitsförderung Schweiz (Job Stress Index)
+    category: CTX
+    subcategory: industry
+    description: "Workplace health and stress"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://gesundheitsfoerderung.ch"
+    bcm2_integration:
+      reference_count: 2
+      files: ["BCM2_04_KON_socio_cultural.yaml"]
+
+  - id: API-CTX-055
+    name: Reuters Institute Digital News Report
+    category: CTX
+    subcategory: industry
+    description: "Digital news consumption"
+    status: DOCUMENTED
+    endpoint:
+      base_url: "https://reutersinstitute.politics.ox.ac.uk/digital-news-report"
+    bcm2_integration:
+      reference_count: 2
+      files: ["BCM2_04_KON_socio_cultural.yaml"]
+
+# =============================================================================
+# VALIDATION APIs (VAL)
+# =============================================================================
+validation_apis:
+  - id: API-VAL-001
+    name: ORCID
+    category: VAL
+    description: "Author identifier validation"
+    status: PLANNED
+    endpoint:
+      base_url: "https://pub.orcid.org/v3.0"
+
+# =============================================================================
+# Ψ-DIMENSION MAPPING
+# =============================================================================
+psi_dimension_mapping:
+  Ψ_I:  # Institutional
+    apis: [API-CTX-001, API-CTX-010, API-CTX-012, API-CTX-021, API-CTX-030, API-CTX-042, API-CTX-043, API-CTX-044]
+    description: "Rules, regulations, defaults, governance"
+  Ψ_S:  # Social
+    apis: [API-CTX-020, API-CTX-021, API-CTX-023, API-CTX-030, API-CTX-031]
+    description: "Social norms, peer effects, networks"
+  Ψ_K:  # Cultural
+    apis: [API-CTX-020, API-CTX-021, API-CTX-022]
+    description: "Values, traditions, beliefs"
+  Ψ_E:  # Economic
+    apis: [API-CTX-001, API-CTX-002, API-CTX-006, API-CTX-009, API-CTX-040, API-CTX-041]
+    description: "Resources, budget constraints, economic context"
+  Ψ_T:  # Temporal
+    apis: [API-CTX-001]
+    description: "Time pressure, deadlines, life stage"
+  Ψ_C:  # Cognitive
+    apis: [API-CTX-054]
+    description: "Mental state, attention, stress"
+  Ψ_M:  # Material/Technological
+    apis: [API-CTX-003, API-CTX-008, API-CTX-011, API-CTX-047, API-CTX-048]
+    description: "Technology, infrastructure, tools"
+  Ψ_F:  # Physical
+    apis: [API-CTX-005, API-CTX-014]
+    description: "Location, environment, physical space"

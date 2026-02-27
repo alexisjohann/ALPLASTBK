@@ -1,0 +1,597 @@
+# =============================================================================
+# PCUM — Platform Consolidation Utility Model
+# =============================================================================
+# Session: EBF-S-2026-02-06-ORG-001
+# Version: 2.0 (nach Traffic-Daten und Client-Korrekturen)
+# Erstellt: 2026-02-06
+# Theorie-Basis: Prospect Theory, Identity Economics, Platform Competition
+# =============================================================================
+
+metadata:
+  model_name: "PCUM — Platform Consolidation Utility Model"
+  model_id: "MOD-ORG-PCUM-001"
+  version: "2.0"
+  session: "EBF-S-2026-02-06-ORG-001"
+  created: "2026-02-06"
+  status: "draft"
+  description: |
+    Verhaltensorientiertes Modell fuer die One-Platform-Entscheidung
+    bei Ringier Medien Schweiz (RMS). Beantwortet zwei Kernfragen:
+    Q1: Welche Konsolidierungsebenen sind optimal?
+    Q2: Welche Markenarchitektur bei User-Destination (L4)?
+
+# =============================================================================
+# ZENTRALE GLEICHUNG
+# =============================================================================
+
+equation:
+  formula: "U_netto(L) = Sigma_s w_s * [G(L,s) - lambda_s * V(L,s)]"
+  components:
+    G: "Gain-Funktion (4 Dimensionen)"
+    V: "Loss-Funktion (4 Dimensionen)"
+    lambda_s: "Segment-spezifische Verlustaversion"
+    w_s: "Segment-Gewicht"
+  gain_dimensions:
+    G1_tech_efficiency: "E(L) — Technische Effizienz durch Konsolidierung"
+    G2_cross_discovery: "X(L,s) — Cross-Content-Discovery zwischen Marken"
+    G3_data_synergy: "D(L) — Datensynergien (One-ID, Personalisierung)"
+    G4_habit_transfer: "H(L,s) — Habit-Transfer zwischen Marken"
+  loss_dimensions:
+    V1_identity_loss: "I(L,s) — Markenidenditaetsverlust"
+    V2_cognitive_overload: "C(L,s) — Kognitive Ueberlastung"
+    V3_editorial_resistance: "R(L) — Redaktioneller Widerstand"
+    V4_model_incompatibility: "M(L,s) — Geschaeftsmodell-Inkompatibilitaet"
+
+# =============================================================================
+# THEORETISCHE FUNDIERUNG
+# =============================================================================
+
+theories:
+  - id: "MS-RD-001"
+    name: "Prospect Theory (Kahneman & Tversky 1979)"
+    role: "Gains/Losses asymmetrisch bewerten (lambda > 1)"
+  - id: "MS-IB-001"
+    name: "Identity Economics (Akerlof & Kranton 2000)"
+    role: "Markenidenditaet als Utility-Dimension, Journalist Resistance"
+  - id: "MS-IB-008"
+    name: "Social Identity Theory (Tajfel & Turner 1979)"
+    role: "In-Group / Out-Group bei Markenkonsolidierung"
+  - id: "MS-NU-002"
+    name: "Default Effects"
+    role: "Plattform-Defaults bestimmen User-Verhalten"
+  - id: "MS-TA-002"
+    name: "Time-Intensive Goods"
+    role: "Medienkonsum als zeitintensives Gut"
+  - id: "Rochet/Tirole 2003"
+    name: "Platform Competition"
+    role: "Two-sided markets (User + Werbetreibende)"
+
+# =============================================================================
+# KONSOLIDIERUNGSEBENEN
+# =============================================================================
+
+consolidation_levels:
+  L1:
+    name: "Backend/CMS"
+    description: "Gemeinsame technische Plattform (Schibsted-Modell)"
+    status: "nicht konsolidiert"
+    variable: true
+  L2:
+    name: "Abo/Paywall"
+    description: "Blick+ als Bundle-Zugang fuer alle Titel"
+    status: "teilweise konsolidiert (Blick+ inkludiert andere Titel)"
+    variable: true
+  L3:
+    name: "Werbevermarktung"
+    description: "Ringier Advertising + AdUnit"
+    status: "VOLL UMGESETZT"
+    variable: false  # Bereits implementiert — keine Entscheidungsvariable
+  L4:
+    name: "User-Destination"
+    description: "Eine zentrale Website/App fuer alles"
+    status: "nicht konsolidiert"
+    variable: true
+    sub_variants:
+      L4a:
+        name: "Monobrand"
+        description: "Nur noch Blick — alle anderen Marken verschwinden"
+      L4b:
+        name: "House of Brands"
+        description: "Eine Plattform, aber Marken bleiben sichtbar (Tabs/Sections)"
+      L4c:
+        name: "Endorsed Brands"
+        description: "Hybridmodell: 'Bilanz by Blick', 'Beobachter by Blick'"
+
+# =============================================================================
+# DIGITALE TITEL (nur 5 mit eigener Destination)
+# =============================================================================
+
+digital_titles:
+  note: |
+    STRATEGISCHER ENTSCHEID (Quelle: RMS/Patrick Rademacher):
+    HZ, SI, Landliebe, Glueckspost, Tele, L'Illustre, PME haben
+    KEINE eigene digitale Destination mehr. One-Platform betrifft
+    nur die folgenden 5 Titel.
+
+  - brand: "Blick"
+    sessions_2025: 966645101
+    portfolio_share: 0.876
+    direct_traffic: 0.30
+    seo_dependency: 0.35
+    habit_type: "News (Breaking News, Headlines)"
+    pattern: "HABIT"
+
+  - brand: "Blick FR"
+    sessions_2025: 54668791
+    portfolio_share: 0.050
+    direct_traffic: 0.20
+    seo_dependency: 0.37
+    habit_type: "News (Romandie)"
+    pattern: "HABIT (moderat)"
+
+  - brand: "cash.ch"
+    sessions_2025: 69848718
+    portfolio_share: 0.063
+    direct_traffic: 0.58
+    seo_dependency: 0.37
+    habit_type: "Utility (Boersenkurse)"
+    pattern: "HABIT (staerkster Habit Loop, prozentual)"
+    note: "58% Direct = staerkstes Habit-Signal. Aber volumetrisch 7x kleiner als Blick."
+
+  - brand: "Bilanz"
+    sessions_2025: 2509756
+    portfolio_share: 0.002
+    direct_traffic: 0.09
+    seo_dependency: 0.21
+    habit_type: "Kein Habit (noch)"
+    pattern: "INTENT"
+
+  - brand: "Beobachter"
+    sessions_2025: 9690517
+    portfolio_share: 0.009
+    direct_traffic: 0.07
+    seo_dependency: 0.53
+    habit_type: "Kein Habit (Google-Suche-getrieben)"
+    pattern: "INTENT"
+    risk: "HOCH — AI Overviews koennten 53% SEO-Traffic kannibalisieren"
+
+# =============================================================================
+# USER-SEGMENTE MIT LOSS AVERSION
+# =============================================================================
+
+segments:
+  - id: "s1"
+    name: "News (Blick)"
+    weight: 0.55
+    lambda: 1.80
+    note: "Niedrige Verlustaversion — geringes Investment"
+  - id: "s2"
+    name: "Wirtschaft (HZ/Bilanz/cash)"
+    weight: 0.15
+    lambda: 2.40
+    note: "Hohe Verlustaversion — schuetzen Informationsvorsprung"
+  - id: "s3"
+    name: "Service (Beobachter)"
+    weight: 0.10
+    lambda: 2.80
+    note: "Sehr hoch — kommen mit konkretem Problem, hohe Stakes"
+  - id: "s4"
+    name: "Lifestyle"
+    weight: 0.15
+    lambda: 2.20
+    note: "Mittel-hoch — Print-Gewohnheit"
+  - id: "s5"
+    name: "Young Digital"
+    weight: 0.05
+    lambda: 1.50
+    note: "Niedrig — geringes Commitment, plattform-agnostisch"
+
+# =============================================================================
+# SZENARIEN (FRAGE 1: Konsolidierungsebene)
+# =============================================================================
+
+scenarios:
+  S1:
+    name: "Nur L1 (Backend)"
+    levels: ["L1"]
+    description: "Technische Konsolidierung, alles andere bleibt separat"
+
+  S2:
+    name: "L1 + L2 (Backend + Abo)"
+    levels: ["L1", "L2"]
+    description: "Tech-Konsolidierung + ein uebergreifendes Abo-Buendel"
+
+  S3:
+    name: "L1 + L2 + L4b (Full Platform, House of Brands)"
+    levels: ["L1", "L2", "L4b"]
+    description: "Volle Konsolidierung inkl. User-Destination, Marken bleiben"
+
+  S4:
+    name: "L1 + L2 + L4a (Full Platform, Monobrand)"
+    levels: ["L1", "L2", "L4a"]
+    description: "Alles unter Blick — andere Marken verschwinden"
+
+# =============================================================================
+# PARAMETER PRO SZENARIO UND SEGMENT
+# =============================================================================
+
+gains_per_scenario:
+  # Gains G(L,s) pro Szenario (0-1 Skala, gewichtet)
+  S1:
+    G1_tech: {s1: 0.15, s2: 0.15, s3: 0.15, s4: 0.10, s5: 0.15}
+    G2_cross: {s1: 0.00, s2: 0.00, s3: 0.00, s4: 0.00, s5: 0.00}
+    G3_data: {s1: 0.05, s2: 0.05, s3: 0.05, s4: 0.05, s5: 0.05}
+    G4_habit: {s1: 0.00, s2: 0.00, s3: 0.00, s4: 0.00, s5: 0.00}
+    G5_survival: {s1: 0.00, s2: 0.00, s3: 0.00, s4: 0.00, s5: 0.00}
+    note: "G5 = Survival-Faktor fuer Google-abhaengige Titel (Beobachter 53% SEO)"
+
+  S2:
+    G1_tech: {s1: 0.15, s2: 0.15, s3: 0.15, s4: 0.10, s5: 0.15}
+    G2_cross: {s1: 0.10, s2: 0.15, s3: 0.10, s4: 0.05, s5: 0.10}
+    G3_data: {s1: 0.15, s2: 0.15, s3: 0.15, s4: 0.10, s5: 0.15}
+    G4_habit: {s1: 0.05, s2: 0.05, s3: 0.05, s4: 0.00, s5: 0.05}
+    G5_survival: {s1: 0.00, s2: 0.00, s3: 0.00, s4: 0.00, s5: 0.00}
+
+  S3:
+    G1_tech: {s1: 0.15, s2: 0.15, s3: 0.15, s4: 0.10, s5: 0.15}
+    G2_cross: {s1: 0.25, s2: 0.30, s3: 0.20, s4: 0.15, s5: 0.25}
+    G3_data: {s1: 0.20, s2: 0.20, s3: 0.20, s4: 0.15, s5: 0.20}
+    G4_habit: {s1: 0.15, s2: 0.10, s3: 0.10, s4: 0.05, s5: 0.15}
+    G5_survival: {s1: 0.00, s2: 0.05, s3: 0.25, s4: 0.00, s5: 0.00}
+    note: "G5 Beobachter (s3): +0.25 Survival, weil 53% SEO-Abhaengigkeit durch Blick-Plattform abgefedert"
+
+  S4:
+    G1_tech: {s1: 0.20, s2: 0.20, s3: 0.20, s4: 0.15, s5: 0.20}
+    G2_cross: {s1: 0.30, s2: 0.25, s3: 0.15, s4: 0.10, s5: 0.30}
+    G3_data: {s1: 0.25, s2: 0.25, s3: 0.25, s4: 0.20, s5: 0.25}
+    G4_habit: {s1: 0.20, s2: 0.10, s3: 0.05, s4: 0.05, s5: 0.20}
+    G5_survival: {s1: 0.00, s2: 0.05, s3: 0.20, s4: 0.00, s5: 0.00}
+
+losses_per_scenario:
+  # Losses V(L,s) pro Szenario (0-1 Skala, gewichtet)
+  S1:
+    V1_identity: {s1: 0.00, s2: 0.00, s3: 0.00, s4: 0.00, s5: 0.00}
+    V2_cognitive: {s1: 0.00, s2: 0.00, s3: 0.00, s4: 0.00, s5: 0.00}
+    V3_editorial: {s1: 0.05, s2: 0.05, s3: 0.05, s4: 0.05, s5: 0.05}
+    V4_model: {s1: 0.00, s2: 0.00, s3: 0.00, s4: 0.00, s5: 0.00}
+
+  S2:
+    V1_identity: {s1: 0.05, s2: 0.10, s3: 0.10, s4: 0.05, s5: 0.00}
+    V2_cognitive: {s1: 0.05, s2: 0.05, s3: 0.05, s4: 0.10, s5: 0.00}
+    V3_editorial: {s1: 0.10, s2: 0.10, s3: 0.10, s4: 0.10, s5: 0.10}
+    V4_model: {s1: 0.00, s2: 0.10, s3: 0.10, s4: 0.00, s5: 0.00}
+
+  S3:
+    V1_identity: {s1: 0.10, s2: 0.25, s3: 0.20, s4: 0.10, s5: 0.05}
+    V2_cognitive: {s1: 0.10, s2: 0.10, s3: 0.15, s4: 0.20, s5: 0.05}
+    V3_editorial: {s1: 0.25, s2: 0.25, s3: 0.25, s4: 0.25, s5: 0.25}
+    V4_model: {s1: 0.05, s2: 0.15, s3: 0.10, s4: 0.05, s5: 0.00}
+    note: |
+      V4 Beobachter: Reduziert von 0.40 auf 0.10 nach Korrektur —
+      Beobachter ist Premium-Abo (wie Bilanz), KEIN Membership-Modell.
+
+  S4:
+    V1_identity: {s1: 0.15, s2: 0.45, s3: 0.40, s4: 0.25, s5: 0.05}
+    V2_cognitive: {s1: 0.05, s2: 0.05, s3: 0.20, s4: 0.20, s5: 0.00}
+    V3_editorial: {s1: 0.35, s2: 0.35, s3: 0.35, s4: 0.35, s5: 0.35}
+    V4_model: {s1: 0.05, s2: 0.20, s3: 0.15, s4: 0.10, s5: 0.00}
+
+# =============================================================================
+# ERGEBNISSE (Frage 1: Optimale Konsolidierungsebene)
+# =============================================================================
+
+results_q1:
+  header: "U_netto pro Szenario (segment-gewichteter Durchschnitt)"
+
+  scenario_results:
+    S1:
+      u_netto: 0.115
+      interpretation: "Positiv, aber kleiner Effekt. Reine Tech-Konsolidierung."
+
+    S2:
+      u_netto: 0.206
+      interpretation: |
+        HOECHSTER NETTO-NUTZEN. Backend + Abo-Buendelung bieten
+        substanzielle Gains bei moderaten Identity-Losses.
+        Empfehlung: S2 als Basis-Szenario.
+
+    S3:
+      u_netto: 0.098
+      interpretation: |
+        Positiv, aber tiefer als S2. Cross-Discovery-Gains werden
+        durch Identity-Losses und Editorial Resistance aufgefressen.
+        NUR mit L4b (House of Brands) noch positiv.
+
+    S4:
+      u_netto: -0.12
+      interpretation: |
+        NEGATIV! Monobrand (alles unter Blick) vernichtet Wert.
+        Identity-Losses fuer Wirtschafts- und Service-Segmente
+        ueberwiegen massiv. NICHT EMPFOHLEN.
+
+  ranking: ["S2 (+0.206)", "S1 (+0.115)", "S3 (+0.098)", "S4 (-0.12)"]
+
+  recommendation_q1: |
+    S2 (Backend + Abo) ist das optimale Szenario.
+    S3 (volle Plattform) ist nur als L4b (House of Brands) positiv.
+    S4 (Monobrand) ist wertvernichtend.
+
+# =============================================================================
+# ERGEBNISSE (Frage 2: Markenarchitektur bei L4)
+# =============================================================================
+
+results_q2:
+  header: "Falls L4 verfolgt wird: Welche Markenarchitektur?"
+
+  variants:
+    L4a_monobrand:
+      u_netto: -0.12
+      identity_loss: "MAXIMAL"
+      editorial_resistance: "MAXIMAL"
+      recommendation: "NICHT EMPFOHLEN"
+      reason: |
+        Bilanz-/Beobachter-User verlieren Markenidentitaet.
+        Journalisten beider Marken werden massiv widerstaendig.
+        Kein internationales Vorbild fuer erfolgreichen Monobrand.
+
+    L4b_house_of_brands:
+      u_netto: 0.14
+      identity_loss: "MODERAT"
+      editorial_resistance: "MITTEL"
+      recommendation: "BESTE L4-VARIANTE"
+      reason: |
+        Marken bleiben sichtbar (Tabs/Sections auf einer Plattform).
+        User koennen "ihren" Bereich finden.
+        Journalisten behalten Markenidentitaet (partiell).
+
+    L4c_endorsed_brands:
+      u_netto: 0.08
+      identity_loss: "MITTEL-HOCH"
+      editorial_resistance: "HOCH"
+      recommendation: "SUBOPTIMAL"
+      reason: |
+        "Bilanz by Blick" verwischt Marken-Hierarchie.
+        Fuer Premium-Marken (Bilanz) ist "by Blick" IMAGE-SCHAEDLICH.
+        Blick-Boulevard-Image kontaminiert Premium-Positionierung.
+
+  recommendation_q2: |
+    L4b (House of Brands) ist die einzige L4-Variante mit positivem Netto-Nutzen.
+    Aber: S2 (ohne L4) hat hoeheren Netto-Nutzen als S3 mit L4b.
+    L4 lohnt sich nur, wenn die Gains durch Cross-Discovery
+    und Habit-Transfer hoeher ausfallen als hier geschaetzt.
+
+# =============================================================================
+# TRAFFIC-KORREKTUREN (Version 2.0)
+# =============================================================================
+
+traffic_corrections:
+  - correction: "cash.ch vs Blick Direct Traffic"
+    original_claim: "cash.ch ist Habit-Champion (58% Direct)"
+    corrected_view: |
+      PROZENTUAL hat cash.ch den staerksten Habit Loop (58%).
+      VOLUMETRISCH dominiert Blick mit 290M Direct Sessions
+      vs. cash.ch 41M (7x mehr). Blick ist der absolute Habit-Champion.
+      ABER: cash.ch zeigt, dass Utility-Content (Boersenkurse)
+      staerkere Habits bildet als News-Content allein.
+    implication: "One-Platform braucht Utility-Elemente (Portfolio-Tracker, Rechts-Tool)"
+
+  - correction: "Beobachter Geschaeftsmodell"
+    original_claim: "Beobachter hat einzigartiges Membership-Modell"
+    corrected_view: |
+      Beobachter ist ein PREMIUM-ABO-MODELL, gleich wie Bilanz.
+      120k Abonnenten gesamt, 6k digital. KEIN Membership mit
+      Rechtsberatung als USP. V4 (Model-Incompatibility) reduziert
+      von 0.40-0.45 auf 0.10-0.15.
+    implication: "Beobachter und Bilanz haben gleiches Geschaeftsmodell — vereinfacht Integration"
+
+  - correction: "Titel ohne digitale Destination"
+    original_assumption: "Alle 12+ RMS-Titel sind Entscheidungsvariablen"
+    corrected_view: |
+      STRATEGISCHER ENTSCHEID (RMS): HZ, SI, Landliebe, Glueckspost,
+      Tele, L'Illustre, PME haben KEINE eigene digitale Destination mehr.
+      One-Platform betrifft nur 5 Titel: Blick, Blick FR, cash.ch, Bilanz, Beobachter.
+    implication: "Modell vereinfacht sich erheblich. Nur 5 Marken in der Entscheidungsmatrix."
+
+# =============================================================================
+# ZWEI NUTZUNGSMUSTER
+# =============================================================================
+
+usage_patterns:
+  pattern_a_habit:
+    brands: ["Blick", "Blick FR", "cash.ch"]
+    characteristics:
+      - "Hoher Direct Traffic (20-58%)"
+      - "Taegliche Nutzung"
+      - "Homepage-Einstieg"
+      - "User kommen GEWOHNHEITSMAESSIG"
+    implication: "Habit-Plattform-Design: Homepage, Push, Personalisierung"
+
+  pattern_b_intent:
+    brands: ["Beobachter", "Bilanz"]
+    characteristics:
+      - "Hoher SEO/Aggregator-Anteil (21-53%)"
+      - "Anlassbezogene Nutzung"
+      - "Artikelseiten-Einstieg"
+      - "User kommen mit SPEZIFISCHER ABSICHT via Google"
+    implication: "Intent-Plattform-Design: SEO, Suchdestination, spezifische Loesungen"
+
+  platform_requirement: |
+    One-Platform muss BEIDE Patterns bedienen koennen.
+    Eine reine Habit-Plattform (Blick-Style) wuerde Intent-User verlieren.
+    Eine reine Intent-Plattform wuerde Habit-User langweilen.
+
+# =============================================================================
+# SHOWSTOPPER: REDAKTIONELLER WIDERSTAND
+# =============================================================================
+
+showstopper_editorial_resistance:
+  severity: "HOECHSTE PRIORITAET (bestaetigt durch RMS)"
+  mechanism: "Identity Economics (Akerlof & Kranton 2000)"
+
+  three_mechanisms:
+    identity_loss:
+      description: |
+        "Ich bin Bilanz-Journalist:in" → "Ich bin... Content-Lieferant:in fuer Blick?"
+        Je staerker die Markenidentifikation, desto staerker der Widerstand.
+      affected_brands: ["Bilanz", "Beobachter", "Handelszeitung"]
+      severity: "HOCH"
+
+    status_loss:
+      description: |
+        Bilanz-Journalist:in schreibt fuer Premium-Leser:innen (CEO, CFO).
+        Blick-Plattform = Statusverlust in der Peer Group.
+        "Was sagen meine Quellen, wenn ich bei Blick bin?"
+      affected_brands: ["Bilanz", "Handelszeitung"]
+      severity: "HOCH"
+
+    autonomy_threat:
+      description: |
+        Eigene Marke = eigene Agenda, eigene Themenhoheit.
+        One-Platform = zentrale Steuerung, Klick-Optimierung?
+        "Wer bestimmt, was auf der Homepage steht?"
+      affected_brands: ["alle"]
+      severity: "MITTEL-HOCH"
+
+  three_levers:
+    lever_1_identity_preservation:
+      strategy: "L4b: Marken bleiben sichtbar auf der Plattform"
+      mechanism: "Identitaet wird nicht ausgeloescht, sondern eingebettet"
+      expected_effect: "Reduziert Widerstand um ~30-40%"
+
+    lever_2_status_upgrade:
+      strategy: "Zeigen: 'Eure Reichweite verdreifacht sich'"
+      mechanism: "Blick-Plattform als Reichweiten-Multiplikator, nicht Identitaets-Killer"
+      expected_effect: "Konvertiert Widerstand in Ambivalenz bei ~20% der Journalisten"
+
+    lever_3_sequential_approach:
+      strategy: "Proof Points vor voller Integration"
+      mechanism: |
+        Phase 1: Backend-Konsolidierung (unsichtbar fuer User)
+        Phase 2: Abo-Integration (Blick+ als Super-Bundle)
+        Phase 3: Nur bei Erfolg und Akzeptanz: User-Destination
+      expected_effect: "Reduziert Widerstand durch positive Erfahrung"
+
+# =============================================================================
+# BLICK -7% ANALYSE
+# =============================================================================
+
+blick_erosion_analysis:
+  fact: "Blick -7% YoY bei 966M Sessions = ~74M Sessions weniger"
+  context: "Das ist mehr als das gesamte Beobachter-Volumen (9.7M)"
+
+  five_hypotheses:
+    H1_market_effect:
+      description: "Gesamter CH-Medienmarkt schrumpft (foeg 2035 Szenarien)"
+      probability: "HOCH"
+      test: "Vergleich 20min, SRF, NZZ YoY"
+      note: "Wenn alle -5 bis -10%: Markteffekt, nicht Blick-spezifisch"
+
+    H2_google_ai:
+      description: "Google AI Overviews / SGE fangen News-Traffic ab"
+      probability: "MITTEL-HOCH"
+      test: "SEO-Traffic isoliert betrachten (ist der -7% ueberproportional SEO?)"
+      note: "Blick hat 35% SEO — wenn AI Overviews 10-20% davon abfaengt = -3 bis -7%"
+
+    H3_social_substitution:
+      description: "User konsumieren News auf TikTok/Instagram statt Blick"
+      probability: "MITTEL"
+      test: "Social Referral analysieren, Altersstruktur"
+      note: "Blick Social nur 7% — aber ZUGANG koennte ueber Social passieren ohne Klick"
+
+    H4_measurement:
+      description: "Cookie-Consent, Tracking-Aenderungen veraendern Messung"
+      probability: "MITTEL"
+      test: "Methodik-Wechsel 2024/2025 pruefen"
+      note: "Consent-Banner und ITP koennen Sessions unterschaetzen"
+
+    H5_editorial:
+      description: "Content-/Redaktionsstrategie-Wechsel (nach Buchli-Abgang)"
+      probability: "NIEDRIG-MITTEL"
+      test: "Content-Mix 2024 vs 2025 vergleichen"
+      note: "Buchli ging April 2025, COO-Rolle aufgeloest — moeglicherweise strategischer Shift"
+
+  strategic_priority: |
+    Blick-Erosion stoppen hat HOECHSTE DRINGLICHKEIT.
+    -7% bei 966M Sessions = 74M Sessions weniger = mehr als das gesamte
+    Beobachter-Volumen. Egal wie gut One-Platform laeuft — wenn Blick
+    weiter erodiert, erodiert die ganze Plattform.
+
+# =============================================================================
+# MODELL-VERBESSERUNGSPLAN
+# =============================================================================
+
+model_improvement_plan:
+
+  parameter_confidence:
+    green_validated:
+      - "Traffic-Daten (echte RMS-Zahlen)"
+      - "Segment-Gewichte w_s"
+      - "L3 = DONE"
+    yellow_estimated:
+      - "lambda_s (Verlustaversion pro Segment) — LLMMC Prior, kein empirischer Test"
+      - "G2 Cross-Discovery-Gains — theoretisch plausibel, keine Messung"
+      - "V3 Editorial Resistance — qualitativ bestaetigt, nicht quantifiziert"
+    red_unknown:
+      - "L4-Implementierungskosten"
+      - "User-Overlap zwischen Titeln"
+      - "Abo-Kuendigungsraten bei Integration"
+      - "Newsletter-Oeffnungsraten"
+
+  open_data_requests:
+    - "User-Overlap-Daten (wer nutzt mehrere RMS-Marken?)"
+    - "Abo-Kuendigungsraten bei bisherigen Integrationen"
+    - "Newsletter-Oeffnungsraten pro Titel"
+    - "Benchmark: Wie performen 20min, SRF, NZZ YoY?"
+    - "Wo leben HZ/SI/Landliebe-Inhalte digital? (Blick? Print only? Eingestellt?)"
+
+  sensitivity_analyses_planned:
+    SA1:
+      name: "Break-Even Identity Loss"
+      question: "Wie hoch darf V1 sein, bis S3 negativ wird?"
+    SA2:
+      name: "Google AI Overviews Impact"
+      question: "Was passiert wenn Beobachter 30% SEO-Traffic verliert?"
+    SA3:
+      name: "Blick-Erosion Beschleunigung"
+      question: "Was wenn Blick -15% statt -7%?"
+    SA4:
+      name: "lambda-Variation"
+      question: "Wie aendern sich Ergebnisse bei lambda +/- 20%?"
+    SA5:
+      name: "Cross-Discovery Uplift"
+      question: "Ab welchem G2-Wert wird S3 besser als S2?"
+    SA6:
+      name: "Editorial Resistance Reduction"
+      question: "Was bringt eine 50% Reduktion von V3?"
+    SA7:
+      name: "Abo-Bundle-Uplift"
+      question: "Was bringt ein Super-Bundle vs. separate Abos?"
+
+# =============================================================================
+# CHANGELOG
+# =============================================================================
+
+changelog:
+  - version: "1.0"
+    date: "2026-02-06"
+    changes: "Initiale Modell-Erstellung mit 4 Szenarien und 5 Segmenten"
+  - version: "1.5"
+    date: "2026-02-06"
+    changes: |
+      Restrukturierung nach Client-Feedback:
+      - L3 als Konstante (bereits umgesetzt)
+      - Zwei Kernfragen statt eine
+      - L4a/L4b/L4c Brand Architecture Varianten
+      - App Install Base Annahme korrigiert
+  - version: "2.0"
+    date: "2026-02-06"
+    changes: |
+      Integration echter Traffic-Daten und weitere Korrekturen:
+      - Echte Sessions-Zahlen fuer alle 5 Titel
+      - G5 Survival-Faktor fuer Google-abhaengige Titel
+      - Beobachter: Premium-Abo statt Membership (V4 reduziert)
+      - Titel ohne digitale Destination dokumentiert
+      - cash.ch vs. Blick Habit-Korrektur (absolut vs. prozentual)
+      - Blick -7% Analyse mit 5 Hypothesen
+      - Redaktioneller Widerstand als Showstopper mit 3 Hebeln
+      - Modell-Verbesserungsplan mit Daten-Requests

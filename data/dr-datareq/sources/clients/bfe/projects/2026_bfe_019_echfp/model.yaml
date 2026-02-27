@@ -1,0 +1,1206 @@
+metadata:
+  project_id: BFE-2026-001
+  name: BFE_019_ECHfP
+  description: Energie Schweiz für Private - Energieeffizienz-Kampagne für Schweizer
+    Haushalte
+  status: planning
+  created: '2026-01-23'
+  last_updated: '2026-01-23'
+  timeline:
+    planning_start: YYYY-MM-DD
+    implementation_start: YYYY-MM-DD
+    implementation_end: YYYY-MM-DD
+    evaluation_end: YYYY-MM-DD
+  team:
+    bfe_lead: '[Name]'
+    fehradvice_lead: '[Name]'
+  context_sources:
+    makro: BCM2_04_KON
+    meso: BCM2_MESO_ENERGY_CH
+    mikro: BCM2_MIKRO_BFE
+    individual: BCM2_INDIV_BFE
+who:
+  core_question: Wer soll das Verhalten ändern?
+  primary_target:
+    segment: Private Eigentümer (EFH, MFH, Stockwerkeigentum)
+    size_estimate: ~1.8 Mio Haushalte
+    sub_segments:
+      - name: Eigentümer EFH
+        size: ~1.1 Mio
+        decision_autonomy: hoch
+      - name: Eigentümer MFH
+        size: ~0.2 Mio
+        decision_autonomy: mittel (Verwaltung)
+      - name: Stockwerkeigentümer
+        size: ~0.5 Mio
+        decision_autonomy: niedrig (STWE-Versammlung)
+    key_barriers:
+    - Upfront-Kosten
+    - Komplexität
+    - Status Quo Bias
+    - Koordinationsprobleme (MFH/STWE)
+    key_enablers:
+    - Förderung
+    - Nachbarschafts-Norm
+    - Wertsteigerung
+    - Vereinfachte Prozesse
+  secondary_targets:
+  - segment: Installateure/Energieberater
+    role: Multiplikator
+    influence_strength: 0.78
+    note: "Bei 55% Notfall-Ersatz sind sie primäre Entscheider"
+
+  # Segment-spezifische Verhaltensparameter (aus BCM2_INDIV_BFE)
+  # Emergente Interventionsvektoren nach Ch.17 Eq.17-intervention-vector
+  segment_behavioral_profiles:
+    SEG_EFH:
+      beta: 0.82  # Present Bias
+      lambda: 2.1  # Verlustaversion
+      theta: 0.65  # Aktivierungsschwelle
+      W_base: 0.35  # Baseline Willingness
+      bcj_dominant_phase: "considering"
+      # Emergenter Interventionsvektor (Ch.17 Eq.17-intervention-vector)
+      # →I = (I_WHO, I_WHAT, I_HOW, I_WHEN, I_WHERE, I_AWARE, I_READY, I_STAGE, I_HIER)
+      intervention_vector:
+        components:
+          I_WHO: 0.0      # Keine Level-Verschiebung
+          I_WHAT: 0.25    # Moderate FEPSDE-Gewichtung (u_S↑, u_F↑)
+          I_HOW: 0.1      # Leichte γ-Modifikation
+          I_WHEN: 0.4     # Dominant: Choice Architecture, Defaults
+          I_WHERE: 0.05   # Minimale Parameter-Intervention
+          I_AWARE: 0.1    # Basis-Information
+          I_READY: 0.1    # Leichte Willingness-Steigerung
+          I_STAGE: 0.0    # Keine Phase-Intervention (bereits considering)
+          I_HIER: 0.0     # Keine Ebenen-Verschiebung
+        dominant_dimension: WHEN
+        interpretation: "Vereinfachung durch Choice Architecture + Social/Financial Support"
+      key_trigger: "Heizungsdefekt (0.92)"
+
+    SEG_MFH:
+      beta: 0.78
+      lambda: 2.3
+      theta: 0.72
+      W_base: 0.28
+      bcj_dominant_phase: "aware"
+      intervention_vector:
+        components:
+          I_WHO: 0.0
+          I_WHAT: 0.2     # Financial-Gewichtung (u_F↑)
+          I_HOW: 0.15     # Pre-Commitment (γ_ij→)
+          I_WHEN: 0.1     # Leichte Kontext-Optimierung
+          I_WHERE: 0.05
+          I_AWARE: 0.35   # Dominant: Information/Awareness
+          I_READY: 0.1
+          I_STAGE: 0.05   # Leichte Journey-Unterstützung
+          I_HIER: 0.0
+        dominant_dimension: AWARE
+        interpretation: "Information + ROI-Kommunikation + Verbindliche Zielsetzung"
+      key_trigger: "Heizungsdefekt (0.85)"
+
+    SEG_STWE:
+      beta: 0.75
+      lambda: 2.5
+      theta: 0.78
+      W_base: 0.22
+      bcj_dominant_phase: "aware"
+      intervention_vector:
+        components:
+          I_WHO: 0.1      # Leichte Level-Verschiebung (Gruppe)
+          I_WHAT: 0.35    # Dominant: Social Utility (u_S↑) + Financial
+          I_HOW: 0.05
+          I_WHEN: 0.2     # Choice Architecture für Koordination
+          I_WHERE: 0.05
+          I_AWARE: 0.1
+          I_READY: 0.1
+          I_STAGE: 0.05
+          I_HIER: 0.0
+        dominant_dimension: WHAT
+        interpretation: "Champion-Strategie (Social) + Facilitierter Prozess + Förderung"
+      key_trigger: "Facilitierter Prozess"
+      note: "Koordinationsproblem dominant - Champion-Strategie"
+
+  welfare_levels:
+    L0_individual: '[Wie profitiert das Individuum?]'
+    L1_household: '[Wie profitiert der Haushalt?]'
+    L2_community: '[Wie profitiert die Gemeinde/Region?]'
+    L3_society: '[Wie profitiert die Gesellschaft?]'
+what:
+  core_question: Welches Verhalten soll erreicht werden?
+  target_behavior:
+    current: Keine/verzögerte energetische Modernisierung
+    desired: Energetische Modernisierung des Wohngebäudes durchführen
+    domain: DOM-MODERNIZATION
+    scope: Gebäudehülle, Heizung, Fenster, Dämmung, erneuerbare Energien
+  utility_dimensions:
+    u_F: Kosteneinsparung (Heizkosten -30-50%), Wertsteigerung Immobilie
+    u_E: CO2-Reduktion, Ressourcenschonung, Klimaschutz
+    u_P: Wohnkomfort (Temperatur, Luftqualität), Behaglichkeit
+    u_S: Norm-Konformität, Vorbildfunktion, Zukunftsfähigkeit
+how:
+  core_question: Wie interagieren die Interventionen?
+  intervention_format: Medienkampagne mit 5 thematischen Modulen
+
+  # Modul-spezifische Interventionsvektoren (Ch.17 Emergenz-Theorie)
+  modules:
+    - id: M1
+      name: Energetische Gesamtmodernisierung
+      scope: Übergreifend, ganzheitlicher Ansatz
+      intervention_vector:
+        # →I = [WHO, WHAT, HOW, WHEN, WHERE, AWARE, READY, STAGE, HIER]
+        values: [0.0, 0.2, 0.1, 0.15, 0.05, 0.3, 0.15, 0.05, 0.0]
+        dominant: AWARE
+        secondary: [WHAT, READY]
+      target_behavior: Gesamtplanung energetische Sanierung initiieren
+
+    - id: M2
+      name: Heizungsersatz und Warmwasser
+      scope: Fossile → Erneuerbare (Wärmepumpe, Fernwärme, Pellets)
+      intervention_vector:
+        values: [0.0, 0.25, 0.05, 0.2, 0.1, 0.3, 0.1, 0.0, 0.0]
+        dominant: AWARE
+        secondary: [WHAT, WHEN]
+        note: "WHAT primär u_F (Förderung), sekundär u_S"
+      target_behavior: Heizungssystem ersetzen
+      link_to_meso: ENE-REG-06, ENE-PSY-02, ENE-ECO-02
+
+    - id: M3
+      name: Gebäudehülle und Dämmung
+      scope: Fassade, Dach, Kellerdecke, Fenster
+      intervention_vector:
+        values: [0.0, 0.3, 0.05, 0.15, 0.1, 0.3, 0.1, 0.0, 0.0]
+        dominant: AWARE
+        secondary: [WHAT]
+        note: "WHAT primär u_F (Wertsteigerung kommunizieren)"
+      target_behavior: Dämmung/Fenster erneuern
+      link_to_meso: ENE-ECO-06
+
+    - id: M4
+      name: Solarenergie
+      scope: PV-Anlagen, Solarthermie
+      intervention_vector:
+        values: [0.0, 0.3, 0.05, 0.1, 0.05, 0.3, 0.15, 0.05, 0.0]
+        dominant: AWARE
+        secondary: [WHAT, READY]
+        note: "WHAT primär u_S (Nachbarschafts-Norm)"
+      target_behavior: Solaranlage installieren
+      link_to_meso: ENE-REG-02, ENE-SOC-01, ENE-ECO-03
+
+    - id: M5
+      name: Elektromobilität
+      scope: E-Auto, Ladeinfrastruktur
+      intervention_vector:
+        values: [0.0, 0.3, 0.05, 0.1, 0.05, 0.3, 0.15, 0.05, 0.0]
+        dominant: AWARE
+        secondary: [WHAT, READY]
+        note: "WHAT primär u_S (E-Auto-Norm)"
+      target_behavior: E-Auto anschaffen, Ladestation installieren
+      link_to_meso: ENE-SOC-02, ENE-PSY-05
+
+  # Vektor-Dimension-Interpretation (Ch.17 Tab.17-vector-components)
+  vector_dimensions:
+    I_WHO: "Ziel-Level verschieben (↑ zu Gruppe, ↓ zu Individuum)"
+    I_WHAT: "FEPSDE-Gewichte ändern (u_F, u_E, u_P, u_S, u_D, u_X)"
+    I_HOW: "γ-Struktur modifizieren (Komplementarität ↑/↓)"
+    I_WHEN: "Kontext Ψ verändern (Defaults, Friktionen, Timing)"
+    I_WHERE: "Parameter-Schätzung verbessern (Evidenz liefern)"
+    I_AWARE: "Awareness erhöhen (Information, Salience)"
+    I_READY: "Willingness steigern (Motivation, Capability)"
+    I_STAGE: "Journey-Phase beeinflussen (Trigger, Stabilisieren)"
+    I_HIER: "Entscheidungsebene adressieren (L0-L3)"
+
+  # =============================================================================
+  # EMERGENTE INTERVENTIONSVEKTOR-SCHÄTZUNG (Ch.17 Emergenz-Theorie)
+  # =============================================================================
+  # →I = f(→S₀, →S₁, Ψ, Θ, φ, L)
+  # Der Interventionsvektor emergiert aus allen Inputs, nicht nur Kontext
+  intervention_estimation:
+    description: |
+      Schätzfunktion für emergente Interventionsvektoren.
+      Kombiniert alle relevanten Inputs zu einem optimalen →I.
+
+    # Funktion: →I = f(→S₀, →S₁, Ψ, Θ, φ, L)
+    inputs:
+      S0: "10C Status Quo Vektor"
+      S1: "10C Zielzustand Vektor"
+      Psi: "Kontextfaktoren (kappa_*)"
+      Theta: "Verhaltensparameter (β, λ, θ, W_base)"
+      phi: "BCJ-Phase (unaware → maintaining)"
+      L: "WHO-Level (individual, household, group, society)"
+
+    # Mapping-Regeln: Input → ΔI
+    mapping_rules:
+      # =========================================================================
+      # 1. PARAMETER-ABHÄNGIGE REGELN (Θ → ΔI)
+      # =========================================================================
+      parameter_rules:
+        beta:
+          description: "Present Bias (β < 1 = stärker)"
+          rules:
+            - condition: "beta < 0.75"
+              delta: {I_WHEN: +0.20, I_HOW: +0.10}
+              rationale: "Starker Present Bias → Choice Architecture + Pre-Commitment"
+            - condition: "0.75 <= beta < 0.85"
+              delta: {I_WHEN: +0.10}
+              rationale: "Moderater Present Bias → leichte Kontext-Optimierung"
+            - condition: "beta >= 0.85"
+              delta: {}
+              rationale: "Geringer Present Bias → keine spezielle Intervention"
+
+        lambda:
+          description: "Verlustaversion (λ > 2 = stärker)"
+          rules:
+            - condition: "lambda > 2.3"
+              delta: {I_WHAT: +0.15, I_AWARE: +0.05}
+              rationale: "Hohe Verlustaversion → Loss Framing, Risiko-Information"
+            - condition: "2.0 <= lambda <= 2.3"
+              delta: {I_WHAT: +0.05}
+              rationale: "Normale Verlustaversion → moderates Framing"
+            - condition: "lambda < 2.0"
+              delta: {}
+              rationale: "Geringe Verlustaversion → Gain Framing möglich"
+
+        theta:
+          description: "Aktivierungsschwelle (θ = W_threshold)"
+          rules:
+            - condition: "theta > 0.75"
+              delta: {I_READY: +0.15, I_AWARE: +0.10}
+              rationale: "Hohe Schwelle → mehr Überzeugungsarbeit nötig"
+            - condition: "0.65 <= theta <= 0.75"
+              delta: {I_READY: +0.05}
+              rationale: "Moderate Schwelle → Standard-Approach"
+            - condition: "theta < 0.65"
+              delta: {}
+              rationale: "Niedrige Schwelle → leicht aktivierbar"
+
+        W_base:
+          description: "Baseline Willingness"
+          rules:
+            - condition: "W_base < 0.25"
+              delta: {I_AWARE: +0.15, I_WHAT: +0.10, I_READY: +0.10}
+              rationale: "Niedrige Baseline → umfassende Intervention nötig"
+            - condition: "0.25 <= W_base < 0.35"
+              delta: {I_AWARE: +0.10, I_READY: +0.05}
+              rationale: "Moderate Baseline → fokussierte Intervention"
+            - condition: "W_base >= 0.35"
+              delta: {I_AWARE: +0.05}
+              rationale: "Gute Baseline → Aktivierung reicht"
+
+      # =========================================================================
+      # 2. KONTEXT-ABHÄNGIGE REGELN (Ψ → ΔI)
+      # =========================================================================
+      context_rules:
+        kappa_AWX:
+          description: "Awareness-Kontext"
+          rules:
+            - condition: "kappa_AWX < 0.4"
+              delta: {I_AWARE: +0.25}
+              rationale: "Niedrige Awareness → starke Information"
+            - condition: "kappa_AWX >= 0.6"
+              delta: {I_AWARE: -0.10}
+              rationale: "Hohe Awareness → weniger Information nötig"
+
+        kappa_SOCIAL:
+          description: "Sozialer Kontext / Normen"
+          rules:
+            - condition: "kappa_SOCIAL > 0.6"
+              delta: {I_WHAT: +0.15}
+              rationale: "Starke Normen vorhanden → Social Proof nutzen (u_S)"
+            - condition: "kappa_SOCIAL < 0.3"
+              delta: {I_WHAT: -0.05}
+              rationale: "Schwache Normen → andere Hebel priorisieren"
+
+        kappa_INST:
+          description: "Institutioneller Kontext / Regulierung"
+          rules:
+            - condition: "kappa_INST > 0.5"
+              delta: {I_WHEN: +0.10, I_WHERE: +0.10}
+              rationale: "Starke Förderung → kommunizieren + Evidenz liefern"
+
+        kappa_TEMP:
+          description: "Temporaler Kontext / Timing"
+          rules:
+            - condition: "trigger_event_imminent"
+              delta: {I_STAGE: +0.20, I_WHEN: +0.15}
+              rationale: "Trigger-Event → Opportunity Window nutzen"
+
+      # =========================================================================
+      # 3. BCJ-PHASE-ABHÄNGIGE REGELN (φ → ΔI)
+      # =========================================================================
+      phase_rules:
+        unaware:
+          delta: {I_AWARE: +0.35, I_STAGE: +0.10}
+          rationale: "Noch nicht bewusst → Awareness-Fokus"
+
+        aware:
+          delta: {I_AWARE: +0.15, I_WHAT: +0.10, I_READY: +0.05}
+          rationale: "Bewusst → Motivation aufbauen"
+
+        considering:
+          delta: {I_WHEN: +0.15, I_READY: +0.10, I_WHAT: +0.05}
+          rationale: "Abwägend → Entscheidung erleichtern"
+
+        intending:
+          delta: {I_WHEN: +0.20, I_HOW: +0.10}
+          rationale: "Absicht vorhanden → Umsetzung ermöglichen"
+
+        acting:
+          delta: {I_HOW: +0.15, I_READY: +0.10}
+          rationale: "Handelt → Verstärkung, Begleitung"
+
+        maintaining:
+          delta: {I_HOW: +0.10}
+          rationale: "Hält durch → Stabilisierung"
+
+      # =========================================================================
+      # 4. WHO-LEVEL-ABHÄNGIGE REGELN (L → ΔI)
+      # =========================================================================
+      level_rules:
+        individual:
+          delta: {I_WHO: 0.0}
+          rationale: "Einzelperson → direkte Ansprache"
+
+        household:
+          delta: {I_WHO: +0.05, I_WHAT: +0.05}
+          rationale: "Haushalt → leichte Koordination, gemeinsame Entscheidung"
+
+        group:
+          delta: {I_WHO: +0.15, I_WHAT: +0.10}
+          rationale: "Gruppe (z.B. STWE) → Koordination kritisch, Social Utility"
+
+        community:
+          delta: {I_WHO: +0.20, I_WHAT: +0.15, I_STAGE: +0.05}
+          rationale: "Gemeinschaft → starke Koordination, Normen-Aktivierung"
+
+    # =========================================================================
+    # AGGREGATIONSFUNKTION
+    # =========================================================================
+    aggregation:
+      method: "additive_with_normalization"
+      formula: |
+        →I_raw = →I_base + Σ(ΔI_parameter) + Σ(ΔI_context) + ΔI_phase + ΔI_level
+        →I_normalized = →I_raw / ||→I_raw||  # Normalisierung auf Summe = 1.0
+
+      base_vector:
+        description: "Basis-Interventionsvektor (Median über alle Kontexte)"
+        values: [0.0, 0.15, 0.05, 0.15, 0.05, 0.25, 0.15, 0.05, 0.0]
+        #        WHO  WHAT  HOW  WHEN WHERE AWARE READY STAGE HIER
+
+      constraints:
+        - "Alle Komponenten >= 0"
+        - "Summe aller Komponenten = 1.0 (nach Normalisierung)"
+        - "Crowding-Checks für konfligierende Komponenten"
+
+    # =========================================================================
+    # BEISPIEL-BERECHNUNG: SEG_STWE
+    # =========================================================================
+    example_calculation:
+      segment: SEG_STWE
+      inputs:
+        beta: 0.75
+        lambda: 2.5
+        theta: 0.78
+        W_base: 0.22
+        phi: "aware"
+        L: "group"
+        kappa_SOCIAL: 0.72
+
+      calculation:
+        base:      [0.00, 0.15, 0.05, 0.15, 0.05, 0.25, 0.15, 0.05, 0.00]
+        # Parameter-Regeln:
+        delta_beta:    [0.00, 0.00, 0.10, 0.20, 0.00, 0.00, 0.00, 0.00, 0.00]  # beta < 0.75
+        delta_lambda:  [0.00, 0.15, 0.00, 0.00, 0.00, 0.05, 0.00, 0.00, 0.00]  # lambda > 2.3
+        delta_theta:   [0.00, 0.00, 0.00, 0.00, 0.00, 0.10, 0.15, 0.00, 0.00]  # theta > 0.75
+        delta_W_base:  [0.00, 0.10, 0.00, 0.00, 0.00, 0.15, 0.10, 0.00, 0.00]  # W_base < 0.25
+        # Kontext-Regeln:
+        delta_social:  [0.00, 0.15, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00]  # kappa_SOCIAL > 0.6
+        # Phase-Regel:
+        delta_phase:   [0.00, 0.10, 0.00, 0.00, 0.00, 0.15, 0.05, 0.00, 0.00]  # aware
+        # Level-Regel:
+        delta_level:   [0.15, 0.10, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00]  # group
+        # -----------------------------------------------------------------------
+        raw_sum:       [0.15, 0.75, 0.15, 0.35, 0.05, 0.70, 0.45, 0.05, 0.00]
+        normalized:    [0.06, 0.28, 0.06, 0.13, 0.02, 0.26, 0.17, 0.02, 0.00]
+
+      result:
+        vector: [0.06, 0.28, 0.06, 0.13, 0.02, 0.26, 0.17, 0.02, 0.00]
+        dominant: WHAT
+        secondary: [AWARE, READY]
+        interpretation: "Social Utility (u_S) + Awareness + Willingness für Gruppen-Koordination"
+
+      comparison_with_manual:
+        manual_vector: [0.10, 0.35, 0.05, 0.20, 0.05, 0.10, 0.10, 0.05, 0.00]
+        estimated_vector: [0.06, 0.28, 0.06, 0.13, 0.02, 0.26, 0.17, 0.02, 0.00]
+        alignment: "Beide dominant WHAT, aber Schätzung betont AWARE/READY stärker"
+        note: "Differenz zeigt Optimierungspotenzial oder Experten-Adjustment"
+
+  # Aggregierte Vektor-Statistik über alle Module
+  vector_summary:
+    mean_vector: [0.0, 0.27, 0.06, 0.14, 0.07, 0.30, 0.13, 0.03, 0.0]
+    dominant_dimensions: [AWARE, WHAT]
+    interpretation: "Kampagne ist primär awareness-getrieben mit starker WHAT-Komponente"
+
+  crowding_warnings:
+    - note: "Hohe I_WHAT bei simultaner u_S und u_F Aktivierung"
+      affected_modules: [M2, M3]
+      vector_conflict: "I_WHAT enthält sowohl u_S als auch u_F"
+      risk: "γ(u_S, u_F) = -0.2 bei simultaner Aktivierung"
+      mitigation: "Temporale Sequenzierung: erst u_S (Social Framing), dann u_F (Financial als Enabler)"
+
+  complementarity_assessment:
+    positive_interactions:
+    - modules: [M1, M2, M3, M4]
+      rationale: Gesamtmodernisierung (M1) als Dach für Einzelmodule
+    - modules: [M4, M5]
+      rationale: Solar + E-Mobilität = Eigenverbrauch optimieren
+    synergies:
+    - description: Module verstärken sich gegenseitig (Cross-Selling-Effekt)
+when:
+  core_question: Wann ist der optimale Interventionszeitpunkt?
+  program_horizon: 12 Jahre (2026-2038)
+  critical_moments:
+  - moment: Renovierung/Umbau geplant
+    opportunity_window: 2-6 Monate vor Baubeginn
+    detection_mechanism: Baubewilligungen, Handwerker-Netzwerk, Energieberater
+    priority: hoch
+  - moment: Heizungsdefekt/-ersatz
+    opportunity_window: 2-4 Wochen
+    detection_mechanism: Installateur-Meldungen, EVU-Daten
+    priority: hoch
+  - moment: Hauskauf/Erbschaft
+    opportunity_window: 3-6 Monate
+    detection_mechanism: Grundbuchamt, Notare, Hypothekaranträge
+    priority: mittel
+  - moment: Ganzjährig (kontinuierlich)
+    opportunity_window: permanent
+    detection_mechanism: Kampagnen, Beratungsangebote
+    priority: basis
+  temporal_context:
+    seasonality: Ganzjährig mit saisonalen Schwerpunkten (Herbst=Heizung, Frühling=Solar)
+    policy_windows: Förderperioden, Gesetzesänderungen
+    life_events: Pensionierung, Familiengründung, Erbschaft
+  psi_temporal:
+    kappa_TEMP: Langfristiger Zeithorizont (12J) mit opportunistischen Touchpoints
+where:
+  core_question: In welchem Kontext findet die Entscheidung statt?
+  decision_context:
+    physical: '[z.B. Zuhause, Beratungsgespräch, Online]'
+    social: '[z.B. alleine, mit Partner, mit Berater]'
+    informational: '[z.B. welche Infos liegen vor?]'
+  choice_architecture:
+    current_default: Gewohnter Verbrauch
+    proposed_default: Bewusster/reduzierter Verbrauch
+    default_changed: true
+  psi_context:
+    kappa_INST: '[Institutioneller Kontext]'
+    kappa_ARCH: '[Choice Architecture]'
+    kappa_SOCIAL: '[Sozialer Kontext]'
+aware:
+  core_question: Was wissen die Zielgruppen (nicht)?
+  awareness_gaps:
+  - gap: "Unkenntnis über Förderhöhe"
+    current_level: 0.35
+    target_level: 0.80
+    delta_vector: {I_AWARE: 0.45, I_WHAT: 0.1}  # Primär Awareness, sekundär Financial-Gewicht
+    intervention: "Konkrete Frankenbeträge kommunizieren"
+
+  - gap: "Gebäudezustand unbekannt (kein GEAK)"
+    current_level: 0.165  # 16.5% GEAK-Durchdringung
+    target_level: 0.50
+    delta_vector: {I_WHEN: 0.4, I_AWARE: 0.2}  # Primär Choice Architecture (Default)
+    intervention: "GEAK bei Trigger-Events als Default empfehlen"
+
+  - gap: "Heizungsalter/Ersatzzeitpunkt"
+    current_level: 0.40
+    target_level: 0.75
+    delta_vector: {I_AWARE: 0.35}  # Feedback = Awareness
+    intervention: "Feedback über Alter und Effizienz"
+
+  - gap: "Wärmepumpen-Funktionsweise"
+    current_level: 0.45
+    target_level: 0.70
+    delta_vector: {I_AWARE: 0.25, I_WHAT: 0.05}  # Information + leichte Norm
+    intervention: "Demystifizierung, Erfahrungsberichte"
+
+  knowledge_barriers:
+  - barrier: "Komplexität Antragsprozess"
+    impact: "-0.12 W_base durch Frustration"
+    intervention: "One-Stop-Shop, digitale Anträge, Installateurunterstützung"
+
+  - barrier: "Technische Unsicherheit (Wärmepumpe)"
+    impact: "-0.08 W_base durch Risikowahrnehmung"
+    intervention: "Garantien kommunizieren, Erfahrungsberichte"
+
+  - barrier: "Zukunftsunsicherheit (Strompreis)"
+    impact: "-0.10 W_base durch Ungewissheit"
+    intervention: "Szenarien zeigen, Eigenverbrauch betonen"
+
+  psi_awareness:
+    kappa_AWX:
+      current: 0.45
+      target: 0.75
+      factors: ["Förderwissen", "Technologie-Know-how", "Gebäudezustand"]
+    kappa_KOG:
+      decision_fatigue: 0.55  # Mittel
+      information_overload: 0.62  # Mittel-hoch
+      intervention: "Vereinfachung, Schritt-für-Schritt"
+ready:
+  core_question: Wie handlungsbereit ist die Zielgruppe?
+  willingness_assessment:
+    W_base_aggregated: 0.30  # Gewichteter Durchschnitt über Eigentümer
+    W_base_by_segment:
+      SEG_EFH: 0.35
+      SEG_MFH: 0.28
+      SEG_STWE: 0.22
+    theta_by_segment:
+      SEG_EFH: 0.65
+      SEG_MFH: 0.72
+      SEG_STWE: 0.78
+    delta_required:  # W_base + delta >= theta
+      SEG_EFH: 0.30
+      SEG_MFH: 0.44
+      SEG_STWE: 0.56
+
+  barriers_to_action:
+  - barrier: "Upfront-Kosten"
+    type: financial
+    severity: high
+    by_segment: {SEG_EFH: high, SEG_MFH: medium, SEG_STWE: very_high}
+    delta_vector: {I_WHAT: 0.3, I_AWARE: 0.15}  # Financial-Gewicht erhöhen + Information
+    intervention: "Förderung kommunizieren + Finanzierungsmodelle"
+
+  - barrier: "Komplexität/Entscheidungsmüdigkeit"
+    type: cognitive
+    severity: high
+    by_segment: {SEG_EFH: medium, SEG_MFH: low, SEG_STWE: high}
+    delta_vector: {I_WHEN: 0.4, I_READY: 0.1}  # Choice Architecture + Capability
+    intervention: "Choice Architecture + One-Stop-Shop"
+
+  - barrier: "Status Quo Bias"
+    type: emotional
+    severity: high
+    by_segment: {SEG_EFH: high, SEG_MFH: high, SEG_STWE: very_high}
+    delta_vector: {I_WHEN: 0.25, I_STAGE: 0.2}  # Timing + Journey-Trigger
+    intervention: "Loss Framing + kritische Momente (Trigger) nutzen"
+
+  - barrier: "Koordinationsproblem (STWE)"
+    type: social
+    severity: very_high
+    by_segment: {SEG_EFH: null, SEG_MFH: low, SEG_STWE: very_high}
+    delta_vector: {I_WHAT: 0.35, I_WHO: 0.15}  # Social Utility + Gruppen-Level
+    intervention: "Facilitierter Prozess + Champion-Strategie"
+
+  enablers:
+  - enabler: "Gebäudeprogramm Förderung"
+    impact: "+0.15 W_base bei korrekter Kommunikation"
+    psi_affected: kappa_INST
+
+  - enabler: "Nachbarschafts-Norm"
+    impact: "+0.12 W_base wenn sichtbar (Solar-Cluster)"
+    psi_affected: kappa_SOCIAL
+
+  - enabler: "Heizungsdefekt (Trigger)"
+    impact: "Temporär W_base → 0.85 (Opportunity Window 2-4 Wochen)"
+    psi_affected: kappa_TEMP
+
+  - enabler: "Installateur-Empfehlung"
+    impact: "+0.18 W_base für empfohlene Option"
+    psi_affected: kappa_SOCIAL
+stage:
+  core_question: Wo steht die Zielgruppe in der Journey?
+  bcj_phase_distribution:
+    # Aggregiert über alle Eigentümer-Segmente (gewichtet)
+    unaware: 0.18
+    aware: 0.28
+    considering: 0.28
+    intending: 0.16
+    acting: 0.06
+    maintaining: 0.04
+
+  bcj_by_segment:
+    SEG_EFH:
+      dominant_phase: "considering"
+      distribution: {unaware: 0.15, aware: 0.25, considering: 0.30, intending: 0.18, acting: 0.08, maintaining: 0.04}
+    SEG_MFH:
+      dominant_phase: "aware"
+      distribution: {unaware: 0.20, aware: 0.30, considering: 0.28, intending: 0.14, acting: 0.05, maintaining: 0.03}
+    SEG_STWE:
+      dominant_phase: "aware"
+      distribution: {unaware: 0.25, aware: 0.35, considering: 0.22, intending: 0.12, acting: 0.04, maintaining: 0.02}
+  phase_specific_interventions:
+    unaware_to_aware:
+      intervention: '[...]'
+      kpi: '[...]'
+    aware_to_considering:
+      intervention: '[...]'
+      kpi: '[...]'
+    considering_to_intending:
+      intervention: '[...]'
+      kpi: '[...]'
+    intending_to_acting:
+      intervention: '[...]'
+      kpi: '[...]'
+hierarchy:
+  core_question: Auf welcher Ebene wird entschieden?
+  decision_levels:
+    L0_automatic:
+      description: "Gewohnheiten bei Heizungsnutzung"
+      relevance: "Gering für Investitionsentscheid, hoch für Suffizienz"
+
+    L1_heuristic:
+      description: |
+        - "Was empfiehlt der Installateur?"
+        - "Was haben die Nachbarn?"
+        - "Funktioniert doch noch"
+      relevance: "Hoch - Hauptebene bei 55% Notfall-Ersatz"
+
+    L2_deliberate:
+      description: |
+        - Kosten-Nutzen-Analyse
+        - Förderungs-Recherche
+        - Offerten-Vergleich
+      relevance: "Mittel - nur bei geplanten Sanierungen"
+
+    L3_meta:
+      description: |
+        - Klimaschutz-Überzeugung
+        - Generationenverantwortung
+        - Unabhängigkeit von fossilen Energien
+      relevance: "Variabel - stark bei ~30% der Zielgruppe"
+
+  intervention_targeting:
+    primary_level: "L1_heuristic"
+    secondary_level: "L2_deliberate"
+    rationale: |
+      Bei 55% Notfall-Ersatz dominiert L1 (Installateur-Heuristik).
+      Für geplante Sanierungen L2 aktivieren durch Information.
+predictions:
+  primary_outcome:
+    metric: "Fossil-zu-Erneuerbar Wechselrate bei Heizungsersatz"
+    baseline: 0.65  # 65% aktuell
+    target: 0.75  # +10 pp
+    confidence_interval: [0.71, 0.79]
+    absolute_impact: "+4'400 Heizungen p.a. (von 44k Ersatz)"
+
+  secondary_outcomes:
+  - metric: "Anfragen Impulsberatung"
+    baseline: 21000
+    target: 35000
+    confidence_interval: [30000, 40000]
+
+  - metric: "GEAK-Durchdringung"
+    baseline: 0.165
+    target: 0.25
+    timeline: "3 Jahre"
+
+  - metric: "Awareness Förderprogramme"
+    baseline: 0.35
+    target: 0.65
+    method: "Repräsentative Umfrage"
+
+  behavioral_kpis:
+  - kpi: "Conversion Rate Beratung → Umsetzung"
+    baseline: 0.35
+    target: 0.50
+    rationale: "Verbesserung durch Follow-up und Vereinfachung"
+
+  - kpi: "Anteil geplanter vs. Notfall-Ersatz"
+    baseline: "45:55"
+    target: "55:45"
+    rationale: "Proaktive WHEN-Trigger-Ansprache"
+
+  - kpi: "W_base Erhöhung (Aggregiert)"
+    baseline: 0.30
+    target: 0.45
+    method: "Panel-Befragung"
+
+  segment_specific_predictions:
+    SEG_EFH:
+      W_base_increase: "+0.18"
+      bcj_shift: "considering → intending (+12 pp)"
+      effective_vector: [0.0, 0.25, 0.1, 0.4, 0.05, 0.1, 0.1, 0.0, 0.0]
+      dominant_effect: "I_WHEN (Choice Architecture) + I_WHAT (Social)"
+      mechanism: "Vereinfachung + Nachbarschafts-Norm"
+
+    SEG_MFH:
+      W_base_increase: "+0.12"
+      bcj_shift: "aware → considering (+10 pp)"
+      effective_vector: [0.0, 0.2, 0.15, 0.1, 0.05, 0.35, 0.1, 0.05, 0.0]
+      dominant_effect: "I_AWARE (Information) + I_WHAT (Financial)"
+      mechanism: "ROI-Kommunikation + Pre-Commitment"
+
+    SEG_STWE:
+      W_base_increase: "+0.08"
+      bcj_shift: "aware → considering (+5 pp)"
+      effective_vector: [0.1, 0.35, 0.05, 0.2, 0.05, 0.1, 0.1, 0.05, 0.0]
+      dominant_effect: "I_WHAT (Social) + I_WHEN (Facilitierung)"
+      mechanism: "Champion-Strategie + koordinierter Prozess"
+      note: "Schwerstes Segment - niedrigste Wirkung wegen Koordinationsproblem"
+# =============================================================================
+# PORTFOLIO-OPTIMIERUNG (Constraint-basiert, Multi-Level, Multi-Temporal)
+# =============================================================================
+# Optimales Interventionsportfolio emergiert aus:
+# - Schätzfunktion →I = f(Θ, Ψ, φ, L)
+# - Nebenbedingungen (Budget, Crowding, Timing, Kapazität, Ethik)
+# - Strategische/Taktische/Operative Ebene
+# - Temporale Horizonte (instant, kurz, mittel, langfristig)
+
+portfolio_optimization:
+  description: |
+    Hierarchische Portfolio-Optimierung: Aus den geschätzten Interventionsvektoren
+    →I_segment werden unter Nebenbedingungen optimale Portfolios bestimmt.
+
+    Optimierungsproblem:
+    max Σ_s Σ_m w_sm × E[ΔW_sm(→I_sm)]  # Erwartete Wirkung maximieren
+    s.t. Nebenbedingungen C1-C6
+
+  # ===========================================================================
+  # NEBENBEDINGUNGEN (Constraints)
+  # ===========================================================================
+  constraints:
+    C1_budget:
+      name: "Budgetrestriktion"
+      type: "inequality"
+      formula: "Σ_i cost(I_i) ≤ B_total"
+      parameters:
+        B_total: "[CHF Budget p.a.]"
+        B_strategic: "[% strategisch]"
+        B_tactical: "[% taktisch]"
+        B_operative: "[% operativ]"
+      note: "Verteilung auf Ebenen vorab definiert"
+
+    C2_crowding:
+      name: "Crowding-Out Vermeidung"
+      type: "equality/inequality"
+      formula: "γ(I_i, I_j) ≥ γ_min für alle i,j im Portfolio"
+      parameters:
+        gamma_min: 0.0
+      conflicts:
+        - pair: ["I_WHAT(u_S)", "I_WHAT(u_F)"]
+          gamma: -0.2
+          mitigation: "Temporal sequencing oder Separation"
+        - pair: ["I_WHAT(u_F)", "I_HOW(γ_intrinsic)"]
+          gamma: -0.3
+          mitigation: "Finanzielle Anreize NACH intrinsischer Motivation"
+      note: "Konfligierende Interventionen nicht simultan"
+
+    C3_timing:
+      name: "Timing-Abhängigkeiten"
+      type: "ordering"
+      formula: "t(I_i) < t(I_j) wenn I_i → I_j"
+      dependencies:
+        - sequence: ["I_AWARE", "I_WHAT"]
+          rationale: "Erst Awareness, dann Motivation"
+        - sequence: ["I_WHAT", "I_WHEN"]
+          rationale: "Erst Motivation, dann Choice Architecture"
+        - sequence: ["I_AWARE", "I_READY"]
+          rationale: "Wissen vor Handlungsbereitschaft"
+
+    C4_capacity:
+      name: "Kapazitätsrestriktion"
+      type: "inequality"
+      formula: "Σ_interventions capacity_required ≤ capacity_available"
+      parameters:
+        installer_capacity: "Ratio 1.02 (knapp)"
+        consultation_capacity: "21'000 p.a. (skalierbar)"
+        processing_capacity: "[Anzahl Anträge]"
+      bottlenecks:
+        - resource: "Wärmepumpen-Installation"
+          wait_time: "18 Wochen"
+          constraint: "M2 max scale limited"
+
+    C5_ethical:
+      name: "Ethik-Grenzen"
+      type: "boundary"
+      formula: "autonomy_score(I_i) ≥ η_min"
+      parameters:
+        eta_min: 0.3
+      prohibited:
+        - "Mandate ohne Option"
+        - "Deception-basierte Interventionen"
+        - "Exploitative Framing"
+      required:
+        - "Transparenz über Intervention"
+        - "Opt-out Möglichkeit bei Defaults"
+
+    C6_segment_specific:
+      name: "Segment-Eignung"
+      type: "conditional"
+      formula: "σ(I_i, S_j) ≥ σ_min für Segment S_j"
+      parameters:
+        sigma_min: 0.5
+      exclusions:
+        - segment: "SEG_STWE"
+          exclude: ["mandate_individual"]
+          reason: "Keine individuelle Entscheidungsautonomie"
+        - segment: "autonomy_seeking"
+          exclude: ["strong_defaults"]
+          reason: "Reaktanzrisiko"
+
+  # ===========================================================================
+  # HIERARCHISCHE EBENEN
+  # ===========================================================================
+  hierarchy:
+    # -------------------------------------------------------------------------
+    # STRATEGISCHE EBENE (Gesamtstrategie)
+    # -------------------------------------------------------------------------
+    strategic:
+      description: |
+        Gesamtstrategie: Welche 10C-Dimensionen priorisieren?
+        Welche Segmente zuerst? Welche Module kombinieren?
+
+      time_horizon: "3-12 Jahre (Gesamtprogramm)"
+      decision_frequency: "jährlich / bei Major Review"
+
+      optimization_target: "Maximiere langfristigen Impact auf Wechselrate"
+
+      outputs:
+        - portfolio_weights: "Gewichtung →I_weighted über Segmente"
+        - segment_priority: "Reihenfolge der Segment-Bearbeitung"
+        - module_sequence: "M1-M5 Aktivierungsreihenfolge"
+        - resource_allocation: "Budget-Split strategisch/taktisch/operativ"
+
+      # Strategische Entscheidungen für BFE_019
+      decisions:
+        dimension_priority:
+          rank_1: "AWARE"
+          rank_1_weight: 0.30
+          rationale: "Niedrige Baseline-Awareness (0.45 → 0.75)"
+
+          rank_2: "WHAT"
+          rank_2_weight: 0.25
+          rationale: "Social + Financial Utility aktivieren"
+
+          rank_3: "WHEN"
+          rank_3_weight: 0.20
+          rationale: "Choice Architecture bei Trigger-Events"
+
+          rank_4: "READY"
+          rank_4_weight: 0.15
+          rationale: "Willingness über Schwelle heben"
+
+          other: 0.10
+
+        segment_sequence:
+          phase_1:
+            segments: ["SEG_EFH"]
+            rationale: "Höchste Autonomie, schnellste Wirkung"
+            duration: "Jahr 1-2"
+          phase_2:
+            segments: ["SEG_MFH", "SEG_EFH"]
+            rationale: "MFH parallel zu EFH-Fortsetzung"
+            duration: "Jahr 2-4"
+          phase_3:
+            segments: ["SEG_STWE", "SEG_MFH", "SEG_EFH"]
+            rationale: "STWE braucht längste Vorlaufzeit (Koordination)"
+            duration: "Jahr 3-12"
+
+        module_integration:
+          core_module: "M2"
+          rationale: "Heizungsersatz = höchste Wirkung (45k p.a.)"
+          supporting_modules: ["M1", "M3"]
+          optional_modules: ["M4", "M5"]
+
+    # -------------------------------------------------------------------------
+    # TAKTISCHE EBENE (Kampagnen-Design)
+    # -------------------------------------------------------------------------
+    tactical:
+      description: |
+        Taktik: Welche konkreten Kampagnen/Programme?
+        Welche Kanäle? Welche Botschaften pro Segment?
+
+      time_horizon: "3-24 Monate"
+      decision_frequency: "quartalsweise"
+
+      optimization_target: "Maximiere Conversion innerhalb Budget"
+
+      outputs:
+        - campaign_portfolio: "Konkrete Kampagnen mit Ziel-→I"
+        - channel_allocation: "Budget pro Kanal"
+        - message_variants: "Segment-spezifische Botschaften"
+        - kpi_targets: "Quartals-Ziele"
+
+      # Taktische Interventionsportfolios pro Segment
+      segment_portfolios:
+        SEG_EFH:
+          target_vector: [0.0, 0.25, 0.1, 0.4, 0.05, 0.1, 0.1, 0.0, 0.0]
+          campaigns:
+            - name: "Heizungs-Check Kampagne"
+              vector_emphasis: {I_AWARE: 0.3, I_STAGE: 0.2}
+              channel: "Direct Mail + Digital"
+              timing: "Herbst (vor Heizsaison)"
+
+            - name: "Nachbarschafts-Challenge"
+              vector_emphasis: {I_WHAT: 0.4, I_WHEN: 0.2}
+              channel: "Gemeinde-Partnerschaften"
+              timing: "Frühling (Solar-Saison)"
+
+            - name: "One-Click Förderantrag"
+              vector_emphasis: {I_WHEN: 0.5, I_READY: 0.2}
+              channel: "Digital Platform"
+              timing: "Kontinuierlich"
+
+        SEG_MFH:
+          target_vector: [0.0, 0.2, 0.15, 0.1, 0.05, 0.35, 0.1, 0.05, 0.0]
+          campaigns:
+            - name: "Verwaltungs-Toolkit"
+              vector_emphasis: {I_AWARE: 0.4, I_HOW: 0.2}
+              channel: "B2B (Verwaltungen)"
+              timing: "Q1 (Budget-Planung)"
+
+            - name: "ROI-Kalkulator"
+              vector_emphasis: {I_WHAT: 0.3, I_AWARE: 0.2}
+              channel: "Digital Tool"
+              timing: "Kontinuierlich"
+
+        SEG_STWE:
+          target_vector: [0.1, 0.35, 0.05, 0.2, 0.05, 0.1, 0.1, 0.05, 0.0]
+          campaigns:
+            - name: "STWE Champion Programm"
+              vector_emphasis: {I_WHO: 0.2, I_WHAT: 0.4}
+              channel: "HEV Partnerschaften"
+              timing: "Vor Versammlungssaison (Q1)"
+
+            - name: "Facilitierter Sanierungsprozess"
+              vector_emphasis: {I_WHEN: 0.3, I_READY: 0.3}
+              channel: "Beratungsangebot"
+              timing: "Auf Anfrage"
+
+    # -------------------------------------------------------------------------
+    # OPERATIVE EBENE (Ausführung)
+    # -------------------------------------------------------------------------
+    operative:
+      description: |
+        Operativ: Konkrete Touchpoints, Materialien, Interaktionen.
+        Tägliche/wöchentliche Ausführung.
+
+      time_horizon: "1 Tag - 3 Monate"
+      decision_frequency: "wöchentlich / bei Trigger-Events"
+
+      optimization_target: "Maximiere Response Rate pro Touchpoint"
+
+      outputs:
+        - touchpoint_scripts: "Konkrete Gesprächsleitfäden"
+        - content_assets: "Flyer, Webseiten, E-Mails"
+        - response_protocols: "Was tun bei Trigger-Event?"
+        - ab_tests: "Varianten für Optimierung"
+
+      # Operative Interventionen
+      touchpoints:
+        trigger_response:
+          event: "Heizungsdefekt gemeldet"
+          response_time: "< 24h"
+          intervention:
+            vector: [0.0, 0.25, 0.0, 0.35, 0.1, 0.2, 0.1, 0.0, 0.0]
+            actions:
+              - "Installateur-Toolkit aktivieren"
+              - "Sofort-Beratung anbieten"
+              - "Förder-Quick-Check"
+
+        consultation:
+          event: "Impulsberatung durchgeführt"
+          follow_up: "< 48h"
+          intervention:
+            vector: [0.0, 0.2, 0.15, 0.25, 0.0, 0.25, 0.15, 0.0, 0.0]
+            actions:
+              - "Personalisierter Sanierungsfahrplan"
+              - "Offerten-Vermittlung"
+              - "Finanzierungsrechner"
+
+        nudge_moments:
+          - moment: "Stromrechnung erhalten"
+            channel: "Beileger / E-Mail"
+            vector: [0.0, 0.15, 0.0, 0.15, 0.0, 0.5, 0.2, 0.0, 0.0]
+            message: "Feedback über eigenen Verbrauch"
+
+          - moment: "Nachbar hat saniert"
+            channel: "Gemeinde-Newsletter"
+            vector: [0.0, 0.4, 0.0, 0.1, 0.0, 0.3, 0.2, 0.0, 0.0]
+            message: "Social Proof + Erfahrungsbericht"
+
+  # ===========================================================================
+  # TEMPORALE DIMENSIONEN (pro Ebene)
+  # ===========================================================================
+  temporal_horizons:
+    instant:
+      description: "Sofort-Reaktion (< 24h)"
+      applicable_levels: ["operative"]
+      use_cases:
+        - "Trigger-Event Response (Heizungsdefekt)"
+        - "Anfrage-Beantwortung"
+        - "Notfall-Beratung"
+      optimization: "Minimize response time, maximize conversion"
+
+    short_term:
+      description: "Kurzfristig (1 Woche - 3 Monate)"
+      applicable_levels: ["operative", "tactical"]
+      use_cases:
+        - "Kampagnen-Wellen"
+        - "Saisonale Aktionen"
+        - "AB-Tests"
+      optimization: "Maximize immediate response rate"
+
+    medium_term:
+      description: "Mittelfristig (3-12 Monate)"
+      applicable_levels: ["tactical", "strategic"]
+      use_cases:
+        - "Jahres-Kampagnenplan"
+        - "Segment-Entwicklung"
+        - "Kanal-Optimierung"
+      optimization: "Maximize annual conversion volume"
+
+    long_term:
+      description: "Langfristig (1-12 Jahre)"
+      applicable_levels: ["strategic"]
+      use_cases:
+        - "Gesamtprogramm-Strategie"
+        - "Verhaltens-Shift (W_base Erhöhung)"
+        - "Norm-Veränderung (kappa_SOCIAL)"
+      optimization: "Maximize sustainable behavior change"
+
+  # ===========================================================================
+  # OPTIMIERUNGS-MATRIX (Ebene × Temporal)
+  # ===========================================================================
+  optimization_matrix:
+    description: |
+      Kreuzung von Hierarchie-Ebenen und Zeithorizonten.
+      Jede Zelle hat spezifische Optimierungsziele und KPIs.
+
+    # Zeilen: Ebenen, Spalten: Zeithorizonte
+    matrix:
+      strategic:
+        instant: null  # Nicht anwendbar
+        short_term:
+          focus: "Quick Wins identifizieren"
+          kpi: "First Response Rate"
+        medium_term:
+          focus: "Segment-Penetration"
+          kpi: "Marktdurchdringung pro Segment"
+        long_term:
+          focus: "Systemische Verhaltensänderung"
+          kpi: "Fossil→Erneuerbar Quote (+10pp)"
+
+      tactical:
+        instant:
+          focus: "Trigger-Response-Protokolle"
+          kpi: "Response Time < 24h"
+        short_term:
+          focus: "Kampagnen-Performance"
+          kpi: "CPL (Cost per Lead)"
+        medium_term:
+          focus: "Segment-spezifische Conversion"
+          kpi: "Conversion Rate pro Segment"
+        long_term: null  # Nicht anwendbar
+
+      operative:
+        instant:
+          focus: "Touchpoint-Exzellenz"
+          kpi: "CSAT, Response Quality"
+        short_term:
+          focus: "Content-Optimierung"
+          kpi: "CTR, Open Rate, Engagement"
+        medium_term: null  # Nicht anwendbar
+        long_term: null    # Nicht anwendbar
+
+  # ===========================================================================
+  # BEISPIEL: OPTIMALES PORTFOLIO Q1/2027
+  # ===========================================================================
+  example_portfolio_q1_2027:
+    description: "Illustratives optimales Portfolio für Q1/2027"
+
+    inputs:
+      budget: "CHF 500k"
+      focus_segment: "SEG_EFH"
+      focus_module: "M2 (Heizungsersatz)"
+      season: "Winter → Frühling Transition"
+
+    optimized_allocation:
+      strategic:
+        decision: "EFH + Heizung priorisieren"
+        budget_share: 0.10
+        actions: ["Strategie-Review", "Partner-Alignment"]
+
+      tactical:
+        decision: "3 koordinierte Kampagnen"
+        budget_share: 0.40
+        campaigns:
+          - name: "Heizungs-Check Februar"
+            budget: "CHF 80k"
+            target_vector: [0.0, 0.2, 0.0, 0.3, 0.1, 0.3, 0.1, 0.0, 0.0]
+            expected_leads: 2500
+
+          - name: "Förder-Offensive März"
+            budget: "CHF 70k"
+            target_vector: [0.0, 0.35, 0.0, 0.25, 0.0, 0.25, 0.15, 0.0, 0.0]
+            expected_leads: 1800
+
+          - name: "Solar-Frühlingsstart April"
+            budget: "CHF 50k"
+            target_vector: [0.0, 0.4, 0.0, 0.1, 0.0, 0.3, 0.2, 0.0, 0.0]
+            expected_leads: 1200
+
+      operative:
+        decision: "Kontinuierliche Touchpoints"
+        budget_share: 0.50
+        activities:
+          - "Installateur-Schulungen (CHF 50k)"
+          - "Beratungsnetzwerk (CHF 80k)"
+          - "Digital Platform Maintenance (CHF 40k)"
+          - "Content Production (CHF 30k)"
+          - "Trigger-Response-Team (CHF 50k)"
+
+    constraints_satisfied:
+      C1_budget: "✓ CHF 500k = 500k"
+      C2_crowding: "✓ Keine konfligierenden Interventionen simultan"
+      C3_timing: "✓ AWARE → WHAT → WHEN Sequenz"
+      C4_capacity: "✓ Beratungskapazität ausreichend"
+      C5_ethical: "✓ Alle Interventionen transparent"
+      C6_segment: "✓ EFH-optimierte Interventionen"
+
+    expected_outcomes:
+      leads_total: 5500
+      conversion_rate: 0.35
+      conversions: 1925
+      cost_per_conversion: "CHF 260"
+      W_base_impact: "+0.05 (kumulativ)"
+
+references:
+  context_factors_used:
+    file: context_subset.yaml
+  similar_projects:
+  - project_id: '[z.B. BFE-2024-003]'
+    relevance: '[Was können wir lernen?]'
+  literature:
+  - citation: '[...]'
+    relevance: '[...]'
+
+# =============================================================================
+# Update Log
+# =============================================================================
+update_log:
+  - date: "2026-01-23"
+    change: "Vollständige Interventionsvektor-Schätzlogik implementiert"
+    rationale: |
+      →I = f(→S₀, →S₁, Ψ, Θ, φ, L) - Der Interventionsvektor emergiert aus ALLEN Inputs:
+      - Verhaltensparameter (β, λ, θ, W_base)
+      - Kontextfaktoren (kappa_*)
+      - BCJ-Phase (φ)
+      - WHO-Level (L)
+      Mapping-Regeln definieren ΔI pro Input, Aggregation durch Addition + Normalisierung.
+    references: ["Ch.17 Emergenz-Theorie", "Ch.18 Journey-Integration", "Ch.19 Segment-Spezifik"]
+    author: "Claude"
+  - date: "2026-01-23"
+    change: "Vollständige Umstellung auf emergente Interventionsvektoren"
+    rationale: |
+      Gemäss Ch.17 (Emergente Interventionstheorie) sind Interventionen Punkte
+      in einem kontinuierlichen 10C-Raum, nicht kategoriale Labels.
+      →I = (I_WHO, I_WHAT, I_HOW, I_WHEN, I_WHERE, I_AWARE, I_READY, I_STAGE, I_HIER)
+      Jede Komponente I_k ∈ ℝ gibt Stärke und Richtung an.
+    references: ["Ch.17 Eq.17-intervention-vector", "Ch.17 Sec.17-illusion (90%-Argument)"]
+    author: "Claude"
+  - date: "2026-01-23"
+    change: "T1-T8 durch kategoriale 10C-Labels ersetzt (Zwischenschritt)"
+    rationale: "Noch nicht korrekt - Labels sind auch kategorial"
+    author: "Claude"
+  - date: "2026-01-23"
+    change: "Initial model creation"
+    author: "Claude"

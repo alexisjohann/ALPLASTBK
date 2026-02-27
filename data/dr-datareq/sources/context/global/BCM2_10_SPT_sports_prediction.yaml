@@ -1,0 +1,291 @@
+# BCM2_10_SPT: Sports Prediction Context
+# Evidence-Based Framework - Behavioral Context Model
+# Version: 1.0 | Created: 2026-01-25
+
+metadata:
+  name: "Sports Prediction Context"
+  code: "BCM2_10_SPT"
+  version: "1.0"
+  last_updated: "2026-01-25"
+  total_factors: 18
+  sub_axes: 3
+  scope: "global"
+  description: >
+    Kontextfaktoren für verhaltensökonomische Analyse von Sportvorhersagen.
+    Integriert xG-Statistiken, Behavioral Biases und Marktdaten.
+
+  data_sources:
+    # NOTE: Most APIs block direct automated access (403 errors)
+    # Manual data entry or authenticated API access required
+    primary:
+      - name: "xGscore.io"
+        url: "https://xgscore.io/xg-statistics/champions-league"
+        access: "manual"  # 403 on automated requests
+        data: ["xG", "xGA", "xG difference"]
+      - name: "FootyStats"
+        url: "https://footystats.org/europe/uefa-champions-league/xg"
+        access: "manual"  # 403 on automated requests
+        data: ["xG", "xGA", "home/away splits"]
+      - name: "FBref"
+        url: "https://fbref.com/en/comps/8/Champions-League-Stats"
+        access: "manual"  # 403 on automated requests
+        data: ["xG", "xAG", "shooting stats"]
+      - name: "Understat"
+        url: "https://understat.com/"
+        access: "manual"  # 403 on automated requests
+        data: ["xG", "xGA", "shot maps"]
+    secondary:
+      - name: "UEFA.com"
+        url: "https://www.uefa.com/uefachampionsleague/statistics/"
+        access: "manual"
+        data: ["goals", "standings", "form"]
+      - name: "Sportmonks API"
+        url: "https://www.sportmonks.com/football-api/xg-data/"
+        access: "paid_api"
+        data: ["live xG", "xP", "player xG"]
+
+  bcm_coupling:
+    primary: "BCM2_04_KON"  # Institutional context (league rules, VAR)
+    secondary: "BCM2_03_IDN"  # Fan identity, home advantage psychology
+
+  ebf_integration:
+    dimensions:
+      - dimension: "κ_MARKET"
+        description: "Market efficiency and betting odds"
+      - dimension: "κ_PERFORMANCE"
+        description: "Performance metrics (xG, form)"
+      - dimension: "κ_BIAS"
+        description: "Behavioral biases in prediction"
+
+# =============================================================================
+# SUB-AXIS: XG - Expected Goals Performance Metrics
+# =============================================================================
+XG:
+  name: "Expected Goals (xG) Performance"
+  description: "Statistische Leistungsmetriken basierend auf Schussqualität"
+
+  factors:
+    - id: SPT-XG-01
+      name: "xG Overperformance"
+      definition: "Goals - xG > 0 indicates finishing quality above expectation"
+      trend: "variable"
+      uncertainty: "mittel"
+      measurement: "goals_scored - expected_goals"
+
+    - id: SPT-XG-02
+      name: "xGA Underperformance"
+      definition: "xGA - Goals Conceded: positive = good defense"
+      trend: "variable"
+      uncertainty: "mittel"
+      measurement: "expected_goals_against - goals_conceded"
+
+    - id: SPT-XG-03
+      name: "xG Difference"
+      definition: "xG - xGA: net expected goal difference"
+      trend: "variable"
+      uncertainty: "gering"
+      measurement: "xG - xGA"
+      note: "Best predictor of future performance (regression to mean)"
+
+    - id: SPT-XG-04
+      name: "Shot Quality Index"
+      definition: "Average xG per shot taken"
+      trend: "stabil"
+      uncertainty: "gering"
+      measurement: "total_xG / shots_taken"
+
+    - id: SPT-XG-05
+      name: "Finishing Skill"
+      definition: "Consistent overperformance suggests elite finishing"
+      trend: "variable"
+      uncertainty: "hoch"
+      note: "Most finishing variance is luck, not skill (Brier 2012)"
+
+    - id: SPT-XG-06
+      name: "xG Timeline Trend"
+      definition: "Moving average of xG over last 5 matches"
+      trend: "variable"
+      uncertainty: "mittel"
+      measurement: "MA5(xG)"
+
+# =============================================================================
+# SUB-AXIS: BIA - Behavioral Biases in Sports Prediction
+# =============================================================================
+BIA:
+  name: "Behavioral Biases"
+  description: "Systematische Verzerrungen bei Sportvorhersagen"
+
+  factors:
+    - id: SPT-BIA-01
+      name: "Favorite-Longshot Bias"
+      definition: "Overvaluation of longshots, undervaluation of favorites"
+      trend: "stabil"
+      uncertainty: "gering"
+      magnitude: "1-3% expected return difference"
+      reference: "snowberg2010explaining"
+      ebf_parameter: "λ_sports = 2.8 (elevated loss aversion in betting)"
+
+    - id: SPT-BIA-02
+      name: "Home Bias"
+      definition: "Systematic overestimation of home team performance"
+      trend: "fallend"  # Post-COVID reduced due to empty stadiums
+      uncertainty: "mittel"
+      magnitude: "0.2-0.4 goals per match advantage"
+      reference: "page2009optimistic"
+      ebf_parameter: "β_home = 0.85 (time preference for immediate home effect)"
+
+    - id: SPT-BIA-03
+      name: "Recency Bias"
+      definition: "Overweighting of recent results vs. season performance"
+      trend: "stabil"
+      uncertainty: "gering"
+      magnitude: "Last 3 matches weighted 2x vs. earlier matches"
+      reference: "zhang2023bookmaker"
+
+    - id: SPT-BIA-04
+      name: "Narrative Bias"
+      definition: "Media narratives affect perception beyond statistics"
+      trend: "steigend"  # Social media amplification
+      uncertainty: "hoch"
+      examples: ["revenge match", "must-win game", "crisis club"]
+
+    - id: SPT-BIA-05
+      name: "Overconfidence"
+      definition: "Excessive confidence in prediction accuracy"
+      trend: "stabil"
+      uncertainty: "gering"
+      magnitude: "Predicted accuracy 70% vs. actual 55%"
+      reference: "page2009optimistic"
+      ebf_parameter: "A(·) = 0.65 (awareness of own bias limitations)"
+
+    - id: SPT-BIA-06
+      name: "Hot Hand Fallacy"
+      definition: "Belief in performance streaks beyond statistical expectation"
+      trend: "stabil"
+      uncertainty: "mittel"
+      note: "Some evidence for hot hand in shooting accuracy, but overweighted"
+
+# =============================================================================
+# SUB-AXIS: MKT - Market & Contextual Factors
+# =============================================================================
+MKT:
+  name: "Market Context"
+  description: "Markt- und Wettbewerbskontextfaktoren"
+
+  factors:
+    - id: SPT-MKT-01
+      name: "Betting Market Efficiency"
+      definition: "Odds as aggregate prediction accuracy"
+      trend: "steigend"  # Markets becoming more efficient
+      uncertainty: "gering"
+      note: "Closing odds are 2-3% more accurate than opening odds"
+      reference: "brown2024sportsbetting"
+
+    - id: SPT-MKT-02
+      name: "Injury Impact"
+      definition: "Effect of key player absences on xG"
+      trend: "variable"
+      uncertainty: "hoch"
+      measurement: "Player xG contribution / team xG"
+
+    - id: SPT-MKT-03
+      name: "Competition Stage"
+      definition: "Tournament phase affects team motivation/tactics"
+      trend: "stabil"
+      uncertainty: "mittel"
+      values:
+        league_phase: "rotation risk, experimentation"
+        knockout: "full strength, conservative tactics"
+        final: "peak performance, high stakes"
+
+    - id: SPT-MKT-04
+      name: "Schedule Congestion"
+      definition: "Match frequency impact on performance"
+      trend: "steigend"  # More competitions, more games
+      uncertainty: "mittel"
+      measurement: "days_since_last_match"
+      threshold: "<72h = significant fatigue effect"
+
+    - id: SPT-MKT-05
+      name: "Coefficient Importance"
+      definition: "UEFA coefficient points motivation"
+      trend: "variable"
+      uncertainty: "mittel"
+      note: "Affects effort allocation in dead rubber matches"
+
+    - id: SPT-MKT-06
+      name: "Historical Head-to-Head"
+      definition: "Psychological advantage from past results"
+      trend: "stabil"
+      uncertainty: "hoch"
+      note: "Often overweighted; squad changes reduce relevance"
+
+# =============================================================================
+# EBF Parameter Integration
+# =============================================================================
+ebf_integration:
+  parameter_modifiers:
+    lambda:
+      description: "Loss aversion in sports betting context"
+      baseline: 2.25
+      sports_context: 2.8
+      note: "Elevated due to emotional investment"
+      source: "snowberg2010explaining"
+
+    beta:
+      description: "Time discounting for match outcomes"
+      baseline: 0.95
+      short_term_betting: 0.75
+      note: "High discounting of future match value"
+
+    awareness:
+      description: "Self-awareness of prediction biases"
+      baseline: 0.70
+      sports_fans: 0.55
+      professional_bettors: 0.85
+      note: "Fans underestimate their biases"
+
+    social_norm_strength:
+      description: "Influence of fan community on predictions"
+      baseline: 0.60
+      club_supporters: 0.85
+      neutral_analysts: 0.35
+
+# =============================================================================
+# Champions League 2025/26 Context (Manual Entry Required)
+# =============================================================================
+cl_2025_26:
+  note: "Data requires manual entry - APIs return 403"
+  last_manual_update: "2026-01-25"
+
+  # Placeholder for manual data entry
+  league_phase_standings:
+    # To be updated manually from UEFA.com or other sources
+    top_8_qualified: []
+    playoff_positions: []  # 9-24
+    eliminated: []  # 25-36
+
+  xg_leaders:
+    # To be updated manually from xGscore.io
+    # Format: {team: {xG: float, xGA: float, xG_diff: float}}
+
+  form_analysis:
+    # Last 5 matches xG trend
+
+  key_matchups:
+    # Upcoming knockout stage predictions
+
+# =============================================================================
+# Data Quality Notes
+# =============================================================================
+data_quality:
+  automated_access: "BLOCKED"
+  reason: "All major xG providers (Understat, FBref, xGscore, FootyStats) return HTTP 403"
+  workaround: "Manual data entry required"
+  update_frequency: "Weekly during season"
+
+  recommended_workflow:
+    1: "Visit xGscore.io/xg-statistics/champions-league manually"
+    2: "Copy xG data for relevant teams"
+    3: "Update cl_2025_26 section in this file"
+    4: "Commit with: chore(context): Update BCM2_10_SPT xG data"

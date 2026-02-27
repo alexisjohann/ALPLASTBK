@@ -1,0 +1,187 @@
+# Paper Migration Learnings
+# ==========================
+# This file tracks migration experiences to improve future migrations.
+# Reference: Appendix BN REF-SUPERKEY, Axiom SK-9
+#
+# Structure:
+#   - Each migration records: paper, status, patterns found, issues, learnings
+#   - Statistics are updated after each batch
+#   - Patterns become rules for automated migration
+
+version: "1.0"
+created: "2026-01-26"
+last_updated: "2026-01-26"
+
+# =============================================================================
+# MIGRATION STATISTICS
+# =============================================================================
+statistics:
+  total_papers: 2278
+  migrated: 342
+  validated_with_doi: 573
+  need_doi_lookup: 1363
+
+  by_reference_count:
+    zero_refs: 235
+    one_ref: 988
+    two_to_five: 400
+    six_to_ten: 9
+    eleven_to_fifty: 280
+    fifty_plus: 24
+
+# =============================================================================
+# LEARNED PATTERNS
+# =============================================================================
+patterns:
+  # File type patterns discovered during migration
+  file_patterns:
+    - pattern: "\\citep{KEY}"
+      file_type: ".tex"
+      description: "LaTeX citation with parentheses"
+      count: 0
+
+    - pattern: "\\citet{KEY}"
+      file_type: ".tex"
+      description: "LaTeX citation with text"
+      count: 0
+
+    - pattern: "bib_keys: [KEY]"
+      file_type: ".yaml"
+      description: "YAML bibliography key list"
+      count: 0
+
+    - pattern: "- id: KEY"
+      file_type: ".yaml"
+      description: "YAML paper ID reference"
+      count: 0
+
+    - pattern: "theory_support: KEY"
+      file_type: ".yaml"
+      description: "Theory catalog support reference"
+      count: 0
+
+  # Edge cases discovered
+  edge_cases: []
+
+  # Files that commonly contain paper references
+  hot_files:
+    - path: "data/paper-sources.yaml"
+      typical_refs: 50
+    - path: "data/theory-catalog.yaml"
+      typical_refs: 30
+    - path: "appendices/*_LIT-*.tex"
+      typical_refs: 100
+
+# =============================================================================
+# MIGRATION LOG
+# =============================================================================
+migrations:
+  - paper: gigerenzer2005rain
+    new_key: PAP-gigerenzer2005rain
+    timestamp: "2026-01-26T19:48:00"
+    doi: "10.1111/j.1539-6924.2005.00608.x"
+    url: null
+    reference_count: 3
+    files_changed:
+      - path: "bibliography/bcm_master.bib"
+        refs: 1
+      - path: "appendices/GI_LIT-GIGERENZER_ecological_rationality.tex"
+        refs: 1
+      - path: "data/paper-sources.yaml"
+        refs: 1
+    orphans_found: 0
+    status: success
+    learnings:
+      - "Paper table in LIT-* appendices uses {key} & year format"
+      - "paper-sources.yaml uses '- id: KEY' format"
+      - "Validation via grep confirms no orphans"
+    issues: []
+
+  # Batch migration: 18 papers with 0 references and valid DOI
+  - batch: "zero-refs-with-doi"
+    timestamp: "2026-01-26T20:15:00"
+    count: 18
+    papers:
+      - gigerenzer2012helping
+      - smaldino2016
+      - bunn2026statedependent
+      - jones2026binningbias
+      - attanasio2026first1000days
+      - gans2026oring
+      - demirer2025llmmarket
+      - Becker1992
+      - GruberKoszegi2001
+      - HussamEtAl2022
+      - RoyerStehrSydnor2015
+      - AllcottRogers2014
+      - eyster2010naive
+      - isaac1984public
+      - kube2013do
+      - roth2021vaccination
+      - zewde_2020_baby_bonds_microsim
+      - miller1956magical
+    reference_count: 0
+    status: success
+    learnings:
+      - "Papers with 0 references can be batch-migrated safely"
+      - "DOI validation sufficient for zero-reference papers"
+      - "No orphan checking needed when reference_count=0"
+    issues: []
+
+# Example migration entry:
+# - paper: PAP-gigerenzer2005rain
+#   new_key: PAP-gigerenzer2005rain
+#   timestamp: "2026-01-26T19:45:00"
+#   doi: "10.1111/j.1539-6924.2005.00608.x"
+#   url: null
+#   reference_count: 2
+#   files_changed:
+#     - path: "appendices/GI_LIT-GIGERENZER_ecological_rationality.tex"
+#       refs: 1
+#     - path: "data/paper-sources.yaml"
+#       refs: 1
+#   orphans_found: 0
+#   status: success
+#   learnings:
+#     - "Paper table in LIT-* appendices uses {key} & year format"
+#   issues: []
+
+# =============================================================================
+# RULES DERIVED FROM LEARNINGS
+# =============================================================================
+derived_rules:
+  # Rules automatically derived from successful migrations
+  - rule: "VALIDATE_FIRST"
+    description: "Always verify DOI/URL before migration"
+    confidence: 1.0
+
+  - rule: "CHECK_ORPHANS"
+    description: "After migration, grep for old key to find orphans"
+    confidence: 1.0
+
+  - rule: "START_SIMPLE"
+    description: "Migrate papers with 0 references first"
+    confidence: 1.0
+
+  - rule: "BATCH_ZERO_REFS"
+    description: "Papers with 0 references and DOI can be batch-migrated"
+    confidence: 1.0
+    applied: "2026-01-26"
+    result: "18 papers migrated successfully"
+
+# =============================================================================
+# PENDING DOI LOOKUPS
+# =============================================================================
+doi_lookup_queue:
+  # Papers that need DOI lookup (high priority = frequently referenced)
+  - key: kahneman1979prospect
+    references: 124
+    priority: critical
+
+  - key: tversky1974judgment
+    references: 89
+    priority: critical
+
+  - key: thaler1980toward
+    references: 76
+    priority: high
