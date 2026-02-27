@@ -1,0 +1,659 @@
+# =============================================================================
+# DACH Transferability Matrix — CH ↔ DE ↔ AT Qualifikations-Mapping
+# =============================================================================
+# Version: 1.0.0
+# Erstellt: 2026-02-22
+# Zweck: Cross-Country Qualification Mapping fuer DACH-Retail
+# =============================================================================
+#
+# WARUM TRANSFERABILITY?
+#
+# Im DACH-Raum arbeiten Retail-Unternehmen laenderuebergreifend:
+#   - Kaufland (DE + 7 weitere EU-Laender)
+#   - Lidl (CH + DE + AT + 30 weitere)
+#   - Aldi Sued/Hofer (DE + AT + CH)
+#   - Spar (AT + CH + weitere)
+#
+# Wenn ein/e Filialleiter/in von AT nach DE oder CH wechselt:
+#   → Welche Qualifikation wird ANERKANNT?
+#   → Welches Niveau hat sie im neuen Land?
+#   → Welche LUECKEN muessen geschlossen werden?
+#
+# Diese Matrix beantwortet diese Fragen systematisch.
+# =============================================================================
+
+metadata:
+  version: "1.1.0"
+  laender: ["CH", "DE", "AT"]
+  basis:
+    ch: "NQR-CH (nqr-berufsbildung.ch)"
+    de: "DQR (dqr.de)"
+    at: "NQR-AT (qualifikationsregister.at)"
+  eqf_referenz: "Alle 3 Laender referenzieren auf EQF (europass.europa.eu)"
+  cross_references:
+    dqr_eqf_ref: "data/skill-levels/dqr-eqf-levels.yaml"
+    nqr_ch_ref: "data/skill-levels/nqr-ch-levels.yaml"
+    nqr_at_ref: "data/skill-levels/nqr-at-levels.yaml"
+    kaufland_roles_ref: "data/skill-levels/kaufland-role-profiles.yaml"
+  note: |
+    Die EQF-Niveaus bilden die gemeinsame Bruecke.
+    ABER: Gleicher EQF-Level bedeutet NICHT identische Kompetenzen!
+    Jedes Land hat seine Besonderheiten (BM in CH, BHS in AT, etc.)
+    Die Anerkennung erfolgt bilateral, nicht automatisch.
+
+# =============================================================================
+# UEBERBLICK: DACH-BILDUNGSSYSTEME IM VERGLEICH
+# =============================================================================
+
+systemvergleich:
+  duale_ausbildung:
+    ch: "EBA (2J) + EFZ (3-4J) — hoechste Durchdringung (~70%)"
+    de: "2-jaehrig + 3-jaehrig — zweithoechste (~50%)"
+    at: "Lehre (2-4J) — mittlere Durchdringung (~40%)"
+    note: "Alle 3 Laender haben ein duales System, aber mit unterschiedlicher Gewichtung"
+
+  berufsmaturitaet:
+    ch: "BM I (lehrbegleitend) + BM II (nach Lehre) → FH-Zugang"
+    de: "Gibt es NICHT (Fachhochschulreife ist anders)"
+    at: "BRP (Berufsreifepruefung / Lehre mit Matura) → seit 2008"
+    note: "CH hat das aelteste und am besten etablierte System"
+
+  berufsbildende_hoehere_schulen:
+    ch: "Gibt es NICHT (Gymnasium oder Lehre, kein Hybrid)"
+    de: "Gibt es NICHT (Gymnasium oder duale Ausbildung)"
+    at: "BHS (HAK, HLW, HTL) = 5 Jahre, Matura + Beruf → NQR 5"
+    note: "AT-Alleinstellungsmerkmal! BHS-Absolventen sind mit 19 auf EQF 5"
+
+  hoehere_fachschulen:
+    ch: "HF — sehr stark, eigenstaendiger Bildungsweg"
+    de: "Fachschule — weniger verbreitet und weniger prestigetraechtig"
+    at: "Kolleg — vorhanden, aber weniger verbreitet als in CH"
+    note: "CH hat die staerkste HF-Tradition"
+
+  meister_system:
+    ch: "Hoehere Fachpruefung (HFP, eidg. Diplom) = NQR 6"
+    de: "Meisterpruefung (IHK/HWK) = DQR 6"
+    at: "Meisterpruefung (Gewerbeordnung) = NQR 6"
+    note: "Alle 3 auf EQF 6, aber unterschiedliche Pruefungssysteme"
+
+  fortbildungsstufen:
+    ch: "BP → HFP → (kein 3. Level in Berufsbildung)"
+    de: "Berufsspezialist (DQR 5) → Bachelor Prof. (DQR 6) → Master Prof. (DQR 7)"
+    at: "Keine formalen Stufen — eher HAK/BHS-Track"
+    note: "DE hat seit BBiG 2020 die klarste Stufenstruktur"
+
+# =============================================================================
+# QUALIFIKATIONS-AEQUIVALENZTABELLE (Retail-Fokus)
+# =============================================================================
+#
+# Die Tabelle zeigt FUNKTIONALE Aequivalenz, nicht formale Anerkennung.
+# Formale Anerkennung erfordert laenderspezifische Verfahren.
+# =============================================================================
+
+aequivalenztabelle:
+
+  # ---------------------------------------------------------------------------
+  # EQF 1-2: Keine formale Qualifikation / Hilfsarbeiter
+  # ---------------------------------------------------------------------------
+  eqf_1_2:
+    eqf: "1-2"
+    ch:
+      qualifikation: "Keine / Vorlehre / Brueckenangebot"
+      nqr: "1-2"
+      rolle: "Aushilfe, Hilfskraft"
+    de:
+      qualifikation: "Keine / Berufsausbildungsvorbereitung (BVJ)"
+      dqr: "1-2"
+      rolle: "Regaleinraeumer/in (Minijob)"
+    at:
+      qualifikation: "Keine / Pflichtschulabschluss"
+      nqr: "1-2"
+      rolle: "Regalbetreuer/in (geringfuegig)"
+
+    transferability:
+      ch_to_de: { difficulty: "trivial", note: "Keine Qualifikation → frei transferierbar" }
+      ch_to_at: { difficulty: "trivial", note: "Keine Qualifikation → frei transferierbar" }
+      de_to_ch: { difficulty: "trivial", note: "Keine Qualifikation → frei transferierbar" }
+      de_to_at: { difficulty: "trivial", note: "Keine Qualifikation → frei transferierbar" }
+      at_to_ch: { difficulty: "trivial", note: "Keine Qualifikation → frei transferierbar" }
+      at_to_de: { difficulty: "trivial", note: "Keine Qualifikation → frei transferierbar" }
+
+  # ---------------------------------------------------------------------------
+  # EQF 3: 2-jaehrige Grundbildung / Verkaeuferin
+  # ---------------------------------------------------------------------------
+  eqf_3:
+    eqf: 3
+    ch:
+      qualifikation: "EBA Detailhandelsassistent/in"
+      nqr: 3
+      dauer: "2 Jahre"
+      rolle: "Verkaufshilfe (ausgelernt)"
+    de:
+      qualifikation: "Verkaeufer/in"
+      dqr: 3
+      dauer: "2 Jahre"
+      rolle: "Verkaeufer/in (ausgelernt)"
+    at:
+      qualifikation: "Lehrabschluss Einzelhandel"
+      nqr: 3
+      dauer: "3 Jahre"
+      rolle: "Einzelhandelskaufmann/-frau"
+      note: "AT-Lehre ist 3 Jahre, aber gleicher EQF-Level!"
+
+    transferability:
+      ch_to_de:
+        difficulty: "einfach"
+        anerkennung: "Grundsaetzlich anerkannt via EQF-Referenzierung"
+        luecken: []
+        note: "Sehr aehnliche Ausbildungsinhalte"
+      ch_to_at:
+        difficulty: "einfach"
+        anerkennung: "Anerkannt, AT-Lehre dauert aber 1 Jahr laenger"
+        luecken:
+          - "AT-Lehre hat mehr Theorieanteile (3 statt 2 Jahre)"
+        note: "Praxisnachweis kann fehlendes Lehrjahr kompensieren"
+      de_to_ch:
+        difficulty: "einfach"
+        anerkennung: "Anerkannt via bilaterales Abkommen CH-EU"
+        luecken: []
+      de_to_at:
+        difficulty: "einfach"
+        anerkennung: "Direkt anerkannt (EU-Berufsqualifikationsrichtlinie)"
+        luecken:
+          - "DE Verkaeufer/in = 2 Jahre, AT Lehre = 3 Jahre"
+      at_to_ch:
+        difficulty: "einfach"
+        anerkennung: "Anerkannt via bilaterales Abkommen"
+        luecken: []
+        note: "AT-Absolvent hat sogar mehr (3 Jahre vs. 2)"
+      at_to_de:
+        difficulty: "einfach"
+        anerkennung: "EU-Berufsqualifikationsrichtlinie"
+        luecken: []
+        note: "AT 3 Jahre ≥ DE 2 Jahre"
+
+  # ---------------------------------------------------------------------------
+  # EQF 4: 3-jaehrige Lehre / Kaufmann/-frau
+  # ---------------------------------------------------------------------------
+  eqf_4:
+    eqf: 4
+    ch:
+      qualifikation: "EFZ Detailhandelsfachmann/-frau"
+      nqr: 4
+      dauer: "3 Jahre"
+      rolle: "Fachverkaefer/in"
+      option: "Optional: Berufsmaturitaet (BM)"
+    de:
+      qualifikation: "Kaufmann/Kauffrau im Einzelhandel"
+      dqr: 4
+      dauer: "3 Jahre"
+      rolle: "Fachkraft Verkauf"
+    at:
+      qualifikation: "Handelsschule (HAS) oder Lehre + Zusatz"
+      nqr: 4
+      dauer: "3 Jahre (HAS) oder Lehre + Kurs"
+      rolle: "Fachkraft / HAS-Absolvent"
+      note: "AHS-Matura ist auch NQR 4 (aber ohne Berufskompetenz)"
+
+    transferability:
+      ch_to_de:
+        difficulty: "einfach"
+        anerkennung: "Direkt vergleichbar: EFZ ≈ Kaufmann/Kauffrau EH"
+        luecken: []
+        note: |
+          Sehr hohe Uebereinstimmung. CH-EFZ hat Schwerpunkte
+          (Beratung/Bewirtschaftung), DE ist einheitlicher.
+      ch_to_at:
+        difficulty: "einfach"
+        anerkennung: "Anerkannt via bilaterales Abkommen"
+        luecken: []
+      de_to_ch:
+        difficulty: "einfach"
+        anerkennung: "Anerkannt, aber CH kennt BM als Zusatz"
+        luecken:
+          - "Kein Aequivalent zur Berufsmaturitaet in DE"
+        note: |
+          DE-Kaufleute koennen in CH arbeiten, aber fuer FH-Zugang
+          brauchen sie BM II (1-2 Jahre zusaetzlich).
+      de_to_at:
+        difficulty: "einfach"
+        anerkennung: "EU-Berufsqualifikationsrichtlinie"
+        luecken: []
+      at_to_ch:
+        difficulty: "einfach"
+        anerkennung: "Anerkannt"
+        luecken: []
+      at_to_de:
+        difficulty: "einfach"
+        anerkennung: "EU-Berufsqualifikationsrichtlinie"
+        luecken: []
+
+  # ---------------------------------------------------------------------------
+  # EQF 5: Fachwirt / BP / HAK-Matura → GROESSTE UNTERSCHIEDE!
+  # ---------------------------------------------------------------------------
+  eqf_5:
+    eqf: 5
+    ch:
+      qualifikation: "Detailhandelsspezialist/in (eidg. Fachausweis/BP)"
+      nqr: 5
+      voraussetzung: "EFZ + 2 Jahre Praxis"
+      dauer: "1-2 Jahre berufsbegleitend"
+      alter_typisch: "25-30 Jahre"
+      rolle: "Abteilungsleiter/in"
+    de:
+      qualifikation: "Fachwirt/in fuer Vertrieb im Einzelhandel"
+      dqr: 5
+      voraussetzung: "Kaufmann/Kauffrau + Praxis"
+      dauer: "~1 Jahr berufsbegleitend"
+      alter_typisch: "25-30 Jahre"
+      rolle: "Warenbereichsleiter/in"
+    at:
+      qualifikation: "HAK-Matura (Handelsakademie) oder Meisterpruefung"
+      nqr: 5
+      voraussetzung: "Pflichtschulabschluss (fuer HAK: ab 14. Lebensjahr)"
+      dauer: "5 Jahre (HAK) oder Meisterpruefung"
+      alter_typisch: "19 Jahre (HAK!) oder 25+ (Meister)"
+      rolle: "Junior Manager / Trainee / Abteilungsleiter"
+
+    transferability:
+      note_general: |
+        ⚠️  EQF 5 zeigt die GROESSTEN Unterschiede im DACH-Raum!
+
+        CH: BP (Berufspruefung) — berufsbegleitend nach Lehre + Praxis
+        DE: Fachwirt — aehnlich wie CH-BP, berufsbegleitend
+        AT: HAK-Matura — SCHULE (5 Jahre, Absolventen sind 19!)
+
+        Formal gleicher EQF-Level, aber VOELLIG unterschiedliche Profile:
+        - CH/DE: Tiefe Branchenkenntnis + Praxiserfahrung
+        - AT (HAK): Breite kaufmaennische Bildung + Allgemeinbildung
+
+      ch_to_de:
+        difficulty: "mittel"
+        anerkennung: "Grundsaetzlich vergleichbar (BP ≈ Fachwirt)"
+        luecken:
+          - "DE-Fachwirt hat spezifische IHK-Pruefung (andere Struktur)"
+          - "Inhaltlich hohe Uebereinstimmung"
+        note: "Funktional fast identisch. Beide sind Branchenspezialisten."
+      ch_to_at:
+        difficulty: "mittel"
+        anerkennung: "Anerkannt auf gleichem EQF-Level"
+        luecken:
+          - "Unterschiedliches Kompetenzprofil: CH-BP = Praxisspezialist, AT-HAK = Generalist"
+        note: "CH-BP hat MEHR Praxiserfahrung, AT-HAK hat BREITERE Bildung"
+      de_to_ch:
+        difficulty: "mittel"
+        anerkennung: "Vergleichbar via EQF-Bruecke"
+        luecken:
+          - "CH kennt Berufspruefung als Zugangsvoraussetzung fuer HFP"
+          - "DE-Fachwirt wird nicht automatisch als BP anerkannt"
+      de_to_at:
+        difficulty: "mittel"
+        anerkennung: "Anerkannt via EU-Richtlinie"
+        luecken:
+          - "Kulturell: In AT ist NQR 5 oft = HAK-Absolvent (19 Jahre alt)"
+          - "DE-Fachwirt wird als 'erfahrener' wahrgenommen (aeltere Person)"
+      at_to_ch:
+        difficulty: "mittel"
+        anerkennung: "HAK-Matura ≈ BM + Handelskenntnis"
+        luecken:
+          - "Weniger Praxiserfahrung als CH-BP-Absolvent"
+          - "Aber: Breitere theoretische Grundlage"
+        note: |
+          Interessant: AT-HAK-Absolvent (19J) trifft auf CH-BP (28J).
+          Gleicher EQF-Level, aber komplett anderes Erfahrungsprofil.
+      at_to_de:
+        difficulty: "mittel"
+        anerkennung: "EU-Richtlinie, HAK-Matura anerkannt"
+        luecken:
+          - "In DE ist DQR 5 = Fachwirt (Praxiserfahrung)"
+          - "HAK-Absolvent wird als 'theoretisch' wahrgenommen"
+
+  # ---------------------------------------------------------------------------
+  # EQF 6: Bachelor / Meister / Handelsfachwirt / HFP / HF
+  # ---------------------------------------------------------------------------
+  eqf_6:
+    eqf: 6
+    ch:
+      qualifikation: "HFP (eidg. Diplom) oder HF-Diplom oder Bachelor FH"
+      nqr: 6
+      rolle: "Filialleiter/in"
+      note: "3 verschiedene Wege auf NQR 6 (HFP, HF, FH)"
+    de:
+      qualifikation: "Handelsfachwirt/in (IHK) oder Bachelor"
+      dqr: 6
+      rolle: "Marktleiter/in"
+      note: "Bachelor Professional seit BBiG 2020"
+    at:
+      qualifikation: "Bachelor FH/Uni oder Meisterpruefung oder Ingenieur"
+      nqr: 6
+      rolle: "Filialleiter/in"
+
+    transferability:
+      ch_to_de:
+        difficulty: "mittel"
+        anerkennung: "HFP/HF wird als DQR-6-aequivalent anerkannt"
+        luecken:
+          - "HF-Diplom hat in DE wenig Bekanntheit (Erklaerungsbedarf)"
+        note: "Funktional gleichwertig, aber unterschiedliche Titel"
+      ch_to_at:
+        difficulty: "mittel"
+        anerkennung: "Anerkannt via bilaterales Abkommen"
+        luecken:
+          - "AT kennt HF-System nicht — Erklaerungsbedarf"
+      de_to_ch:
+        difficulty: "mittel"
+        anerkennung: "Handelsfachwirt anerkannt"
+        luecken:
+          - "Bachelor Professional (DE) ≠ Bachelor FH (CH)"
+          - "Titel kann zu Missverstaendnissen fuehren"
+      de_to_at:
+        difficulty: "einfach"
+        anerkennung: "EU-Berufsqualifikationsrichtlinie"
+        luecken: []
+      at_to_ch:
+        difficulty: "mittel"
+        anerkennung: "Anerkannt"
+        luecken:
+          - "AT-Meisterpruefung hat andere Struktur als CH-HFP"
+      at_to_de:
+        difficulty: "einfach"
+        anerkennung: "EU-Richtlinie"
+        luecken: []
+
+  # ---------------------------------------------------------------------------
+  # EQF 7: Master / Betriebswirt
+  # ---------------------------------------------------------------------------
+  eqf_7:
+    eqf: 7
+    ch:
+      qualifikation: "Master FH/Uni, EMBA, MAS"
+      nqr: 7
+      rolle: "Regionalleiter/in"
+    de:
+      qualifikation: "Master oder Betriebswirt/in (IHK)"
+      dqr: 7
+      rolle: "Verkaufsleiter/in (Bezirksleiter)"
+    at:
+      qualifikation: "Master FH/Uni, MBA"
+      nqr: 7
+      rolle: "Regionalleiter/in"
+
+    transferability:
+      note_general: |
+        Auf EQF 7 sind die Unterschiede GERINGER als auf EQF 5.
+        Akademische Abschluesse (Master) sind via Bologna gut vergleichbar.
+        Berufliche Abschluesse (DE-Betriebswirt, CH-MAS) etwas komplexer.
+      all_directions:
+        difficulty: "einfach bis mittel"
+        anerkennung: "Bologna-Prozess fuer akademische, EQF fuer berufliche Abschluesse"
+        luecken:
+          - "DE Master Professional ≠ akademischer Master"
+          - "CH MAS ist Weiterbildung, kein konsekutiver Master"
+
+# =============================================================================
+# TRANSFERABILITY SCORE MATRIX (quantitativ)
+# =============================================================================
+#
+# Score: 0.0 = nicht transferierbar, 1.0 = direkt anerkannt
+#
+# Die Scores beruecksichtigen:
+#   - Formale Anerkennung (rechtlicher Rahmen)
+#   - Inhaltliche Uebereinstimmung (Kompetenzprofil)
+#   - Kulturelle Akzeptanz (Wahrnehmung im Zielland)
+#   - Praktische Huerden (Sprache, Buerokratie)
+# =============================================================================
+
+transferability_scores:
+  # Format: {von_land}_{nach_land}_{eqf_level}: score
+  # Score interpretation:
+  #   0.9-1.0: Direkt anerkannt, keine Luecken
+  #   0.7-0.9: Anerkannt mit geringen Anpassungen
+  #   0.5-0.7: Anerkannt aber signifikante Unterschiede
+  #   0.3-0.5: Teilweise anerkannt, Nachqualifizierung noetig
+  #   0.0-0.3: Nicht direkt vergleichbar
+
+  matrix:
+    # CH → DE
+    ch_de_eqf3: { score: 0.90, note: "EBA ≈ Verkaeufer/in" }
+    ch_de_eqf4: { score: 0.95, note: "EFZ ≈ Kaufmann/Kauffrau EH" }
+    ch_de_eqf5: { score: 0.80, note: "BP ≈ Fachwirt (aehnlich, andere Pruefung)" }
+    ch_de_eqf6: { score: 0.75, note: "HFP/HF ≈ Handelsfachwirt (HF wenig bekannt in DE)" }
+    ch_de_eqf7: { score: 0.90, note: "Master ≈ Master (Bologna)" }
+
+    # DE → CH
+    de_ch_eqf3: { score: 0.90, note: "Verkaeufer/in ≈ EBA" }
+    de_ch_eqf4: { score: 0.90, note: "Kaufmann/Kauffrau ≈ EFZ (ohne BM-Zugang)" }
+    de_ch_eqf5: { score: 0.80, note: "Fachwirt ≈ BP (aehnlich, andere Struktur)" }
+    de_ch_eqf6: { score: 0.75, note: "Handelsfachwirt ≈ HFP (Bachelor Prof. verwirrend)" }
+    de_ch_eqf7: { score: 0.85, note: "Master ≈ Master (MAS ≠ konsekutiv)" }
+
+    # CH → AT
+    ch_at_eqf3: { score: 0.85, note: "EBA (2J) → AT-Lehre (3J): AT hat mehr" }
+    ch_at_eqf4: { score: 0.90, note: "EFZ ≈ AT-NQR4 (HAS/Lehre+)" }
+    ch_at_eqf5: { score: 0.65, note: "BP vs HAK-Matura: voellig andere Profile!" }
+    ch_at_eqf6: { score: 0.80, note: "HFP ≈ AT-Bachelor/Meister" }
+    ch_at_eqf7: { score: 0.90, note: "Master ≈ Master (Bologna)" }
+
+    # AT → CH
+    at_ch_eqf3: { score: 0.90, note: "AT-Lehre (3J) → EBA (2J): ueberqualifiziert" }
+    at_ch_eqf4: { score: 0.85, note: "AT-NQR4 → EFZ: vergleichbar" }
+    at_ch_eqf5: { score: 0.60, note: "HAK-Matura (19J) vs BP (28J): Erfahrungsluecke" }
+    at_ch_eqf6: { score: 0.80, note: "AT-Bachelor ≈ CH-Bachelor/HFP" }
+    at_ch_eqf7: { score: 0.90, note: "Master ≈ Master" }
+
+    # DE → AT
+    de_at_eqf3: { score: 0.85, note: "Verkaeufer/in (2J) → AT-Lehre (3J): AT hat mehr" }
+    de_at_eqf4: { score: 0.90, note: "Kaufmann/Kauffrau ≈ AT-NQR4" }
+    de_at_eqf5: { score: 0.70, note: "Fachwirt vs HAK-Matura: anderes Profil" }
+    de_at_eqf6: { score: 0.90, note: "Handelsfachwirt/Bachelor ≈ AT-NQR6" }
+    de_at_eqf7: { score: 0.95, note: "Master ≈ Master (EU-Harmonisierung)" }
+
+    # AT → DE
+    at_de_eqf3: { score: 0.90, note: "AT-Lehre ≈ DE-Lehre" }
+    at_de_eqf4: { score: 0.85, note: "HAS/NQR4 ≈ Kaufmann/Kauffrau" }
+    at_de_eqf5: { score: 0.65, note: "HAK-Matura vs Fachwirt: Alter + Erfahrung!" }
+    at_de_eqf6: { score: 0.90, note: "Bachelor ≈ Bachelor" }
+    at_de_eqf7: { score: 0.95, note: "Master ≈ Master" }
+
+# =============================================================================
+# SZENARIEN: Typische Transfers im Retail
+# =============================================================================
+
+transfer_szenarien:
+
+  - szenario: "Filialleiter von REWE (DE) wechselt zu Migros (CH)"
+    von: { land: "DE", qualifikation: "Handelsfachwirt (DQR 6)", rolle: "Marktleiter" }
+    nach: { land: "CH", rolle: "Filialleiter/in" }
+    transferability_score: 0.75
+    anerkannt: true
+    luecken:
+      - gap: "Schweizer Arbeitsrecht und GAV Detailhandel"
+        schliessung: "1-2 Wochen Einarbeitung"
+      - gap: "Schweizerdeutsch im Kundenkontakt"
+        schliessung: "Sprachliche Anpassung (regional)"
+      - gap: "BM/HF-System unbekannt"
+        schliessung: "Kein Bedarf fuer operative Rolle"
+    empfehlung: "Transfer empfohlen — hohe funktionale Uebereinstimmung"
+
+  - szenario: "HAK-Absolventin (AT, 19J) bewirbt sich als Abteilungsleiterin bei Kaufland (DE)"
+    von: { land: "AT", qualifikation: "HAK-Matura (NQR 5)", rolle: "HAK-Absolventin" }
+    nach: { land: "DE", rolle: "Warenbereichsleiter/in" }
+    transferability_score: 0.55
+    anerkannt: true
+    luecken:
+      - gap: "Keine Praxiserfahrung (direkt von Schule)"
+        schliessung: "Traineeprogramm (12-18 Monate)"
+      - gap: "Fuehrungserfahrung fehlt"
+        schliessung: "Mentoring + schrittweise Verantwortung"
+      - gap: "Branchenspezifisches Wissen (Retail-Prozesse)"
+        schliessung: "On-the-Job-Training"
+    empfehlung: |
+      Transfer moeglich, aber NICHT direkt als Abteilungsleiterin.
+      Einstieg als Trainee empfohlen. Nach 12-18 Monaten Praxis
+      ist NQR 5 funktional erreichbar.
+
+  - szenario: "EFZ Detailhandelsfachfrau (CH) mit BM wechselt zu Billa (AT)"
+    von: { land: "CH", qualifikation: "EFZ + BM (NQR 4+)", rolle: "Fachverkaeuferin" }
+    nach: { land: "AT", rolle: "Einzelhandelskauffrau" }
+    transferability_score: 0.85
+    anerkannt: true
+    luecken:
+      - gap: "Oesterreichisches Arbeitsrecht und KV Handel"
+        schliessung: "1 Woche Einarbeitung"
+    empfehlung: |
+      Sehr guter Transfer. CH-EFZ + BM ist in AT sogar etwas
+      ueberqualifiziert gegenueber NQR 3 (AT-Lehrabschluss).
+      Einstieg als Fachkraft (NQR 4) empfohlen.
+
+  - szenario: "Berufspruefung (CH) zu Fachwirt (DE)"
+    von: { land: "CH", qualifikation: "BP Detailhandelsspezialist (NQR 5)", rolle: "Abteilungsleiter" }
+    nach: { land: "DE", rolle: "Warenbereichsleiter/in" }
+    transferability_score: 0.80
+    anerkannt: true
+    luecken:
+      - gap: "IHK-Pruefungssystem unbekannt (nicht inhaltlich relevant)"
+        schliessung: "Keine Massnahme noetig"
+      - gap: "Deutsche Retail-Prozesse (Kaufland-spezifisch)"
+        schliessung: "Onboarding-Programm (2-4 Wochen)"
+    empfehlung: "Direkter Transfer empfohlen — sehr hohe Vergleichbarkeit"
+
+# =============================================================================
+# RECHTLICHE GRUNDLAGEN DER ANERKENNUNG
+# =============================================================================
+
+rechtliche_grundlagen:
+
+  eu_berufsqualifikationsrichtlinie:
+    name: "Richtlinie 2005/36/EG (konsolidiert 2013/55/EU)"
+    geltung: "DE ↔ AT (beide EU-Mitglieder)"
+    prinzip: "Automatische Anerkennung fuer reglementierte Berufe"
+    note: "Einzelhandel ist NICHT reglementiert → allgemeines Anerkennungssystem"
+
+  bilaterale_abkommen_ch:
+    name: "Bilaterale I (1999): Personenfreizuegigkeit + Berufsanerkennung"
+    geltung: "CH ↔ EU (inkl. DE und AT)"
+    prinzip: "Gleichstellung mit EU-Berufsqualifikationsrichtlinie"
+    zustaendig: "SBFI (Staatssekretariat fuer Bildung, Forschung und Innovation)"
+    note: |
+      Die Schweiz wendet die EU-Berufsqualifikationsrichtlinie via
+      Bilaterale I an. Formale Anerkennung ist moeglich, aber
+      erfordert Antrag beim SBFI.
+
+  nationale_kontaktstellen:
+    ch: "SBFI (sbfi.admin.ch) — Anerkennung auslaendischer Diplome"
+    de: "Anabin (anabin.kmk.org) — Datenbank fuer Bildungsabschluesse"
+    at: "ENIC-NARIC Austria (bildung.bmbwf.gv.at)"
+
+# =============================================================================
+# EMPFEHLUNGEN FUER RETAIL-UNTERNEHMEN
+# =============================================================================
+
+empfehlungen:
+
+  fuer_hr_abteilungen:
+    - empfehlung: "EQF-Level als gemeinsame Sprache nutzen"
+      detail: |
+        Statt laenderspezifische Qualifikationen zu vergleichen,
+        die EQF-Niveaus als Ausgangspunkt verwenden.
+        ABER: Immer die laenderspezifischen Besonderheiten beachten
+        (besonders auf EQF 5!).
+
+    - empfehlung: "Transferability Scores in Stellenausschreibungen nutzen"
+      detail: |
+        Bei internationalen Positionen: Anforderungen in EQF-Niveaus
+        formulieren UND laenderspezifische Aequivalente nennen.
+        z.B. "EQF 5 erforderlich (DE: Fachwirt, CH: BP, AT: HAK-Matura + Praxis)"
+
+    - empfehlung: "AT HAK-Absolventen als Trainees, NICHT als Fachkraefte"
+      detail: |
+        HAK-Matura = EQF 5, aber OHNE Praxiserfahrung (19 Jahre alt).
+        In DE/CH waere NQR/DQR 5 = erfahrene Fachkraft (25-30 Jahre).
+        → Traineeprogramm ist der richtige Einstieg.
+
+    - empfehlung: "CH-BM als Mehrwert anerkennen"
+      detail: |
+        Schweizer EFZ + BM Absolventen haben MEHR als ein reines EFZ.
+        Sie haben Fachhochschulzugang und breitere Allgemeinbildung.
+        → Bei Einstellung in DE/AT als EQF 4+ bewerten.
+
+  fuer_mitarbeitende:
+    - empfehlung: "Qualifikation formal anerkennen lassen VOR Bewerbung"
+      detail: |
+        Zustaendige Stellen: SBFI (CH), Anabin (DE), ENIC-NARIC (AT).
+        Dauer: 2-6 Monate. Kosten: CHF 150-550 / EUR 100-400.
+    - empfehlung: "Sprachkenntnisse nicht unterschaetzen"
+      detail: |
+        CH → DE: Hochdeutsch ok (Schweizerdeutsch irrelevant)
+        DE → CH: Hochdeutsch reicht (Schweizerdeutsch lernt man)
+        AT → DE: Dialekt ≠ Hochdeutsch (Anpassung noetig)
+        AT → CH: Kann schwierig sein (doppelte Sprachanpassung)
+
+# =============================================================================
+# KAUFLAND-ROLLEN → EQF-ZUORDNUNG (Bidirektionale Referenz)
+# =============================================================================
+# Quelle: data/skill-levels/kaufland-role-profiles.yaml
+# Zweck: Verknuepft Kaufland-Karriereleiter mit DACH-Qualifikationsrahmen
+# =============================================================================
+
+kaufland_role_eqf_mapping:
+  description: |
+    Zuordnung der Kaufland-Rollen zu EQF-Niveaus mit laenderspezifischen
+    Qualifikationen. Ermoeglicht: Wenn eine Rolle in DE besetzt ist,
+    welche Qualifikation braucht dieselbe Rolle in CH oder AT?
+
+  roles:
+    - role_ref: "ROLE-K-001"
+      name: "Regaleinraeumer:in"
+      eqf: "1-2"
+      de: "Keine / BVJ (DQR 1-2)"
+      ch: "Keine / Vorlehre (NQR 1-2)"
+      at: "Keine / Pflichtschule (NQR 1-2)"
+      cross_country_transfer: "trivial"
+
+    - role_ref: "ROLE-K-002"
+      name: "Kassierer:in"
+      eqf: 2
+      de: "Hauptschulabschluss (DQR 2)"
+      ch: "Vorlehre (NQR 2)"
+      at: "Pflichtschulabschluss (NQR 2)"
+      cross_country_transfer: "trivial"
+
+    - role_ref: "ROLE-K-003"
+      name: "Verkaufsberater:in"
+      eqf: "3-4"
+      de: "Verkaeufer:in / Kaufmann:frau EH (DQR 3-4)"
+      ch: "EBA / EFZ Detailhandel (NQR 3-4)"
+      at: "Lehrabschluss EH / HAS (NQR 3-4)"
+      cross_country_transfer: "einfach (score 0.90)"
+
+    - role_ref: "ROLE-K-004"
+      name: "Abteilungsleiter:in"
+      eqf: 5
+      de: "Fachwirt:in Vertrieb EH (DQR 5)"
+      ch: "Detailhandelsspezialist:in BP (NQR 5)"
+      at: "HAK-Matura / Meisterpruefung (NQR 5)"
+      cross_country_transfer: "mittel (score 0.70) — GROESSTE DACH-Unterschiede!"
+
+    - role_ref: "ROLE-K-005"
+      name: "Stellv. Marktleiter:in"
+      eqf: "5-6"
+      de: "Handelsfachwirt:in / duales Studium (DQR 5-6)"
+      ch: "BP + Praxis / HF-Studium (NQR 5-6)"
+      at: "HAK + Praxis / FH-Studium (NQR 5-6)"
+      cross_country_transfer: "mittel (score 0.75)"
+
+    - role_ref: "ROLE-K-006"
+      name: "Marktleiter:in"
+      eqf: 6
+      de: "Gepr. Handelsfachwirt:in IHK (DQR 6)"
+      ch: "HFP / HF-Diplom / Bachelor FH (NQR 6)"
+      at: "Bachelor FH/Uni / Meisterpruefung (NQR 6)"
+      cross_country_transfer: "mittel (score 0.78)"
+
+    - role_ref: "ROLE-K-007"
+      name: "Bezirksleiter:in"
+      eqf: 7
+      de: "Gepr. Betriebswirt:in IHK / Master (DQR 7)"
+      ch: "Master FH/Uni / EMBA / MAS (NQR 7)"
+      at: "Master FH/Uni / MBA (NQR 7)"
+      cross_country_transfer: "einfach bis mittel (score 0.90)"

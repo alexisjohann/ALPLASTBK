@@ -1,0 +1,93 @@
+# =============================================================================
+# LINKEDIN DECISION MAKER FINDER (On-Demand)
+# =============================================================================
+# Find C-Level and key executives at a company.
+#
+# Trigger: Manual dispatch with company name
+# Output: Saved to data/contacts/ and displayed in workflow logs
+# =============================================================================
+
+name: LinkedIn Decision Makers
+
+on:
+  workflow_dispatch:
+    inputs:
+      company:
+        description: 'Company name or LinkedIn URL'
+        required: true
+      role:
+        description: 'Filter by department'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - hr
+          - sales
+          - marketing
+          - finance
+          - tech
+      level:
+        description: 'Filter by seniority'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - c-suite
+          - vp
+          - director
+      limit:
+        description: 'Max results'
+        required: false
+        default: '30'
+
+jobs:
+  find-decision-makers:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml requests
+
+      - name: Find Decision Makers
+        env:
+          PROXYCURL_API_KEY: ${{ secrets.PROXYCURL_API_KEY }}
+        run: |
+          CMD="python scripts/find_decision_makers.py '${{ github.event.inputs.company }}' --save"
+
+          if [ "${{ github.event.inputs.role }}" != "all" ]; then
+            CMD="$CMD --role ${{ github.event.inputs.role }}"
+          fi
+
+          if [ "${{ github.event.inputs.level }}" != "all" ]; then
+            CMD="$CMD --level ${{ github.event.inputs.level }}"
+          fi
+
+          CMD="$CMD --limit ${{ github.event.inputs.limit }}"
+
+          echo "Running: $CMD"
+          eval $CMD
+
+      - name: Commit results
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add data/contacts/
+          git diff --staged --quiet || git commit -m "feat(contacts): Add decision makers for ${{ github.event.inputs.company }}
+
+          Decision makers found via LinkedIn Decision Makers workflow.
+          - Level: ${{ github.event.inputs.level }}
+          - Role: ${{ github.event.inputs.role }}
+          Source: Proxycurl API"
+          git push || echo "No changes to push"

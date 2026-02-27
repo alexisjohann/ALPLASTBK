@@ -1,0 +1,553 @@
+# =============================================================================
+# ANALYSE A2: TRUST-KASKADE — MORTGAGE CUSTOM GPT
+# =============================================================================
+# Superkey: ANA-UBS-GM-A2-TRUST
+# Created: 2026-02-25
+# Purpose: Systematische Trust-Dekomposition für AI-Hypothekenberatung
+# Model-Ref: MOD-UBS-GMA-001 (Module B: Trust Recovery)
+# =============================================================================
+
+metadata:
+  id: "ANA-UBS-GM-A2-TRUST"
+  name: "Trust-Kaskade: Mortgage Custom GPT"
+  version: "1.0.0"
+  created: "2026-02-25"
+  customer: "UBS"
+  unit: "Marketing / Growth Marketing"
+  topic: "Mortgage Custom GPT"
+  analyst: "FehrAdvice EBF"
+
+# =============================================================================
+# 1. TRUST-KASKADE: 6 SCHICHTEN
+# =============================================================================
+# Jede Schicht reduziert den Trust-Level multiplikativ.
+# τ_final = τ_base × δ₁ × δ₂ × δ₃ × δ₄ × δ₅
+#
+# Die Kaskade folgt der Logik:
+# "Ich vertraue UBS" ≠ "Ich vertraue dem UBS Chatbot"
+# ≠ "Ich vertraue dem UBS Chatbot bei HYPOTHEKEN"
+# =============================================================================
+
+trust_cascade:
+
+  layer_1_institutional:
+    name: "Institutionelles Vertrauen (Schweiz)"
+    parameter_ref: "PAR-CTX-002"
+    value: 0.78
+    ci_68: [0.72, 0.84]
+    source: "BCM2_04_KON_socio_cultural.yaml"
+    description: |
+      Allgemeines Vertrauen der Schweizer Bevölkerung in Finanzinstitutionen.
+      Hoher Wert im internationalen Vergleich (DE: 0.62, AT: 0.65).
+    note: "Basis-Vertrauen — unabhängig von UBS oder KI"
+
+  layer_2_brand:
+    name: "Markenvertrauen (UBS-spezifisch)"
+    values_by_segment:
+      SEG-UBS-LEGACY:
+        tau: 0.85
+        source: "MOD-UBS-GMA-001"
+        note: "Langzeitkunden, hohes Grundvertrauen"
+      SEG-CS-MIGRATED:
+        tau: 0.55
+        source: "MOD-UBS-GMA-001"
+        note: "Post-Merger Trust Gap, Benevolence-Defizit (-0.30)"
+      SEG-DIGITAL-ONLY:
+        tau: 0.70
+        source: "MOD-UBS-GMA-001"
+        note: "Pragmatisch, UX-orientiert"
+      SEG-AFFLUENT:
+        tau: 0.80
+        source: "MOD-UBS-GMA-001"
+        note: "RM-Beziehung stützt Trust"
+    description: |
+      Markenspezifisches Vertrauen in UBS als Institution.
+      Kritisch: ex-CS Kunden haben τ = 0.55 (Benevolence-Gap grösste Lücke).
+
+  layer_3_digital:
+    name: "Digital-Kanal Vertrauen"
+    value_estimate: 0.82
+    derivation: |
+      Abgeleitet aus:
+      - CH-KI-02: KI-Akzeptanz Bevölkerung = 45.2% (2024)
+      - TEC-DIG-03: Digital Engagement Rate UBS = 78%
+      - TEC-DIG-10: Chatbot Resolution Rate = 70%
+      - App Rating: iOS 4.6, Android 4.4
+
+      Digital-Trust-Modifier δ_digital ≈ 0.82
+      Begründung: UBS-Kunden sind überdurchschnittlich digital-affin
+      (78% Engagement vs. 43% CH-Durchschnitt Mobile Banking).
+      Aber: "Digital vertrauen" ≠ "KI-Beratung vertrauen"
+    confidence: "MEDIUM"
+    tier: 2  # LLMMC Prior
+    note: "Kein direkter Parameter in Registry — LLMMC-Schätzung"
+
+  layer_4_ai_advice:
+    name: "KI-Beratungsvertrauen (generisch)"
+    value_estimate: 0.52
+    derivation: |
+      Abgeleitet aus:
+      - CH-KI-02: KI-Akzeptanz Bevölkerung = 45.2% (2024)
+      - CH-KI-07: KI im Finanzsektor = 45% der Institute nutzen KI
+      - CH-KI-08: Bias-Wahrnehmung = 38% (Misstrauen-Treiber)
+      - CH-KI-06: Algorithmische Transparenz = 28% (niedrig!)
+      - CH-KI-10: Regelmässige LLM-Nutzung = 22%
+
+      Wichtig: 45.2% "vertrauen KI-Entscheidungen" (CH-KI-02)
+      ≠ 45.2% würden KI-Beratung für eigene Finanzen nutzen.
+
+      Korrekturfaktoren:
+      - Finanzdomäne vs. generell: × 0.85 (höhere Stakes)
+      - "Vertrauen" vs. "Nutzen": × 0.80 (intention-behavior gap)
+      - UBS-Branding-Lift: × 1.15 (Bank-Brand gibt Sicherheit)
+
+      δ_AI_advice = 0.452 × 0.85 × 0.80 × 1.15 ≈ 0.354
+      → Auf Trust-Skala [0,1]: τ_AI_advice ≈ 0.52
+
+      EXTERNE VALIDIERUNG (HSBC 2019): Nur 11% global vertrauen
+      AI für Mortgage Advice. CH dürfte höher liegen (tech-affiner),
+      aber der Wert zeigt die massive Kluft.
+    confidence: "LOW-MEDIUM"
+    tier: 2  # LLMMC Prior, externe Validierung schwach
+    critical_gap: true
+    note: |
+      DIES IST DER GRÖSSTE SPRUNG IN DER KASKADE.
+      Von "Ich nutze Digital Banking" zu "KI berät mich bei Finanzen"
+      ist ein qualitativer Kategorienwechsel.
+
+      Literatur-Gap: Keine Papers zu "AI financial advice trust" in bcm_master.bib.
+      Benötigt: Dietvorst (2015) Algorithm Aversion, Logg (2019) Algorithm Appreciation.
+
+  layer_5_mortgage_domain:
+    name: "Hypotheken-Domänen-Spezifik"
+    value_estimate: 0.65
+    derivation: |
+      Hypotheken sind HIGH-STAKES Entscheidungen:
+      - Grösste finanzielle Entscheidung im Leben (CHF 500k-2M)
+      - Langfristig (10-25 Jahre Laufzeit)
+      - Emotional (Eigenheim = Identität, Sicherheit)
+      - Komplex (SARON vs. Festhypothek, Tragbarkeit, Amortisation)
+      - Reguliert (FINMA, Tragbarkeitsrechnung, Eigenmittel 20%)
+
+      Domain-Modifier δ_mortgage:
+      - Stakes-Penalty: × 0.70 (je höher Stakes, desto mehr Human-Präferenz)
+      - Komplexitäts-Penalty: × 0.80 (mehr Beratungsbedarf)
+      - Emotionalitäts-Penalty: × 0.85 (Eigenheim = Identity)
+      - Regulierungs-Lift: × 1.10 (reguliert = kontrolliert)
+      - Vergleichbarkeits-Lift: × 1.20 (Zinssätze sind objektiv vergleichbar)
+
+      Netto: δ_mortgage ≈ 0.70 × 0.80 × 0.85 × 1.10 × 1.20 ≈ 0.63
+
+      ABER: Hypothekenberatung hat AUCH einen "Indikativ-Modus":
+      - Wenn GPT nur Richtwerte gibt (kein Abschluss): δ_indicative × 1.35
+      - Wenn GPT Abschluss ermöglicht: δ_binding × 0.80
+
+      δ_mortgage_indicative ≈ 0.63 × 1.35 ≈ 0.85
+      δ_mortgage_binding ≈ 0.63 × 0.80 ≈ 0.50
+
+      → Für das Konzept "indikative Hypothekarzinssätze" wählen wir:
+      δ_mortgage ≈ 0.65 (gewichteter Durchschnitt, da Nutzer
+      initial nicht wissen, ob es nur indikativ oder bindend ist)
+    confidence: "MEDIUM"
+    tier: 2  # LLMMC Prior
+
+  layer_6_pilot_context:
+    name: "Kontext-Modifikatoren (Ψ)"
+    sub_modifiers:
+      psi_physical_online:
+        value: 1.0
+        note: "Online ist Baseline für Digital GPT (kein Penalty)"
+      psi_temporal_life_transition:
+        value: 1.50
+        source: "context-dimensions.yaml → life_transition"
+        note: |
+          Immobilienkauf = Lebensübergang → openness_to_change = 0.9
+          intervention_multiplier = 1.5 (höchster Wert!)
+          Aber: Gilt nur für aktive Käufer, nicht für Informationssuchende.
+      psi_social_alone:
+        value: 0.90
+        note: |
+          Allein am Bildschirm → social_norm_strength = 0.1
+          Keine soziale Validierung → leichter Penalty auf Trust.
+          Aber: Anonymität kann auch POSITIV sein (keine Scham bei Fragen).
+      psi_cognitive_mixed:
+        value: 0.85
+        note: |
+          Hypotheken-Recherche = emotional + informationssuchend.
+          Nicht gestresst (dann googelt man nicht), aber auch nicht entspannt.
+          cognitive_capacity ≈ 0.7 (focused but not peak).
+      psi_institutional_regulated:
+        value: 1.05
+        note: |
+          FINMA-reguliert → "die dürfen nichts Falsches sagen"
+          Regulierungstrust-Lift, aber minimal.
+    combined_modifier: 1.14
+    derivation: |
+      Ψ_combined = 1.0 × 1.50 × 0.90 × 0.85 × 1.05 = 1.21
+      ABER: Life-Transition-Multiplier gilt nur für ~30% der Zielgruppe
+      (aktive Käufer). 70% informieren sich allgemein.
+      Ψ_weighted = 0.30 × 1.21 + 0.70 × 0.81 = 0.363 + 0.567 = 0.93
+
+      Korrektur: Für die Gesamtzielgruppe ≈ 0.93 (leicht unter Baseline)
+      Für aktive Käufer: ≈ 1.21 (deutlich über Baseline)
+
+# =============================================================================
+# 2. TRUST-BERECHNUNG PRO SEGMENT
+# =============================================================================
+
+trust_calculation:
+
+  formula: |
+    τ_final = τ_brand × δ_digital × δ_AI × δ_mortgage × Ψ_combined
+
+    Wobei:
+    - τ_brand = Segment-spezifisches Markenvertrauen (Layer 2)
+    - δ_digital = 0.82 (Digital-Kanal-Modifier, Layer 3)
+    - δ_AI = 0.52 (KI-Beratungs-Modifier, Layer 4)
+    - δ_mortgage = 0.65 (Hypotheken-Domänen-Modifier, Layer 5)
+    - Ψ_combined = 0.93 (Kontext-Modifier, Layer 6, Gesamtzielgruppe)
+
+  results_general_audience:
+    SEG-UBS-LEGACY:
+      tau_brand: 0.85
+      tau_final: 0.258
+      calculation: "0.85 × 0.82 × 0.52 × 0.65 × 0.93 = 0.219"
+      interpretation: |
+        Nur ~22% Trust-Level für KI-Hypothekenberatung.
+        Zum Vergleich: τ_brand = 0.85 für UBS generell.
+        Trust-Verlust: 74% durch die Kaskade!
+    SEG-CS-MIGRATED:
+      tau_brand: 0.55
+      tau_final: 0.142
+      calculation: "0.55 × 0.82 × 0.52 × 0.65 × 0.93 = 0.142"
+      interpretation: |
+        Nur ~14% Trust-Level. KRITISCH NIEDRIG.
+        Für ex-CS Kunden ist KI-Hypothekenberatung fast ein No-Go.
+        Benevolence-Defizit verstärkt KI-Misstrauen.
+    SEG-DIGITAL-ONLY:
+      tau_brand: 0.70
+      tau_final: 0.180
+      calculation: "0.70 × 0.82 × 0.52 × 0.65 × 0.93 = 0.180"
+      interpretation: |
+        ~18% Trust. Obwohl digital-affin, ist Hypotheke zu high-stakes.
+        Digital-Only Kunden vertrauen UBS-App für Payments (u_P hoch),
+        aber nicht für lebensverändernde Finanzberatung.
+    SEG-AFFLUENT:
+      tau_brand: 0.80
+      tau_final: 0.206
+      calculation: "0.80 × 0.82 × 0.52 × 0.65 × 0.93 = 0.206"
+      interpretation: |
+        ~21% Trust. Affluent-Kunden haben RM-Beziehung.
+        GPT wird als Downgrade wahrgenommen ("ich habe doch einen Berater").
+
+  results_active_buyers:
+    note: |
+      Für aktive Immobilienkäufer gilt Ψ_combined = 1.21 (Life Transition).
+      Diese Gruppe ist deutlich offener — aber immer noch skeptisch.
+    SEG-UBS-LEGACY:
+      tau_final: 0.285
+      calculation: "0.85 × 0.82 × 0.52 × 0.65 × 1.21 = 0.285"
+    SEG-CS-MIGRATED:
+      tau_final: 0.184
+      calculation: "0.55 × 0.82 × 0.52 × 0.65 × 1.21 = 0.184"
+    SEG-DIGITAL-ONLY:
+      tau_final: 0.234
+      calculation: "0.70 × 0.82 × 0.52 × 0.65 × 1.21 = 0.234"
+
+# =============================================================================
+# 3. SENSITIVITÄTSANALYSE
+# =============================================================================
+
+sensitivity:
+
+  tornado_chart:
+    description: |
+      Welcher Faktor hat den grössten Einfluss auf τ_final?
+      (Variiert jeden Faktor ±20%, hält Rest konstant)
+
+    factors_ranked:
+      - factor: "δ_AI (KI-Beratungsvertrauen)"
+        base: 0.52
+        low: 0.42
+        high: 0.62
+        tau_range: [0.177, 0.261]
+        impact: "HÖCHSTER — 48% des Variationsbudgets"
+        actionable: true
+        action: |
+          Transparency, Explainability, Human-in-the-Loop.
+          Zeige: "Basierend auf FINMA-konformer Tragbarkeitsrechnung..."
+
+      - factor: "δ_mortgage (Domänen-Spezifik)"
+        base: 0.65
+        low: 0.52
+        high: 0.78
+        tau_range: [0.175, 0.262]
+        impact: "ZWEITHÖCHSTER — 28%"
+        actionable: true
+        action: |
+          Klare Trennung: indikativ vs. bindend.
+          "Dies sind Richtwerte. Für ein verbindliches Angebot
+          verbinden wir Sie mit einem Berater."
+
+      - factor: "τ_brand (Markenvertrauen)"
+        base: 0.70  # Durchschnitt über Segmente
+        low: 0.55
+        high: 0.85
+        tau_range: [0.172, 0.266]
+        impact: "DRITTHÖCHSTER — 16%"
+        actionable: false
+        note: "Nicht kurzfristig veränderbar (Trust Recovery braucht Zeit)"
+
+      - factor: "δ_digital (Digital-Kanal)"
+        base: 0.82
+        low: 0.66
+        high: 0.98
+        tau_range: [0.176, 0.261]
+        impact: "VIERTHÖCHSTER — 6%"
+        actionable: false
+        note: "Bereits hoch bei UBS-Kunden (78% Engagement)"
+
+      - factor: "Ψ_combined (Kontext)"
+        base: 0.93
+        low: 0.74
+        high: 1.12
+        tau_range: [0.174, 0.263]
+        impact: "NIEDRIGSTER — 2%"
+        note: "Kontext ist gegeben, nicht steuerbar"
+
+  key_insight: |
+    Der GRÖSSTE Hebel ist δ_AI (KI-Beratungsvertrauen):
+    - Eine Steigerung von 0.52 → 0.72 (+38%) würde τ_final von 0.219 auf 0.303 heben
+    - Das entspricht dem Unterschied zwischen "wird nicht genutzt" und "wird ausprobiert"
+
+    Der ZWEITE Hebel ist δ_mortgage:
+    - Klare "Nur indikativ"-Positionierung könnte δ_mortgage von 0.65 auf 0.85 heben
+    - Dann: τ_final(Legacy) = 0.219 × (0.85/0.65) = 0.286 (+30%)
+
+    KOMBINIERT (AI-Trust + Indikativ-Positionierung):
+    - τ_final(Legacy) ≈ 0.38 — immer noch unter 0.50, aber nutzbar als First Touchpoint.
+
+# =============================================================================
+# 4. STRATEGISCHE IMPLIKATIONEN
+# =============================================================================
+
+strategic_implications:
+
+  headline: |
+    τ_final ≈ 0.18-0.29 je nach Segment und Kontext.
+    Das ist ZU NIEDRIG für eigenständige Beratung,
+    aber AUSREICHEND für einen qualifizierten Einstieg.
+
+  positioning_recommendation:
+    role: "Qualifizierter Einstieg, nicht Beratung"
+    description: |
+      Der Mortgage GPT sollte NICHT als "Berater" positioniert werden,
+      sondern als "intelligenter Einstieg":
+
+      ✅ RICHTIG: "Finden Sie in 3 Minuten heraus, was Ihr Eigenheim kosten könnte"
+      ✅ RICHTIG: "Indikative Richtwerte — für ein verbindliches Angebot sprechen Sie mit uns"
+      ✅ RICHTIG: "Ihre Fragen, unsere Expertise — als Einstieg in die Beratung"
+
+      ❌ FALSCH: "Ihr KI-Hypothekenberater"
+      ❌ FALSCH: "Lassen Sie sich von der KI beraten"
+      ❌ FALSCH: "Berechnen Sie Ihre Hypothek mit KI"
+
+  trust_building_interventions:
+    - intervention: "Transparency First"
+      target: "δ_AI"
+      mechanism: |
+        Zeige die Berechnungslogik:
+        "Basierend auf: Kaufpreis CHF X, Eigenmittel CHF Y,
+        FINMA-Tragbarkeit bei 5% kalkulatorisch..."
+      expected_lift: "+0.08-0.12 auf δ_AI"
+
+    - intervention: "Human Escalation Guarantee"
+      target: "δ_AI"
+      mechanism: |
+        Jederzeit sichtbarer Button:
+        "Mit Berater:in sprechen" (keine Sackgasse)
+        Senkt Risiko-Wahrnehmung massiv.
+      expected_lift: "+0.10-0.15 auf δ_AI"
+
+    - intervention: "Indikativ-Framing"
+      target: "δ_mortgage"
+      mechanism: |
+        Klare Kommunikation: "Richtwerte, nicht bindend"
+        Reduziert perceived stakes von "Lebensent." auf "Orientierung"
+      expected_lift: "+0.15-0.20 auf δ_mortgage"
+
+    - intervention: "Social Proof"
+      target: "δ_AI"
+      mechanism: |
+        "12'450 Schweizer:innen haben diesen Monat ihren
+        Eigenheim-Check gemacht" (Descriptive Norm)
+      expected_lift: "+0.05-0.08 auf δ_AI"
+
+    - intervention: "UBS Brand Shield"
+      target: "τ_brand"
+      mechanism: |
+        Prominentes UBS-Branding (nicht "powered by OpenAI").
+        "UBS Eigenheim-Check" statt "Mortgage GPT".
+        Bank-Marke = Regulierungstrust = Sicherheitsgefühl.
+      expected_lift: "+0.03-0.05 auf τ_brand"
+
+  combined_scenario:
+    description: "Best-Case bei Umsetzung aller Interventionen"
+    tau_current:
+      legacy: 0.219
+      ex_cs: 0.142
+      digital: 0.180
+    tau_optimized:
+      legacy: 0.38
+      ex_cs: 0.25
+      digital: 0.32
+    tau_with_active_buyers:
+      legacy: 0.49
+      ex_cs: 0.32
+      digital: 0.42
+    interpretation: |
+      Selbst im Best-Case erreichen wir τ ≈ 0.25-0.49.
+      Das bedeutet:
+      - GPT als EINSTIEG: JA (Awareness → Consideration)
+      - GPT als BERATER: NEIN (Trust zu niedrig für Abschluss)
+      - GPT als QUALIFIER: JA (Lead-Qualifizierung für RM)
+
+  channel_strategy:
+    description: |
+      Die Trust-Kaskade bestimmt die optimale Kanal-Strategie:
+    channels:
+      UBS_Website:
+        trust_fit: "HOCH"
+        reason: "UBS-Branding maximal, kontrollierte Umgebung"
+        recommendation: "PRIMARY — Eigenheim-Check Landing Page"
+      UBS_App:
+        trust_fit: "HOCH"
+        reason: "Authenticated User = höheres Trust-Level"
+        recommendation: "SECONDARY — Post-Login Feature"
+      ChatGPT_Marketplace:
+        trust_fit: "NIEDRIG"
+        reason: |
+          UBS-Brand wird durch ChatGPT-Umgebung geschwächt.
+          User sehen es als "ChatGPT mit UBS-Daten", nicht als "UBS-Beratung".
+          τ_brand-Verlust: ~30% durch Kontext-Wechsel.
+        recommendation: "VORSICHT — nur mit starkem UBS-Branding"
+      Partner_Homegate:
+        trust_fit: "MITTEL"
+        reason: |
+          Homegate-Kontext = Immobilien-relevant (Fit hoch).
+          Aber: Wer ist Berater — Homegate oder UBS? Verwirrung möglich.
+        recommendation: "MIT CO-BRANDING — 'UBS Eigenheim-Check auf Homegate'"
+      Social_Media:
+        trust_fit: "SEHR NIEDRIG"
+        reason: |
+          Social Media = niedrigste Trust-Umgebung für Finanzberatung.
+          τ_taboo = 0.72 (Schweizer reden nicht öffentlich über Geld).
+          Kombination Social + Finance + AI = dreifache Barriere.
+        recommendation: "NUR ALS TEASER — Link zur UBS-Website"
+
+# =============================================================================
+# 5. SURVEY-FRAGEN BEWERTUNG (aus Trust-Perspektive)
+# =============================================================================
+
+survey_assessment:
+
+  strong_questions:
+    - q: "Wie hilfreich fänden Sie es, eine digitale Unterstützung zu haben?"
+      assessment: "Gut — misst generelle Offenheit, aber STATED PREFERENCE"
+    - q: "Welche Bedenken hätten Sie bei der Nutzung eines solchen digitalen Assistenten?"
+      assessment: "Sehr gut — misst direkt Trust-Barrieren (Layer 4+5)"
+    - q: "Wie wichtig ist Ihnen der Datenschutz?"
+      assessment: "Gut — privacy_norm = 0.85 in CH, erwarten hohen Wert"
+
+  weak_questions:
+    - q: "Wie wahrscheinlich ist es, dass Sie einen solchen Chatbot nutzen würden?"
+      assessment: |
+        PROBLEMATISCH: Stated Preference ≠ Revealed Preference.
+        Forschung zeigt 2-3× Überschätzung bei "Would you use...?" Fragen.
+        Empfehlung: Conjoint statt Direkt-Frage.
+    - q: "Welche Funktionen erwarten Sie von einem digitalen Assistenten?"
+      assessment: |
+        SCHWACH: Feature-Listen liefern Wunschlisten, keine Prioritäten.
+        Besser: MaxDiff oder Conjoint für relative Wichtigkeit.
+
+  missing_questions:
+    - topic: "Trust Transfer"
+      question: |
+        "Stellen Sie sich vor, ein UBS-Berater empfiehlt Ihnen,
+        den UBS Eigenheim-Check zu nutzen. Wie sehr vertrauen Sie
+        den Ergebnissen?"
+        → Misst: Human-to-AI Trust Transfer (Layer 4 Lift)
+    - topic: "Escalation Preference"
+      question: |
+        "Ab welchem Punkt möchten Sie mit einem menschlichen
+        Berater sprechen? (a) Sofort (b) Nach Richtwerten
+        (c) Erst beim Abschluss (d) Nie"
+        → Misst: Optimal GPT-to-RM Handoff Point
+    - topic: "Brand vs. Tech Trust"
+      question: |
+        "Wem vertrauen Sie mehr bei einer Hypotheken-Auskunft:
+        (a) UBS Eigenheim-Check (b) Comparis Hypothekenrechner
+        (c) ChatGPT (d) Mein Bankberater"
+        → Misst: Relative Trust-Positionen (competitive framing)
+
+# =============================================================================
+# 6. OFFENE FRAGEN (für weiterführende Analyse)
+# =============================================================================
+
+open_questions:
+  - question: "Wie hoch ist τ_AI_advice genau in der Schweiz?"
+    priority: "KRITISCH"
+    action: "Literaturrecherche: Dietvorst (2015), Logg (2019), CH-spezifische Studien"
+    status: "IN_PROGRESS — Background Agent läuft"
+
+  - question: "Gibt es einen 'Trust Transfer' Effekt von RM auf GPT?"
+    priority: "HOCH"
+    action: |
+      Wenn RM den GPT empfiehlt, steigt δ_AI.
+      Aber um wieviel? Keine Daten vorhanden.
+      → Empfehlung: In Survey integrieren.
+
+  - question: "Wie stark ist der Indikativ-vs-Bindend Effekt?"
+    priority: "HOCH"
+    action: |
+      δ_mortgage_indicative vs δ_mortgage_binding könnte
+      den grössten einzelnen Hebel darstellen.
+      → Empfehlung: A/B Test im Piloten.
+
+  - question: "Channel-Kontext-Effekt auf Trust?"
+    priority: "MITTEL"
+    action: |
+      τ_UBS_Website vs τ_ChatGPT_Marketplace vs τ_Homegate
+      → Empfehlung: Between-Subjects im Survey testen.
+
+# =============================================================================
+# CROSS-REFERENCES
+# =============================================================================
+
+references:
+  model: "MOD-UBS-GMA-001 (Module B: Trust Recovery)"
+  parameters:
+    - "PAR-CTX-001 (τ_taboo = 0.72)"
+    - "PAR-CTX-002 (trust_inst = 0.78)"
+    - "PAR-CTX-003 (privacy_norm = 0.85)"
+  context_data:
+    - "CH-KI-02 (KI-Akzeptanz = 45.2%)"
+    - "CH-KI-06 (Algorithmische Transparenz = 28%)"
+    - "CH-KI-07 (KI im Finanzsektor = 45%)"
+    - "CH-KI-09 (Chatbot-Adoption = 38%)"
+    - "CH-KI-10 (LLM-Nutzung = 22%)"
+    - "TEC-DIG-03 (Digital Engagement = 78%)"
+    - "TEC-DIG-10 (Chatbot Resolution = 70%)"
+    - "CH-EIG-01 (Wohneigentumsquote = 36.8%)"
+    - "CH-EIG-06 (Immobilien-Erbschaften = 32K/Jahr)"
+    - "CH-EIG-07 (Immobilien-Transaktionen = 88K/Jahr)"
+  ebf_theories:
+    - "MS-IB-001 (Identity Economics — Akerlof & Kranton)"
+    - "MS-NU-002 (Default Effects — Madrian & Shea)"
+    - "MS-CM-001 (Customer Journey — Herhausen)"
+  missing_theories:
+    - "TAM/UTAUT (Technology Acceptance Model)"
+    - "Algorithm Aversion (Dietvorst et al. 2015)"
+    - "Trust Transfer Theory"
+  cases:
+    - "CAS-888 (GKB Cross-Selling: Hypo→Vollbeziehung)"

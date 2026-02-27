@@ -1,0 +1,177 @@
+%% =============================================================================
+%% FEHRADVICE COVER SHEET TEMPLATE
+%% =============================================================================
+%% Professionelles Deckblatt im FehrAdvice Corporate Design
+%% SSOT: appendices/REF-STYLE_SG_corporate_style_guide.tex
+%%
+%% Design: Oberer + unterer blauer Balken, zentrierter Inhalt
+%%
+%% Verwendung:
+%% - Standalone: pdflatex fehradvice-cover.latex
+%% - Mit Pandoc: --include-before-body=fehradvice-cover.latex
+%% =============================================================================
+
+\documentclass[a4paper,12pt]{article}
+
+%% -----------------------------------------------------------------------------
+%% PAKETE
+%% -----------------------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[german,provide=*]{babel}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[a4paper, margin=0pt]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{setspace}
+\usepackage{ifthen}
+
+%% -----------------------------------------------------------------------------
+%% FEHRADVICE FARBEN - Primärfarben
+%% -----------------------------------------------------------------------------
+\definecolor{primarydarkblue}{RGB}{2,64,121}       % #024079 - Dunkelblau
+\definecolor{primarylightblue}{RGB}{84,158,222}    % #549EDE - Hellblau
+\definecolor{primarydarkgray}{RGB}{37,33,42}       % #25212A - Dunkelgrau (Text)
+\definecolor{primarylightgray}{RGB}{245,245,245}   % #F5F5F5 - Hellgrau (Hintergründe)
+
+%% -----------------------------------------------------------------------------
+%% FEHRADVICE FARBEN - Sekundärfarben
+%% -----------------------------------------------------------------------------
+\definecolor{secondarylilac}{RGB}{161,160,198}     % #A1A0C6 - Flieder
+\definecolor{secondarymint}{RGB}{126,189,172}      % #7EBDAC - Mintgrün
+\definecolor{secondaryocher}{RGB}{222,203,63}      % #DECB3F - Ocker
+\definecolor{secondaryorange}{RGB}{222,157,62}     % #DE9D3E - Orange
+
+%% Legacy-Aliase für Kompatibilität
+\definecolor{trustblue}{RGB}{2,64,121}
+\definecolor{trustbluelight}{RGB}{212,228,244}
+\definecolor{fehrgray}{RGB}{37,33,42}
+
+%% -----------------------------------------------------------------------------
+%% PARAMETER (werden vom Script überschrieben)
+%% -----------------------------------------------------------------------------
+\newcommand{\FALogoPath}{assets/fehradvice-logo.png}
+\newcommand{\FADocType}{PROJEKTBRIEFING}
+\newcommand{\FATitle}{Haupttitel}
+\newcommand{\FASubtitle}{Untertitel}
+\newcommand{\FASubtitleTwo}{}
+\newcommand{\FAClient}{Kundenname}
+\newcommand{\FAAuftraggeber}{Vorname Nachname, Funktion}
+\newcommand{\FAMandantin}{Vorname Nachname, Funktion}
+\newcommand{\FADate}{Januar 2026}
+\newcommand{\FAVersion}{1.0}
+
+%% -----------------------------------------------------------------------------
+%% LOGO-HANDLING MIT FALLBACK
+%% -----------------------------------------------------------------------------
+\newcommand{\FALogo}{%
+  \IfFileExists{\FALogoPath}{%
+    \includegraphics[width=5cm]{\FALogoPath}%
+  }{%
+    \colorbox{trustblue}{\makebox[5cm][c]{\color{white}\Large\textbf{FehrAdvice}}}%
+  }%
+}
+
+\pagestyle{empty}
+
+%% =============================================================================
+%% COVER PAGE COMMAND
+%% =============================================================================
+\newcommand{\FACoverPage}{%
+\thispagestyle{empty}
+
+\begin{tikzpicture}[remember picture, overlay]
+    % Hintergrund
+    \fill[white] (current page.south west) rectangle (current page.north east);
+
+    % Oberer blauer Balken (3cm)
+    \fill[trustblue] ([yshift=-3cm]current page.north west) rectangle (current page.north east);
+
+    % Unterer blauer Balken (2cm)
+    \fill[trustblue] (current page.south west) rectangle ([yshift=2cm]current page.south east);
+\end{tikzpicture}
+
+\vspace*{2cm}
+
+\begin{center}
+    % FehrAdvice Logo
+    \FALogo
+
+    \vspace{4cm}
+
+    % Dokumenttyp
+    {\color{trustblue}\large \FADocType}
+
+    \vspace{1cm}
+
+    % Haupttitel
+    {\color{trustblue}\fontsize{28}{34}\selectfont\textbf{\FATitle}}
+
+    \vspace{0.8cm}
+
+    % Untertitel
+    {\color{trustblue}\Large \FASubtitle}
+
+    \ifthenelse{\equal{\FASubtitleTwo}{}}{}{%
+        \vspace{0.5cm}
+        {\color{fehrgray}\large \FASubtitleTwo}
+    }
+
+    \vspace{3cm}
+
+    % Kunde
+    {\color{trustblue}\large Erstellt für}
+
+    \vspace{0.3cm}
+
+    {\color{black}\Large\textbf{\FAClient}}
+
+    \ifthenelse{\equal{\FAAuftraggeber}{}}{}{%
+        \vspace{0.3cm}
+        {\color{fehrgray}\normalsize Auftraggeber: \FAAuftraggeber}
+    }
+
+    \ifthenelse{\equal{\FAMandantin}{}}{}{%
+        {\color{fehrgray}\normalsize \\Mandantin: \FAMandantin}
+    }
+
+    \vspace{3cm}
+
+    % Datum und Version
+    {\color{fehrgray}\normalsize \FADate{} · Version \FAVersion}
+
+\end{center}
+
+\vfill
+
+\begin{tikzpicture}[remember picture, overlay]
+    \node[anchor=south, yshift=0.7cm] at (current page.south) {
+        \textcolor{white}{\footnotesize Vertraulich / Confidential}
+    };
+\end{tikzpicture}
+
+\newpage
+}
+
+%% =============================================================================
+%% STANDALONE DOKUMENT (für direktes Kompilieren)
+%% =============================================================================
+\begin{document}
+
+%% --- Beispiel-Parameter setzen ---
+\renewcommand{\FADocType}{PROJEKTBRIEFING}
+\renewcommand{\FATitle}{Haupttitel}
+\renewcommand{\FASubtitle}{Untertitel}
+\renewcommand{\FASubtitleTwo}{Zweiter Untertitel}
+\renewcommand{\FAClient}{Kundenname}
+\renewcommand{\FAAuftraggeber}{Vorname Nachname, Funktion}
+\renewcommand{\FAMandantin}{Vorname Nachname, Funktion}
+\renewcommand{\FADate}{Januar 2026}
+\renewcommand{\FAVersion}{1.0}
+
+%% --- Cover Page generieren ---
+\FACoverPage
+
+\end{document}

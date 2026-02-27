@@ -1,0 +1,171 @@
+%% =============================================================================
+%% FEHRADVICE BACK PAGE TEMPLATE
+%% =============================================================================
+%% Professionelle Rückseite mit Kontaktinformationen und Disclaimer
+%% SSOT: appendices/REF-STYLE_SG_corporate_style_guide.tex
+%%
+%% Design: Hellgrauer Hintergrund, oberer dünner + unterer breiter blauer Balken
+%%
+%% Verwendung:
+%% - Standalone: pdflatex fehradvice-back.latex
+%% - Mit format_report.py: --back Option
+%% =============================================================================
+
+\documentclass[a4paper,12pt]{article}
+
+%% -----------------------------------------------------------------------------
+%% PAKETE
+%% -----------------------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[german,provide=*]{babel}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[a4paper, margin=0pt]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{setspace}
+\usepackage{ifthen}
+
+%% -----------------------------------------------------------------------------
+%% FEHRADVICE FARBEN - Primärfarben
+%% -----------------------------------------------------------------------------
+\definecolor{primarydarkblue}{RGB}{2,64,121}       % #024079 - Dunkelblau
+\definecolor{primarylightblue}{RGB}{84,158,222}    % #549EDE - Hellblau
+\definecolor{primarydarkgray}{RGB}{37,33,42}       % #25212A - Dunkelgrau (Text)
+\definecolor{primarylightgray}{RGB}{245,245,245}   % #F5F5F5 - Hellgrau (Hintergründe)
+
+%% -----------------------------------------------------------------------------
+%% FEHRADVICE FARBEN - Sekundärfarben
+%% -----------------------------------------------------------------------------
+\definecolor{secondarylilac}{RGB}{161,160,198}     % #A1A0C6 - Flieder
+\definecolor{secondarymint}{RGB}{126,189,172}      % #7EBDAC - Mintgrün
+\definecolor{secondaryocher}{RGB}{222,203,63}      % #DECB3F - Ocker
+\definecolor{secondaryorange}{RGB}{222,157,62}     % #DE9D3E - Orange
+
+%% Legacy-Aliase für Kompatibilität
+\definecolor{trustblue}{RGB}{2,64,121}
+\definecolor{trustbluelight}{RGB}{212,228,244}
+\definecolor{fehrgray}{RGB}{37,33,42}
+\definecolor{fehrlightgray}{RGB}{245,245,245}
+
+%% -----------------------------------------------------------------------------
+%% PARAMETER (werden vom Script überschrieben)
+%% -----------------------------------------------------------------------------
+\newcommand{\FAYear}{2026}
+\newcommand{\FALogoPath}{assets/fehradvice-logo.png}
+
+%% -----------------------------------------------------------------------------
+%% LOGO-HANDLING MIT FALLBACK
+%% -----------------------------------------------------------------------------
+\newcommand{\FALogo}{%
+  \IfFileExists{\FALogoPath}{%
+    \includegraphics[width=4cm]{\FALogoPath}%
+  }{%
+    \colorbox{trustblue}{\makebox[4cm][c]{\color{white}\Large\textbf{FehrAdvice}}}%
+  }%
+}
+
+\pagestyle{empty}
+
+%% =============================================================================
+%% BACK PAGE COMMAND
+%% =============================================================================
+\newcommand{\FABackPage}{%
+\thispagestyle{empty}
+
+\begin{tikzpicture}[remember picture, overlay]
+    % Hintergrund (Hellgrau)
+    \fill[fehrlightgray] (current page.south west) rectangle (current page.north east);
+
+    % Oberer blauer Balken (dünn, 1cm)
+    \fill[trustblue] ([yshift=-1cm]current page.north west) rectangle (current page.north east);
+
+    % Unterer blauer Balken (4cm)
+    \fill[trustblue] (current page.south west) rectangle ([yshift=4cm]current page.south east);
+\end{tikzpicture}
+
+\vspace*{6cm}
+
+\begin{center}
+    % FehrAdvice Logo
+    \FALogo
+
+    \vspace{0.5cm}
+
+    % Firmenname
+    {\color{trustblue}\LARGE\textbf{FehrAdvice \& Partners AG}}
+
+    \vspace{1cm}
+
+    % Tagline
+    {\color{fehrgray}\large Behavioral Strategy Consulting}
+
+    \vspace{3cm}
+
+    % Kontaktinformationen
+    {\color{trustblue}\normalsize\textbf{Kontakt}}
+
+    \vspace{0.5cm}
+
+    {\color{black}\normalsize
+    Binzmühlestrasse 170A\\
+    8050 Zürich\\
+    Schweiz
+    }
+
+    \vspace{0.8cm}
+
+    {\color{trustblue}\normalsize
+    info@fehradvice.com\\[0.2cm]
+    +41 44 256 79 00\\[0.2cm]
+    www.fehradvice.com
+    }
+
+    \vspace{4cm}
+
+    % Disclaimer Box
+    \begin{minipage}{0.8\textwidth}
+        \centering
+        {\color{fehrgray}\footnotesize
+        \textbf{Vertraulichkeitshinweis}\\[0.3cm]
+        Dieses Dokument ist vertraulich und ausschliesslich für den internen Gebrauch
+        des Empfängers bestimmt. Die Weitergabe, Vervielfältigung oder sonstige
+        Nutzung ohne vorherige schriftliche Genehmigung von FehrAdvice \& Partners AG
+        ist untersagt.\\[0.3cm]
+        \textbf{Confidentiality Notice}\\[0.3cm]
+        This document is confidential and intended solely for the internal use of
+        the recipient. Distribution, reproduction, or any other use without prior
+        written consent from FehrAdvice \& Partners AG is prohibited.
+        }
+    \end{minipage}
+
+\end{center}
+
+\vfill
+
+\begin{tikzpicture}[remember picture, overlay]
+    \node[anchor=south, yshift=1.5cm] at (current page.south) {
+        \textcolor{white}{\normalsize\textbf{© \FAYear{} FehrAdvice \& Partners AG}}
+    };
+    \node[anchor=south, yshift=0.7cm] at (current page.south) {
+        \textcolor{white}{\footnotesize Alle Rechte vorbehalten / All rights reserved}
+    };
+\end{tikzpicture}
+
+\newpage
+}
+
+%% =============================================================================
+%% STANDALONE DOKUMENT (für direktes Kompilieren)
+%% =============================================================================
+\begin{document}
+
+%% --- Parameter setzen ---
+\renewcommand{\FAYear}{2026}
+
+%% --- Back Page generieren ---
+\FABackPage
+
+\end{document}

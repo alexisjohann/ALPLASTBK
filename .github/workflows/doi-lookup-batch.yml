@@ -1,0 +1,289 @@
+name: DOI Lookup - Batch System
+
+on:
+  workflow_dispatch:
+    inputs:
+      batch_sizes:
+        description: 'Batch sizes (comma-separated)'
+        required: false
+        default: '50,100,200'
+      dry_run:
+        description: 'Dry run (no commits)'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  batch-lookup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests pyyaml
+
+      - name: Create batch DOI lookup script
+        run: |
+          cat > scripts/doi_batch_lookup.py << 'SCRIPT'
+          #!/usr/bin/env python3
+          """
+          DOI Batch Lookup via CrossRef API
+          ==================================
+          Processes papers in batches with commits after each batch.
+          Random selection to maximize coverage diversity.
+          """
+
+          import re
+          import time
+          import random
+          import argparse
+          import subprocess
+          import requests
+          from pathlib import Path
+
+          BIB_FILE = Path("bibliography/bcm_master.bib")
+          CROSSREF_API = "https://api.crossref.org/works"
+
+          HEADERS = {
+              "User-Agent": "EBF-DOI-Lookup/1.0 (https://github.com/FehrAdvice-Partners-AG/complementarity-context-framework; mailto:research@fehradvice.com)"
+          }
+
+          def parse_bibtex():
+              """Parse BibTeX file."""
+              with open(BIB_FILE, 'r', encoding='utf-8') as f:
+                  content = f.read()
+
+              entries = []
+              current = {}
+
+              for line in content.split('\n'):
+                  match = re.match(r'^@(\w+)\{([^,]+),', line)
+                  if match:
+                      if current:
+                          entries.append(current)
+                      current = {'type': match.group(1).lower(), 'key': match.group(2)}
+                      continue
+
+                  for field in ['doi', 'title', 'author', 'journal', 'year', 'volume', 'pages']:
+                      pattern = rf'^\s*{field}\s*=\s*[\{{"](.*?)[\}}"]?\s*,?\s*$'
+                      m = re.match(pattern, line, re.IGNORECASE)
+                      if m:
+                          current[field] = m.group(1)
+
+              if current:
+                  entries.append(current)
+
+              return entries
+
+          def lookup_doi(title: str, author: str = None, year: str = None) -> str:
+              """Query CrossRef for DOI."""
+              query = title
+              if author:
+                  first_author = author.split(' and ')[0]
+                  last_name = first_author.split(',')[0].split()[-1]
+                  query = f"{last_name} {title}"
+
+              params = {
+                  'query.bibliographic': query,
+                  'rows': 3,
+                  'select': 'DOI,title,author,published-print'
+              }
+
+              try:
+                  resp = requests.get(CROSSREF_API, params=params, headers=HEADERS, timeout=30)
+                  resp.raise_for_status()
+                  data = resp.json()
+
+                  items = data.get('message', {}).get('items', [])
+                  if not items:
+                      return None
+
+                  for item in items:
+                      item_title = ' '.join(item.get('title', []))
+                      if title.lower()[:50] in item_title.lower() or item_title.lower()[:50] in title.lower():
+                          if year:
+                              item_year = item.get('published-print', {}).get('date-parts', [[None]])[0][0]
+                              if item_year and str(item_year) != str(year):
+                                  continue
+                          return item.get('DOI')
+
+                  return items[0].get('DOI')
+
+              except Exception as e:
+                  print(f"  Error: {e}")
+                  return None
+
+          def add_doi_to_bibtex(key: str, doi: str):
+              """Add DOI to BibTeX entry."""
+              with open(BIB_FILE, 'r', encoding='utf-8') as f:
+                  content = f.read()
+
+              pattern = rf'(@\w+\{{{key},.*?)(\n\}})'
+              match = re.search(pattern, content, re.DOTALL)
+
+              if match:
+                  entry = match.group(1)
+                  if 'doi' not in entry.lower():
+                      new_entry = entry + f',\n  doi = {{{doi}}}'
+                      content = content[:match.start()] + new_entry + match.group(2) + content[match.end():]
+
+                      with open(BIB_FILE, 'w', encoding='utf-8') as f:
+                          f.write(content)
+                      return True
+              return False
+
+          def git_commit(message: str):
+              """Commit changes to git."""
+              subprocess.run(['git', 'config', '--local', 'user.email',
+                            'github-actions[bot]@users.noreply.github.com'], check=True)
+              subprocess.run(['git', 'config', '--local', 'user.name',
+                            'github-actions[bot]'], check=True)
+              subprocess.run(['git', 'add', 'bibliography/bcm_master.bib'], check=True)
+
+              result = subprocess.run(['git', 'diff', '--staged', '--quiet'])
+              if result.returncode != 0:
+                  subprocess.run(['git', 'commit', '-m', message], check=True)
+                  subprocess.run(['git', 'push'], check=True)
+                  return True
+              return False
+
+          def main():
+              parser = argparse.ArgumentParser()
+              parser.add_argument('--batches', type=str, default='50,100,200',
+                                help='Comma-separated batch sizes')
+              parser.add_argument('--dry-run', action='store_true',
+                                help='Do not commit changes')
+              args = parser.parse_args()
+
+              batch_sizes = [int(x.strip()) for x in args.batches.split(',')]
+              print(f"Batch sizes: {batch_sizes}")
+              print(f"Dry run: {args.dry_run}")
+
+              # Load papers
+              print("\nLoading bibliography...")
+              papers = parse_bibtex()
+
+              # Filter to articles without DOI
+              to_lookup = [p for p in papers
+                          if p.get('type') == 'article'
+                          and not p.get('doi')
+                          and p.get('title')]
+
+              print(f"Total papers without DOI: {len(to_lookup)}")
+
+              # Shuffle for random selection
+              random.shuffle(to_lookup)
+
+              total_found = 0
+              total_processed = 0
+              processed_keys = set()
+
+              for batch_num, batch_size in enumerate(batch_sizes, 1):
+                  print(f"\n{'='*60}")
+                  print(f"BATCH {batch_num}: Processing {batch_size} papers")
+                  print('='*60)
+
+                  # Get next batch (excluding already processed)
+                  batch = []
+                  for p in to_lookup:
+                      if p['key'] not in processed_keys:
+                          batch.append(p)
+                          if len(batch) >= batch_size:
+                              break
+
+                  if not batch:
+                      print("No more papers to process!")
+                      break
+
+                  batch_found = 0
+                  batch_not_found = 0
+
+                  for i, paper in enumerate(batch):
+                      title = paper.get('title', '')
+                      author = paper.get('author', '')
+                      year = paper.get('year', '')
+                      key = paper['key']
+
+                      processed_keys.add(key)
+                      print(f"[{i+1}/{len(batch)}] {key[:40]}...", end=" ")
+
+                      doi = lookup_doi(title, author, year)
+
+                      if doi:
+                          print(f"✓ {doi}")
+                          batch_found += 1
+
+                          if not args.dry_run:
+                              if add_doi_to_bibtex(key, doi):
+                                  print(f"  → Added to BibTeX")
+                      else:
+                          print("✗ Not found")
+                          batch_not_found += 1
+
+                      time.sleep(0.5)
+
+                  total_found += batch_found
+                  total_processed += len(batch)
+
+                  print(f"\nBatch {batch_num} complete:")
+                  print(f"  Found: {batch_found}")
+                  print(f"  Not found: {batch_not_found}")
+                  print(f"  Success rate: {batch_found/len(batch)*100:.1f}%")
+
+                  # Commit after each batch
+                  if not args.dry_run and batch_found > 0:
+                      commit_msg = f"""feat(PAP): Add {batch_found} DOIs via CrossRef (Batch {batch_num}/{len(batch_sizes)})
+
+          Batch {batch_num}: {batch_found} DOIs found from {len(batch)} papers ({batch_found/len(batch)*100:.1f}% success)
+          Running total: {total_found} DOIs from {total_processed} papers
+
+          https://claude.ai/code/session_01MGea9VpH76tBnSwJs6Kivt"""
+
+                      if git_commit(commit_msg):
+                          print(f"  → Committed batch {batch_num}")
+                      else:
+                          print(f"  → No changes to commit")
+
+              # Final summary
+              print("\n" + "="*60)
+              print("FINAL SUMMARY")
+              print("="*60)
+              print(f"Total processed: {total_processed}")
+              print(f"Total DOIs found: {total_found}")
+              print(f"Overall success rate: {total_found/total_processed*100:.1f}%" if total_processed > 0 else "N/A")
+
+              # Count current DOIs
+              with open(BIB_FILE, 'r', encoding='utf-8') as f:
+                  content = f.read()
+              doi_count = len(re.findall(r'^\s*doi\s*=', content, re.MULTILINE | re.IGNORECASE))
+              total_count = len(re.findall(r'^@', content, re.MULTILINE))
+              print(f"\nBibliography status: {doi_count}/{total_count} ({doi_count/total_count*100:.1f}%)")
+
+          if __name__ == '__main__':
+              main()
+          SCRIPT
+
+      - name: Run batch DOI lookup
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            python scripts/doi_batch_lookup.py --batches "${{ inputs.batch_sizes }}" --dry-run
+          else
+            python scripts/doi_batch_lookup.py --batches "${{ inputs.batch_sizes }}"
+          fi
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: doi-batch-results
+          path: |
+            bibliography/bcm_master.bib

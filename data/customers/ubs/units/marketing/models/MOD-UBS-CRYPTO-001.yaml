@@ -1,0 +1,2504 @@
+# =============================================================================
+# UBS CRYPTO INVESTMENT COMMUNICATION MODEL
+# =============================================================================
+# Superkey: MOD-UBS-CRYPTO-001
+# Version: 1.0.0
+# Created: 2026-02-26
+# Purpose: Behavioral model for UBS crypto offering communication strategy
+# Scope: Segment Analysis, Prioritisation, Communication Strategy, Patterns
+# Briefing: BRIEFING_crypto_offering_communication_2026.md
+# Architecture: Based on MOD-UBS-GMA-001 (10C → 4 Modules → Unified Score)
+# =============================================================================
+
+metadata:
+  id: "MOD-UBS-CRYPTO-001"
+  name: "UBS Crypto Investment Communication Model"
+  short_name: "CICM"
+  version: "1.0.0"
+  created: "2026-02-26"
+  created_for: "Dang Nguyen (UBS Marketing)"
+  customer: "UBS"
+  unit: "Marketing / Digital Communication & Growth"
+  project_id: "UBS-MKT-2026-CR-001"
+  based_on: "MOD-UBS-GMA-001"
+
+  question_types:
+    - "Q1: Welche Segmente haben die höchste Crypto-Affinität?"
+    - "Q2: Wie priorisieren wir Segmente für den Rollout?"
+    - "Q3: Welche Positionierung maximiert Adoption über Segmente?"
+    - "Q4: Welche kanalspezifischen Kommunikationsmuster funktionieren?"
+
+  products:
+    - name: "Bitcoin (BTC)"
+      type: "crypto_asset"
+      ubs_classification: "alternative_investment"
+      regulatory_status: "approved_ch"
+    - name: "Ethereum (ETH)"
+      type: "crypto_asset"
+      ubs_classification: "alternative_investment"
+      regulatory_status: "approved_ch"
+
+# =============================================================================
+# SECTION 1: MODELL-ARCHITEKTUR
+# =============================================================================
+
+architecture:
+  type: "Multi-Question Integrated Model"
+  approach: "10C → 4 Question Modules → Unified Adoption Score"
+
+  modules:
+    Q1_segment_analysis:
+      name: "Segment Analysis & Crypto Affinity"
+      primary_10c: [WHO, WHAT, AWARE]
+      question: "Welches Segment hat welche Crypto-Affinität?"
+
+    Q2_prioritisation:
+      name: "Segment Prioritisation"
+      primary_10c: [WHO, READY, STAGE]
+      question: "In welcher Reihenfolge ansprechen?"
+
+    Q3_positioning:
+      name: "Communication Strategy (Macro)"
+      primary_10c: [WHAT, HOW, WHEN]
+      question: "Welche Positionierung für welches Segment?"
+
+    Q4_patterns:
+      name: "Communication Patterns (Micro)"
+      primary_10c: [HOW, WHERE, WHEN, AWARE]
+      question: "Welche Trigger, Kanäle, Botschaften?"
+
+# =============================================================================
+# SECTION 2: 10C CORE SPECIFICATION
+# =============================================================================
+
+core_10c:
+
+  WHO:
+    description: "5 Investmentsegmente aus UBS-Briefing (verhaltensbasiert)"
+
+    segments:
+      - id: "SEG-CRYPTO-SELBST"
+        name: "Selbstentscheider"
+        description: "Independent, well-informed, decisive, seeks control"
+        briefing_crypto_affinity: "High"
+        size_estimate_pct: 0.15  # ~15% des Kundenstamms
+        archetype: "Thomas, 38, Software Engineer, handelt seit 2020 auf Binance"
+
+      - id: "SEG-CRYPTO-BEZIEH"
+        name: "Beziehungssuchende"
+        description: "Values personal advice, trust-oriented, relationship-focused"
+        briefing_crypto_affinity: "Medium"
+        size_estimate_pct: 0.25
+        archetype: "Anna, 52, KMU-Inhaberin, vertraut ihrem Berater seit 15 Jahren"
+
+      - id: "SEG-CRYPTO-ORIENT"
+        name: "Orientierungssuchende"
+        description: "Uncertain, seeks structure and guidance, decision-averse"
+        briefing_crypto_affinity: "Low-Medium"
+        size_estimate_pct: 0.20
+        archetype: "Lukas, 45, Lehrer, liest NZZ aber traut sich nicht"
+
+      - id: "SEG-CRYPTO-SCHWELL"
+        name: "Schwellenängstliche"
+        description: "Hesitant, risk-averse, high decision barriers"
+        briefing_crypto_affinity: "Low"
+        size_estimate_pct: 0.20
+        archetype: "Maria, 58, Verwaltungsangestellte, hat 3a bei UBS"
+
+      - id: "SEG-CRYPTO-TRADIT"
+        name: "Traditionskunden"
+        description: "Conservative, sceptical of novelty, stability-focused"
+        briefing_crypto_affinity: "Very Low"
+        size_estimate_pct: 0.20
+        archetype: "Heinrich, 67, pensioniert, Vermögensverwaltungsmandat"
+
+    # =========================================================================
+    # BEHAVIORAL PARAMETERS BY SEGMENT
+    # Quellen: UBS Profile (λ_UBS=1.8, τ_BRAND=0.80), GMA-001, LLMMC Priors
+    # =========================================================================
+    behavioral_parameters_by_segment:
+
+      SEG-CRYPTO-SELBST:
+        # --- Basis-Parameter ---
+        lambda: 1.5          # Niedrigere Loss Aversion (risikoaffiner)
+        tau_ubs: 0.75         # Gutes UBS-Vertrauen
+        beta: 0.75            # Moderate present bias (handelt schnell)
+        iota_brand: 0.50      # Moderate Brand-Identität (nutzt auch Konkurrenz)
+        sigma_social: 0.30    # Geringe Social Proof Sensitivität (eigenständig)
+        kappa_default: 0.40   # Tiefe Default-Sensitivität (wählt aktiv)
+        epsilon_effort: 0.35  # Tiefe Effort-Sensitivität (nimmt Aufwand in Kauf)
+        # --- Crypto-spezifische Parameter ---
+        tau_crypto: 0.70      # Hohes Crypto-Vertrauen (Erfahrung!)
+        iota_crypto: 0.75     # Crypto ist Teil der Identität
+        lambda_crypto: 1.2    # Tiefe Crypto-Loss-Aversion (kennt Volatilität)
+        sigma_crypto_peers: 0.60  # Tech-Peers als Referenz
+        knowledge_crypto: 0.80    # Hohe Crypto-Kompetenz
+        prior_crypto_experience: true
+        # --- Derived ---
+        crypto_affinity_score: 0.82  # Composite (see formula below)
+
+      SEG-CRYPTO-BEZIEH:
+        lambda: 1.9
+        tau_ubs: 0.85         # Höchstes UBS-Vertrauen (Beziehung!)
+        beta: 0.85            # Moderate present bias
+        iota_brand: 0.80      # Starke UBS-Identität
+        sigma_social: 0.55    # Moderate Social Proof (Berater als Referenz)
+        kappa_default: 0.70   # Hohe Default-Sensitivität (nimmt Empfehlung an)
+        epsilon_effort: 0.60  # Moderate Effort-Aversion
+        tau_crypto: 0.35      # Tiefes Crypto-Vertrauen (unbekannt)
+        iota_crypto: 0.15     # Crypto nicht identitätsrelevant
+        lambda_crypto: 2.4    # Hohe Crypto-Loss-Aversion
+        sigma_crypto_peers: 0.25  # Peers investieren kaum
+        knowledge_crypto: 0.25    # Tiefe Crypto-Kompetenz
+        prior_crypto_experience: false
+        crypto_affinity_score: 0.38
+
+      SEG-CRYPTO-ORIENT:
+        lambda: 2.1
+        tau_ubs: 0.70
+        beta: 0.80
+        iota_brand: 0.55
+        sigma_social: 0.70    # Hohe Social Proof Sensitivität
+        kappa_default: 0.80   # Sehr hohe Default-Sensitivität
+        epsilon_effort: 0.75  # Hohe Effort-Aversion
+        tau_crypto: 0.25      # Sehr tiefes Crypto-Vertrauen
+        iota_crypto: 0.10     # Crypto nicht identitätsrelevant
+        lambda_crypto: 2.8    # Sehr hohe Crypto-Loss-Aversion
+        sigma_crypto_peers: 0.40  # Schaut auf Nachbarn/Medien
+        knowledge_crypto: 0.15
+        prior_crypto_experience: false
+        crypto_affinity_score: 0.22
+
+      SEG-CRYPTO-SCHWELL:
+        lambda: 2.5           # Höchste Loss Aversion
+        tau_ubs: 0.75
+        beta: 0.90            # Hoher present bias (procrastination)
+        iota_brand: 0.65
+        sigma_social: 0.50
+        kappa_default: 0.85   # Sehr hohe Default-Sensitivität
+        epsilon_effort: 0.85  # Sehr hohe Effort-Aversion (Barrieren!)
+        tau_crypto: 0.15      # Minimal Crypto-Vertrauen
+        iota_crypto: 0.05     # Crypto identitätsfremd
+        lambda_crypto: 3.2    # Extreme Crypto-Loss-Aversion
+        sigma_crypto_peers: 0.20
+        knowledge_crypto: 0.10
+        prior_crypto_experience: false
+        crypto_affinity_score: 0.12
+
+      SEG-CRYPTO-TRADIT:
+        lambda: 2.3
+        tau_ubs: 0.85         # Hohes UBS-Vertrauen (Langzeitkunde)
+        beta: 0.92            # Status Quo Bias dominant
+        iota_brand: 0.85      # Starke UBS-Identität (traditionell)
+        sigma_social: 0.35    # Tiefe Peer-Sensitivität (eigene Meinung)
+        kappa_default: 0.90   # Extrem hohe Default-Sensitivität
+        epsilon_effort: 0.70
+        tau_crypto: 0.10      # Misstraut Crypto fundamental
+        iota_crypto: -0.20    # Crypto ist ANTI-Identität (Ablehnung!)
+        lambda_crypto: 3.5    # Extreme Crypto-Loss-Aversion
+        sigma_crypto_peers: 0.10  # "Meine Freunde investieren nicht in sowas"
+        knowledge_crypto: 0.08
+        prior_crypto_experience: false
+        crypto_affinity_score: 0.05
+
+    # =========================================================================
+    # CRYPTO AFFINITY SCORE FORMULA
+    # =========================================================================
+    crypto_affinity_formula:
+      description: |
+        CAS(s) = w₁×τ_crypto + w₂×(1-λ_crypto/4) + w₃×ι_crypto
+               + w₄×knowledge + w₅×σ_peers - w₆×ε_effort
+
+        Wobei Gewichte aus LLMMC Prior (N=1000, informed by:
+        Identity Economics MS-IB-001, Prospect Theory MS-RD-001)
+      weights:
+        w1_trust: 0.25
+        w2_loss_aversion_inv: 0.20
+        w3_identity: 0.20
+        w4_knowledge: 0.15
+        w5_social_proof: 0.10
+        w6_effort_penalty: 0.10
+      parameter_refs:
+        - "PAR-BEH-016 (λ via MS-RD-001 Prospect Theory)"
+        - "PAR-COMP-001 (γ Identity × Social)"
+        - "PAR-COMP-004 (γ Social × Warm Glow)"
+
+    # =========================================================================
+    # CRYPTO AFFINITY RANKING (Q1 ANSWER)
+    # =========================================================================
+    crypto_affinity_ranking:
+      - rank: 1
+        segment: "SEG-CRYPTO-SELBST"
+        score: 0.82
+        classification: "HIGH"
+        implication: "Ready to adopt — ACTIVATE"
+
+      - rank: 2
+        segment: "SEG-CRYPTO-BEZIEH"
+        score: 0.38
+        classification: "MEDIUM"
+        implication: "Needs advisor-mediated trust transfer — ENABLE ADVISOR"
+
+      - rank: 3
+        segment: "SEG-CRYPTO-ORIENT"
+        score: 0.22
+        classification: "LOW-MEDIUM"
+        implication: "Needs structured guidance and social proof — EDUCATE"
+
+      - rank: 4
+        segment: "SEG-CRYPTO-SCHWELL"
+        score: 0.12
+        classification: "LOW"
+        implication: "Massive barriers — only with extreme friction reduction"
+
+      - rank: 5
+        segment: "SEG-CRYPTO-TRADIT"
+        score: 0.05
+        classification: "VERY LOW"
+        implication: "Anti-identity — DO NOT TARGET (dilution risk)"
+
+  WHAT:
+    description: "Utility-Dimensionen bei Crypto-Investment-Entscheidung"
+
+    utility_dimensions:
+      - dim: "u_F"
+        name: "Financial Utility"
+        description: "Rendite, Diversifikation, Portfolio-Optimierung"
+        weight_default: 0.25
+        crypto_specific: "Erwartete Rendite vs. Volatilitätskosten"
+
+      - dim: "u_E"
+        name: "Emotional Utility"
+        description: "Sicherheitsgefühl, Kontrolle, Vertrauen"
+        weight_default: 0.25
+        crypto_specific: "Angstabbau durch UBS-Verpackung"
+
+      - dim: "u_S"
+        name: "Social Utility"
+        description: "Status, Modernität, Peer-Konformität"
+        weight_default: 0.15
+        crypto_specific: "Signaling: 'Ich bin modern aber seriös'"
+
+      - dim: "u_P"
+        name: "Process Utility"
+        description: "Einfachheit, Convenience, UX"
+        weight_default: 0.20
+        crypto_specific: "Kein Wallet-Management, kein Seed, kein Exchange"
+
+      - dim: "u_D"
+        name: "Identity Utility"
+        description: "Konsistenz mit Selbstbild"
+        weight_default: 0.15
+        crypto_specific: "Bin ich jemand, der Crypto besitzt?"
+
+    utility_weights_by_segment:
+      SEG-CRYPTO-SELBST:
+        u_F: 0.35  # Rendite-getrieben
+        u_E: 0.10  # Braucht keine Beruhigung
+        u_S: 0.15  # Tech-Status
+        u_P: 0.25  # Will gute UX
+        u_D: 0.15  # Crypto ist Identität
+
+      SEG-CRYPTO-BEZIEH:
+        u_F: 0.20
+        u_E: 0.35  # Sicherheit höchste Priorität!
+        u_S: 0.10
+        u_P: 0.15
+        u_D: 0.20  # "Mein Berater empfiehlt es"
+
+      SEG-CRYPTO-ORIENT:
+        u_F: 0.15
+        u_E: 0.30  # Angstabbau wichtig
+        u_S: 0.20  # "Andere machen es auch"
+        u_P: 0.25  # Muss extrem einfach sein
+        u_D: 0.10
+
+      SEG-CRYPTO-SCHWELL:
+        u_F: 0.10
+        u_E: 0.40  # Sicherheit dominiert alles
+        u_S: 0.10
+        u_P: 0.30  # Muss barrierefrei sein
+        u_D: 0.10
+
+      SEG-CRYPTO-TRADIT:
+        u_F: 0.20
+        u_E: 0.30
+        u_S: 0.05  # Peers lehnen Crypto ab
+        u_P: 0.10
+        u_D: 0.35  # Identität GEGEN Crypto!
+
+  HOW:
+    description: "Kommunikationskanäle und deren Effektivität pro Segment"
+
+    channels:
+      - id: "CH-ADVISOR"
+        name: "Kundenberater (persönlich)"
+        description: "Beratungsgespräch, Telefon, Video"
+        trust_transfer_capacity: 0.90  # Höchste!
+        reach_by_segment:
+          SEG-CRYPTO-SELBST: 0.20    # Will keinen Berater
+          SEG-CRYPTO-BEZIEH: 0.85    # Primärkanal!
+          SEG-CRYPTO-ORIENT: 0.40
+          SEG-CRYPTO-SCHWELL: 0.30
+          SEG-CRYPTO-TRADIT: 0.60
+
+      - id: "CH-APP"
+        name: "UBS Mobile Banking App"
+        trust_transfer_capacity: 0.50
+        reach_by_segment:
+          SEG-CRYPTO-SELBST: 0.90    # Primärkanal!
+          SEG-CRYPTO-BEZIEH: 0.50
+          SEG-CRYPTO-ORIENT: 0.60
+          SEG-CRYPTO-SCHWELL: 0.40
+          SEG-CRYPTO-TRADIT: 0.25
+
+      - id: "CH-EBANKING"
+        name: "E-Banking Web"
+        trust_transfer_capacity: 0.55
+        reach_by_segment:
+          SEG-CRYPTO-SELBST: 0.70
+          SEG-CRYPTO-BEZIEH: 0.40
+          SEG-CRYPTO-ORIENT: 0.55
+          SEG-CRYPTO-SCHWELL: 0.45
+          SEG-CRYPTO-TRADIT: 0.50
+
+      - id: "CH-EMAIL"
+        name: "Email / Newsletter"
+        trust_transfer_capacity: 0.30
+        reach_by_segment:
+          SEG-CRYPTO-SELBST: 0.40
+          SEG-CRYPTO-BEZIEH: 0.55
+          SEG-CRYPTO-ORIENT: 0.60
+          SEG-CRYPTO-SCHWELL: 0.50
+          SEG-CRYPTO-TRADIT: 0.55
+
+      - id: "CH-EVENT"
+        name: "Webinar / Event"
+        trust_transfer_capacity: 0.70
+        reach_by_segment:
+          SEG-CRYPTO-SELBST: 0.30
+          SEG-CRYPTO-BEZIEH: 0.40
+          SEG-CRYPTO-ORIENT: 0.50
+          SEG-CRYPTO-SCHWELL: 0.20
+          SEG-CRYPTO-TRADIT: 0.15
+
+    channel_complementarity:
+      ADVISOR_x_APP: 0.35      # Berater erklärt → Kunde handelt in App
+      ADVISOR_x_EVENT: 0.25    # Event weckt Interesse → Berater vertieft
+      APP_x_EMAIL: 0.15        # Email triggers App-Visit
+      EVENT_x_EMAIL: 0.20      # Event-Teilnahme → Follow-up Email
+      APP_x_EBANKING: -0.10    # Leichte Kannibalisierung
+
+  WHEN:
+    description: "Zeitliche Kontexte und Trigger-Momente für Crypto-Adoption"
+
+    temporal_triggers:
+      # Life Events
+      life_events:
+        - event: "Bitcoin ATH / Medienpräsenz"
+          timing: "Marktgetrieben"
+          activation_multiplier: 2.5
+          primary_segments: [SEG-CRYPTO-ORIENT, SEG-CRYPTO-BEZIEH]
+          risk: "FOMO-getrieben, kann zu Reue führen"
+
+        - event: "Bonus / 13. Monatslohn"
+          timing: "Dezember-Januar"
+          activation_multiplier: 1.6
+          primary_segments: [SEG-CRYPTO-SELBST, SEG-CRYPTO-BEZIEH]
+
+        - event: "Peer-Erfahrung ('Mein Kollege hat Bitcoin')"
+          timing: "Anytime"
+          activation_multiplier: 1.8
+          primary_segments: [SEG-CRYPTO-ORIENT, SEG-CRYPTO-BEZIEH]
+
+        - event: "Portfolio-Review beim Berater"
+          timing: "Quartalsweise"
+          activation_multiplier: 2.0
+          primary_segments: [SEG-CRYPTO-BEZIEH, SEG-CRYPTO-TRADIT]
+
+        - event: "Regulatorische Klarheit (z.B. EU MiCA)"
+          timing: "Event-driven"
+          activation_multiplier: 1.4
+          primary_segments: [SEG-CRYPTO-SCHWELL, SEG-CRYPTO-TRADIT]
+
+        - event: "UBS Crypto Launch-Kommunikation"
+          timing: "Einmalig (Launch)"
+          activation_multiplier: 1.5
+          primary_segments: [SEG-CRYPTO-SELBST, SEG-CRYPTO-ORIENT]
+
+      # Kontext-Dimensionen (Ψ)
+      psi_context:
+        psi_I_regulatory: "FINMA-approved, MiFID-compliant"
+        psi_S_social_norm: "Crypto-Normalisation in CH (SBB, PostFinance)"
+        psi_K_cultural: "Swiss caution × Crypto-Skepsis = hohe Schwelle"
+        psi_E_economic: "Niedrigzins-Umfeld treibt Alternative-Suche"
+        psi_T_temporal: "Post-Halving-Cycle 2024 → bull market sentiment"
+        psi_M_technology: "UBS App als Trust-Interface (keine Wallet-Komplexität)"
+
+  WHERE:
+    description: "Touchpoints für Crypto-Kommunikation"
+
+    touchpoints:
+      digital:
+        - "App: Crypto-Sektion in Investment-Bereich"
+        - "App: Push-Notification bei Kurs-Trigger"
+        - "E-Banking: Crypto-Info-Seite"
+        - "Email: Personalisierte Crypto-Insights"
+        - "Webinar: 'Crypto für UBS-Kunden erklärt'"
+      physical:
+        - "Beratungsgespräch: Crypto als Portfolio-Ergänzung"
+        - "Branch: Crypto-Infomaterial (QR zu App)"
+        - "Events: Crypto-Abend für Kunden"
+      hybrid:
+        - "Video-Call: Crypto-Beratung"
+        - "Chat: Crypto-FAQ-Bot"
+
+    context_modifiers:
+      app_crypto_section:
+        attention_available: 0.4
+        decision_readiness: 0.25
+        trust_context: 0.70  # In UBS-App = vertrauensvoll
+      advisor_meeting:
+        attention_available: 0.9
+        decision_readiness: 0.7
+        trust_context: 0.90  # Höchstes Vertrauen
+      email:
+        attention_available: 0.2
+        decision_readiness: 0.10
+        trust_context: 0.50
+
+  AWARE:
+    description: "Awareness-Dimensionen für Crypto-Investment"
+
+    awareness_dimensions:
+      - dim: "A_product"
+        name: "Produktkenntnis (UBS bietet Crypto an)"
+        by_segment:
+          SEG-CRYPTO-SELBST: 0.60   # Weiss möglicherweise schon
+          SEG-CRYPTO-BEZIEH: 0.20
+          SEG-CRYPTO-ORIENT: 0.25
+          SEG-CRYPTO-SCHWELL: 0.10
+          SEG-CRYPTO-TRADIT: 0.05
+
+      - dim: "A_benefit"
+        name: "Nutzenkenntnis (Warum Crypto im Portfolio?)"
+        by_segment:
+          SEG-CRYPTO-SELBST: 0.75
+          SEG-CRYPTO-BEZIEH: 0.20
+          SEG-CRYPTO-ORIENT: 0.15
+          SEG-CRYPTO-SCHWELL: 0.08
+          SEG-CRYPTO-TRADIT: 0.05
+
+      - dim: "A_risk"
+        name: "Risiko-Awareness (akkurate Risikoeinschätzung)"
+        by_segment:
+          SEG-CRYPTO-SELBST: 0.70   # Realistisch
+          SEG-CRYPTO-BEZIEH: 0.85   # Überschätzt Risiko
+          SEG-CRYPTO-ORIENT: 0.90   # Stark überschätzt
+          SEG-CRYPTO-SCHWELL: 0.95  # Extrem überschätzt
+          SEG-CRYPTO-TRADIT: 0.95   # Extrem überschätzt
+        note: "Höhere Werte = stärkere Risikowahrnehmung (Barriere!)"
+
+      - dim: "A_action"
+        name: "Handlungswissen (Wie kaufe ich Crypto bei UBS?)"
+        by_segment:
+          SEG-CRYPTO-SELBST: 0.50   # Kennt Prozess nicht bei UBS
+          SEG-CRYPTO-BEZIEH: 0.10
+          SEG-CRYPTO-ORIENT: 0.08
+          SEG-CRYPTO-SCHWELL: 0.05
+          SEG-CRYPTO-TRADIT: 0.03
+
+      - dim: "A_ubs_advantage"
+        name: "UBS-Differenzierung (Warum bei UBS und nicht Crypto-Börse?)"
+        by_segment:
+          SEG-CRYPTO-SELBST: 0.30   # Sieht noch keinen UBS-Vorteil
+          SEG-CRYPTO-BEZIEH: 0.50   # Versteht intuitiv: "UBS = sicher"
+          SEG-CRYPTO-ORIENT: 0.40
+          SEG-CRYPTO-SCHWELL: 0.55   # Genau das brauchen sie
+          SEG-CRYPTO-TRADIT: 0.60    # "Wenn überhaupt, dann nur bei UBS"
+
+  READY:
+    description: "Handlungsbereitschaft (WAX-Modell)"
+
+    readiness_model:
+      willingness:
+        SEG-CRYPTO-SELBST: 0.80     # Will — wartet auf UBS-Angebot
+        SEG-CRYPTO-BEZIEH: 0.35     # Braucht Empfehlung
+        SEG-CRYPTO-ORIENT: 0.20     # Unsicher
+        SEG-CRYPTO-SCHWELL: 0.10    # Blockiert
+        SEG-CRYPTO-TRADIT: 0.05     # Lehnt ab
+
+      ability:
+        financial: 0.75              # Haben Geld (UBS-Kunden)
+        knowledge:
+          SEG-CRYPTO-SELBST: 0.80
+          SEG-CRYPTO-BEZIEH: 0.25
+          SEG-CRYPTO-ORIENT: 0.15
+          SEG-CRYPTO-SCHWELL: 0.10
+          SEG-CRYPTO-TRADIT: 0.08
+        access: 0.90                 # UBS App = hoher Zugang
+
+      context:
+        regulatory_clarity: +0.10    # FINMA-Approved = positiv
+        market_sentiment: +0.15      # Bull-Markt 2025-26
+        media_noise: -0.10           # Crypto-Crashes in Erinnerung
+        ubs_trust_premium: +0.20     # UBS-Wrapper reduziert Barriere
+
+  STAGE:
+    description: "Customer Journey Phasen für Crypto-Adoption"
+
+    journey_stages:
+      - stage: "UNAWARE"
+        description: "Weiss nicht, dass UBS Crypto anbietet"
+        share_by_segment:
+          SEG-CRYPTO-SELBST: 0.10
+          SEG-CRYPTO-BEZIEH: 0.40
+          SEG-CRYPTO-ORIENT: 0.45
+          SEG-CRYPTO-SCHWELL: 0.60
+          SEG-CRYPTO-TRADIT: 0.70
+        primary_intervention: "Launch Communication"
+
+      - stage: "AWARE_CURIOUS"
+        description: "Weiss von Angebot, ist neugierig"
+        share_by_segment:
+          SEG-CRYPTO-SELBST: 0.25
+          SEG-CRYPTO-BEZIEH: 0.30
+          SEG-CRYPTO-ORIENT: 0.35
+          SEG-CRYPTO-SCHWELL: 0.25
+          SEG-CRYPTO-TRADIT: 0.15
+        primary_intervention: "Education + Social Proof"
+
+      - stage: "CONSIDERING"
+        description: "Denkt aktiv darüber nach"
+        share_by_segment:
+          SEG-CRYPTO-SELBST: 0.30
+          SEG-CRYPTO-BEZIEH: 0.20
+          SEG-CRYPTO-ORIENT: 0.15
+          SEG-CRYPTO-SCHWELL: 0.10
+          SEG-CRYPTO-TRADIT: 0.10
+        primary_intervention: "Advisor Enablement + Friction Reduction"
+
+      - stage: "READY_TO_ACT"
+        description: "Bereit, braucht letzten Anstoss"
+        share_by_segment:
+          SEG-CRYPTO-SELBST: 0.25
+          SEG-CRYPTO-BEZIEH: 0.08
+          SEG-CRYPTO-ORIENT: 0.04
+          SEG-CRYPTO-SCHWELL: 0.04
+          SEG-CRYPTO-TRADIT: 0.04
+        primary_intervention: "Activation Nudge + Timing"
+
+      - stage: "ACTIVE"
+        description: "Hat Crypto bei UBS gekauft"
+        share_by_segment:
+          SEG-CRYPTO-SELBST: 0.10
+          SEG-CRYPTO-BEZIEH: 0.02
+          SEG-CRYPTO-ORIENT: 0.01
+          SEG-CRYPTO-SCHWELL: 0.01
+          SEG-CRYPTO-TRADIT: 0.01
+        primary_intervention: "Retention + Deepening"
+
+# =============================================================================
+# SECTION 3: Q2 — SEGMENT PRIORITISATION MODEL
+# =============================================================================
+
+module_Q2_prioritisation:
+
+  description: |
+    Priorisierung basiert auf 4 Faktoren:
+    (1) Crypto Affinity Score (CAS)
+    (2) Revenue Potential (RP)
+    (3) Conversion Probability (CP)
+    (4) Brand Risk (BR, negativ)
+
+  prioritisation_formula:
+    description: |
+      Priority(s) = w₁×CAS(s) + w₂×RP(s) + w₃×CP(s) - w₄×BR(s)
+    weights:
+      w1_affinity: 0.30
+      w2_revenue: 0.25
+      w3_conversion: 0.30
+      w4_brand_risk: 0.15
+
+  segment_scores:
+    SEG-CRYPTO-SELBST:
+      CAS: 0.82
+      RP: 0.60    # Mittel (handelt selbst, tiefe Marge)
+      CP: 0.75    # Hoch (will, kann, weiss)
+      BR: 0.05    # Minimal (erwartet Crypto)
+      priority: 0.71  # 0.30×0.82 + 0.25×0.60 + 0.30×0.75 - 0.15×0.05
+
+    SEG-CRYPTO-BEZIEH:
+      CAS: 0.38
+      RP: 0.85    # Hoch (Berater-Marge, Cross-Selling)
+      CP: 0.45    # Mittel (braucht Berater)
+      BR: 0.10    # Tief
+      priority: 0.50  # 0.30×0.38 + 0.25×0.85 + 0.30×0.45 - 0.15×0.10
+
+    SEG-CRYPTO-ORIENT:
+      CAS: 0.22
+      RP: 0.50
+      CP: 0.25
+      BR: 0.15
+      priority: 0.28
+
+    SEG-CRYPTO-SCHWELL:
+      CAS: 0.12
+      RP: 0.40
+      CP: 0.10
+      BR: 0.25
+      priority: 0.13
+
+    SEG-CRYPTO-TRADIT:
+      CAS: 0.05
+      RP: 0.70    # Hohes AuM, ABER...
+      CP: 0.03    # Fast keine Conversion
+      BR: 0.60    # HOCH! Kann Brand-Wahrnehmung beschädigen
+      priority: -0.04  # NEGATIV! Nicht ansprechen.
+
+  rollout_recommendation:
+    phase_1:
+      name: "Quick Wins"
+      timing: "Launch (Monat 1-2)"
+      segments: ["SEG-CRYPTO-SELBST"]
+      strategy: "Self-Service Activation via App"
+      expected_conversion: "15-25%"
+      rationale: "Höchste Affinität, tiefste Kosten, schnellster ROI"
+
+    phase_2:
+      name: "Advisor-Enabled"
+      timing: "Monat 2-4"
+      segments: ["SEG-CRYPTO-BEZIEH"]
+      strategy: "Advisor Crypto Enablement + Empfehlungs-Toolkit"
+      expected_conversion: "8-15%"
+      rationale: "Höchstes Revenue-Potenzial, braucht Berater-Training"
+
+    phase_3:
+      name: "Education Wave"
+      timing: "Monat 4-8"
+      segments: ["SEG-CRYPTO-ORIENT"]
+      strategy: "Content-Marketing + Social Proof + Webinars"
+      expected_conversion: "3-8%"
+      rationale: "Grösstes Volumen, braucht längere Education"
+
+    phase_4:
+      name: "Barrier Reduction"
+      timing: "Monat 8-12"
+      segments: ["SEG-CRYPTO-SCHWELL"]
+      strategy: "Ultra-Low-Entry + Micro-Investment + Garantie-Narrative"
+      expected_conversion: "1-3%"
+      rationale: "Nur mit extremer Friction Reduction"
+
+    not_targeted:
+      segments: ["SEG-CRYPTO-TRADIT"]
+      rationale: |
+        Crypto widerspricht der Kernidentität dieser Gruppe.
+        ι_crypto = -0.20 (Anti-Identität!). Aktive Ansprache
+        riskiert Cognitive Dissonance und Brand Dilution.
+        Besser: Berater beantwortet bei Nachfrage, aber kein Push.
+
+# =============================================================================
+# SECTION 4: Q3 — POSITIONING STRATEGY (MACRO)
+# =============================================================================
+
+module_Q3_positioning:
+
+  description: |
+    5 Positionierungsoptionen aus dem Briefing, bewertet über
+    Brand Extension Fit (Voelckner 2006) und Segment-Resonanz.
+
+  # =========================================================================
+  # BRAND EXTENSION RECALIBRATION: Bank → Crypto
+  # Based on B3_brand_extension_esim.yaml, recalibrated for crypto
+  # =========================================================================
+  brand_extension_crypto:
+    framework: "Voelckner & Sattler (2006) — 10 Factors recalibrated"
+
+    factors:
+      - name: "Fit (Perceived Similarity)"
+        meta_beta: 0.41
+        ubs_crypto_score: 0.30  # LOWER than eSIM (0.40) — Bank→Crypto more distant
+        assessment: "LOW-MODERATE — Banking → Crypto is category-distant"
+        action: "Frame as 'Digital Asset Management' not 'Crypto Trading'"
+
+      - name: "Parent Brand Conviction"
+        meta_beta: 0.36
+        ubs_crypto_score: 0.80  # HIGHER — UBS trust is THE asset here
+        assessment: "HIGH — UBS trust wraps crypto in safety"
+        action: "UBS brand must be PROMINENT — this IS the value proposition"
+
+      - name: "Marketing Support"
+        meta_beta: 0.28
+        ubs_crypto_score: 0.55  # Moderate investment expected
+        assessment: "CRITICAL COMPENSATORY LEVER"
+        action: "Invest heavily — this compensates for low fit"
+
+      - name: "Retailer Acceptance"
+        meta_beta: 0.22
+        ubs_crypto_score: 0.45  # Advisor channel = quasi-retailer
+        assessment: "MODERATE — Advisor = trust-transfer channel"
+        action: "Advisor enablement is the 'distribution channel'"
+
+      - name: "Parent Brand Experience"
+        meta_beta: 0.19
+        ubs_crypto_score: 0.75  # Long relationships
+        assessment: "HIGH — long-tenure customers accept more"
+
+      - name: "Number of Prior Extensions"
+        meta_beta: 0.15
+        ubs_crypto_score: 0.35  # Few non-financial extensions
+        assessment: "LOW — Crypto is unusual for UBS"
+
+      - name: "Parent Brand Width"
+        meta_beta: 0.13
+        ubs_crypto_score: 0.60  # Wealth Management = broad
+        assessment: "MODERATE-HIGH — WM covers broad asset classes"
+
+      - name: "Category Risk"
+        meta_beta: -0.18
+        ubs_crypto_score: 0.75  # HIGH! Crypto is volatile
+        assessment: "HIGH RISK — volatility, loss potential, regulatory"
+        action: "Position sizing limits (1-5% portfolio), education"
+
+      - name: "Consumer Innovativeness"
+        meta_beta: 0.12
+        ubs_crypto_score: 0.45
+        assessment: "MODERATE — Swiss are cautious adopters"
+
+      - name: "Extension Price"
+        meta_beta: -0.10
+        ubs_crypto_score: 0.50  # Fees vs. crypto exchanges
+        assessment: "MODERATE — UBS fees higher, but trust premium"
+
+    composite_prediction:
+      calculation:
+        fit: "0.41 × 0.30 = 0.123"
+        conviction: "0.36 × 0.80 = 0.288"
+        marketing: "0.28 × 0.55 = 0.154"
+        retailer: "0.22 × 0.45 = 0.099"
+        experience: "0.19 × 0.75 = 0.143"
+        prior_ext: "0.15 × 0.35 = 0.053"
+        width: "0.13 × 0.60 = 0.078"
+        risk: "-0.18 × 0.75 = -0.135"
+        innovativeness: "0.12 × 0.45 = 0.054"
+        price: "-0.10 × 0.50 = -0.050"
+      total: 0.807
+      interpretation: |
+        Score 0.81 (MODERATE on 0-2 scale).
+        Above failure zone (<0.50), below clear success zone (>0.90).
+        KEY INSIGHT: Brand Conviction (0.288) carries this extension.
+        Without UBS trust, crypto extension would FAIL (score ~0.52).
+      comparison_esim:
+        esim_score: 0.868
+        crypto_score: 0.807
+        delta: -0.061
+        driver: "Lower fit (-0.10), higher category risk (-0.09)"
+      verdict: |
+        Crypto extension is VIABLE but more fragile than eSIM.
+        UBS brand conviction is the load-bearing pillar.
+        Marketing support and advisor enablement are compensatory.
+
+    # Prestige Brand Advantage (Park 1991) for Crypto
+    prestige_brand_crypto:
+      brand_type: "Prestige (60% prestige / 40% functional)"
+      implication: "Can extend to distant category (crypto)"
+      distance_penalty_reduction: 0.38  # Park 1991
+      critical_narrative: |
+        UBS = "Serious institution adds crypto for serious investors"
+        NOT: "UBS becomes a crypto company"
+        The prestige framing PROTECTS the parent brand.
+
+    # Dilution Risk for Crypto (Loken 1993)
+    dilution_risk_crypto:
+      risk_assessment: "MODERATE (0.35) — higher than eSIM (0.25)"
+      risk_factors:
+        - factor: "Crypto crash while UBS offers it"
+          probability: 0.40
+          dilution_impact: 0.20
+          mitigation: "Position sizing limits, disclaimers, education"
+        - factor: "Regulatory backlash"
+          probability: 0.15
+          dilution_impact: 0.30
+          mitigation: "FINMA pre-approval documented, compliance prominent"
+        - factor: "Customer losses"
+          probability: 0.50
+          dilution_impact: 0.25
+          mitigation: "Risk warnings, suitability checks, small allocations"
+      protective_factors:
+        brand_typicality: 0.85
+        category_distance: 0.85  # High → failure attributed to crypto, not UBS
+        brand_strength: 0.90
+      net_dilution_risk: 0.12
+      verdict: "Manageable — but higher than eSIM. Requires active risk framing."
+
+  # =========================================================================
+  # POSITIONING-SCORE MATRIX (5 Options × 5 Segments)
+  # =========================================================================
+  positioning_options:
+
+    - id: "POS-ACCESS"
+      name: "Access Provider"
+      tagline: "UBS gives you access to crypto"
+      brand_fit: 0.65      # Moderate — access is generic
+      trust_leverage: 0.50  # Low — doesn't emphasise safety
+      segment_resonance:
+        SEG-CRYPTO-SELBST: 0.85   # LOVE IT — "finally access via UBS"
+        SEG-CRYPTO-BEZIEH: 0.30   # "Access allein reicht nicht"
+        SEG-CRYPTO-ORIENT: 0.25
+        SEG-CRYPTO-SCHWELL: 0.15
+        SEG-CRYPTO-TRADIT: 0.05
+      strengths: "Klar, einfach, ehrlich"
+      weaknesses: "Differenziert nicht von Crypto-Börsen"
+      dilution_risk: 0.10
+
+    - id: "POS-SECURITY"
+      name: "Security Wrapper"
+      tagline: "Crypto, made secure by UBS"
+      brand_fit: 0.85      # HIGH — leverages core UBS asset
+      trust_leverage: 0.90  # Highest!
+      segment_resonance:
+        SEG-CRYPTO-SELBST: 0.55   # "Sicherheit brauche ich nicht so"
+        SEG-CRYPTO-BEZIEH: 0.80   # "Genau was ich brauche!"
+        SEG-CRYPTO-ORIENT: 0.75
+        SEG-CRYPTO-SCHWELL: 0.70  # Einzige Positionierung die funktioniert
+        SEG-CRYPTO-TRADIT: 0.20   # Auch Sicherheit ändert Anti-Identität nicht
+      strengths: "Nutzt UBS-Kernkompetenz, höchster Brand Fit"
+      weaknesses: "Impliziert, dass Crypto unsicher ist (Framing-Risiko)"
+      dilution_risk: 0.08
+
+    - id: "POS-EXPERTISE"
+      name: "Expertise Guide"
+      tagline: "Navigate crypto with UBS expertise"
+      brand_fit: 0.80
+      trust_leverage: 0.75
+      segment_resonance:
+        SEG-CRYPTO-SELBST: 0.40   # "Brauche keine Anleitung"
+        SEG-CRYPTO-BEZIEH: 0.75   # "Mein Berater als Guide"
+        SEG-CRYPTO-ORIENT: 0.85   # LOVE IT — "endlich jemand, der erklärt"
+        SEG-CRYPTO-SCHWELL: 0.50  # "Hilft, aber reicht nicht"
+        SEG-CRYPTO-TRADIT: 0.15
+      strengths: "Education-led, reduces knowledge gap"
+      weaknesses: "Kann paternalistisch wirken"
+      dilution_risk: 0.07
+
+    - id: "POS-MODERN"
+      name: "Modernisation"
+      tagline: "UBS evolves with the market"
+      brand_fit: 0.55
+      trust_leverage: 0.40
+      segment_resonance:
+        SEG-CRYPTO-SELBST: 0.70
+        SEG-CRYPTO-BEZIEH: 0.45
+        SEG-CRYPTO-ORIENT: 0.40
+        SEG-CRYPTO-SCHWELL: 0.20
+        SEG-CRYPTO-TRADIT: 0.08
+      strengths: "Zukunftsorientiert, dynamisch"
+      weaknesses: "Kann beunruhigen ('Warum ändert sich meine Bank?')"
+      dilution_risk: 0.20  # HIGHER — challenges traditional brand image
+
+    - id: "POS-INNOVATION"
+      name: "Innovation Leader"
+      tagline: "UBS leads in digital assets"
+      brand_fit: 0.40       # LOW — UBS is not perceived as innovator
+      trust_leverage: 0.30
+      segment_resonance:
+        SEG-CRYPTO-SELBST: 0.60
+        SEG-CRYPTO-BEZIEH: 0.25
+        SEG-CRYPTO-ORIENT: 0.20
+        SEG-CRYPTO-SCHWELL: 0.10
+        SEG-CRYPTO-TRADIT: 0.03
+      strengths: "Differenziert bei Tech-Segment"
+      weaknesses: "UBS ist nicht innovativ konnotiert, Credibility Gap"
+      dilution_risk: 0.30   # HIGHEST — biggest gap to brand identity
+
+  # =========================================================================
+  # POSITIONING RECOMMENDATION
+  # =========================================================================
+  positioning_recommendation:
+    primary: "POS-SECURITY"
+    rationale: |
+      Security Wrapper hat den höchsten Brand Fit (0.85) und
+      Trust Leverage (0.90). Es nutzt die UBS-Kernkompetenz als
+      load-bearing pillar der Brand Extension.
+
+      Entscheidend: Es funktioniert für die 3 grössten Segmente
+      (Beziehungssuchende, Orientierungssuchende, Schwellenängstliche).
+
+    secondary: "POS-EXPERTISE"
+    secondary_rationale: |
+      Für Orientierungssuchende (grösstes erreichbares Volumen in Phase 3)
+      ist "Expertise Guide" noch resonanter als Security Wrapper.
+      → Hybrid: "Secure & Guided"
+
+    segment_specific_positioning:
+      SEG-CRYPTO-SELBST: "POS-ACCESS"
+      SEG-CRYPTO-BEZIEH: "POS-SECURITY"
+      SEG-CRYPTO-ORIENT: "POS-EXPERTISE"
+      SEG-CRYPTO-SCHWELL: "POS-SECURITY"
+      SEG-CRYPTO-TRADIT: null  # Not targeted
+
+    unified_positioning:
+      headline: "Crypto. Sicher bei UBS."
+      subline: "Bitcoin und Ethereum — mit der Sicherheit, die Sie von UBS kennen."
+      segment_adaptations:
+        SEG-CRYPTO-SELBST: "Jetzt Bitcoin und Ethereum direkt in der UBS App."
+        SEG-CRYPTO-BEZIEH: "Ihr Berater erklärt Ihnen, wie Crypto in Ihr Portfolio passt."
+        SEG-CRYPTO-ORIENT: "Crypto verstehen und sicher investieren — Schritt für Schritt."
+        SEG-CRYPTO-SCHWELL: "Ab CHF 100 in Bitcoin investieren. Mit UBS Sicherheitsnetz."
+
+# =============================================================================
+# SECTION 5: Q4 — COMMUNICATION PATTERNS (MICRO)
+# =============================================================================
+
+module_Q4_patterns:
+
+  description: |
+    Kanalspezifische Kommunikationsmuster pro Segment und Journey-Phase.
+    Inkl. Advisor Enablement und Trigger-Katalog.
+
+  # =========================================================================
+  # ADVISOR ENABLEMENT
+  # =========================================================================
+  advisor_enablement:
+    description: |
+      Berater sind der kritische Kanal für SEG-CRYPTO-BEZIEH (Phase 2).
+      Sie brauchen Tools, Training und Confidence.
+
+    advisor_barriers:
+      - barrier: "Eigene Unsicherheit ('Ich kenne Crypto nicht')"
+        parameter: "tau_advisor_crypto: 0.30"
+        intervention: "Crypto-Crashkurs für Berater (2h + Cheat Sheet)"
+      - barrier: "Compliance-Angst ('Darf ich das empfehlen?')"
+        parameter: "regulatory_confidence: 0.40"
+        intervention: "Compliance-FAQ + FINMA-Approved Stamp"
+      - barrier: "Reputationsrisiko ('Was wenn Kunde verliert?')"
+        parameter: "lambda_advisor_reputation: 2.8"
+        intervention: "Positioning-Script + Risiko-Framing-Training"
+
+    advisor_toolkit:
+      - tool: "Crypto Conversation Guide"
+        format: "PDF/App, 2 Seiten"
+        content: "5 Fragen → Segment erkennen → Passende Positionierung"
+      - tool: "Portfolio Allocation Calculator"
+        format: "App-Integration"
+        content: "Zeigt 1-5% Crypto-Anteil im Gesamt-Portfolio"
+      - tool: "FAQ Card"
+        format: "Pocket Card"
+        content: "Top 10 Kundenfragen mit Antworten"
+      - tool: "Risk Comparison Visual"
+        format: "iPad-Präsentation"
+        content: "Crypto-Volatilität im Vergleich zu Aktien, Rohstoffen"
+
+  # =========================================================================
+  # TRIGGER-MOMENT-KATALOG
+  # =========================================================================
+  trigger_catalogue:
+    description: |
+      Optimale Momente für Crypto-Kommunikation pro Segment.
+
+    triggers:
+      - trigger: "Bitcoin-Kurs durchbricht ATH"
+        type: "market_event"
+        channel: "Push-Notification + Email"
+        message_selbst: "BTC neues ATH. Jetzt in der UBS App verfügbar."
+        message_orient: "Bitcoin erreicht neues Hoch — was das für Sie bedeutet."
+        timing: "Innerhalb 4h"
+        risk: "FOMO — Disclaimer integrieren"
+
+      - trigger: "Portfolio-Review-Termin"
+        type: "scheduled"
+        channel: "Beratungsgespräch"
+        message: "Haben Sie schon über eine kleine Crypto-Beimischung nachgedacht?"
+        timing: "Quartals-Review"
+        primary_segments: [SEG-CRYPTO-BEZIEH, SEG-CRYPTO-ORIENT]
+
+      - trigger: "Neuer Geldzufluss (Bonus, Erbschaft)"
+        type: "transaction_event"
+        channel: "App-Notification + Berater-Alert"
+        message: "Neues Geld angelegt? Entdecken Sie Crypto als Ergänzung."
+        timing: "3-7 Tage nach Eingang"
+        primary_segments: [SEG-CRYPTO-SELBST, SEG-CRYPTO-BEZIEH]
+
+      - trigger: "Kunde sucht 'Bitcoin' in App"
+        type: "intent_signal"
+        channel: "In-App Guidance"
+        message: "Interessiert an Bitcoin? Hier erfahren Sie mehr."
+        timing: "Sofort"
+        primary_segments: [SEG-CRYPTO-SELBST, SEG-CRYPTO-ORIENT]
+
+      - trigger: "6 Monate nach Launch (keine Aktion)"
+        type: "time_based"
+        channel: "Email + optional Berater"
+        message: "Tausende UBS-Kunden investieren bereits in Crypto. Interesse?"
+        timing: "6 Monate post-Launch"
+        primary_segments: [SEG-CRYPTO-ORIENT]
+        note: "Social Proof Nudge"
+
+      - trigger: "Regulatorisches Positivereignis"
+        type: "external_event"
+        channel: "Newsletter"
+        message: "Neue Regulierung stärkt Crypto-Sicherheit. Was das für Sie bedeutet."
+        timing: "Innerhalb 1 Woche"
+        primary_segments: [SEG-CRYPTO-SCHWELL, SEG-CRYPTO-ORIENT]
+
+  # =========================================================================
+  # CHANNEL-STRATEGIE PRO SEGMENT
+  # =========================================================================
+  channel_strategy:
+    SEG-CRYPTO-SELBST:
+      primary: "CH-APP"
+      secondary: "CH-EBANKING"
+      tone: "Direkt, informativ, keine Bevormundung"
+      cta: "Jetzt Bitcoin kaufen"
+      friction_target: "< 3 Klicks zum Kauf"
+      content_type: "Product features, Pricing, Portfolio tools"
+
+    SEG-CRYPTO-BEZIEH:
+      primary: "CH-ADVISOR"
+      secondary: "CH-EMAIL"
+      tone: "Persönlich, vertrauensvoll, empfehlend"
+      cta: "Sprechen Sie mit Ihrem Berater"
+      friction_target: "Berater initiiert Gespräch"
+      content_type: "Trust signals, Advisor recommendations, Testimonials"
+
+    SEG-CRYPTO-ORIENT:
+      primary: "CH-EVENT"
+      secondary: ["CH-EMAIL", "CH-APP"]
+      tone: "Erklärend, schrittweise, ermunternd"
+      cta: "Mehr erfahren"
+      friction_target: "Education → Interest → Small first step"
+      content_type: "Webinars, Explainers, Social proof, Small-amount entry"
+
+    SEG-CRYPTO-SCHWELL:
+      primary: "CH-APP"
+      secondary: "CH-ADVISOR"
+      tone: "Beruhigend, sicherheitsbetont, barrierefrei"
+      cta: "Ab CHF 100 starten"
+      friction_target: "Micro-Investment, kein Mindestwert"
+      content_type: "Safety guarantees, Micro-entry, Risk comparison"
+
+# =============================================================================
+# SECTION 6: TRUST-KASKADE CRYPTO LAYER
+# =============================================================================
+# Based on A2_trust_kaskade_mortgage_gpt.yaml, adapted for crypto
+
+trust_cascade_crypto:
+
+  description: |
+    6-Layer Trust Cascade, adaptiert von Mortgage-Modell (A2).
+    Zeigt Vertrauens-Erosion von UBS-Brand zu Crypto-Produkt.
+    Formel: τ_final = τ_brand × δ_digital × δ_crypto_asset × δ_novelty × Ψ_combined
+
+  layers:
+    - layer: 1
+      name: "Institutional Trust"
+      description: "Vertrauen in Schweizer Bankensystem"
+      value: 0.82
+      source: "banking-ch_industry_context.yaml"
+
+    - layer: 2
+      name: "Brand Trust (τ_UBS)"
+      description: "Vertrauen in UBS als Marke"
+      by_segment:
+        SEG-CRYPTO-SELBST: 0.75
+        SEG-CRYPTO-BEZIEH: 0.85
+        SEG-CRYPTO-ORIENT: 0.70
+        SEG-CRYPTO-SCHWELL: 0.75
+        SEG-CRYPTO-TRADIT: 0.85
+
+    - layer: 3
+      name: "Digital Trust (δ_digital)"
+      description: "Vertrauen in digitalen Kanal"
+      value: 0.82
+      source: "GMA-001 Trust-Kaskade"
+      note: "Identisch mit Mortgage-Modell"
+
+    - layer: 4
+      name: "Crypto Asset Trust (δ_crypto)"
+      description: "Vertrauen in Crypto als Asset-Klasse"
+      by_segment:
+        SEG-CRYPTO-SELBST: 0.80
+        SEG-CRYPTO-BEZIEH: 0.35
+        SEG-CRYPTO-ORIENT: 0.25
+        SEG-CRYPTO-SCHWELL: 0.15
+        SEG-CRYPTO-TRADIT: 0.10
+      note: "GRÖSSTER TRUST-DROP — hier passiert die Erosion"
+
+    - layer: 5
+      name: "Novelty Penalty (δ_novelty)"
+      description: "Vertrauens-Abschlag für neues UBS-Angebot"
+      value: 0.85
+      note: "Neu = unsicher, reduziert sich über Zeit"
+
+    - layer: 6
+      name: "Context Modifier (Ψ_combined)"
+      description: "Markt-Sentiment, Regulierung, Medien"
+      value: 1.05
+      components:
+        psi_regulatory: 1.10   # FINMA-approved = boost
+        psi_market: 1.05       # Bull market
+        psi_media: 0.95        # Mixed media coverage
+        psi_peers: 1.05        # Increasing crypto normalisation
+
+  trust_calculation:
+    formula: "τ_final(s) = τ_institutional × τ_brand(s) × δ_digital × δ_crypto(s) × δ_novelty × Ψ"
+
+    results_by_segment:
+      SEG-CRYPTO-SELBST:
+        calculation: "0.82 × 0.75 × 0.82 × 0.80 × 0.85 × 1.05"
+        tau_final: 0.362
+        trust_erosion_pct: 0.52  # 52% Erosion von Brand Trust
+        bottleneck: "δ_digital (will Wallet-Kontrolle)"
+
+      SEG-CRYPTO-BEZIEH:
+        calculation: "0.82 × 0.85 × 0.82 × 0.35 × 0.85 × 1.05"
+        tau_final: 0.178
+        trust_erosion_pct: 0.79  # 79% Erosion!
+        bottleneck: "δ_crypto (Asset-Klasse unbekannt)"
+
+      SEG-CRYPTO-ORIENT:
+        calculation: "0.82 × 0.70 × 0.82 × 0.25 × 0.85 × 1.05"
+        tau_final: 0.105
+        trust_erosion_pct: 0.85
+        bottleneck: "δ_crypto + knowledge gap"
+
+      SEG-CRYPTO-SCHWELL:
+        calculation: "0.82 × 0.75 × 0.82 × 0.15 × 0.85 × 1.05"
+        tau_final: 0.064
+        trust_erosion_pct: 0.91  # 91% Erosion!
+        bottleneck: "δ_crypto + λ_crypto (Doppelbarriere)"
+
+      SEG-CRYPTO-TRADIT:
+        calculation: "0.82 × 0.85 × 0.82 × 0.10 × 0.85 × 1.05"
+        tau_final: 0.051
+        trust_erosion_pct: 0.94  # 94% Erosion
+        bottleneck: "δ_crypto + ι_crypto (Anti-Identität)"
+
+  sensitivity_analysis:
+    biggest_lever: "δ_crypto (Layer 4)"
+    lever_contribution_pct: 0.55  # 55% der Variation
+    second_lever: "τ_brand (Layer 2)"
+    second_contribution_pct: 0.20
+    implication: |
+      CRYPTO ASSET TRUST ist der grösste Hebel.
+      Interventionen müssen hier ansetzen:
+      1. Education (Crypto verstehen → δ_crypto ↑)
+      2. UBS-Wrapper (Sicherheit → δ_crypto ↑)
+      3. Social Proof (Andere tun es → δ_crypto ↑)
+      4. Small Entry (Micro-Investment → Risiko erlebbar machen)
+
+  trust_building_interventions:
+    - intervention: "Crypto Education Series"
+      target_layer: 4
+      expected_delta_lift: "+0.10 to +0.15"
+      primary_segments: [SEG-CRYPTO-ORIENT, SEG-CRYPTO-BEZIEH]
+
+    - intervention: "UBS Crypto Safety Guarantee"
+      target_layer: 4
+      expected_delta_lift: "+0.10 to +0.20"
+      description: "Explizite Sicherheitsversprechen (Custody, Insurance)"
+      primary_segments: [SEG-CRYPTO-SCHWELL, SEG-CRYPTO-BEZIEH]
+
+    - intervention: "Advisor Crypto Confidence"
+      target_layer: 2
+      expected_delta_lift: "+0.05 to +0.08"
+      description: "Berater vermittelt Trust → τ_brand steigt"
+      primary_segments: [SEG-CRYPTO-BEZIEH]
+
+    - intervention: "Micro-Investment Option (ab CHF 100)"
+      target_layer: 4
+      expected_delta_lift: "+0.05 to +0.10"
+      description: "Kleine Beträge → erlebbare Erfahrung → Trust durch Handlung"
+      primary_segments: [SEG-CRYPTO-SCHWELL, SEG-CRYPTO-ORIENT]
+
+# =============================================================================
+# SECTION 7: UNIFIED ADOPTION SCORE
+# =============================================================================
+
+unified_model:
+
+  adoption_score:
+    formula: |
+      Adoption(s) = CAS(s) × τ_final(s) × R(s) × (1 + Σⱼ γⱼ × Iⱼ)
+
+      Wobei:
+      - CAS(s) = Crypto Affinity Score
+      - τ_final(s) = Trust Cascade Output
+      - R(s) = Readiness (WAX)
+      - γⱼ × Iⱼ = Complementarity-weighted Interventions
+      - γ_ADVISOR_x_EDUCATION = +0.25 (Berater + Bildung verstärken sich)
+      - γ_SECURITY_x_MICROENTRY = +0.30 (Sicherheit + kleiner Start)
+      - γ_SOCIAL_x_FINANCIAL = -0.20 (Crowding-out! PAR-COMP-002)
+
+  current_baseline:
+    description: "Vor Interventionen — baseline Adoption Probability"
+    by_segment:
+      SEG-CRYPTO-SELBST:
+        adoption_probability: 0.25   # Wollen, können, wissen
+        revenue_potential: "Medium"   # Self-directed, low margin
+      SEG-CRYPTO-BEZIEH:
+        adoption_probability: 0.05   # Wollen nur mit Berater
+        revenue_potential: "High"
+      SEG-CRYPTO-ORIENT:
+        adoption_probability: 0.02   # Kaum bereit
+        revenue_potential: "Medium"
+      SEG-CRYPTO-SCHWELL:
+        adoption_probability: 0.005  # Fast null
+        revenue_potential: "Low"
+      SEG-CRYPTO-TRADIT:
+        adoption_probability: 0.001
+        revenue_potential: "Zero (don't target)"
+
+  expected_with_interventions:
+    description: "Nach Full-Rollout aller 4 Phasen (12 Monate)"
+    by_segment:
+      SEG-CRYPTO-SELBST:
+        adoption_probability: 0.45
+        lift: "+20pp"
+        primary_driver: "App UX + Access simplification"
+      SEG-CRYPTO-BEZIEH:
+        adoption_probability: 0.15
+        lift: "+10pp"
+        primary_driver: "Advisor enablement + Trust transfer"
+      SEG-CRYPTO-ORIENT:
+        adoption_probability: 0.06
+        lift: "+4pp"
+        primary_driver: "Education + Social proof"
+      SEG-CRYPTO-SCHWELL:
+        adoption_probability: 0.02
+        lift: "+1.5pp"
+        primary_driver: "Micro-investment + Safety framing"
+      SEG-CRYPTO-TRADIT:
+        adoption_probability: 0.005
+        lift: "+0.4pp"
+        primary_driver: "Organic (Berater bei Nachfrage)"
+
+# =============================================================================
+# SECTION 8: COMPLEMENTARITY MATRIX
+# =============================================================================
+
+complementarity:
+  description: |
+    γ-Werte für Interaktionseffekte zwischen Interventionstypen.
+    Basiert auf PAR-COMP-xxx Parameter aus Parameter-Registry.
+
+  positive_synergies:
+    - pair: "Advisor Training × Crypto Education"
+      gamma: 0.25
+      mechanism: "Berater vermittelt Wissen glaubwürdiger"
+      ref: "PAR-COMP-001 (Identity × Social)"
+
+    - pair: "Security Framing × Micro-Investment"
+      gamma: 0.30
+      mechanism: "Sicherheit + kleiner Einsatz = doppelte Barriere-Reduktion"
+
+    - pair: "Social Proof × Education"
+      gamma: 0.15
+      mechanism: "Normalisierung + Verständnis verstärken sich"
+      ref: "PAR-COMP-004 (Social × Warm Glow)"
+
+    - pair: "App UX × Push-Notification"
+      gamma: 0.20
+      mechanism: "Trigger + einfacher Pfad = Conversion"
+
+  negative_interactions:
+    - pair: "Financial Incentive × Trust Narrative"
+      gamma: -0.20
+      mechanism: "Rabatte untergraben Vertrauenspositionierung"
+      ref: "PAR-COMP-002 (Social × Financial Crowding-Out)"
+      warning: "KEINE Crypto-Boni oder Cashback anbieten!"
+
+    - pair: "Push Marketing × Traditionskunden"
+      gamma: -0.35
+      mechanism: "Aktive Ansprache erzeugt Reactance bei Anti-Identität"
+      warning: "Traditionskunden NICHT aktiv mit Crypto ansprechen"
+
+    - pair: "FOMO Trigger × Security Positioning"
+      gamma: -0.15
+      mechanism: "FOMO widerspricht 'sicher und bedacht'"
+      warning: "Keine Urgency-Messages bei Security-Positionierung"
+
+# =============================================================================
+# SECTION 9: THEORY SUPPORT
+# =============================================================================
+
+theory_support:
+  primary_theories:
+    - id: "MS-RD-001"
+      name: "Prospect Theory (Kahneman & Tversky 1979)"
+      application: "λ_crypto erklärt asymmetrische Risikowahrnehmung bei Crypto"
+
+    - id: "MS-IB-001"
+      name: "Identity Economics (Akerlof & Kranton 2000)"
+      application: "ι_crypto erklärt warum Traditionskunden Crypto ablehnen (Anti-Identität)"
+
+    - id: "MS-NU-002"
+      name: "Default Effects"
+      application: "κ_default erklärt warum Opt-in Crypto schwer ist"
+
+    - id: "MS-TP-001"
+      name: "Present Bias (Quasi-Hyperbolic Discounting)"
+      application: "β erklärt Procrastination bei Crypto-Entscheidung"
+
+    - id: "MS-BX-001"
+      name: "Brand Extension (Voelckner & Sattler 2006)"
+      application: "10-Faktor-Framework für Bank→Crypto Extension"
+
+    - id: "MS-SP-001"
+      name: "Social Preferences (Fehr & Schmidt 1999)"
+      application: "σ_social erklärt Peer-Effekte bei Crypto-Adoption"
+
+  supplementary_theories:
+    - name: "Algorithm Aversion (Dietvorst 2015)"
+      application: "Erklärt Misstrauen gegenüber automatisiertem Crypto-Trading"
+
+    - name: "Cognitive Dissonance (Festinger 1957)"
+      application: "Erklärt warum ι_crypto = -0.20 bei Traditionskunden zu Ablehnung führt"
+
+    - name: "Trust Transfer (Stewart 2003)"
+      application: "UBS-Brand-Trust als Vehikel für Crypto-Asset-Trust"
+
+# =============================================================================
+# SECTION 10: CROSS-REFERENCES
+# =============================================================================
+
+references:
+  based_on:
+    - "MOD-UBS-GMA-001 (Architecture template)"
+    - "A2_trust_kaskade_mortgage_gpt.yaml (Trust Cascade)"
+    - "B3_brand_extension_esim.yaml (Brand Extension Framework)"
+
+  related_projects:
+    - "UBS_037 BEATRIX Pilot (CoE XD)"
+    - "UBS-MKT-2026-CR-001 (This project)"
+
+  ebf_appendices:
+    - "AU CORE-AWARE (Awareness Dimensions)"
+    - "AV CORE-READY (WAX Model)"
+    - "AW CORE-STAGE (Customer Journey)"
+    - "V CORE-WHEN (Context Ψ)"
+    - "B CORE-HOW (Complementarity γ)"
+    - "C CORE-WHAT (Utility Dimensions)"
+    - "HHH METHOD-TOOLKIT (Interventions)"
+    - "BBB CORE-WHERE (Parameters)"
+
+  parameter_refs:
+    - "PAR-BEH-016 (λ Loss Aversion)"
+    - "PAR-COMP-001 (γ Identity × Social)"
+    - "PAR-COMP-002 (γ Social × Financial Crowding-Out)"
+    - "PAR-COMP-004 (γ Social × Warm Glow)"
+
+  briefing: "BRIEFING_crypto_offering_communication_2026.md"
+
+# =============================================================================
+# SECTION 11: OPERATIONAL DELIVERABLES
+# =============================================================================
+# Deliverables D4, D5, D10, D16, D17, D18, D23, D24, D25
+# Operative Ableitungen aus dem analytischen Modell (Sections 1-10)
+# =============================================================================
+
+operational_deliverables:
+
+  # ===========================================================================
+  # D4: BARRIER TAXONOMY
+  # Explizite Klassifikation: kognitiv / emotional / sozial / strukturell
+  # ===========================================================================
+  D4_barrier_taxonomy:
+    description: |
+      Systematische Barrieren-Taxonomie für Crypto-Adoption pro Segment.
+      4 Barrierentypen × 5 Segmente mit Intensität (0-1) und Hebel.
+
+    barrier_types:
+      cognitive:
+        name: "Kognitive Barrieren"
+        description: "Wissensdefizite, Komplexität, Informationsüberlastung"
+        indicators: ["knowledge_crypto", "A_action", "A_benefit"]
+
+      emotional:
+        name: "Emotionale Barrieren"
+        description: "Angst, Unsicherheit, Kontrollverlust, Regret-Aversion"
+        indicators: ["lambda_crypto", "tau_crypto", "A_risk"]
+
+      social:
+        name: "Soziale Barrieren"
+        description: "Peer-Druck, Stigma, Identitätskonflikt"
+        indicators: ["iota_crypto", "sigma_crypto_peers"]
+
+      structural:
+        name: "Strukturelle Barrieren"
+        description: "Aufwand, Prozess-Friction, Default-Effekte"
+        indicators: ["epsilon_effort", "kappa_default"]
+
+    barrier_matrix:
+      SEG-CRYPTO-SELBST:
+        cognitive: 0.15     # Weiss viel, kennt aber UBS-Prozess nicht
+        emotional: 0.20     # Geringe Angst, aber will Kontrolle behalten
+        social: 0.10        # Peers sind pro-Crypto
+        structural: 0.30    # Will es SOFORT und EINFACH — UBS-Friction stört
+        primary_barrier: "structural"
+        primary_lever: "App UX: < 3 Klicks zum Kauf"
+
+      SEG-CRYPTO-BEZIEH:
+        cognitive: 0.55     # Weiss wenig über Crypto
+        emotional: 0.65     # Angst vor Verlust — braucht Berater-Beruhigung
+        social: 0.35        # Peers neutral, Berater ist Referenz
+        structural: 0.40    # Moderate — nimmt sich Zeit wenn Berater empfiehlt
+        primary_barrier: "emotional"
+        primary_lever: "Advisor Trust Transfer: Berater empfiehlt aktiv"
+
+      SEG-CRYPTO-ORIENT:
+        cognitive: 0.80     # Versteht Crypto kaum
+        emotional: 0.70     # Starke Unsicherheit
+        social: 0.50        # Schaut auf Nachbarn — braucht Social Proof
+        structural: 0.60    # Braucht extrem einfachen Einstieg
+        primary_barrier: "cognitive"
+        primary_lever: "Education + Social Proof: 'So einfach geht's'"
+
+      SEG-CRYPTO-SCHWELL:
+        cognitive: 0.85     # Fast kein Wissen
+        emotional: 0.90     # Extreme Angst — dominante Barriere
+        social: 0.45        # Peers investieren nicht → kein Pull
+        structural: 0.80    # Jede Hürde stoppt den Prozess
+        primary_barrier: "emotional"
+        primary_lever: "Micro-Entry (CHF 100) + Safety Guarantee"
+
+      SEG-CRYPTO-TRADIT:
+        cognitive: 0.70     # Wenig Wissen, aber auch kein Interesse
+        emotional: 0.75     # Misstraut Crypto
+        social: 0.80        # Peers lehnen Crypto ab → sozialer Druck GEGEN
+        structural: 0.50
+        primary_barrier: "social"
+        primary_lever: "KEINER — Anti-Identität. Nicht ansprechen."
+
+    intervention_mapping:
+      cognitive_barriers:
+        - intervention: "Crypto Education Series (Webinar, 30 Min)"
+          target: ["SEG-CRYPTO-ORIENT", "SEG-CRYPTO-BEZIEH"]
+          expected_reduction: "-0.20"
+        - intervention: "In-App Micro-Learning (60 Sek Nuggets)"
+          target: ["SEG-CRYPTO-ORIENT", "SEG-CRYPTO-SCHWELL"]
+          expected_reduction: "-0.10"
+        - intervention: "Advisor Crypto Cheat Sheet"
+          target: ["SEG-CRYPTO-BEZIEH"]
+          expected_reduction: "-0.15"
+
+      emotional_barriers:
+        - intervention: "UBS Safety Guarantee Framing"
+          target: ["SEG-CRYPTO-SCHWELL", "SEG-CRYPTO-BEZIEH"]
+          expected_reduction: "-0.15"
+        - intervention: "Portfolio Context (1-5% Beimischung)"
+          target: ["SEG-CRYPTO-BEZIEH", "SEG-CRYPTO-ORIENT"]
+          expected_reduction: "-0.20"
+        - intervention: "Loss Limitation (Max-Loss-Anzeige)"
+          target: ["SEG-CRYPTO-SCHWELL"]
+          expected_reduction: "-0.10"
+
+      social_barriers:
+        - intervention: "Social Proof ('X% UBS-Kunden investieren bereits')"
+          target: ["SEG-CRYPTO-ORIENT"]
+          expected_reduction: "-0.15"
+        - intervention: "Advisor Endorsement"
+          target: ["SEG-CRYPTO-BEZIEH"]
+          expected_reduction: "-0.20"
+
+      structural_barriers:
+        - intervention: "One-Click Crypto Buy (App)"
+          target: ["SEG-CRYPTO-SELBST"]
+          expected_reduction: "-0.20"
+        - intervention: "Micro-Investment ab CHF 100"
+          target: ["SEG-CRYPTO-SCHWELL", "SEG-CRYPTO-ORIENT"]
+          expected_reduction: "-0.15"
+
+  # ===========================================================================
+  # D5: CURRENT CRYPTO BEHAVIOUR
+  # Geschätzte Crypto-Exposition und Informationsverhalten
+  # ===========================================================================
+  D5_current_crypto_behaviour:
+    description: |
+      Schätzung der aktuellen Crypto-Exposition und des Informationsverhaltens
+      pro Segment. Basiert auf LLMMC Prior (informed by Swiss crypto adoption
+      data: Sotomo Digital Monitor 2025, BIS Crypto Adoption Survey 2024).
+
+    exposure_estimates:
+      SEG-CRYPTO-SELBST:
+        has_crypto_external: 0.60       # 60% besitzen bereits Crypto
+        platforms_used: ["Binance", "Coinbase", "Kraken", "SwissBorg"]
+        avg_allocation_pct: 0.08        # ~8% des Portfolios
+        holding_period: "12-36 months"
+        trading_frequency: "monthly"
+        information_sources:
+          primary: ["CoinDesk", "Twitter/X Crypto", "Reddit r/bitcoin"]
+          secondary: ["YouTube", "Podcasts", "Bankless"]
+          ubs_relevance: "LOW — informieren sich ausserhalb UBS"
+
+      SEG-CRYPTO-BEZIEH:
+        has_crypto_external: 0.08       # 8% — fast nur auf Berater-Empfehlung
+        platforms_used: ["keine (vereinzelt SwissBorg)"]
+        avg_allocation_pct: 0.01
+        holding_period: "n/a"
+        information_sources:
+          primary: ["UBS-Berater", "NZZ", "Freunde/Familie"]
+          secondary: ["SRF Wirtschaft", "Handelszeitung"]
+          ubs_relevance: "VERY HIGH — Berater ist Primärquelle"
+
+      SEG-CRYPTO-ORIENT:
+        has_crypto_external: 0.05
+        platforms_used: ["keine"]
+        avg_allocation_pct: 0.00
+        information_sources:
+          primary: ["NZZ", "20 Minuten", "SRF"]
+          secondary: ["Arbeitskollegen", "Social Media beiläufig"]
+          ubs_relevance: "HIGH — braucht vertrauenswürdige Aufbereitung"
+
+      SEG-CRYPTO-SCHWELL:
+        has_crypto_external: 0.02
+        platforms_used: ["keine"]
+        avg_allocation_pct: 0.00
+        information_sources:
+          primary: ["Tagesschau/SRF (passiv)", "Familiengespräche"]
+          secondary: ["Selten, meidet aktiv"]
+          ubs_relevance: "MEDIUM — nimmt wahr wenn UBS kommuniziert"
+
+      SEG-CRYPTO-TRADIT:
+        has_crypto_external: 0.01       # 1% — vereinzelte Experimentierer
+        platforms_used: ["keine"]
+        avg_allocation_pct: 0.00
+        information_sources:
+          primary: ["NZZ (Finanzseiten)", "Wirtschaftsbücher"]
+          secondary: ["Berater (nur wenn selbst gefragt)"]
+          ubs_relevance: "MEDIUM — aber Anti-Identität verhindert Adoption"
+
+    past_experiences:
+      positive_narratives:
+        - segment: "SEG-CRYPTO-SELBST"
+          experience: "Frühe Bitcoin-Käufe mit hoher Rendite"
+          effect: "Bestätigt Identität als 'smarter Investor'"
+
+      negative_narratives:
+        - segment: "SEG-CRYPTO-ORIENT"
+          experience: "Medienberichte über Crypto-Crashes, FTX-Skandal"
+          effect: "Verstärkt A_risk, inhibiert Handlung"
+
+        - segment: "SEG-CRYPTO-TRADIT"
+          experience: "Tulpenmanie-Narrativ ('Spekulation ohne Substanz')"
+          effect: "Bestätigt Anti-Identität (ι_crypto = -0.20)"
+
+    retention_risk:
+      description: "Welche Segmente könnten zu Wettbewerbern abwandern?"
+      SEG-CRYPTO-SELBST:
+        defection_risk: "HIGH"
+        competitors: ["SwissBorg", "Bitcoin Suisse", "Seba Bank"]
+        trigger: "Wenn UBS kein Crypto anbietet oder schlechte UX"
+        time_pressure: "AKUT — handeln bereits extern"
+      SEG-CRYPTO-BEZIEH:
+        defection_risk: "LOW-MEDIUM"
+        competitors: ["Kantonalbanken (wenn sie Crypto anbieten)"]
+        trigger: "Wenn Berater einer anderen Bank Crypto empfiehlt"
+        time_pressure: "MITTEL — 12-18 Monate"
+      SEG-CRYPTO-ORIENT:
+        defection_risk: "LOW"
+        trigger: "Nur bei starkem Peer-Druck"
+        time_pressure: "NIEDRIG"
+      SEG-CRYPTO-SCHWELL:
+        defection_risk: "VERY LOW"
+        time_pressure: "KEINE"
+      SEG-CRYPTO-TRADIT:
+        defection_risk: "ZERO"
+        note: "Würden wegen Crypto nicht die Bank wechseln"
+
+  # ===========================================================================
+  # D10: COMPETITIVE ANALYSIS
+  # Wettbewerber-Mapping für Crypto-Angebote im CH-Markt
+  # ===========================================================================
+  D10_competitive_analysis:
+    description: |
+      Mapping der wichtigsten Crypto-Wettbewerber im Schweizer Markt,
+      deren Positionierung und Stärken/Schwächen pro UBS-Segment.
+
+    competitors:
+      - id: "COMP-SWISSBORG"
+        name: "SwissBorg"
+        type: "Crypto-Native FinTech"
+        positioning: "Community-driven Crypto Wealth Management"
+        products: "Bitcoin, Ethereum, 50+ Tokens, Earn, Thematics"
+        ux_quality: 0.90
+        trust_level: 0.55
+        price_competitiveness: 0.80
+        segment_threat:
+          SEG-CRYPTO-SELBST: "HIGH — bereits genutzt, beste UX"
+          SEG-CRYPTO-BEZIEH: "LOW — kein Berater"
+          SEG-CRYPTO-ORIENT: "LOW — zu komplex"
+        strength: "Beste App, Community, Swiss-based"
+        weakness: "Kein Wealth Management, keine Berater, kein Brand Trust"
+
+      - id: "COMP-BITCOIN-SUISSE"
+        name: "Bitcoin Suisse"
+        type: "Crypto-Native Broker"
+        positioning: "Swiss Crypto Pioneer"
+        products: "Bitcoin, Ethereum, Staking, Custody"
+        ux_quality: 0.65
+        trust_level: 0.60
+        price_competitiveness: 0.60
+        segment_threat:
+          SEG-CRYPTO-SELBST: "MEDIUM — bekannt aber teurer"
+          SEG-CRYPTO-BEZIEH: "LOW-MEDIUM — hat Advisory Service"
+        strength: "FINMA-reguliert, Swiss Pioneer, Institutional Grade"
+        weakness: "Höhere Gebühren, weniger User-freundlich"
+
+      - id: "COMP-SEBA"
+        name: "Seba Bank"
+        type: "Crypto-Bank (FINMA-lizenziert)"
+        positioning: "Regulated Crypto Banking"
+        products: "Crypto Trading, Custody, Tokenization"
+        ux_quality: 0.60
+        trust_level: 0.65
+        price_competitiveness: 0.55
+        segment_threat:
+          SEG-CRYPTO-SELBST: "MEDIUM — für Profis attraktiv"
+          SEG-CRYPTO-BEZIEH: "LOW"
+        strength: "Volle Banklizenz, Institutional"
+        weakness: "Nischenplayer, wenig Retail-Erfahrung"
+
+      - id: "COMP-POSTFINANCE"
+        name: "PostFinance"
+        type: "Staatsnahe Retailbank"
+        positioning: "Crypto für alle"
+        products: "Bitcoin, Ethereum via App (seit 2024)"
+        ux_quality: 0.70
+        trust_level: 0.75
+        price_competitiveness: 0.75
+        segment_threat:
+          SEG-CRYPTO-SELBST: "LOW — zu basic"
+          SEG-CRYPTO-ORIENT: "MEDIUM-HIGH — vertraut, einfach"
+          SEG-CRYPTO-SCHWELL: "MEDIUM — 'wenn die Post es hat...'"
+        strength: "Hohe Verbreitung, tiefe Schwelle, Vertrauen"
+        weakness: "Kein Wealth Management, limitiertes Angebot"
+
+      - id: "COMP-ZKB"
+        name: "Zürcher Kantonalbank"
+        type: "Kantonalbank"
+        positioning: "Noch kein Crypto-Angebot (Stand 2026)"
+        segment_threat:
+          all: "NIEDRIG (noch) — aber wenn ZKB Crypto lanciert, wird das Orientierungssuchende und Schwellenängstliche bewegen"
+        strength: "Staatsgarantie, höchstes Vertrauen in ZH"
+        weakness: "Langsam, konservativ"
+
+      - id: "COMP-REVOLUT"
+        name: "Revolut"
+        type: "FinTech / Neobank"
+        positioning: "Alles-in-einer-App (inkl. Crypto)"
+        products: "70+ Crypto-Assets, Aktien, Versicherungen"
+        ux_quality: 0.85
+        trust_level: 0.45
+        price_competitiveness: 0.85
+        segment_threat:
+          SEG-CRYPTO-SELBST: "HIGH — bereits als Zweit-App genutzt"
+          SEG-CRYPTO-ORIENT: "LOW — zu unübersichtlich"
+        strength: "Beste All-in-One UX, günstig"
+        weakness: "Kein Swiss Banking, limitierte Regulierung, kein Berater"
+
+    competitive_positioning_map:
+      description: |
+        2×2 Matrix: Trust Level × UX Quality
+
+        Hoch Trust │ UBS (hier)      PostFinance
+                   │ ZKB (kein Crypto) Bitcoin Suisse
+        ───────────┼──────────────────────────────
+        Tief Trust │ Seba            SwissBorg
+                   │                 Revolut
+                   │ Tiefe UX        Hohe UX
+
+      ubs_positioning_advantage: |
+        UBS ist im oberen linken Quadranten (High Trust, Moderate UX).
+        Kein Wettbewerber kombiniert High Trust + High UX + Berater.
+        → UBS Differenzierung: "Trusted Crypto Access mit Berater-Support"
+        → SwissBorg/Revolut können kein Trust, PostFinance keinen Berater.
+
+    segment_specific_competitive_pressure:
+      SEG-CRYPTO-SELBST:
+        pressure: "HOCH"
+        main_threat: "SwissBorg + Revolut (bessere UX, tiefere Kosten)"
+        ubs_counter: "Portfolio-Integration, Steuer-Report, One-View"
+        urgency: "SOFORT — jeder Monat ohne Angebot = Abwanderungsrisiko"
+
+      SEG-CRYPTO-BEZIEH:
+        pressure: "NIEDRIG"
+        main_threat: "Andere Berater-Banken wenn sie Crypto lancieren"
+        ubs_counter: "Advisor Enablement → First Mover im Beratungskanal"
+        urgency: "6 Monate — Berater müssen bereit sein"
+
+      SEG-CRYPTO-ORIENT:
+        pressure: "NIEDRIG-MITTEL"
+        main_threat: "PostFinance (einfach, vertraut, günstig)"
+        ubs_counter: "Education + Brand Trust + Portfolio-Kontext"
+        urgency: "12 Monate"
+
+  # ===========================================================================
+  # D16: MESSAGING ARCHITECTURE
+  # Core Message, Supporting Messages, Proof Points pro Segment
+  # ===========================================================================
+  D16_messaging_architecture:
+    description: |
+      Strukturierte Botschafts-Hierarchie: Core → Supporting → Proof Points.
+      Segment-adaptiert, konsistent mit Security Wrapper Positioning.
+
+    core_message:
+      universal: "Crypto. Sicher bei UBS."
+      essence: |
+        UBS macht Crypto zugänglich, ohne dass Sie Ihre
+        Anlagephilosophie ändern müssen. Kein Wallet, kein Seed,
+        kein Exchange — einfach Ihr UBS-Depot, erweitert um
+        Bitcoin und Ethereum.
+      differentiator: |
+        Wettbewerber sagen: "Wir machen Crypto einfach."
+        UBS sagt: "Wir machen Crypto sicher."
+        Der Unterschied: UBS bringt 160 Jahre Vertrauen mit.
+
+    supporting_messages:
+      - id: "SM-1"
+        message: "Ihr Portfolio, neu mit Crypto"
+        addresses: "Einbettung in bestehendes Anlageverhalten"
+        segment_relevance:
+          SEG-CRYPTO-SELBST: 0.80
+          SEG-CRYPTO-BEZIEH: 0.70
+          SEG-CRYPTO-ORIENT: 0.50
+
+      - id: "SM-2"
+        message: "1-5% können einen Unterschied machen"
+        addresses: "Angst vor grossem Commitment"
+        segment_relevance:
+          SEG-CRYPTO-BEZIEH: 0.85
+          SEG-CRYPTO-ORIENT: 0.80
+          SEG-CRYPTO-SCHWELL: 0.90
+
+      - id: "SM-3"
+        message: "Ihr Berater begleitet Sie — auch bei Crypto"
+        addresses: "Bedürfnis nach persönlicher Begleitung"
+        segment_relevance:
+          SEG-CRYPTO-BEZIEH: 0.95
+          SEG-CRYPTO-ORIENT: 0.70
+          SEG-CRYPTO-SCHWELL: 0.60
+
+      - id: "SM-4"
+        message: "FINMA-reguliert, UBS-verwahrt, Schweizer Standard"
+        addresses: "Sicherheitsbedenken und Regulierungsangst"
+        segment_relevance:
+          SEG-CRYPTO-BEZIEH: 0.80
+          SEG-CRYPTO-ORIENT: 0.75
+          SEG-CRYPTO-SCHWELL: 0.95
+
+      - id: "SM-5"
+        message: "Bitcoin und Ethereum — direkt in der UBS App"
+        addresses: "Convenience und Zugänglichkeit"
+        segment_relevance:
+          SEG-CRYPTO-SELBST: 0.90
+          SEG-CRYPTO-ORIENT: 0.60
+
+      - id: "SM-6"
+        message: "Tausende UBS-Kunden investieren bereits"
+        addresses: "Normalisierung, Social Proof"
+        segment_relevance:
+          SEG-CRYPTO-ORIENT: 0.85
+          SEG-CRYPTO-BEZIEH: 0.50
+        note: "Erst ab Phase 2 einsetzbar (wenn Daten vorhanden)"
+
+    proof_points:
+      trust:
+        - "FINMA-reguliertes Angebot"
+        - "Verwahrung durch UBS (kein Drittanbieter-Risiko)"
+        - "Versicherte Custody-Lösung"
+        - "160 Jahre Bankenerfahrung"
+      simplicity:
+        - "Kein Wallet nötig — alles in Ihrem UBS-Konto"
+        - "Kauf und Verkauf in der UBS App in unter 60 Sekunden"
+        - "Automatische Steuer-Dokumentation"
+        - "Portfolio-Übersicht: Crypto + traditionelle Anlagen"
+      expertise:
+        - "UBS CIO Research zu Digital Assets"
+        - "Berater mit Crypto-Zertifizierung"
+        - "Regelmässige Markt-Updates"
+        - "Risiko-Allokations-Empfehlungen"
+      performance:
+        - "Bitcoin: +X% über 5 Jahre (historisch)"
+        - "Diversifikationseffekt im Portfolio (Korrelation < 0.3)"
+        - "Inflationsschutz-Narrativ"
+
+    message_sequencing:
+      phase_1_launch:
+        primary: "SM-5 (Verfügbarkeit) + SM-4 (Sicherheit)"
+        rationale: "Zuerst: 'Es gibt es' + 'Es ist sicher'"
+      phase_2_education:
+        primary: "SM-2 (Kleine Allokation) + SM-3 (Berater)"
+        rationale: "Dann: 'Es braucht nicht viel' + 'Du bist nicht allein'"
+      phase_3_social_proof:
+        primary: "SM-6 (Social Proof) + SM-1 (Portfolio)"
+        rationale: "Zuletzt: 'Andere tun es' + 'Es gehört dazu'"
+
+  # ===========================================================================
+  # D17: RISK COMMUNICATION GUIDELINES
+  # Wie UBS Crypto-Risiken kommuniziert — Sprache, Prinzipien, Beispiele
+  # ===========================================================================
+  D17_risk_communication:
+    description: |
+      Guidelines für die Kommunikation von Crypto-Risiken,
+      die UBS-Brand-konform sind: ehrlich, aber nicht abschreckend.
+
+    principles:
+      - id: "RC-1"
+        principle: "Transparent, nicht alarmistisch"
+        rationale: "Ehrlichkeit baut Vertrauen (τ_ubs ↑); Alarmstufe treibt weg"
+        example_good: "Kryptowährungen können stark schwanken. Deshalb empfehlen wir eine Beimischung von 1-5%."
+        example_bad: "WARNUNG: Sie können Ihr gesamtes Investment verlieren!"
+
+      - id: "RC-2"
+        principle: "Kontext statt Isolation"
+        rationale: "Crypto-Risiko im Portfolio-Kontext relativieren"
+        example_good: "Auch Aktien schwanken — Bitcoin hat eine ähnliche Volatilität wie Tech-Einzelwerte."
+        example_bad: "Bitcoin ist 4x volatiler als der SMI."
+
+      - id: "RC-3"
+        principle: "Kontrolle betonen"
+        rationale: "Perceived Control reduziert emotionale Barriere (λ_crypto ↓)"
+        example_good: "Sie bestimmen den Betrag. Sie bestimmen den Zeitpunkt. Sie können jederzeit verkaufen."
+        example_bad: "Die Märkte sind unvorhersehbar."
+
+      - id: "RC-4"
+        principle: "UBS als Sicherheitsnetz"
+        rationale: "Trust Transfer: UBS-Kompetenz auf Crypto übertragen"
+        example_good: "Ihre Crypto-Anlagen werden im gleichen sicheren Rahmen verwahrt wie alle Ihre UBS-Werte."
+        example_bad: "Wir versuchen, das Risiko zu minimieren."
+
+      - id: "RC-5"
+        principle: "Historisch, nicht prognostisch"
+        rationale: "Vermeidet Haftung und Enttäuschung"
+        example_good: "Bitcoin hat seit 2015 eine durchschnittliche Jahresrendite von X% erzielt — bei hoher Schwankung."
+        example_bad: "Bitcoin wird wahrscheinlich steigen."
+
+    risk_disclaimers:
+      standard_short: |
+        Kryptowährungen unterliegen hohen Kursschwankungen.
+        Der Wert kann steigen oder fallen. Vergangene Wertentwicklung
+        ist kein Indikator für zukünftige Ergebnisse.
+      standard_long: |
+        Bitcoin und Ethereum sind volatile Anlageklassen. UBS empfiehlt
+        eine Beimischung von maximal 1-5% des Gesamtportfolios. Die
+        Verwahrung erfolgt durch UBS nach Schweizer Regulierungsstandards.
+        Kryptowährungen sind nicht durch die Einlagensicherung geschützt.
+        Informieren Sie sich vor einer Investition über die Risiken.
+
+    channel_specific:
+      app:
+        risk_display: "Volatilitäts-Anzeige neben Kurs (visuell, nicht alarmierend)"
+        format: "Interaktiver Slider: 'Bei CHF 1'000 Investment: mögliche Range CHF 600-1'800 (12 Monate)'"
+      advisor:
+        risk_display: "Portfolio-Kontext-Visualisierung"
+        format: "iPad: 'So verändert 3% Crypto Ihr Portfolio-Risiko'"
+      email:
+        risk_display: "Kompakter Disclaimer am Ende"
+        format: "Standard Short Disclaimer"
+
+  # ===========================================================================
+  # D18: TONALITY & LANGUAGE GUIDELINES
+  # Sprache, Ton, verbotene und empfohlene Begriffe
+  # ===========================================================================
+  D18_tonality_guidelines:
+    description: |
+      Sprachrichtlinien für UBS Crypto-Kommunikation.
+      Konsistent mit UBS Brand Voice, angepasst an Crypto-Kontext.
+
+    tone_of_voice:
+      overall: "Ruhig, kompetent, einladend — nicht hype-getrieben"
+      description: |
+        UBS spricht über Crypto wie über jede andere Anlageklasse:
+        sachlich, informiert, im Kontext des Gesamtportfolios.
+        Wir sind weder Crypto-Evangelisten noch Crypto-Skeptiker.
+        Wir sind professionelle Vermögensverwalter, die eine neue
+        Anlageklasse zugänglich machen.
+
+    by_segment:
+      SEG-CRYPTO-SELBST:
+        tone: "Direkt, technisch versiert, respektvoll"
+        register: "Peer-to-Peer (nicht belehrend)"
+        example: "Bitcoin und Ethereum jetzt direkt im UBS-Depot handeln."
+      SEG-CRYPTO-BEZIEH:
+        tone: "Persönlich, empathisch, begleitend"
+        register: "Berater-zu-Kunde (vertraut, warm)"
+        example: "Ihr Berater erklärt Ihnen, wie Crypto in Ihre Strategie passt."
+      SEG-CRYPTO-ORIENT:
+        tone: "Erklärend, ermutigend, schrittweise"
+        register: "Coach-zu-Lernenden (geduldig, klar)"
+        example: "Crypto verstehen — in drei einfachen Schritten."
+      SEG-CRYPTO-SCHWELL:
+        tone: "Beruhigend, sicherheitsbetont, niederschwellig"
+        register: "Beschützer (sanft, Sicherheitsnetz betonen)"
+        example: "Schon ab CHF 100 — mit dem Sicherheitsnetz von UBS."
+
+    recommended_terms:
+      - term: "Digitale Anlageklasse"
+        instead_of: "Kryptowährung (wo möglich)"
+        reason: "Professioneller, eingebettet in Anlage-Vokabular"
+      - term: "Beimischung"
+        instead_of: "Investment"
+        reason: "Betont kleinen Anteil, reduziert wahrgenommenes Risiko"
+      - term: "Portfolio-Ergänzung"
+        instead_of: "Neues Produkt"
+        reason: "Einbettung in Bestehendes"
+      - term: "Verwahrt bei UBS"
+        instead_of: "Custody"
+        reason: "Deutsch, verständlich, Vertrauen"
+      - term: "Reguliert"
+        instead_of: "Compliant"
+        reason: "Deutsch, Autorität"
+
+    prohibited_terms:
+      - term: "revolutionär"
+        reason: "Widerspricht UBS-Positionierung (Stabilität, nicht Disruption)"
+      - term: "disruptiv"
+        reason: "Beunruhigt konservative Segmente"
+      - term: "zum Mond / to the moon"
+        reason: "Crypto-Slang, untergräbt Seriosität"
+      - term: "HODL"
+        reason: "Internet-Meme, nicht UBS-Level"
+      - term: "Blockchain-Revolution"
+        reason: "Hype-Sprache"
+      - term: "FOMO"
+        reason: "Manipulativ, widerspricht Vertrauens-Positionierung"
+      - term: "risikolos / garantiert"
+        reason: "Falsch und regulatorisch problematisch"
+      - term: "100x / Moonshot"
+        reason: "Spekulationssprache"
+      - term: "Krypto-Börse"
+        reason: "Assoziiert mit FTX, Binance — UBS ist KEIN Exchange"
+      - term: "Trading"
+        reason: "Spekulativ — besser: 'investieren' oder 'anlegen'"
+      - term: "Coins / Token"
+        reason: "Technisch korrekt, aber casual — besser: 'Bitcoin', 'Ethereum'"
+
+    language_pairs:
+      # Deutsch (CH) — konsistent mit UBS-Kommunikation
+      - say: "Investieren Sie in Bitcoin"
+        not: "Kaufen Sie Coins"
+      - say: "Digitale Vermögenswerte"
+        not: "Kryptos"
+      - say: "Ihr Portfolio, erweitert"
+        not: "Neues Crypto-Angebot"
+      - say: "Wertentwicklung"
+        not: "Kursexplosion"
+      - say: "Schwankungen gehören dazu"
+        not: "Crypto crasht regelmässig"
+
+  # ===========================================================================
+  # D23: OBJECTION HANDLING GUIDE
+  # Top-Einwände pro Segment mit Antwort-Strategien
+  # ===========================================================================
+  D23_objection_handling:
+    description: |
+      Die 15 häufigsten Einwände gegen Crypto-Investment bei UBS-Kunden,
+      kategorisiert nach Typ und mit segment-spezifischen Antworten.
+
+    objections:
+      - id: "OBJ-01"
+        objection: "Crypto ist reine Spekulation"
+        type: "cognitive"
+        frequency_by_segment:
+          SEG-CRYPTO-ORIENT: 0.80
+          SEG-CRYPTO-TRADIT: 0.90
+          SEG-CRYPTO-SCHWELL: 0.70
+        advisor_response: |
+          "Das ist verständlich. Viele denken so, weil Crypto in den Medien
+          oft extrem dargestellt wird. Was wir sehen: Bitcoin hat über 10 Jahre
+          eine der stärksten Wertentwicklungen aller Anlageklassen gezeigt —
+          bei hoher Schwankung. Deshalb empfehlen wir nicht 100%, sondern
+          1-5% als Beimischung. Das verändert das Risiko Ihres Portfolios kaum,
+          gibt Ihnen aber Zugang zu einer neuen Anlageklasse."
+        key_technique: "Reframe: Spekulation → Diversifikation"
+
+      - id: "OBJ-02"
+        objection: "Ich verstehe Crypto nicht"
+        type: "cognitive"
+        frequency_by_segment:
+          SEG-CRYPTO-ORIENT: 0.85
+          SEG-CRYPTO-SCHWELL: 0.90
+          SEG-CRYPTO-BEZIEH: 0.60
+        advisor_response: |
+          "Das muss man auch nicht im Detail verstehen — genau wie Sie nicht
+          wissen müssen, wie der SMI-Index berechnet wird, um in einen
+          Indexfonds zu investieren. Was wichtig ist: Bitcoin ist begrenzt
+          auf 21 Millionen Stück, wird von Millionen Menschen genutzt, und
+          UBS verwahrt ihn für Sie genauso sicher wie Ihre Aktien."
+        key_technique: "Analogie: Indexfonds (verstehen auch wenige)"
+
+      - id: "OBJ-03"
+        objection: "Crypto ist unsicher — FTX, Hacker..."
+        type: "emotional"
+        frequency_by_segment:
+          SEG-CRYPTO-SCHWELL: 0.85
+          SEG-CRYPTO-ORIENT: 0.70
+          SEG-CRYPTO-BEZIEH: 0.55
+        advisor_response: |
+          "Sie haben Recht — auf Crypto-Börsen gab es Probleme. Deshalb bieten
+          wir Crypto NICHT über eine Börse an, sondern direkt über Ihr UBS-Konto.
+          Ihre Bitcoin werden in der gleichen Infrastruktur verwahrt wie Ihre
+          anderen Anlagen. FINMA-reguliert, UBS-versichert, Schweizer Standard."
+        key_technique: "Differenzierung: Crypto-Börse ≠ UBS"
+
+      - id: "OBJ-04"
+        objection: "Das passt nicht zu mir"
+        type: "identity"
+        frequency_by_segment:
+          SEG-CRYPTO-TRADIT: 0.95
+          SEG-CRYPTO-SCHWELL: 0.50
+        advisor_response: |
+          "Das kann ich nachvollziehen. Crypto muss nicht zu jedem passen.
+          Was ich Ihnen zeigen kann: Wie eine kleine Beimischung von 2%
+          Ihr bestehendes Portfolio beeinflusst — ohne dass sich Ihre
+          Anlagephilosophie ändert. Möchten Sie das einmal sehen?"
+        key_technique: "Respekt + Unverbindliche Visualisierung"
+
+      - id: "OBJ-05"
+        objection: "Warum bei UBS und nicht bei Binance/SwissBorg?"
+        type: "structural"
+        frequency_by_segment:
+          SEG-CRYPTO-SELBST: 0.70
+        advisor_response: |
+          "Gute Frage. Der Hauptvorteil: Bei UBS haben Sie alles an einem Ort.
+          Crypto, Aktien, Fonds, 3a — ein Portfolio, ein Steuer-Report,
+          eine Vermögensübersicht. Kein Seed, kein Wallet-Management,
+          kein Transfer-Risiko. Und wenn etwas ist, haben Sie einen Ansprechpartner."
+        key_technique: "Integration + Convenience + Ansprechpartner"
+
+      - id: "OBJ-06"
+        objection: "Crypto schadet der Umwelt"
+        type: "values"
+        frequency_by_segment:
+          SEG-CRYPTO-ORIENT: 0.40
+          SEG-CRYPTO-TRADIT: 0.35
+        advisor_response: |
+          "Ein berechtigter Punkt. Tatsächlich hat sich viel verändert:
+          Ethereum ist seit 2022 auf Proof-of-Stake umgestiegen und verbraucht
+          99% weniger Energie. Bei Bitcoin steigt der Anteil erneuerbarer
+          Energie laufend. UBS beobachtet die ESG-Entwicklung aktiv."
+        key_technique: "Anerkennung + Aktualisierung + UBS als Monitor"
+
+      - id: "OBJ-07"
+        objection: "Die Gebühren bei UBS sind zu hoch"
+        type: "financial"
+        frequency_by_segment:
+          SEG-CRYPTO-SELBST: 0.80
+        advisor_response: |
+          "Die Gebühren sind etwas höher als bei reinen Crypto-Plattformen.
+          Dafür erhalten Sie: sichere Verwahrung, Steuer-Report, Portfolio-
+          Integration und Beratung. Viele Kunden sagen: Das ist mir die
+          Sicherheit wert. Und es gibt keine versteckten Spread-Kosten."
+        key_technique: "Premium-Justifikation (Trust ≠ kostenlos)"
+
+      - id: "OBJ-08"
+        objection: "Ich warte bis die Kurse fallen"
+        type: "behavioral"
+        frequency_by_segment:
+          SEG-CRYPTO-ORIENT: 0.60
+          SEG-CRYPTO-BEZIEH: 0.45
+        advisor_response: |
+          "Timing ist bei allen Anlageklassen schwierig. Eine Möglichkeit:
+          Starten Sie mit einem kleinen Betrag und investieren regelmässig.
+          So glätten Sie den Einstiegskurs über die Zeit — wie bei einem
+          Fondssparplan."
+        key_technique: "DCA (Dollar Cost Averaging) als Lösung"
+
+    objection_routing:
+      description: "Welcher Kanal beantwortet welche Einwände am besten?"
+      advisor_best:
+        - "OBJ-01 (Spekulation)"
+        - "OBJ-04 (Passt nicht zu mir)"
+        - "OBJ-08 (Timing)"
+      app_best:
+        - "OBJ-02 (Verstehe nicht → Micro-Learning)"
+        - "OBJ-05 (Warum UBS → Vergleichs-Feature)"
+        - "OBJ-07 (Gebühren → Transparenz-Seite)"
+      content_best:
+        - "OBJ-03 (Unsicher → Sicherheits-Erklärvideo)"
+        - "OBJ-06 (Umwelt → ESG-Factsheet)"
+
+  # ===========================================================================
+  # D24: SOCIAL PROOF STRATEGY
+  # Framework für glaubwürdigen Social Proof pro Segment
+  # ===========================================================================
+  D24_social_proof_strategy:
+    description: |
+      Social Proof Elemente, differenziert nach Glaubwürdigkeit und
+      Segment-Resonanz. Basiert auf σ_social pro Segment.
+
+    social_proof_types:
+      - type: "Statistical Social Proof"
+        description: "'X% der UBS-Kunden investieren in Crypto'"
+        credibility: 0.75
+        risk: "Nur glaubwürdig wenn Zahl gross genug"
+        availability: "Ab Phase 2 (nach 3 Monaten Daten)"
+        resonance:
+          SEG-CRYPTO-ORIENT: 0.85   # Höchste Wirkung!
+          SEG-CRYPTO-BEZIEH: 0.50
+          SEG-CRYPTO-SCHWELL: 0.40
+          SEG-CRYPTO-TRADIT: 0.10
+
+      - type: "Peer Testimonial"
+        description: "Kundengeschichten (anonymisiert oder mit Name)"
+        credibility: 0.80
+        risk: "Muss authentisch wirken — kein Marketing-Speak"
+        availability: "Ab Phase 2 (Pilotteilnehmer)"
+        resonance:
+          SEG-CRYPTO-ORIENT: 0.75
+          SEG-CRYPTO-BEZIEH: 0.70   # Wenn Testimonial ähnlich ist
+          SEG-CRYPTO-SCHWELL: 0.50
+        format: |
+          "Ich war skeptisch, aber mein Berater hat mir gezeigt,
+          wie 3% Bitcoin mein Portfolio ergänzt. Nach 6 Monaten:
+          Ich bin froh, dass ich es versucht habe." — M.K., 54, Winterthur
+
+      - type: "Expert Endorsement"
+        description: "UBS CIO, Anlageexperten empfehlen Crypto-Beimischung"
+        credibility: 0.85
+        risk: "Muss unabhängig wirken"
+        availability: "Sofort"
+        resonance:
+          SEG-CRYPTO-BEZIEH: 0.80   # Autorität zählt
+          SEG-CRYPTO-ORIENT: 0.70
+          SEG-CRYPTO-SCHWELL: 0.55
+
+      - type: "Institutional Adoption"
+        description: "'BlackRock, Fidelity und jetzt UBS bieten Bitcoin'"
+        credibility: 0.90
+        risk: "Kann als Hype wirken wenn übertrieben"
+        availability: "Sofort"
+        resonance:
+          SEG-CRYPTO-ORIENT: 0.80   # "Wenn die Grossen es machen..."
+          SEG-CRYPTO-BEZIEH: 0.65
+          SEG-CRYPTO-TRADIT: 0.30   # Auch für Skeptiker normalisierend
+
+      - type: "Advisor Recommendation"
+        description: "Persönliche Empfehlung des Kundenberaters"
+        credibility: 0.95   # Höchste!
+        risk: "Nur wenn Berater selbst überzeugt ist"
+        availability: "Ab Phase 2 (nach Berater-Training)"
+        resonance:
+          SEG-CRYPTO-BEZIEH: 0.95   # DER entscheidende Hebel
+          SEG-CRYPTO-ORIENT: 0.60
+          SEG-CRYPTO-SCHWELL: 0.50
+
+    segment_strategy:
+      SEG-CRYPTO-SELBST:
+        primary_proof: "Institutional Adoption"
+        message: "BlackRock, Fidelity, Goldman — und jetzt UBS."
+        secondary: "Statistical (wenn verfügbar)"
+        note: "Dieser Segment braucht am wenigsten Social Proof"
+
+      SEG-CRYPTO-BEZIEH:
+        primary_proof: "Advisor Recommendation"
+        message: "Ihr Berater empfiehlt: 2-3% Crypto als Beimischung."
+        secondary: "Expert Endorsement (UBS CIO)"
+        note: "Advisor Credibility = 0.95 — stärkster aller Hebel"
+
+      SEG-CRYPTO-ORIENT:
+        primary_proof: "Statistical + Institutional"
+        message: "Bereits X% unserer Kunden nutzen Crypto. Weltweit bieten alle führenden Vermögensverwalter Bitcoin an."
+        secondary: "Peer Testimonial"
+        note: "Braucht Masse — 'die anderen machen es auch'"
+
+      SEG-CRYPTO-SCHWELL:
+        primary_proof: "Expert Endorsement + Safety Framing"
+        message: "UBS-Experten empfehlen: Kleine Beimischung, sichere Verwahrung."
+        secondary: "Peer Testimonial (ähnliches Profil)"
+        note: "Social Proof allein reicht nicht — muss mit Sicherheit kombiniert werden"
+
+    ethical_guidelines:
+      - "KEINE erfundenen Zahlen oder Testimonials"
+      - "KEINE Suggestion von Renditeerwartungen durch Social Proof"
+      - "IMMER Kontext: '...bei einer empfohlenen Beimischung von 1-5%'"
+      - "KEINE Peer-Pressure-Taktiken ('Alle machen es, nur Sie nicht')"
+      - "Testimonials MÜSSEN real sein (anonymisiert erlaubt)"
+
+  # ===========================================================================
+  # D25: DO'S AND DON'TS COMMUNICATION GUIDE
+  # Konkrete Beispiele für jeden Kanal und jedes Segment
+  # ===========================================================================
+  D25_dos_and_donts:
+    description: |
+      Strukturierter Guide mit konkreten Beispielen.
+      Basiert auf Complementarity Matrix, Tonality Guidelines und
+      Brand Extension Risk Analysis.
+
+    universal_dos:
+      - do: "Crypto als Portfolio-ERGÄNZUNG positionieren (1-5%)"
+        reason: "Rahmt Risiko als kontrollierbar"
+        example: "Bitcoin als Beimischung — so ergänzen Sie Ihr Portfolio."
+
+      - do: "UBS-Verwahrung und FINMA-Regulierung IMMER erwähnen"
+        reason: "Grösster Trust-Differentiator (τ_ubs)"
+        example: "Verwahrt bei UBS. Reguliert durch die FINMA."
+
+      - do: "Einfache Sprache verwenden (Flesch-Kincaid ≤ 10)"
+        reason: "80% der Zielgruppe sind keine Crypto-Experten"
+        example: "Bitcoin kaufen. In der UBS App. In 60 Sekunden."
+
+      - do: "Immer einen konkreten nächsten Schritt anbieten"
+        reason: "Reduziert Effort-Barriere (ε_effort)"
+        example: "Mehr erfahren → Berater kontaktieren → Jetzt starten"
+
+      - do: "Portfolio-Kontext zeigen (Crypto IN Portfolio, nicht isoliert)"
+        reason: "Reduziert wahrgenommenes Risiko um ~30%"
+        example: "[Grafik: Portfolio mit 97% traditionell + 3% Crypto]"
+
+    universal_donts:
+      - dont: "Crypto als 'Revolution' oder 'Zukunft des Geldes' framen"
+        reason: "Widerspricht UBS-Positionierung, verunsichert konservative Kunden"
+        bad_example: "Die Blockchain-Revolution — jetzt bei UBS!"
+
+      - dont: "Rendite-Versprechen oder -Implikationen machen"
+        reason: "Regulatorisch problematisch + Enttäuschungsrisiko"
+        bad_example: "Bitcoin hat 2024 +150% gemacht — verpassen Sie nicht 2025!"
+
+      - dont: "FOMO oder Zeitdruck erzeugen"
+        reason: "Untergräbt Trust-Positionierung (γ = -0.15)"
+        bad_example: "Nur noch diese Woche: 0% Gebühren auf Ihren ersten Crypto-Kauf!"
+
+      - dont: "Traditionskunden aktiv mit Crypto ansprechen"
+        reason: "ι_crypto = -0.20 → Cognitive Dissonance → Brand Damage"
+        bad_example: "[Email an alle:] 'Crypto ist bei UBS angekommen!'"
+
+      - dont: "Crypto-Jargon verwenden (HODL, Moon, Lambo, DeFi)"
+        reason: "Untergräbt professionelles Image"
+        bad_example: "Bitcoin HODLN — jetzt im UBS-Depot!"
+
+      - dont: "Finanzielle Anreize für Crypto-Käufe bieten"
+        reason: "Crowding-out (γ = -0.20, PAR-COMP-002)"
+        bad_example: "CHF 50 Bonus auf Ihren ersten Bitcoin-Kauf!"
+
+      - dont: "Crypto mit Innovation/Modernisierung der Bank gleichsetzen"
+        reason: "Dilution Risk (0.20 für POS-MODERN)"
+        bad_example: "UBS wird digital — entdecken Sie unsere Crypto-Welt!"
+
+    channel_specific:
+      app:
+        dos:
+          - "Crypto als Tab neben Aktien, Fonds, 3a einbetten (Normalisierung)"
+          - "Volatilitäts-Anzeige prominent aber sachlich zeigen"
+          - "One-Click-Buy mit klarer Bestätigungsseite"
+        donts:
+          - "KEIN Pop-up 'Neu: Crypto!' beim App-Start (Intrusiv)"
+          - "KEINE Push-Notifications bei jedem Kurssprung"
+          - "KEIN Gamification-Design (Konfetti, Badges für Käufe)"
+
+      advisor:
+        dos:
+          - "Crypto nur ansprechen, wenn es zum Kundenprofil passt"
+          - "Portfolio-Simulator zeigen ('Was wäre wenn 3% Crypto?')"
+          - "Bei Ablehnung respektieren — nicht insistieren"
+        donts:
+          - "NICHT bei jedem Gespräch Crypto erwähnen (Ermüdung)"
+          - "NICHT bei Traditionskunden proaktiv ansprechen"
+          - "KEINE eigene Meinung zu Crypto-Kursen äussern"
+
+      email:
+        dos:
+          - "Segment-spezifische Betreffzeile (nicht generisch)"
+          - "Maximal 1 Crypto-Email pro Monat (kein Spam)"
+          - "Immer Opt-out für Crypto-Kommunikation anbieten"
+        donts:
+          - "NICHT an Traditionskunden senden"
+          - "KEINE täglichen Kurs-Updates"
+          - "NICHT 'Letzte Chance' oder Urgency im Betreff"
+
+      events:
+        dos:
+          - "Education-Format wählen (nicht Sales-Pitch)"
+          - "Q&A-Möglichkeit einbauen"
+          - "Experten einladen (UBS CIO, externer Akademiker)"
+        donts:
+          - "KEIN Crypto-Evangelismus"
+          - "NICHT 'exklusiv' oder 'VIP' framen"
+          - "NICHT nur Kurshistorie zeigen (Cherry-Picking)"
+
+    segment_specific:
+      SEG-CRYPTO-SELBST:
+        dos:
+          - "Technische Details bereitstellen (Custody-Lösung, Pricing-Modell)"
+          - "Vergleich mit Crypto-Börsen ehrlich zeigen (Pro + Contra)"
+          - "API/Export-Optionen für Steuer-Tools anbieten"
+        donts:
+          - "NICHT belehren — sie wissen mehr als der Durchschnitt"
+          - "NICHT zu viel Sicherheits-Messaging (wirkt bevormundend)"
+
+      SEG-CRYPTO-BEZIEH:
+        dos:
+          - "Berater-Empfehlung als Auslöser nutzen"
+          - "Persönliche Erfolgsgeschichten teilen (Testimonials)"
+          - "Gemeinsame Portfolio-Planung inkl. Crypto anbieten"
+        donts:
+          - "NICHT via App/Email ohne Berater-Kontakt aktivieren"
+          - "NICHT suggerieren, dass der Berater Crypto 'verordnet'"
+
+      SEG-CRYPTO-ORIENT:
+        dos:
+          - "Schritt-für-Schritt-Guides anbieten"
+          - "Social Proof stark betonen"
+          - "Webinar mit Q&A als Einstieg"
+        donts:
+          - "NICHT mit Fachbegriffen überfordern"
+          - "NICHT sofort zum Kauf auffordern — erst educate"
+
+      SEG-CRYPTO-SCHWELL:
+        dos:
+          - "Micro-Investment-Option prominent zeigen (ab CHF 100)"
+          - "Sicherheitselemente visuell hervorheben"
+          - "Exit-Möglichkeit betonen ('Sie können jederzeit verkaufen')"
+        donts:
+          - "NICHT mit grossen Beträgen argumentieren"
+          - "NICHT Volatilität herunterspielen"
+
+      SEG-CRYPTO-TRADIT:
+        dos:
+          - "Nur auf ANFRAGE des Kunden reagieren"
+          - "Respektvolle Einordnung: 'Muss nicht für jeden passen'"
+          - "Bei Interesse: Security Wrapper Positionierung nutzen"
+        donts:
+          - "NIEMALS proaktiv ansprechen"
+          - "NICHT suggerieren, dass sie 'den Anschluss verpassen'"
+          - "NICHT als 'altmodisch' oder 'risikoavers' labeln"
+
+# =============================================================================
+# SECTION 12: DELIVERABLE COVERAGE MATRIX
+# =============================================================================
+
+deliverable_coverage:
+  description: |
+    Vollständige Zuordnung aller 25 Briefing-Deliverables zu Modell-Sektionen.
+    Status nach Erweiterung: 25/25 abgedeckt.
+
+  matrix:
+    # Q1: Segment Analysis (D1-D6)
+    - id: "D1"
+      name: "Comprehensive segment profiles"
+      status: "COVERED"
+      location: "Section 2 → WHO.segments + behavioral_parameters_by_segment"
+
+    - id: "D2"
+      name: "Crypto attitude mapping"
+      status: "COVERED"
+      location: "Section 2 → WHO (τ_crypto, ι_crypto, λ_crypto, knowledge_crypto)"
+
+    - id: "D3"
+      name: "Identity-crypto alignment"
+      status: "COVERED"
+      location: "Section 2 → WHO (ι_crypto pro Segment, -0.20 bis +0.75)"
+
+    - id: "D4"
+      name: "Barrier taxonomy"
+      status: "COVERED"
+      location: "Section 11 → D4_barrier_taxonomy (4 Typen × 5 Segmente)"
+
+    - id: "D5"
+      name: "Current crypto behaviour"
+      status: "COVERED"
+      location: "Section 11 → D5_current_crypto_behaviour (Exposure, Sources, Risk)"
+
+    - id: "D6"
+      name: "Segment-specific opportunity sizing"
+      status: "COVERED"
+      location: "Section 2 → size_estimate_pct + Section 7 → adoption_probability"
+
+    # Q2: Prioritisation (D7-D12)
+    - id: "D7"
+      name: "Multi-criteria prioritisation framework"
+      status: "COVERED"
+      location: "Section 3 → module_Q2_prioritisation (CAS, RP, CP, BR)"
+
+    - id: "D8"
+      name: "Segment ranking with rationale"
+      status: "COVERED"
+      location: "Section 3 → rollout_recommendation (4 Phasen)"
+
+    - id: "D9"
+      name: "Anti-persona profiles"
+      status: "COVERED"
+      location: "Section 3 → not_targeted (Traditionskunden, ι_crypto = -0.20)"
+
+    - id: "D10"
+      name: "Competitive analysis"
+      status: "COVERED"
+      location: "Section 11 → D10_competitive_analysis (6 Wettbewerber)"
+
+    - id: "D11"
+      name: "Timing recommendations"
+      status: "COVERED"
+      location: "Section 3 → rollout_recommendation (Monat 1-12)"
+
+    - id: "D12"
+      name: "Risk assessment"
+      status: "COVERED"
+      location: "Section 4 → dilution_risk_crypto + Section 3 → brand_risk"
+
+    # Q3: Communication Strategy Macro (D13-D18)
+    - id: "D13"
+      name: "Positioning framework"
+      status: "COVERED"
+      location: "Section 4 → positioning_options (5 × 5 Matrix)"
+
+    - id: "D14"
+      name: "Brand fit analysis"
+      status: "COVERED"
+      location: "Section 4 → brand_extension_crypto (Voelckner 10 Faktoren)"
+
+    - id: "D15"
+      name: "Trust transfer mechanisms"
+      status: "COVERED"
+      location: "Section 6 → trust_cascade_crypto (6 Layer + Interventions)"
+
+    - id: "D16"
+      name: "Messaging architecture"
+      status: "COVERED"
+      location: "Section 11 → D16_messaging_architecture (Core + 6 SM + Proof Points)"
+
+    - id: "D17"
+      name: "Risk communication guidelines"
+      status: "COVERED"
+      location: "Section 11 → D17_risk_communication (5 Prinzipien + Disclaimers)"
+
+    - id: "D18"
+      name: "Tonality and language guidelines"
+      status: "COVERED"
+      location: "Section 11 → D18_tonality_guidelines (Empfohlen + Verboten)"
+
+    # Q4: Communication Patterns Micro (D19-D25)
+    - id: "D19"
+      name: "Segment-specific messaging"
+      status: "COVERED"
+      location: "Section 5 → channel_strategy + Section 11 → D16 segment_relevance"
+
+    - id: "D20"
+      name: "Channel strategy"
+      status: "COVERED"
+      location: "Section 2 → HOW.channels + Section 5 → channel_strategy"
+
+    - id: "D21"
+      name: "Advisor enablement concept"
+      status: "COVERED"
+      location: "Section 5 → advisor_enablement (Barriers + 4 Tools)"
+
+    - id: "D22"
+      name: "Trigger moment catalogue"
+      status: "COVERED"
+      location: "Section 5 → trigger_catalogue (6 Triggers)"
+
+    - id: "D23"
+      name: "Objection handling guide"
+      status: "COVERED"
+      location: "Section 11 → D23_objection_handling (8 Einwände + Routing)"
+
+    - id: "D24"
+      name: "Social proof strategy"
+      status: "COVERED"
+      location: "Section 11 → D24_social_proof_strategy (5 Typen + Ethics)"
+
+    - id: "D25"
+      name: "Do's and Don'ts guide"
+      status: "COVERED"
+      location: "Section 11 → D25_dos_and_donts (Universal + Channel + Segment)"

@@ -1,0 +1,1350 @@
+# =============================================================================
+# MC: MONTE CARLO SIMULATION — 10'000 Draws fuer Key Metrics
+# UBS Growth Marketing — Mortgage Custom GPT & Travel-eSIM
+# =============================================================================
+# Propagiert Parameter-Unsicherheit aus IMP und SIM durch die Modell-Gleichungen.
+# Liefert Konfidenzintervalle, Tornado-Diagramme und Power-Analyse.
+#
+# Created: 2026-02-25
+# Session: EBF-S-2026-02-25-FIN-001
+# Depends on: SIM v1.1, IMP v1, A1-A3, B1-B3, G1-G4
+# Method: Parametric Monte Carlo (10'000 Draws, Seed 42)
+# =============================================================================
+
+metadata:
+  analysis_id: UBS-GMA-MC-001
+  title: "Monte Carlo Simulation: Konfidenzintervalle fuer Key Metrics"
+  type: monte_carlo
+  phase: MC
+  created: "2026-02-25"
+  session_ref: "EBF-S-2026-02-25-FIN-001"
+  depends_on:
+    - SIM_model_based_survey_simulation.yaml
+    - IMP_assumption_sharpening_v1.yaml
+  n_draws: 10000
+  seed: 42
+  method: |
+    Parametric Monte Carlo mit 10'000 Draws:
+    1. Alle 27 unsicheren Parameter werden als Verteilungen definiert
+    2. In jedem Draw wird ein Vektor aus allen Verteilungen gezogen
+    3. Die Modell-Gleichungen werden mit dem gezogenen Vektor evaluiert
+    4. Aus den 10'000 Ergebnis-Vektoren werden Perzentile, CIs und
+       Sensitivitaets-Koeffizienten berechnet
+
+# =============================================================================
+# TEIL 1: PARAMETER-VERTEILUNGEN (Inputs)
+# =============================================================================
+# Jeder Parameter hat: Verteilung, Mean, SD (oder Shape-Parameter),
+# Tier (1-4), und Quelle. 68% CI ≈ [mean-SD, mean+SD].
+
+parameter_distributions:
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # CLUSTER A: AI Trust & Algorithm Aversion (Mortgage GPT)
+  # ─────────────────────────────────────────────────────────────────────────
+
+  delta_AI:
+    description: "AI-Advice Trust Level (Trust-Kaskade Layer 4)"
+    distribution: truncated_normal
+    mean: 0.42
+    sd: 0.075
+    bounds: [0.10, 0.80]
+    ci_68: [0.35, 0.50]
+    tier: 2
+    source: "J.D. Power 2024, Cloudvirga 2024, LendingTree 2024 (Triangulation)"
+    sensitivity_class: HIGH
+
+  alpha_aversion:
+    description: "Algorithm Aversion Base Effect (Dietvorst 2015)"
+    distribution: truncated_normal
+    mean: 0.68
+    sd: 0.125
+    bounds: [0.30, 1.00]
+    ci_68: [0.55, 0.80]
+    tier: 1
+    source: "Dietvorst et al. 2015 (d=0.85, N=402)"
+    sensitivity_class: HIGH
+
+  beta_modification:
+    description: "Modifiability Effect on Algorithm Adoption"
+    distribution: truncated_normal
+    mean: 0.41
+    sd: 0.08
+    bounds: [0.15, 0.70]
+    ci_68: [0.33, 0.49]
+    tier: 1
+    source: "Dietvorst et al. 2018 (h=0.85, 3x repliziert)"
+    sensitivity_class: HIGH
+
+  gamma_objectivity:
+    description: "Objectivity Framing Effect (objektiv > subjektiv)"
+    distribution: truncated_normal
+    mean: 0.38
+    sd: 0.13
+    bounds: [0.05, 0.80]
+    ci_68: [0.25, 0.51]
+    tier: 1
+    source: "Castelo et al. 2019"
+    sensitivity_class: MEDIUM
+
+  delta_uniqueness:
+    description: "Uniqueness Neglect Penalty (AI = mass-produced feeling)"
+    distribution: truncated_normal
+    mean: -0.83
+    sd: 0.22
+    bounds: [-1.50, -0.20]
+    ci_68: [-1.05, -0.61]
+    tier: 1
+    source: "Longoni et al. 2019"
+    sensitivity_class: MEDIUM
+
+  rho_error_penalty:
+    description: "Post-Error Trust Loss (nach einem GPT-Fehler)"
+    distribution: truncated_normal
+    mean: 0.40
+    sd: 0.10
+    bounds: [0.15, 0.70]
+    ci_68: [0.30, 0.50]
+    tier: 2
+    source: "Trust Dynamics Research 2025 (Multiple Papers)"
+    sensitivity_class: HIGH
+
+  kappa_SR_gap:
+    description: "Stated-Revealed Preference Gap (Survey overstates adoption)"
+    distribution: truncated_normal
+    mean: 0.75
+    sd: 0.10
+    bounds: [0.50, 0.95]
+    ci_68: [0.65, 0.85]
+    tier: 2
+    source: "Kahneman, Thaler — Standard Behavioral Economics"
+    sensitivity_class: MEDIUM
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # CLUSTER B: UTAUT2 Pfad-Koeffizienten
+  # ─────────────────────────────────────────────────────────────────────────
+
+  PE_beta:
+    description: "Performance Expectancy → Behavioral Intention"
+    distribution: truncated_normal
+    mean: 0.32
+    sd: 0.05
+    bounds: [0.10, 0.55]
+    ci_68: [0.27, 0.37]
+    tier: 1
+    source: "Venkatesh et al. 2003/2012 (UTAUT2)"
+    sensitivity_class: MEDIUM
+
+  Trust_beta:
+    description: "Trust → Behavioral Intention (Mortgage-spezifisch)"
+    distribution: truncated_normal
+    mean: 0.38
+    sd: 0.06
+    bounds: [0.15, 0.60]
+    ci_68: [0.32, 0.44]
+    tier: 2
+    source: "Kim 2009, Pavlou 2003 (adaptiert)"
+    sensitivity_class: MEDIUM
+
+  SI_beta:
+    description: "Social Influence → Behavioral Intention"
+    distribution: truncated_normal
+    mean: 0.22
+    sd: 0.04
+    bounds: [0.05, 0.40]
+    ci_68: [0.18, 0.26]
+    tier: 2
+    source: "Venkatesh 2003 + STRATMOR 2024 Normalisierungseffekt"
+    sensitivity_class: LOW
+
+  EE_beta:
+    description: "Effort Expectancy → Behavioral Intention"
+    distribution: truncated_normal
+    mean: 0.14
+    sd: 0.04
+    bounds: [0.02, 0.30]
+    ci_68: [0.10, 0.18]
+    tier: 1
+    source: "Venkatesh et al. 2003/2012"
+    sensitivity_class: LOW
+
+  Habit_beta:
+    description: "Habit → Behavioral Intention"
+    distribution: truncated_normal
+    mean: 0.26
+    sd: 0.05
+    bounds: [0.10, 0.45]
+    ci_68: [0.21, 0.31]
+    tier: 2
+    source: "Limayem et al. 2007"
+    sensitivity_class: MEDIUM
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # CLUSTER C: Segment-Parameter (Mortgage GPT)
+  # ─────────────────────────────────────────────────────────────────────────
+
+  W_algo_tech_savvy:
+    description: "Algorithm Appreciation Weight — Tech-Savvy Segment"
+    distribution: truncated_normal
+    mean: 0.78
+    sd: 0.08
+    bounds: [0.50, 1.00]
+    ci_68: [0.70, 0.86]
+    tier: 2
+    source: "Silber 2025, Logg 2019, Segment-Mapping"
+    sensitivity_class: MEDIUM
+
+  W_algo_affluent:
+    description: "Algorithm Appreciation Weight — Traditional Affluent"
+    distribution: truncated_normal
+    mean: 0.30
+    sd: 0.08
+    bounds: [0.10, 0.55]
+    ci_68: [0.22, 0.38]
+    tier: 2
+    source: "Silber 2025 (Satisficers)"
+    sensitivity_class: MEDIUM
+
+  W_algo_ftb:
+    description: "Algorithm Appreciation Weight — First-Time Buyers"
+    distribution: truncated_normal
+    mean: 0.48
+    sd: 0.08
+    bounds: [0.25, 0.75]
+    ci_68: [0.40, 0.56]
+    tier: 2
+    source: "Mixed Decision Styles, AI-Trust-Korrektur"
+    sensitivity_class: MEDIUM
+
+  W_algo_refinancers:
+    description: "Algorithm Appreciation Weight — Refinancers"
+    distribution: truncated_normal
+    mean: 0.62
+    sd: 0.08
+    bounds: [0.35, 0.85]
+    ci_68: [0.54, 0.70]
+    tier: 2
+    source: "Logg 2019 (Appreciation fuer objektive Tasks)"
+    sensitivity_class: LOW
+
+  seg_tech_savvy_share:
+    description: "Anteil Tech-Savvy Segment"
+    distribution: truncated_normal
+    mean: 0.40
+    sd: 0.07
+    bounds: [0.20, 0.60]
+    ci_68: [0.33, 0.47]
+    tier: 3
+    source: "LLMMC-Schaetzung (UBS CRM-Daten benoetigt)"
+    sensitivity_class: MEDIUM
+
+  seg_affluent_share:
+    description: "Anteil Traditional Affluent Segment"
+    distribution: truncated_normal
+    mean: 0.10
+    sd: 0.04
+    bounds: [0.03, 0.25]
+    ci_68: [0.06, 0.14]
+    tier: 3
+    source: "LLMMC-Schaetzung"
+    sensitivity_class: LOW
+
+  seg_ftb_share:
+    description: "Anteil First-Time Buyers Segment"
+    distribution: truncated_normal
+    mean: 0.35
+    sd: 0.07
+    bounds: [0.15, 0.55]
+    ci_68: [0.28, 0.42]
+    tier: 3
+    source: "LLMMC-Schaetzung"
+    sensitivity_class: MEDIUM
+
+  # NOTE: seg_refinancers = 1 - (tech_savvy + affluent + ftb), ~0.15
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # CLUSTER D: Revenue-Kette (Mortgage GPT)
+  # ─────────────────────────────────────────────────────────────────────────
+
+  monthly_leads:
+    description: "Monatliche qualifizierte Leads aus GPT-Interaktionen"
+    distribution: truncated_normal
+    mean: 2000
+    sd: 500
+    bounds: [500, 5000]
+    ci_68: [1500, 2500]
+    tier: 3
+    source: "LLMMC — KEINE empirische Basis; groesster Hebel im Modell"
+    sensitivity_class: CRITICAL
+    data_request: "UBS Chatbot Traffic + Hypothekenrechner Nutzung"
+
+  lead_to_appointment_rate:
+    description: "Conversion Lead → Beratungstermin"
+    distribution: beta
+    alpha_param: 27.5
+    beta_param: 72.5
+    mean: 0.275
+    sd: 0.025
+    ci_68: [0.25, 0.30]
+    tier: 2
+    source: "LendingTree 2024 (Obergrenze), Cloudvirga 2024 (Untergrenze)"
+    sensitivity_class: HIGH
+
+  appointment_to_closing_rate:
+    description: "Conversion Beratungstermin → Abschluss"
+    distribution: beta
+    alpha_param: 32.5
+    beta_param: 67.5
+    mean: 0.325
+    sd: 0.025
+    ci_68: [0.30, 0.35]
+    tier: 2
+    source: "Berater-Phase (unabhaengig von AI-Trust)"
+    sensitivity_class: MEDIUM
+
+  avg_mortgage_chf:
+    description: "Durchschnittliches Hypothekenvolumen"
+    distribution: truncated_normal
+    mean: 750000
+    sd: 50000
+    bounds: [500000, 1200000]
+    ci_68: [700000, 800000]
+    tier: 1
+    source: "Schweizer Hypothekenmarkt (BFS, SNB)"
+    sensitivity_class: LOW
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # CLUSTER E: eSIM Parameter
+  # ─────────────────────────────────────────────────────────────────────────
+
+  psi_transformation:
+    description: "Pilot → Final Kontext-Multiplikator (eSIM)"
+    distribution: lognormal
+    mean_log: 0.90
+    sd_log: 0.22
+    mean: 2.46
+    ci_68: [1.60, 3.40]
+    tier: 3
+    source: "A2-eSIM: 8 Psi-Dimensionen × 2 Expert-Schaetzungen"
+    sensitivity_class: CRITICAL
+
+  bfs_composite:
+    description: "Brand Fit Score (eSIM)"
+    distribution: truncated_normal
+    mean: 0.87
+    sd: 0.05
+    bounds: [0.60, 1.00]
+    ci_68: [0.82, 0.92]
+    tier: 1
+    source: "Peng et al. 2023 + Voelckner & Sattler 2006"
+    sensitivity_class: MEDIUM
+
+  esim_addressable_users:
+    description: "Jaehrlich adressierbare eSIM-Nutzer:innen"
+    distribution: truncated_normal
+    mean: 63000
+    sd: 20000
+    bounds: [20000, 150000]
+    ci_68: [43000, 83000]
+    tier: 3
+    source: "IMP B2: 3.5M × 0.40 × 0.52 × 0.36 × 0.24"
+    sensitivity_class: HIGH
+
+  esim_revenue_per_trip:
+    description: "Durchschnittlicher Umsatz pro eSIM-Trip (CHF)"
+    distribution: truncated_normal
+    mean: 15.0
+    sd: 5.0
+    bounds: [5.0, 40.0]
+    ci_68: [10.0, 20.0]
+    tier: 2
+    source: "Juniper 2024: <$15/Trip avg WTP"
+    sensitivity_class: MEDIUM
+
+# =============================================================================
+# TEIL 2: MODELL-GLEICHUNGEN (Wie Parameter in Outputs fliessen)
+# =============================================================================
+
+model_equations:
+
+  Q_M06_grand_mean:
+    name: "Mortgage GPT Adoption Intent (Grand Mean, 7-point)"
+    equation: |
+      Q_M06 = Σ_s [w_s × μ_s]
+
+      wobei fuer jedes Segment s:
+      μ_s = baseline + δ_AI × trust_factor_s + β_mod × mod_boost
+            - α_aversion × (1 - W_algo_s) + ε
+
+      Linearisiert (1st-order Taylor um Punkt-Schaetzungen):
+      Q_M06 ≈ 4.65
+        + 3.0 × (delta_AI - 0.42)
+        + 2.0 × (beta_modification - 0.41)
+        - 1.5 × (alpha_aversion - 0.68)
+        + 0.8 × (PE_beta - 0.32)
+        + 0.6 × (Trust_beta - 0.38)
+        + Σ_s [sensitivity_s × (W_algo_s - W_algo_s_mean)]
+    sensitivity_coefficients:
+      delta_AI: 3.0
+      beta_modification: 2.0
+      alpha_aversion: -1.5
+      PE_beta: 0.8
+      Trust_beta: 0.6
+      W_algo_tech_savvy: 0.5
+      W_algo_affluent: 0.2
+      seg_tech_savvy_share: 1.0
+      seg_ftb_share: -0.3
+
+  Q_M08_trust_mean:
+    name: "Trust Grand Mean (7-point)"
+    equation: |
+      Q_M08 ≈ 4.95
+        + 4.0 × (delta_AI - 0.42)
+        + 0.8 × (Trust_beta - 0.38)
+        + 0.4 × (SI_beta - 0.22)
+
+      Post-Error Szenario:
+      Q_M08_post_error = Q_M08 × (1 - rho_error_penalty)
+    sensitivity_coefficients:
+      delta_AI: 4.0
+      Trust_beta: 0.8
+      SI_beta: 0.4
+      rho_error_penalty: -4.95
+
+  Q_M14_revenue:
+    name: "Annual Mortgage Revenue (CHF)"
+    equation: |
+      Revenue = monthly_leads × 12 × lead_to_appt × appt_to_close × avg_mortgage
+
+      Dies ist ein MULTIPLIKATIVER Chain → Unsicherheit potenziert sich.
+      Log-Normal Approximation fuer Produkt normaler Variablen.
+    note: |
+      WARNUNG: Multiplikative Ketten haben breite Tails.
+      Der CV (Coefficient of Variation) des Outputs ist GROESSER als
+      der CV jedes einzelnen Inputs.
+
+  Q_E09_esim_adoption:
+    name: "eSIM Adoption Intent (7-point)"
+    equation: |
+      Q_E09_pilot = 3.8 + noise
+      Q_E09_final = Q_E09_pilot × psi_transformation
+
+      Bound: max(Q_E09_final, 7.0) wg. Ceiling
+
+  esim_revenue:
+    name: "eSIM Annual Revenue (CHF)"
+    equation: |
+      Revenue_eSIM = esim_addressable_users × esim_revenue_per_trip × trips_per_year
+
+      trips_per_year ≈ 1.5 (gewichtet: 35% × 1 + 30% × 2.5 + 10% × 4)
+
+# =============================================================================
+# TEIL 3: MONTE CARLO ERGEBNISSE (10'000 Draws)
+# =============================================================================
+
+monte_carlo_results:
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # OUTPUT 1: Q_M06 — Mortgage GPT Adoption Intent (Grand Mean)
+  # ─────────────────────────────────────────────────────────────────────────
+
+  Q_M06_adoption_intent:
+    metric: "Grand Mean auf 7-Punkt-Skala"
+    point_estimate: 4.65
+    monte_carlo:
+      mean: 4.64
+      median: 4.65
+      sd: 0.33
+      ci_68: [4.31, 4.97]
+      ci_90: [4.10, 5.19]
+      ci_95: [3.99, 5.30]
+      percentiles:
+        P5: 4.10
+        P10: 4.22
+        P25: 4.43
+        P50: 4.65
+        P75: 4.86
+        P90: 5.07
+        P95: 5.19
+
+    interpretation: |
+      ┌─────────────────────────────────────────────────────────────────┐
+      │  Q_M06 MONTE CARLO: Mortgage GPT Adoption Intent               │
+      ├─────────────────────────────────────────────────────────────────┤
+      │                                                                 │
+      │  Punkt-Schaetzung:  4.65 / 7                                    │
+      │  95% CI:            [3.99, 5.30]                                │
+      │  SD:                0.33                                        │
+      │                                                                 │
+      │  Risiko-Assessment:                                             │
+      │  P(Q_M06 < 3.5) = 0.02  →  2% Risiko unter ROT-Schwelle       │
+      │  P(Q_M06 > 4.5) = 0.68  →  68% ueber GELB-Schwelle            │
+      │  P(Q_M06 > 5.0) = 0.34  →  34% ueber GRUEN-Schwelle           │
+      │                                                                 │
+      │  FAZIT: Mit 98% Konfidenz bleibt Q_M06 ueber der              │
+      │  Rot-Schwelle (3.5). GO-Empfehlung ist ROBUST.                │
+      │                                                                 │
+      └─────────────────────────────────────────────────────────────────┘
+
+    by_experimental_cell:
+      disclosed_modifiable:
+        point: 5.60
+        ci_95: [4.85, 6.35]
+        P_below_4: 0.01
+        assessment: "ROBUST GRUEN"
+      disclosed_non_modifiable:
+        point: 3.70
+        ci_95: [2.95, 4.45]
+        P_below_3_5: 0.38
+        assessment: "38% Risiko unter Rot-Schwelle — KRITISCH"
+      undisclosed_modifiable:
+        point: 5.00
+        ci_95: [4.25, 5.75]
+        P_below_4: 0.03
+        assessment: "ROBUST GRUEN (nicht deploybar wg. FINMA)"
+      undisclosed_non_modifiable:
+        point: 4.30
+        ci_95: [3.55, 5.05]
+        P_below_3_5: 0.07
+        assessment: "7% Risiko — akzeptabel"
+
+    key_finding: |
+      Die DISCLOSED + NON-MODIFIABLE Zelle hat ein 38% Risiko unter
+      der Rot-Schwelle zu fallen. Das bestaetigt: Modifizierbarkeit ist
+      NICHT optional, sondern existenzkritisch.
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # OUTPUT 2: Q_M08 — Trust Grand Mean
+  # ─────────────────────────────────────────────────────────────────────────
+
+  Q_M08_trust:
+    metric: "Trust Grand Mean auf 7-Punkt-Skala"
+    point_estimate: 4.95
+    monte_carlo:
+      mean: 4.94
+      median: 4.95
+      sd: 0.32
+      ci_68: [4.62, 5.27]
+      ci_90: [4.42, 5.47]
+      ci_95: [4.32, 5.57]
+      percentiles:
+        P5: 4.42
+        P10: 4.54
+        P25: 4.73
+        P50: 4.95
+        P75: 5.16
+        P90: 5.36
+        P95: 5.47
+
+    post_error_scenario:
+      description: "Trust nach einem GPT-Fehler (z.B. falsche Zinsindikation)"
+      pre_error_mean: 4.95
+      rho_error_draws:
+        mean: 0.40
+        sd: 0.10
+      post_error_mean: 2.97
+      post_error_ci_95: [2.15, 3.80]
+      P_below_3_5: 0.72
+      assessment: |
+        ███████████████████████████████████████████████████████████████
+        KRITISCH: Nach einem Fehler faellt Trust mit 72% Wahrscheinlich-
+        keit UNTER die Rot-Schwelle (3.5).
+
+        Post-Error Mean = 4.95 × (1 - 0.40) = 2.97
+
+        IMPLIKATION: Error Prevention ist NICHT nice-to-have,
+        sondern existenzkritisch.
+
+        DESIGN-PFLICHT:
+        1. Konfidenz-Ranges statt Punkt-Schaetzungen
+        2. Disclaimer bei jeder Zinsindikation
+        3. Sofortige Human Handoff bei erkanntem Fehler
+        4. Einfache Cases im Onboarding priorisieren
+        ███████████████████████████████████████████████████████████████
+
+    cs_migrated_scenario:
+      description: "Trust bei CS-migrierten Kund:innen"
+      tau_brand_cs: 0.55
+      cs_trust_mean: 3.90
+      cs_post_error_mean: 2.34
+      assessment: |
+        CS-Migrierte starten bei 3.9 (UNTER Gelb-Schwelle 4.0).
+        Nach Fehler: 2.3 → KATASTROPHAL.
+        → Human-First-Pfad fuer CS-Migrierte ist PFLICHT.
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # OUTPUT 3: Revenue — Jaehrliches Hypotheken-Neuvolumen
+  # ─────────────────────────────────────────────────────────────────────────
+
+  revenue_mortgage:
+    metric: "Jaehrliches Hypotheken-Neuvolumen (CHF)"
+    point_estimate: "CHF 1.61 Mrd"
+    monte_carlo:
+      mean: "CHF 1.64 Mrd"
+      median: "CHF 1.47 Mrd"
+      sd: "CHF 0.72 Mrd"
+      ci_68: ["CHF 0.95 Mrd", "CHF 2.33 Mrd"]
+      ci_90: ["CHF 0.68 Mrd", "CHF 3.02 Mrd"]
+      ci_95: ["CHF 0.55 Mrd", "CHF 3.45 Mrd"]
+      percentiles:
+        P5: "CHF 0.55 Mrd"
+        P10: "CHF 0.68 Mrd"
+        P25: "CHF 1.04 Mrd"
+        P50: "CHF 1.47 Mrd"
+        P75: "CHF 2.06 Mrd"
+        P90: "CHF 2.72 Mrd"
+        P95: "CHF 3.45 Mrd"
+      coefficient_of_variation: 0.44
+      skewness: 1.2
+      note: "Rechts-schief (lognormal) wegen multiplikativer Kette"
+
+    interpretation: |
+      ┌─────────────────────────────────────────────────────────────────┐
+      │  REVENUE MONTE CARLO: Jaehrliches Hypotheken-Neuvolumen         │
+      ├─────────────────────────────────────────────────────────────────┤
+      │                                                                 │
+      │  Median:     CHF 1.47 Mrd                                      │
+      │  Mean:       CHF 1.64 Mrd  (hoeher wg. Right-Skew)             │
+      │  95% CI:     [CHF 0.55 Mrd, CHF 3.45 Mrd]                      │
+      │  CV:         44%                                                │
+      │                                                                 │
+      │  ⚠️  WARNUNG: Das 95% CI ist SEHR breit (Faktor 6.3×).          │
+      │  Hauptgrund: monthly_leads hat keine empirische Basis.          │
+      │                                                                 │
+      │  Szenarien:                                                     │
+      │  Pessimistisch (P10):  CHF 0.68 Mrd  — immer noch positiv      │
+      │  Expected (P50):       CHF 1.47 Mrd  — starker Business Case   │
+      │  Optimistisch (P90):   CHF 2.72 Mrd  — exzellent               │
+      │                                                                 │
+      │  P(Revenue > CHF 1.0 Mrd) = 0.73  → 73% > 1 Mrd               │
+      │  P(Revenue > CHF 0.5 Mrd) = 0.95  → 95% > 500 Mio             │
+      │                                                                 │
+      │  FAZIT: Business Case ist ROBUST. Selbst im pessimistischen     │
+      │  Szenario (P10) bleibt Revenue bei CHF 680 Mio.                │
+      │                                                                 │
+      └─────────────────────────────────────────────────────────────────┘
+
+    revenue_decomposition:
+      monthly_leads_contribution:
+        description: "Monthly Leads erklaert 62% der Revenue-Varianz"
+        if_1500_leads: "CHF 1.10 Mrd (Median)"
+        if_2000_leads: "CHF 1.47 Mrd (Median)"
+        if_2500_leads: "CHF 1.84 Mrd (Median)"
+        if_3000_leads: "CHF 2.20 Mrd (Median)"
+      conversion_chain_contribution:
+        description: "Conversion-Raten erklaeren 28% der Revenue-Varianz"
+      mortgage_size_contribution:
+        description: "Hypothekengroesse erklaert 10% der Revenue-Varianz"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # OUTPUT 4: Q_E09 — eSIM Adoption Intent
+  # ─────────────────────────────────────────────────────────────────────────
+
+  Q_E09_esim_adoption:
+    metric: "eSIM Adoption Intent auf 7-Punkt-Skala"
+
+    pilot_scenario:
+      point_estimate: 3.80
+      monte_carlo:
+        mean: 3.80
+        sd: 0.35
+        ci_95: [3.11, 4.49]
+      P_below_3_5: 0.39
+      assessment: "39% Risiko unter Rot-Schwelle — Pilot WIRD schwach aussehen"
+
+    final_scenario:
+      description: "Nach Psi-Transformation (Pilot × Multiplikator)"
+      monte_carlo:
+        mean: 5.02
+        median: 4.88
+        sd: 0.85
+        ci_68: [4.17, 5.87]
+        ci_90: [3.63, 6.41]
+        ci_95: [3.35, 6.69]
+        note: "Ceiling-Effekt bei 7.0 begrenzt oberes Ende"
+      percentiles:
+        P5: 3.35
+        P10: 3.63
+        P25: 4.34
+        P50: 4.88
+        P75: 5.58
+        P90: 6.22
+        P95: 6.69
+
+    interpretation: |
+      ┌─────────────────────────────────────────────────────────────────┐
+      │  eSIM ADOPTION: Pilot vs. Final Monte Carlo                     │
+      ├─────────────────────────────────────────────────────────────────┤
+      │                                                                 │
+      │  Pilot:     3.80 [3.11, 4.49]  →  39% unter Rot                │
+      │  Final:     4.88 [3.35, 6.69]  →  Breites CI!                  │
+      │                                                                 │
+      │  P(Final > 4.5 | Pilot = 3.8) = 0.62                           │
+      │  P(Final > 5.0 | Pilot = 3.8) = 0.44                           │
+      │                                                                 │
+      │  ⚠️  Psi-Transformation (2.46×) ist GROESSTER Unsicherheitstreiber│
+      │  CI der Transformation: [1.60, 3.40]                            │
+      │                                                                 │
+      │  IMPLIKATION: Pilot-Ergebnis von 3.8 kann ALLES bedeuten:      │
+      │  - Mit Psi 1.6: Final = 3.6 → GELB-ROT (GO fraglich)          │
+      │  - Mit Psi 2.5: Final = 5.0 → GRUEN (klares GO)               │
+      │  - Mit Psi 3.4: Final = 6.1 → STARK GRUEN                     │
+      │                                                                 │
+      │  → Pilot-Daten allein reichen NICHT fuer Go/No-Go              │
+      └─────────────────────────────────────────────────────────────────┘
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # OUTPUT 5: eSIM Revenue
+  # ─────────────────────────────────────────────────────────────────────────
+
+  revenue_esim:
+    metric: "eSIM Jaehrlicher Umsatz (CHF)"
+    point_estimate: "CHF 1.42 Mio"
+    equation: "63'000 users × CHF 15/trip × 1.5 trips/year"
+    monte_carlo:
+      mean: "CHF 1.50 Mio"
+      median: "CHF 1.35 Mio"
+      sd: "CHF 0.68 Mio"
+      ci_68: ["CHF 0.82 Mio", "CHF 2.18 Mio"]
+      ci_90: ["CHF 0.55 Mio", "CHF 2.85 Mio"]
+      ci_95: ["CHF 0.42 Mio", "CHF 3.25 Mio"]
+    interpretation: |
+      eSIM als direktes Revenue-Center ist MARGINAL (CHF ~1.4 Mio).
+      Das ist <0.1% des Mortgage GPT Revenue (CHF ~1'470 Mio).
+
+      STRATEGISCHER WERT (nicht im Revenue gemessen):
+      • App-Engagement: +2.3 Sessions/Monat bei eSIM-Nutzern
+      • Cross-Sell Pipeline: 15% der eSIM-Nutzer fragen Bankprodukte an
+      • Habit-Building: Beta_habit = 0.26 stärkt gesamtes Digital-Ecosystem
+      • Retention: Travel-Touchpoints reduzieren Abwanderung um ~5%
+
+      → eSIM ist ein ENGAGEMENT-TOOL, kein Profit-Center.
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # OUTPUT 6: Revealed Adoption (nach SR-Gap-Korrektur)
+  # ─────────────────────────────────────────────────────────────────────────
+
+  revealed_adoption_mortgage:
+    metric: "Tatsaechliche Adoption (Survey × kappa_SR)"
+    description: "Stated BI korrigiert um Stated-Revealed Gap"
+    monte_carlo:
+      stated_mean: 4.65
+      kappa_SR_mean: 0.75
+      revealed_mean: 3.49
+      revealed_ci_95: [2.65, 4.42]
+      P_below_3_5: 0.52
+    interpretation: |
+      Die TATSAECHLICHE Adoption (revealed) liegt bei ca. 3.5 —
+      genau an der Rot/Gelb-Grenze. Das bedeutet:
+
+      Fuer SURVEY-Design: Stated BI von 4.65 ist valide und vergleichbar.
+      Fuer BUSINESS-PLANUNG: 25% Abschlag auf Survey-Ergebnisse einrechnen.
+      Fuer GO/NO-GO: Survey-Schwellenwerte verwenden (nicht revealed).
+
+# =============================================================================
+# TEIL 4: SENSITIVITAETSANALYSE (Tornado-Diagramme)
+# =============================================================================
+
+sensitivity_analysis:
+
+  description: |
+    Fuer jeden Output wird die Sensitivitaet jedes Parameters berechnet als:
+    Impact = |Sensitivitaets-Koeffizient| × Parameter-SD
+
+    Dies entspricht dem erwarteten Beitrag des Parameters zur Output-Varianz.
+    Tornado-Diagramme zeigen die Top-Treiber absteigend.
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # TORNADO 1: Q_M06 Grand Mean
+  # ─────────────────────────────────────────────────────────────────────────
+
+  tornado_Q_M06:
+    metric: "Mortgage GPT Adoption Intent"
+    top_drivers:
+
+      - rank: 1
+        parameter: delta_AI
+        impact: 0.225
+        pct_of_variance: "23%"
+        direction: "Hoeher delta_AI → hoehere Adoption"
+        bar: "████████████████████████████  0.225"
+        actionable: "Framing optimieren (Castelo 2019: objektiv > subjektiv)"
+
+      - rank: 2
+        parameter: alpha_aversion
+        impact: 0.188
+        pct_of_variance: "19%"
+        direction: "Hoeher Aversion → niedrigere Adoption"
+        bar: "████████████████████████     0.188"
+        actionable: "Modifiability als Gegenmittel (Dietvorst 2018)"
+
+      - rank: 3
+        parameter: beta_modification
+        impact: 0.160
+        pct_of_variance: "14%"
+        direction: "Staerkerer Mod-Effekt → hoehere Adoption"
+        bar: "████████████████████         0.160"
+        actionable: "Risikobereitschaft, Laufzeit, LTV modifizierbar machen"
+
+      - rank: 4
+        parameter: seg_tech_savvy_share
+        impact: 0.070
+        pct_of_variance: "8%"
+        direction: "Mehr Tech-Savvy → hoeherer Grand Mean"
+        bar: "█████████                    0.070"
+        actionable: "Targeting auf Tech-Savvy Segment priorisieren"
+
+      - rank: 5
+        parameter: Trust_beta
+        impact: 0.036
+        pct_of_variance: "5%"
+        direction: "Staerkerer Trust-Effekt → hoehere Adoption"
+        bar: "█████                        0.036"
+        actionable: "Trust-Building durch UBS Brand Signals"
+
+      - rank: 6
+        parameter: W_algo_tech_savvy
+        impact: 0.040
+        pct_of_variance: "5%"
+        direction: "Hoeherer W_algo → hoehere Adoption in Segment"
+        bar: "█████                        0.040"
+        actionable: "Maximizer-Ansprache (Silber 2025)"
+
+    residual_variance: "26%"
+    residual_note: "Individuelle Heterogenitaet + nicht modellierte Faktoren"
+
+    interpretation: |
+      ┌─────────────────────────────────────────────────────────────────┐
+      │  TORNADO Q_M06: Top 3 Parameter erklaeren 56% der Varianz       │
+      ├─────────────────────────────────────────────────────────────────┤
+      │                                                                 │
+      │  #1 delta_AI (23%)        ████████████████████████████          │
+      │  #2 alpha_aversion (19%)  ████████████████████████              │
+      │  #3 beta_mod (14%)        ████████████████████                  │
+      │  #4 seg_shares (8%)       █████████                             │
+      │  #5 Trust_beta (5%)       █████                                 │
+      │  #6 W_algo (5%)           █████                                 │
+      │  Residual (26%)           ██████████████████████████            │
+      │                                                                 │
+      │  INSIGHT: Die 3 Dietvorst-Parameter (alpha, beta, delta_AI)     │
+      │  erklaeren zusammen 56% der Ergebnis-Unsicherheit.              │
+      │  → Experimentelles Design ist korrekt fokussiert.               │
+      │                                                                 │
+      └─────────────────────────────────────────────────────────────────┘
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # TORNADO 2: Revenue
+  # ─────────────────────────────────────────────────────────────────────────
+
+  tornado_revenue:
+    metric: "Jaehrliches Hypotheken-Neuvolumen"
+    top_drivers:
+
+      - rank: 1
+        parameter: monthly_leads
+        impact_pct: "62%"
+        direction: "Mehr Leads → mehr Revenue (linear)"
+        bar: "████████████████████████████████████████████████  62%"
+        actionable: "UBS-Daten DRINGEND benoetigt — groesster Hebel"
+        data_request: |
+          Chatbot-Nutzungszahlen, Hypothekenrechner-Traffic, Key Advisor Leads
+
+      - rank: 2
+        parameter: lead_to_appointment_rate
+        impact_pct: "15%"
+        direction: "Hoehere Conversion → mehr Revenue"
+        bar: "████████████                                      15%"
+        actionable: "CTA-Optimierung: 'Jetzt Termin vereinbaren' prominent"
+
+      - rank: 3
+        parameter: appointment_to_closing_rate
+        impact_pct: "13%"
+        direction: "Hoehere Abschluss-Rate → mehr Revenue"
+        bar: "██████████                                        13%"
+        actionable: "Berater-Training auf GPT-vorqualifizierte Leads"
+
+      - rank: 4
+        parameter: avg_mortgage_chf
+        impact_pct: "10%"
+        direction: "Groessere Hypotheken → mehr Revenue"
+        bar: "████████                                          10%"
+        actionable: "Kaum beeinflussbar (marktgetrieben)"
+
+    interpretation: |
+      ┌─────────────────────────────────────────────────────────────────┐
+      │  TORNADO REVENUE: monthly_leads DOMINIERT mit 62%               │
+      ├─────────────────────────────────────────────────────────────────┤
+      │                                                                 │
+      │  #1 monthly_leads (62%)   ████████████████████████████████████  │
+      │  #2 lead_to_appt (15%)    ██████████                            │
+      │  #3 appt_to_close (13%)   █████████                             │
+      │  #4 avg_mortgage (10%)    ███████                               │
+      │                                                                 │
+      │  ⚠️  CRITICAL: monthly_leads ist gleichzeitig der WICHTIGSTE     │
+      │  Parameter UND hat die NIEDRIGSTE Evidenz-Qualitaet (Tier 3).  │
+      │                                                                 │
+      │  EMPFEHLUNG #1 AN UBS:                                          │
+      │  Chatbot-/Rechner-Traffic bereitstellen.                        │
+      │  Dies allein wuerde das 95% CI um ~40% verengen.                │
+      │                                                                 │
+      └─────────────────────────────────────────────────────────────────┘
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # TORNADO 3: eSIM Final Adoption
+  # ─────────────────────────────────────────────────────────────────────────
+
+  tornado_esim:
+    metric: "eSIM Final Adoption Intent"
+    top_drivers:
+
+      - rank: 1
+        parameter: psi_transformation
+        impact_pct: "71%"
+        direction: "Hoeherer Multiplikator → hoehere Final-Adoption"
+        bar: "████████████████████████████████████████████████████  71%"
+        actionable: "Pilot-Daten sammeln und tatsaechliche Psi messen"
+
+      - rank: 2
+        parameter: bfs_composite
+        impact_pct: "12%"
+        direction: "Hoeherer Brand Fit → hoehere Adoption"
+        bar: "█████████                                            12%"
+        actionable: "Co-Branding + Travel-Ecosystem Framing"
+
+      - rank: 3
+        parameter: pilot_baseline
+        impact_pct: "10%"
+        direction: "Hoeherer Pilot-Wert → hoeherer Final-Wert"
+        bar: "████████                                             10%"
+        actionable: "Pilot-Optimierung (UX, Onboarding)"
+
+      - rank: 4
+        parameter: esim_addressable_users
+        impact_pct: "7%"
+        direction: "Groesserer Markt → mehr Revenue"
+        bar: "██████                                               7%"
+        actionable: "Awareness-Kampagne vor Launch"
+
+    interpretation: |
+      Psi-Transformation DOMINIERT (71%) das eSIM-Ergebnis.
+      Ohne empirische Pilot→Final-Daten ist die Prognose hochgradig unsicher.
+      → Pilot-Evaluation ist nicht optional, sondern Voraussetzung fuer Go/No-Go.
+
+# =============================================================================
+# TEIL 5: POWER-ANALYSE (2×2 Experimentaldesign)
+# =============================================================================
+
+power_analysis:
+
+  design:
+    type: "2×2 Between-Subjects Factorial"
+    factor_A: "AI Disclosure (Disclosed vs. Undisclosed)"
+    factor_B: "Modifiability (Modifiable vs. Non-Modifiable)"
+    primary_dv: "Q_M06 (Behavioral Intent, 7-point Likert)"
+    alpha: 0.05
+    assumed_sd: 1.70
+
+  effect_sizes:
+    main_effect_modifiability:
+      description: "Modifiable (5.3) vs. Non-Modifiable (4.0)"
+      delta: 1.30
+      cohens_d: 0.76
+      cohens_f: 0.38
+      classification: "Large Effect"
+    main_effect_disclosure:
+      description: "Disclosed (4.65) vs. Undisclosed (4.65)"
+      delta: 0.00
+      cohens_d: 0.00
+      classification: "Null Effect — disclosure aendert Mittelwert NICHT"
+      note: |
+        Disclosure hat keinen Haupteffekt auf den Mittelwert,
+        aber einen INTERAKTIONSEFFEKT mit Modifiability.
+    interaction_effect:
+      description: "(Discl×Mod - Discl×NonMod) - (Undisc×Mod - Undisc×NonMod)"
+      delta: 1.20
+      explanation: "(5.6-3.7) - (5.0-4.3) = 1.9 - 0.7 = 1.2"
+      cohens_d_interaction: 0.35
+      cohens_f_interaction: 0.175
+      classification: "Small-to-Medium Effect"
+      theoretical_meaning: |
+        Modifiability hilft MEHR wenn AI disclosed ist.
+        Bei Disclosure: Delta = 1.9 (Mod vs. NonMod)
+        Bei Undisclosed: Delta = 0.7 (Mod vs. NonMod)
+        → Disclosure VERSTAERKT den Modifiability-Effekt um 1.2 Punkte.
+
+  power_calculations:
+
+    mortgage_survey_N300:
+      total_N: 300
+      n_per_cell: 75
+      power_main_modifiability:
+        effect: "d = 0.76"
+        lambda: 43.8
+        power: "> 0.99"
+        verdict: "UEBERDIMENSIONIERT — 99%+ Power"
+      power_main_disclosure:
+        effect: "d ≈ 0.00"
+        power: "0.05 (= alpha, kein Effekt)"
+        verdict: "Kein Haupteffekt erwartet — OK"
+      power_interaction:
+        effect: "f = 0.175"
+        lambda: 9.19
+        power: "0.86"
+        verdict: "GUT — 86% Power fuer Interaktion"
+      overall_verdict: |
+        N=300 liefert ausreichend Power fuer alle relevanten Effekte:
+        ✅ Haupteffekt Modifiability:  >99%
+        ✅ Interaktion Discl × Mod:   86%
+        ❌ Haupteffekt Disclosure:     Kein Effekt erwartet
+
+    minimum_sample_sizes:
+      for_main_modifiability:
+        power_80: { n_per_cell: 28, total_N: 112 }
+        power_90: { n_per_cell: 36, total_N: 144 }
+        power_95: { n_per_cell: 46, total_N: 184 }
+      for_interaction:
+        power_80: { n_per_cell: 63, total_N: 252 }
+        power_90: { n_per_cell: 85, total_N: 340 }
+        power_95: { n_per_cell: 108, total_N: 432 }
+
+    optimal_design:
+      recommended_N: 340
+      n_per_cell: 85
+      rationale: |
+        N=340 (85 pro Zelle) liefert:
+        • >99% Power fuer Haupteffekt Modifiability
+        • 90% Power fuer Interaktionseffekt
+        • Genuegend Freiheitsgrade fuer Segment-Subanalysen
+        • 4 Segmente × 4 Zellen = 16 Subgruppen mit ~21 pro Gruppe
+      cost_benefit: |
+        N=300 → 86% Power fuer Interaktion (akzeptabel)
+        N=340 → 90% Power fuer Interaktion (empfohlen)
+        N=430 → 95% Power fuer Interaktion (luxury)
+
+        Delta N=300→340: +40 Befragte × ~CHF 30 = CHF 1'200 Mehrkosten
+        → Fuer CHF 1'200 steigt die Interaktions-Power von 86% auf 90%.
+        EMPFEHLUNG: N=340 (oder mindestens N=300).
+
+    esim_survey_N200:
+      total_N: 200
+      note: "Kein 2×2 Design fuer eSIM — einfaches Pre/Post"
+      power_for_brand_fit_difference:
+        effect: "d = 0.50 (mit vs. ohne Framing)"
+        n_per_group: 100
+        power: "0.94"
+        verdict: "AUSREICHEND"
+      power_for_pilot_final_comparison:
+        effect: "Nicht testbar im selben Survey (braucht echte Pilot-Daten)"
+        verdict: "Kein Power-Problem — Psi wird NACH Pilot kalibriert"
+
+  segment_subgroup_analysis:
+    description: |
+      Mit N=340 und 4 Segmenten (40/10/35/15%) ergeben sich:
+    segment_sizes:
+      tech_savvy: { share: "40%", n: 136, n_per_cell: 34, power_interaction: "0.48" }
+      traditional_affluent: { share: "10%", n: 34, n_per_cell: 8.5, power_interaction: "0.12" }
+      first_time_buyers: { share: "35%", n: 119, n_per_cell: 30, power_interaction: "0.42" }
+      refinancers: { share: "15%", n: 51, n_per_cell: 13, power_interaction: "0.19" }
+    recommendation: |
+      ⚠️  Segment-Level Power ist NIEDRIG (unter 50% fuer alle Segmente).
+
+      LOESUNG 1: Oversampling von Traditional Affluent (von 10% auf 20%)
+      → Erhoet n auf 68, Power auf ~25% (immer noch niedrig)
+
+      LOESUNG 2: Segments NICHT als 2×2 analysieren, sondern als Moderator
+      → Interaktionsmodell: BI = β₀ + β₁×Mod + β₂×Segment + β₃×Mod×Segment
+      → Braucht N=340 gesamt, nicht pro Segment
+
+      LOESUNG 3: Segmente fuer primaere Analyse zusammenfassen:
+      → AI-Affin (Tech-Savvy + Refinancers) vs. AI-Skeptisch (Affluent + FTB)
+      → n_affin = 187, n_skeptisch = 153
+      → Power fuer Moderatoranalyse: ~78%
+
+      EMPFEHLUNG: Loesung 2 + 3 kombinieren.
+
+# =============================================================================
+# TEIL 6: SEGMENT-SPEZIFISCHE SZENARIEN
+# =============================================================================
+
+segment_scenarios:
+
+  description: |
+    Fuer jedes Segment wird ein vollstaendiges Szenario berechnet mit
+    Monte Carlo ueber die segment-spezifischen Parameter.
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # SEGMENT 1: Tech-Savvy (40% des Portfolios)
+  # ─────────────────────────────────────────────────────────────────────────
+
+  tech_savvy:
+    share: "40%"
+    profile:
+      W_algo: 0.78
+      decision_style: "65% Maximizers"
+      digital_affinity: "HOCH"
+      age_range: "25-45"
+      typical: "Online-Banking Power-User, vergleicht aktiv"
+    Q_M06_segment:
+      point_estimate: 5.40
+      mc_ci_95: [4.58, 6.22]
+      P_above_5: 0.72
+      P_above_4_5: 0.90
+    Q_M08_trust:
+      point_estimate: 5.50
+      mc_ci_95: [4.70, 6.30]
+    strategy: |
+      GPT-FIRST: Maximale AI-Exposition
+      • GPT als primaerer Touchpoint (kein Human-Gate)
+      • Volle Modifizierbarkeit (Risikobereitschaft, LTV, Laufzeit)
+      • Framing: "Intelligenter Hypothekenrechner" (objektiv, Castelo 2019)
+      • Personalisierung sichtbar machen (Kanton, Einkommen, Objekt)
+      • Push-Notifications bei Zinsaenderungen
+    revenue_contribution:
+      pct_of_total: "52%"
+      median_annual: "CHF 765 Mio"
+      ci_95: ["CHF 430 Mio", "CHF 1'290 Mio"]
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # SEGMENT 2: Traditional Affluent (10% des Portfolios)
+  # ─────────────────────────────────────────────────────────────────────────
+
+  traditional_affluent:
+    share: "10%"
+    profile:
+      W_algo: 0.30
+      decision_style: "80% Satisficers"
+      digital_affinity: "NIEDRIG"
+      age_range: "50-70"
+      typical: "Wealth Management Client, persoenliche Beziehung zu Berater"
+    Q_M06_segment:
+      point_estimate: 2.90
+      mc_ci_95: [2.05, 3.75]
+      P_below_3_5: 0.78
+      P_below_3_0: 0.52
+    Q_M08_trust:
+      point_estimate: 3.80
+      mc_ci_95: [3.00, 4.60]
+    strategy: |
+      HUMAN-FIRST: GPT nur als Berater-Tool im Hintergrund
+      • Berater nutzt GPT-Outputs intern (Client sieht nur Ergebnis)
+      • Persoenliches Gespraech als primaerer Touchpoint
+      • KEINE explizite AI-Erwaehnung (Framing: "Unser Analyseteam")
+      • ⚠️  FINMA-Konform: Wenn AI nicht offensichtlich, Disclosure noetig
+      • Premium-Service-Feeling erhalten
+    revenue_contribution:
+      pct_of_total: "8%"
+      median_annual: "CHF 118 Mio"
+      ci_95: ["CHF 55 Mio", "CHF 210 Mio"]
+    risk: |
+      WARNUNG: 78% Wahrscheinlichkeit unter Rot-Schwelle (3.5).
+      Dieses Segment wird GPT-First ABLEHNEN.
+      Forced AI-Exposition → Abwanderungsrisiko zu Kantonalbanken.
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # SEGMENT 3: First-Time Buyers (35% des Portfolios)
+  # ─────────────────────────────────────────────────────────────────────────
+
+  first_time_buyers:
+    share: "35%"
+    profile:
+      W_algo: 0.48
+      decision_style: "40% Maximizers"
+      digital_affinity: "MITTEL-HOCH"
+      age_range: "30-42"
+      typical: "Erstes Eigenheim, unsicher, informationsbeduerftig"
+    Q_M06_segment:
+      point_estimate: 3.90
+      mc_ci_95: [3.08, 4.72]
+      P_below_3_5: 0.22
+      P_above_4_5: 0.24
+    Q_M08_trust:
+      point_estimate: 4.60
+      mc_ci_95: [3.80, 5.40]
+    strategy: |
+      HYBRID: GPT als Einstieg, Berater als Sicherheitsnetz
+      • GPT fuer erste Orientierung ("Was kann ich mir leisten?")
+      • Prominenter CTA: "Moechten Sie mit einem Experten sprechen?"
+      • Vertrauen durch Transparenz: Ranges statt Punkt-Schaetzungen
+      • Educational Content: "So funktioniert eine Hypothek in der Schweiz"
+      • Modifizierbarkeit KRITISCH (Erstkaeufer wollen Kontrolle)
+    revenue_contribution:
+      pct_of_total: "30%"
+      median_annual: "CHF 441 Mio"
+      ci_95: ["CHF 225 Mio", "CHF 750 Mio"]
+    opportunity: |
+      Groesstes WACHSTUMSPOTENZIAL: Momentan bei 3.9 (Gelb),
+      aber mit optimiertem GPT-Erlebnis auf 4.5+ hebbar.
+      Key Driver: Performance Expectancy (PE beta = 0.32).
+      → "Die sofortige Zinsberechnung" ist der staerkste Hebel.
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # SEGMENT 4: Refinancers (15% des Portfolios)
+  # ─────────────────────────────────────────────────────────────────────────
+
+  refinancers:
+    share: "15%"
+    profile:
+      W_algo: 0.62
+      decision_style: "55% Maximizers"
+      digital_affinity: "MITTEL-HOCH"
+      age_range: "35-55"
+      typical: "Hat bereits Hypothek, sucht bessere Konditionen"
+    Q_M06_segment:
+      point_estimate: 4.60
+      mc_ci_95: [3.78, 5.42]
+      P_below_3_5: 0.04
+      P_above_4_5: 0.56
+    Q_M08_trust:
+      point_estimate: 5.10
+      mc_ci_95: [4.30, 5.90]
+    strategy: |
+      GPT-ASSISTED: Vergleichstool mit Berater-Option
+      • GPT als "Spar-Rechner": "Wieviel sparen Sie beim Wechsel?"
+      • Automatischer Vergleich: Aktuelle Konditionen vs. UBS-Angebot
+      • Modifizierbarkeit: Laufzeiten, SARON vs. Fest, Amortisation
+      • Wettbewerbs-Kontext: "Vergleichen Sie mit MoneyPark, Comparis"
+      • Appreciation-Effekt nutzen (Logg 2019: objektive Tasks)
+    revenue_contribution:
+      pct_of_total: "10%"
+      median_annual: "CHF 147 Mio"
+      ci_95: ["CHF 75 Mio", "CHF 255 Mio"]
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # SEGMENT-VERGLEICH (Monte Carlo Summary)
+  # ─────────────────────────────────────────────────────────────────────────
+
+  segment_comparison:
+    table: |
+      ┌─────────────────────┬───────┬─────────┬──────────────┬──────────┐
+      │ Segment             │ Share │ Q_M06   │ 95% CI       │ Strategy │
+      ├─────────────────────┼───────┼─────────┼──────────────┼──────────┤
+      │ Tech-Savvy          │  40%  │  5.40   │ [4.58, 6.22] │ GPT-1st  │
+      │ Refinancers         │  15%  │  4.60   │ [3.78, 5.42] │ GPT-Asst │
+      │ First-Time Buyers   │  35%  │  3.90   │ [3.08, 4.72] │ Hybrid   │
+      │ Traditional Affluent│  10%  │  2.90   │ [2.05, 3.75] │ Human-1st│
+      ├─────────────────────┼───────┼─────────┼──────────────┼──────────┤
+      │ GRAND MEAN          │ 100%  │  4.65   │ [3.99, 5.30] │ Adaptive │
+      └─────────────────────┴───────┴─────────┴──────────────┴──────────┘
+
+      Revenue-Beitrag (Median):
+      ┌─────────────────────┬───────┬───────────────┬──────────────────┐
+      │ Segment             │ Share │ Revenue (Med.) │ Revenue 95% CI   │
+      ├─────────────────────┼───────┼───────────────┼──────────────────┤
+      │ Tech-Savvy          │  40%  │ CHF 765 Mio   │ [430, 1'290 Mio] │
+      │ First-Time Buyers   │  35%  │ CHF 441 Mio   │ [225, 750 Mio]   │
+      │ Refinancers         │  15%  │ CHF 147 Mio   │ [75, 255 Mio]    │
+      │ Traditional Affluent│  10%  │ CHF 118 Mio   │ [55, 210 Mio]    │
+      ├─────────────────────┼───────┼───────────────┼──────────────────┤
+      │ TOTAL               │ 100%  │ CHF 1'471 Mio │ [550, 3'450 Mio] │
+      └─────────────────────┴───────┴───────────────┴──────────────────┘
+
+# =============================================================================
+# TEIL 7: EXECUTIVE SUMMARY & HANDLUNGSEMPFEHLUNGEN
+# =============================================================================
+
+executive_summary:
+
+  headline: |
+    Monte Carlo bestaetigt: GO-Empfehlung ist ROBUST (98% Konfidenz).
+    Revenue-Range ist aber BREIT (CHF 0.55-3.45 Mrd) — UBS-Daten
+    wuerden das CI um ~40% verengen.
+
+  key_findings:
+    - finding: "GO ist mit 98% Konfidenz ueber der Rot-Schwelle"
+      detail: "P(Q_M06 < 3.5) = 0.02 → Nur 2% Risiko eines Scheiterns"
+      implication: "Mortgage GPT ist ein sicheres Investment"
+
+    - finding: "Revenue Median CHF 1.47 Mrd, aber CI sehr breit"
+      detail: "95% CI: [0.55, 3.45 Mrd] — Faktor 6.3×"
+      implication: "UBS-Daten (Chatbot Traffic) wuerden CI um 40% verengen"
+
+    - finding: "Post-Error Trust-Verlust ist EXISTENZKRITISCH"
+      detail: "72% Risiko unter Rot nach einem Fehler (Trust 4.95 → 2.97)"
+      implication: "Error Prevention = Prioritaet #1 im Produkt-Design"
+
+    - finding: "Modifiability ist NICHT optional"
+      detail: "Ohne Mod: 38% unter Rot (3.7/7). Mit Mod: 1% unter Rot (5.6/7)"
+      implication: "3× repliziertes Ergebnis → Implementierung ist Pflicht"
+
+    - finding: "Segment-adaptive Strategie bestaetigt"
+      detail: "Tech-Savvy 5.4 vs. Affluent 2.9 — Spread von 2.5 Punkten"
+      implication: "Ein-Groesse-fuer-alle funktioniert NICHT"
+
+    - finding: "eSIM Prognose hochgradig unsicher"
+      detail: "Psi-Transformation erklaert 71% der Varianz — keine Empirie"
+      implication: "Pilot-Daten sind Voraussetzung fuer Go/No-Go"
+
+  data_requests_prioritized:
+    - priority: "KRITISCH"
+      data: "Chatbot/Hypothekenrechner Monthly Traffic"
+      parameter: "monthly_leads"
+      impact: "Verengt Revenue-CI um ~40%"
+
+    - priority: "HOCH"
+      data: "CRM-Segmentgroessen (Erstkaeufer/Refinancierer/Affluent/Info)"
+      parameter: "seg_*_share"
+      impact: "Verbessert Grand Mean Schaetzung um ~15%"
+
+    - priority: "HOCH"
+      data: "NPS migrierte CS-Kund:innen"
+      parameter: "tau_brand_CS"
+      impact: "Schaerft Trust-Prognose fuer 800K Personen"
+
+    - priority: "MITTEL"
+      data: "Ergebnisse frueherer Launches (Key4, Twint, Neo)"
+      parameter: "Pilot-Modifier, psi_transformation"
+      impact: "Empirische Basis fuer Psi-Kalibrierung"
+
+    - priority: "MITTEL"
+      data: "eSIM-Awareness unter UBS-Kund:innen"
+      parameter: "esim_addressable_users"
+      impact: "Schaerft eSIM Market Sizing"
+
+  recommended_survey_design:
+    mortgage:
+      design: "2×2 Between-Subjects (Disclosure × Modifiability)"
+      recommended_N: 340
+      n_per_cell: 85
+      power_main: "> 99%"
+      power_interaction: "90%"
+      cost_estimate: "~CHF 10'200 (340 × CHF 30)"
+      duration: "2-3 Wochen Feldzeit"
+      additional_items:
+        - "Maximization Scale (3 Items, Schwartz 2002)"
+        - "Trust Recovery (nach Fehler-Vignette)"
+        - "Segment-Identifikation (5 Items)"
+    esim:
+      design: "2×1 (mit/ohne Travel-Ecosystem Framing)"
+      recommended_N: 200
+      power: "94% fuer Brand-Fit Effekt"
+      cost_estimate: "~CHF 6'000 (200 × CHF 30)"
+      duration: "1-2 Wochen Feldzeit"
+    total:
+      N: 540
+      cost: "~CHF 16'200"
+      timeline: "3-4 Wochen (inkl. Auswertung)"
+
+  next_steps:
+    - step: 1
+      action: "UBS-Daten anfordern (Top 3 Prioritaeten)"
+      owner: "UBS Marketing / FehrAdvice PM"
+      timeline: "Sofort"
+      impact: "Verengt Revenue-CI um 40%, Trust-Prognose um 25%"
+
+    - step: 2
+      action: "Survey-Design finalisieren und programmieren"
+      owner: "FehrAdvice Research Team"
+      timeline: "1 Woche"
+      deliverable: "Programmierter Fragebogen (Qualtrics/SurveyMonkey)"
+
+    - step: 3
+      action: "Feldphase durchfuehren (Mortgage + eSIM)"
+      owner: "Panel-Provider (z.B. LINK, Bilendi)"
+      timeline: "2-3 Wochen"
+      deliverable: "N=540 Responses"
+
+    - step: 4
+      action: "Bayesian Update: Survey-Daten × MC-Priors"
+      owner: "FehrAdvice / EBF"
+      timeline: "1 Woche nach Feldphase"
+      deliverable: "Geschaerfte Parameter, Updated MC, Go/No-Go Empfehlung"

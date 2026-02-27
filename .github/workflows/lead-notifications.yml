@@ -1,0 +1,140 @@
+# =============================================================================
+# Lead Notification Workflow
+# =============================================================================
+# Automatischer E-Mail-Versand bei neuen Leads
+#
+# Trigger: Push auf main/master mit Änderungen an lead-database.yaml
+# Aktion: Prüft auf neue Leads und sendet Benachrichtigungen
+# =============================================================================
+
+name: Lead Notifications
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'data/sales/lead-database.yaml'
+
+  # Manueller Trigger für Tests
+  workflow_dispatch:
+    inputs:
+      lead_id:
+        description: 'Lead ID für Benachrichtigung (z.B. LEAD-003)'
+        required: false
+        type: string
+      dry_run:
+        description: 'Test-Modus (keine echten E-Mails)'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  notify-new-lead:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Für Diff mit vorherigem Commit
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          pip install pyyaml
+
+      - name: Detect New Leads
+        id: detect
+        run: |
+          # Prüfe ob es neue LEAD-Einträge gibt
+          if git diff HEAD~1 HEAD -- data/sales/lead-database.yaml | grep -E '^\+.*- id: LEAD-' > /dev/null 2>&1; then
+            # Extrahiere die neuen Lead-IDs
+            NEW_LEADS=$(git diff HEAD~1 HEAD -- data/sales/lead-database.yaml | grep -E '^\+.*- id: LEAD-' | sed 's/.*LEAD-/LEAD-/' | tr -d ' ')
+            echo "new_leads=$NEW_LEADS" >> $GITHUB_OUTPUT
+            echo "has_new_leads=true" >> $GITHUB_OUTPUT
+            echo "🆕 Neue Leads gefunden: $NEW_LEADS"
+          else
+            echo "has_new_leads=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ Keine neuen Leads in diesem Commit"
+          fi
+
+      - name: Send Notification for Latest Lead
+        if: steps.detect.outputs.has_new_leads == 'true' || github.event.inputs.lead_id != ''
+        env:
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+        run: |
+          # Bestimme Lead ID
+          if [ -n "${{ github.event.inputs.lead_id }}" ]; then
+            LEAD_ID="${{ github.event.inputs.lead_id }}"
+            echo "📧 Manueller Trigger für Lead: $LEAD_ID"
+          else
+            echo "📧 Automatischer Trigger für neuesten Lead"
+          fi
+
+          # Bestimme Modus
+          if [ "${{ github.event.inputs.dry_run }}" == "true" ] || [ -z "$SMTP_USER" ]; then
+            echo "🧪 Test-Modus aktiv (keine echten E-Mails)"
+            DRY_RUN="--dry-run"
+          else
+            DRY_RUN=""
+          fi
+
+          # Sende Benachrichtigung
+          if [ -n "${{ github.event.inputs.lead_id }}" ]; then
+            python scripts/send_lead_notification.py --new-lead "$LEAD_ID" $DRY_RUN
+          else
+            python scripts/send_lead_notification.py --latest --notify $DRY_RUN
+          fi
+
+      - name: Check Deadlines (Daily)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" == "true" ] || [ -z "$SMTP_USER" ]; then
+            python scripts/send_lead_notification.py --check-deadlines --dry-run
+          else
+            python scripts/send_lead_notification.py --check-deadlines
+          fi
+
+  # Tägliche Deadline-Erinnerungen
+  check-deadlines:
+    runs-on: ubuntu-latest
+    # Nur bei scheduled runs (cron)
+    if: github.event_name == 'schedule'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: pip install pyyaml
+
+      - name: Check and Send Deadline Reminders
+        env:
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+        run: |
+          python scripts/send_lead_notification.py --check-deadlines

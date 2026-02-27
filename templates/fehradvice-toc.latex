@@ -1,0 +1,168 @@
+%% =============================================================================
+%% FEHRADVICE TABLE OF CONTENTS TEMPLATE
+%% =============================================================================
+%% Professionelles Inhaltsverzeichnis im FehrAdvice Corporate Design
+%% SSOT: appendices/REF-STYLE_SG_corporate_style_guide.tex
+%%
+%% Verwendung:
+%% - Standalone: pdflatex fehradvice-toc.latex
+%% - Mit format_report.py: --toc Option
+%% =============================================================================
+
+\documentclass[a4paper,11pt]{article}
+
+%% -----------------------------------------------------------------------------
+%% PAKETE
+%% -----------------------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[german,provide=*]{babel}
+\usepackage[a4paper, top=20mm, bottom=25mm, left=25mm, right=25mm]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{ifthen}
+\usepackage{helvet}
+\usepackage{array}
+\usepackage{tabularx}
+\renewcommand{\familydefault}{\sfdefault}
+
+%% -----------------------------------------------------------------------------
+%% FEHRADVICE FARBEN
+%% -----------------------------------------------------------------------------
+\definecolor{fadarkblue}{HTML}{024079}    % Headlines, Links, Akzente
+\definecolor{falightblue}{HTML}{549EDE}   % Sekundäre Elemente
+\definecolor{fadarkgray}{HTML}{25212A}    % Fliesstext
+\definecolor{falightgray}{HTML}{F3F5F7}   % Hintergründe
+
+%% -----------------------------------------------------------------------------
+%% PARAMETER (werden vom Script überschrieben)
+%% -----------------------------------------------------------------------------
+\newcommand{\FAPageNum}{4}
+\newcommand{\FATotalPages}{34}
+\newcommand{\FAProject}{PROJEKT}
+\newcommand{\FAClient}{KUNDEN NAME}
+\newcommand{\FALogoPath}{assets/fehradvice-logo.png}
+
+%% -----------------------------------------------------------------------------
+%% TOC EINTRÄGE (werden vom Script generiert)
+%% -----------------------------------------------------------------------------
+\newcommand{\FATOCEntries}{%
+  \tocentry{}{Executive Summary – Fair Rewards Made Simple}{2}
+  \tocentry{1}{Methodological Approach of the Analysis}{5}
+  \tocentry{2}{General Assessment of the New Pay Structure}{8}
+  \tocentry{3}{Analysis of the Design Elements of the Pay Structure}{10}
+  \tocentry{4}{Design Optimization „Fair Rewards Made Simple"}{17}
+  \tocentry{5}{Additional Analysis: The Principal-Agent Problem in the New Pay Structure}{20}
+  \tocentry{}{Appendix A: Detailed Analysis of Resistance and Uncertainty}{22}
+  \tocentry{}{Appendix B: Deep Dive Design Optimization}{27}
+}
+
+%% -----------------------------------------------------------------------------
+%% LOGO-HANDLING MIT FALLBACK
+%% -----------------------------------------------------------------------------
+\newcommand{\FALogoSmall}{%
+  \IfFileExists{\FALogoPath}{%
+    \includegraphics[height=8mm]{\FALogoPath}%
+  }{%
+    % Fallback: Karten-Icon
+    \begin{tikzpicture}[scale=0.6]
+      \foreach \x in {0,0.12,0.24} {
+        \draw[fadarkblue, thick, fill=white] (\x,0) rectangle ++(0.3,0.45);
+      }
+    \end{tikzpicture}%
+  }%
+}
+
+%% -----------------------------------------------------------------------------
+%% TOC ENTRY COMMAND
+%% -----------------------------------------------------------------------------
+\newcommand{\tocentry}[3]{%
+  % #1 = Nummer (leer für unnummerierte Einträge)
+  % #2 = Titel
+  % #3 = Seitenzahl
+  \noindent
+  \begin{tabularx}{\textwidth}{@{}p{8mm}Xr@{}}
+    \ifthenelse{\equal{#1}{}}%
+      {\textbf{#2}}%  % Unnummeriert: nur Titel fett
+      {\textbf{#1} & \textbf{#2}}%  % Nummeriert: Nummer + Titel fett
+    &
+    \ifthenelse{\equal{#1}{}}%
+      {}%
+      {}%
+    \leaders\hbox to 3pt{\hss.\hss}\hfill%
+    &
+    \textbf{#3}
+  \end{tabularx}
+  \vspace{4mm}
+}
+
+%% Einfachere Version für den TOC
+\newcommand{\tocentrySimple}[3]{%
+  \noindent
+  \ifthenelse{\equal{#1}{}}%
+    {\textbf{#2}}%
+    {\textbf{#1}\hspace{6mm}\textbf{#2}}%
+  \hspace{1em}\leaders\hbox to 4pt{\hss.\hss}\hfill\hspace{1em}%
+  \textbf{#3}%
+  \par\vspace{5mm}%
+}
+
+\pagestyle{empty}
+
+%% =============================================================================
+%% TOC PAGE COMMAND
+%% =============================================================================
+\newcommand{\FATOCPage}{%
+\thispagestyle{empty}
+
+%% --- Header mit Logo ---
+\begin{tikzpicture}[remember picture, overlay]
+  % Logo oben rechts
+  \node[anchor=north east] at ([xshift=-20mm, yshift=-15mm]current page.north east) {%
+    \FALogoSmall
+  };
+\end{tikzpicture}
+
+%% --- Header Text ---
+\noindent
+{\small\color{fadarkgray}PAGE \FAPageNum{} OF \FATotalPages{} — }%
+{\small\color{fadarkblue}\textbf{\FAProject{} / \FAClient{}}}%
+{\small\color{fadarkgray} — FEHRADVICE \& PARTNERS AG}
+
+\vspace{15mm}
+
+%% --- Titel ---
+{\color{fadarkblue}\fontsize{24}{28}\selectfont\textbf{Table of Content}}
+
+\vspace{12mm}
+
+%% --- TOC Einträge ---
+\color{fadarkgray}
+\tocentrySimple{}{Executive Summary – Fair Rewards Made Simple}{2}
+\tocentrySimple{1}{Methodological Approach of the Analysis}{5}
+\tocentrySimple{2}{General Assessment of the New Pay Structure}{8}
+\tocentrySimple{3}{Analysis of the Design Elements of the Pay Structure}{10}
+\tocentrySimple{4}{Design Optimization „Fair Rewards Made Simple"}{17}
+\tocentrySimple{5}{Additional Analysis: The Principal-Agent Problem in the New Pay Structure}{20}
+\tocentrySimple{}{Appendix A: Detailed Analysis of Resistance and Uncertainty}{22}
+\tocentrySimple{}{Appendix B: Deep Dive Design Optimization}{27}
+
+\newpage
+}
+
+%% =============================================================================
+%% STANDALONE DOKUMENT (für direktes Kompilieren)
+%% =============================================================================
+\begin{document}
+
+%% --- Parameter setzen ---
+\renewcommand{\FAPageNum}{4}
+\renewcommand{\FATotalPages}{34}
+\renewcommand{\FAProject}{PROJEKT}
+\renewcommand{\FAClient}{KUNDEN NAME}
+
+%% --- TOC Page generieren ---
+\FATOCPage
+
+\end{document}

@@ -1,0 +1,1574 @@
+% =============================================================================
+% APPENDIX FFF: METHOD-REGISTRY: Model Archive and Organizational Learning
+% =============================================================================
+% Module: BCM2_METHOD_REGISTRY
+% Category: METHOD
+% Language: English
+% Version: 1.0 (January 2026)
+% Status: Draft
+%
+% This appendix defines the Model Registry---a structured archive of all
+% behavioral models designed using the EBF framework. The Registry enables
+% organizational learning, provides options for the 3+1 Choice Architecture,
+% and maintains audit trails for model-based recommendations.
+%
+% =============================================================================
+
+% =============================================================================
+% CROSS-REFERENCE STRUCTURE
+% =============================================================================
+%
+% CHAPTER LINKAGE (Required):
+% - Primary Chapter: Chapter 4: From Framework to Model
+% - Secondary Chapters: Chapter 18 (Meta-Theory), Chapter 10 (Applications)
+%
+% DEPENDENCIES (what this appendix REQUIRES):
+% - Appendix UNMAPPED_DSN (METHOD-DESIGN): Defines model structure and workflow
+% - Appendix UNMAPPED_EST (CORE-WHERE): Parameter source documentation
+% - All DOMAIN- appendices: Domain-specific model attributes
+%
+% DEPENDENTS (what REQUIRES this appendix):
+% - Appendix UNMAPPED_DSN (METHOD-DESIGN): Draws 3+1 options from Registry
+% - All PREDICT- appendices: Models stored here
+% - Quality Assurance processes: Validation tracking
+%
+% =============================================================================
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black,
+    title=Chapter Linkage]
+
+\textbf{Primary Chapter:} Chapter 4: From Framework to Model
+\begin{itemize}[nosep]
+\item Section 4.4: Model Storage $\leftrightarrow$ Section \ref{sec:fff-schema}
+\item Section 4.5: Organizational Learning $\leftrightarrow$ Section \ref{sec:fff-learning}
+\end{itemize}
+
+\textbf{Secondary Chapters:}
+\begin{itemize}[nosep]
+\item Chapter 18: Meta-Theory --- Registry as knowledge management
+\item Chapter 10: Applications --- domain-specific model retrieval
+\end{itemize}
+
+\textbf{Reading Guide:}
+\begin{itemize}[nosep]
+\item For model design process: Read Appendix UNMAPPED_DSN first
+\item For storage structure: This appendix provides complete specification
+\item For parameter sources: See Appendix UNMAPPED_EST (CORE-WHERE)
+\end{itemize}
+
+\end{tcolorbox}
+
+\chapter{METHOD-REGISTRY: Model Archive and Organizational Learning}
+\label{app:method-registry}
+
+\begin{abstract}
+This appendix defines the Model Registry---a structured archive storing all
+behavioral models designed from the Evidence-Based Framework (EBF). The Registry
+serves three functions: (1) enabling the 3+1 Choice Architecture through
+similarity search, (2) maintaining audit trails for model-based recommendations,
+and (3) facilitating organizational learning across projects. The Registry schema
+captures model metadata, inputs, specifications, outputs, and validation status.
+\end{abstract}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=Quick Reference: Model Registry]
+\textbf{Appendix:} REG (METHOD)
+
+
+\textbf{Core Question:} How do we store, retrieve, and learn from behavioral models?
+
+\textbf{Key Structure:}
+\begin{equation}
+\mathcal{R} = \{M_1, M_2, \ldots, M_n\} \quad \text{where} \quad M_i = (\text{ID}, \text{Meta}, \text{Input}, \text{Spec}, \text{Output}, \text{Val})
+\end{equation}
+
+\textbf{Key Concepts:}
+\begin{itemize}[nosep]
+\item \textbf{Model Schema}: Standardized structure for model documentation
+\item \textbf{Similarity Search}: Finding comparable models for 3+1 options
+\item \textbf{Validation Status}: Tracking prediction accuracy over time
+\item \textbf{Audit Trail}: Traceability of model-based recommendations
+\end{itemize}
+
+\textbf{Cross-References:} EEE (Design Workflow), BBB (Parameters), DOMAIN- (Applications)
+\end{tcolorbox}
+
+% -----------------------------------------------------------------------------
+% APPENDIX SCOPE BOX
+% -----------------------------------------------------------------------------
+
+\begin{tcolorbox}[
+    colback=orange!5!white,
+    colframe=orange!75!black,
+    title={\textbf{Appendix Scope: Ziel / In-Scope / Out-of-Scope / Constraints}},
+    fonttitle=\bfseries
+]
+
+\textbf{Ziel (Objective):}
+\begin{itemize}[nosep]
+    \item How do we systematically store, retrieve, and learn from behavioral
+models to enable organizational memory and continuous improvement?
+\end{itemize}
+
+\textbf{In-Scope:}
+\begin{itemize}[nosep]
+    \item The Fundamental Question
+    \item Model Schema
+    \item Similarity Search
+    \item Organizational Learning
+    \item Audit Trail
+\end{itemize}
+
+\textbf{Out-of-Scope (delegiert an andere Appendices):}
+\begin{itemize}[nosep]
+    \item METHOD-DESIGN $\rightarrow$ Appendix UNMAPPED_DSN
+    \item CORE-WHERE $\rightarrow$ Appendix UNMAPPED_EST
+    \item METHOD-DESIGN $\rightarrow$ Appendix UNMAPPED_DSN
+    \item CORE-WHERE $\rightarrow$ Appendix UNMAPPED_EST
+    \item Central Glossary $\rightarrow$ Appendix UNMAPPED_GLS
+\end{itemize}
+
+\textbf{Constraints (Anwendungsgrenzen):}
+\begin{itemize}[nosep]
+    \item [TODO: Define when this appendix does NOT apply]
+    \item [TODO: Define required prerequisites]
+    \item [TODO: Define known limitations]
+\end{itemize}
+
+\textbf{Lieferobjekte (Deliverables):}
+\begin{itemize}[nosep]
+    \item 5 Table(s)
+    \item 5 Equation(s)
+    \item 6 Axiom(s)
+    \item Worked Example(s)
+\end{itemize}
+
+\end{tcolorbox}
+
+
+
+
+% =============================================================================
+%                    PART 2: CORE CONTENT
+% =============================================================================
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Fundamental Question}
+\label{sec:fff-fundamental}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Why This Matters}
+
+Organizations design behavioral models for projects, apply them, and then...
+forget them. Without systematic storage:
+
+\begin{itemize}
+\item Knowledge walks out the door when consultants leave
+\item The same model is rebuilt from scratch for similar projects
+\item No learning occurs from model successes or failures
+\item Recommendations cannot be audited or justified retrospectively
+\end{itemize}
+
+\subsection{The Core Problem}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black,
+    title=The Fundamental Question]
+\textbf{How do we systematically store, retrieve, and learn from behavioral
+models to enable organizational memory and continuous improvement?}
+\end{tcolorbox}
+
+The Registry addresses this by providing:
+\begin{enumerate}
+\item \textbf{Structured Storage}: Every model has complete, standardized documentation
+\item \textbf{Efficient Retrieval}: Similarity search finds relevant historical models
+\item \textbf{Validation Tracking}: Model predictions are compared to outcomes
+\item \textbf{Audit Trail}: Every recommendation can be traced to its model
+\end{enumerate}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Model Schema}
+\label{sec:fff-schema}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Every model in the Registry follows a standardized schema with six components.
+
+\subsection{Schema Overview}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=0.8cm,
+    block/.style={draw, rectangle, minimum width=10cm, minimum height=0.8cm, align=left, font=\small}]
+
+    \node[block, fill=blue!10] (id) {\textbf{1. IDENTIFICATION} \hfill Model\_ID, Designer, Created, Client};
+    \node[block, fill=green!10, below=of id] (meta) {\textbf{2. METADATA} \hfill Gestaltungsanlass, Entry Point, Domain};
+    \node[block, fill=yellow!10, below=of meta] (input) {\textbf{3. INPUT} \hfill Scope, Context ($\Psi$), Constraints};
+    \node[block, fill=orange!10, below=of input] (spec) {\textbf{4. SPECIFICATION} \hfill Variables ($C$), Complementarity ($\gamma$), Parameters ($\Theta$), Form};
+    \node[block, fill=red!10, below=of spec] (output) {\textbf{5. OUTPUT} \hfill Predictions, Statements, Recommendations};
+    \node[block, fill=purple!10, below=of output] (val) {\textbf{6. VALIDATION} \hfill Status, Accuracy, Date, Evidence};
+
+\end{tikzpicture}
+\caption{Model Registry Schema: Six Components}
+\label{fig:fff-schema}
+\end{figure}
+
+\subsection{Component 1: Identification}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=Schema: Identification]
+\begin{verbatim}
+identification:
+  model_id: M-YYYY-NNN          # Unique identifier
+  designer: string              # Name of model designer
+  created: YYYY-MM-DD           # Creation date
+  modified: YYYY-MM-DD          # Last modification
+  client: string                # Client identifier (can be anonymized)
+  project: string               # Project name/code
+  version: X.Y                  # Model version
+\end{verbatim}
+
+\textbf{Naming Convention:}
+\begin{itemize}[nosep]
+\item M = Model prefix
+\item YYYY = Year (e.g., 2026)
+\item NNN = Sequential number within year (001, 002, ...)
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{Component 2: Metadata}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=Schema: Metadata]
+\begin{verbatim}
+metadata:
+  gestaltungsanlass: string     # The design occasion (free text)
+  gestaltungsanlass_type:       # Categorization
+    - problem                   # Something wrong to fix
+    - opportunity               # Something possible to pursue
+    - question                  # Something unclear to understand
+    - situation                 # Something to shape
+  entry_point:                  # How model design started
+    - theory_driven             # Started with EBF concept
+    - practice_driven           # Started with situation
+    - hybrid                    # Both constraints given
+  domain: string                # Primary domain (e.g., "retail", "pension")
+  tags: [string]                # Searchable keywords
+\end{verbatim}
+\end{tcolorbox}
+
+\subsection{Component 3: Input}
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black,
+    title=Schema: Input]
+\begin{verbatim}
+input:
+  scope:
+    description: string         # What behavior is modeled
+    scope_type:                 # Category of behavior
+      - decision                # Binary choice
+      - continuous              # Amount, frequency
+      - process                 # Sequence of behaviors
+  context_psi:
+    geographic: string          # Location (e.g., "Switzerland")
+    demographic: string         # Target population
+    temporal: string            # Time context
+    channel: string             # Interaction channel
+    regulatory: string          # Legal/regulatory environment
+    cultural: string            # Cultural factors
+    economic: string            # Economic conditions
+    competitive: string         # Market structure
+  constraints:
+    budget: float               # Available budget (if applicable)
+    timeline: string            # Project timeline
+    data_available: [string]    # What data exists
+\end{verbatim}
+\end{tcolorbox}
+
+\subsection{Component 4: Specification}
+
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black,
+    title=Schema: Specification]
+\begin{verbatim}
+specification:
+  variables_C:                  # Utility dimensions included
+    - F                         # Financial
+    - E                         # Emotional
+    - P                         # Physical
+    - S                         # Social
+    - D                         # Developmental
+    - X                         # Existential (if applicable)
+  complementarity_gamma:
+    interactions: [string]      # Which interactions (e.g., "F*E", "temporal")
+    values: {string: float}     # Parameter values
+  parameters_theta:
+    values: {string: float}     # All parameter values
+    sources: {string: string}   # Source for each parameter
+    confidence: {string: float} # Confidence level [0,1]
+  functional_form:
+    type: string                # "linear", "cobb_douglas", "ces", "logistic", ...
+    equation: string            # LaTeX equation
+    justification: string       # Why this form was chosen
+\end{verbatim}
+\end{tcolorbox}
+
+\subsection{Component 5: Output}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black,
+    title=Schema: Output]
+\begin{verbatim}
+output:
+  predictions:                  # Testable predictions
+    - id: P1
+      statement: string         # The prediction
+      type: point|comparative|boundary
+      quantification: string    # Expected effect size
+      testable: boolean         # Can be empirically tested
+  statements:                   # What was communicated to client
+    - date: YYYY-MM-DD
+      audience: string          # Who received statement
+      content: string           # What was said
+      based_on: [P1, P2, ...]   # Which predictions supported it
+  recommendations:              # Action recommendations
+    - id: R1
+      action: string            # Recommended action
+      expected_impact: string   # Predicted impact
+      based_on: [P1, P2, ...]   # Supporting predictions
+\end{verbatim}
+\end{tcolorbox}
+
+\subsection{Component 6: Validation}
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black,
+    title=Schema: Validation]
+\begin{verbatim}
+validation:
+  status:                       # Current validation state
+    - pending                   # Not yet validated
+    - validated                 # Predictions tested and confirmed
+    - partially_validated       # Some predictions confirmed
+    - falsified                 # Predictions tested and rejected
+    - superseded                # Replaced by newer model
+  accuracy:                     # If validated
+    overall: float              # Overall accuracy [0,1]
+    by_prediction: {string: float}  # Per-prediction accuracy
+  validation_date: YYYY-MM-DD   # When validation occurred
+  validation_method: string     # How validation was done
+  evidence:                     # Supporting evidence
+    - type: string              # "field_data", "experiment", "natural_experiment"
+      description: string
+      source: string
+  lessons_learned: string       # What we learned from validation
+\end{verbatim}
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Similarity Search}
+\label{sec:fff-similarity}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The Registry must support efficient retrieval of similar models for the 3+1
+Choice Architecture (Axiom MD-2 in Appendix UNMAPPED_DSN).
+
+\subsection{Similarity Dimensions}
+
+Models are compared across multiple dimensions:
+
+\begin{table}[htbp]
+\centering
+\caption{Similarity Dimensions and Weights}
+\label{tab:fff-similarity}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}llcl@{}}
+\toprule
+\textbf{Dimension} & \textbf{Field(s)} & \textbf{Weight} & \textbf{Metric} \\
+\midrule
+Gestaltungsanlass & metadata.gestaltungsanlass\_type & 0.25 & Exact match \\
+Domain & metadata.domain, metadata.tags & 0.20 & Jaccard similarity \\
+Scope & input.scope.scope\_type & 0.20 & Exact match \\
+Context & input.context\_psi.* & 0.20 & Weighted field match \\
+Variables & specification.variables\_C & 0.10 & Set overlap \\
+Validation & validation.status & 0.05 & Preference for validated \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Similarity Algorithm}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom UNMAPPED_REG-1: Similarity Computation]
+\textbf{Statement:} Given a query model $M_q$ and registry $\mathcal{R}$,
+similarity is computed as:
+\begin{equation}
+\text{Sim}(M_q, M_i) = \sum_{d \in \mathcal{D}} w_d \cdot \text{sim}_d(M_q, M_i)
+\end{equation}
+where $\mathcal{D}$ is the set of dimensions, $w_d$ are weights (Table \ref{tab:fff-similarity}),
+and $\text{sim}_d$ is the dimension-specific similarity metric.
+
+\textbf{Top-K Selection:} The three most similar models are returned:
+\begin{equation}
+\{O_1, O_2, O_3\} = \text{TopK}(\{\text{Sim}(M_q, M_i) : M_i \in \mathcal{R}\}, k=3)
+\end{equation}
+
+\textbf{Diversity Constraint:} The three selected models must differ in at least
+one material dimension to ensure meaningful choice (Axiom MD-1).
+\end{tcolorbox}
+
+\subsection{Cold Start Problem}
+
+When the Registry is new or sparse:
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black,
+    title=Axiom UNMAPPED_REG-2: Cold Start Handling]
+\textbf{Statement:} If $|\mathcal{R}| < 3$ or fewer than 3 models exceed
+similarity threshold $\tau = 0.3$, the workflow generates theory-derived
+options instead:
+
+\begin{equation}
+\text{If } |\{M_i \in \mathcal{R} : \text{Sim}(M_q, M_i) > \tau\}| < 3:
+\quad \text{Generate from EBF theory}
+\end{equation}
+
+\textbf{Marking:} Theory-derived options are clearly labeled as such, distinct
+from registry-validated options.
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Organizational Learning}
+\label{sec:fff-learning}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The Registry enables organizational learning through systematic validation
+feedback.
+
+\subsection{Learning Loop}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=2cm, auto,
+    block/.style={draw, rectangle, rounded corners, minimum width=3cm, minimum height=1cm, align=center}]
+
+    % Nodes
+    \node[block, fill=blue!10] (design) {Design Model\\(EEE Workflow)};
+    \node[block, fill=green!10, right=of design] (register) {Register\\(FFF Schema)};
+    \node[block, fill=yellow!10, right=of register] (apply) {Apply\\(Project)};
+    \node[block, fill=orange!10, below=of apply] (observe) {Observe\\Outcomes};
+    \node[block, fill=red!10, below=of register] (validate) {Validate\\Predictions};
+    \node[block, fill=purple!10, below=of design] (learn) {Update\\Registry};
+
+    % Arrows
+    \draw[->] (design) -- (register);
+    \draw[->] (register) -- (apply);
+    \draw[->] (apply) -- (observe);
+    \draw[->] (observe) -- (validate);
+    \draw[->] (validate) -- (learn);
+    \draw[->] (learn) -- (design);
+
+    % Feedback to new designs
+    \draw[->, dashed] (learn.west) -- ++(-1,0) |- (design.west);
+
+\end{tikzpicture}
+\caption{Organizational Learning Loop}
+\label{fig:fff-learning}
+\end{figure}
+
+\subsection{Validation Protocol}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom UNMAPPED_REG-3: Mandatory Validation Review]
+\textbf{Statement:} Every model with status ``pending'' must be reviewed for
+validation within 12 months of application, or explicitly marked as
+``validation\_not\_possible'' with documented reason.
+
+\textbf{Validation Questions:}
+\begin{enumerate}[nosep]
+\item Were the predictions testable in practice?
+\item What outcomes were observed?
+\item Did predictions match outcomes within stated uncertainty?
+\item What lessons does this provide for future models?
+\end{enumerate}
+\end{tcolorbox}
+
+\subsection{Registry Metrics}
+
+\begin{table}[htbp]
+\centering
+\caption{Registry Health Metrics}
+\label{tab:fff-metrics}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Metric} & \textbf{Definition} & \textbf{Target} \\
+\midrule
+Coverage & Domains with $\geq 5$ models & All active domains \\
+Validation Rate & \% models validated within 12mo & $\geq 60\%$ \\
+Accuracy & Mean accuracy of validated models & $\geq 0.7$ \\
+Reuse Rate & \% new models using registry options & $\geq 50\%$ \\
+Freshness & Mean age of top-retrieved models & $\leq 3$ years \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Audit Trail}
+\label{sec:fff-audit}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The Registry maintains complete audit trails for accountability.
+
+\subsection{Traceability Requirements}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom UNMAPPED_REG-4: Complete Traceability]
+\textbf{Statement:} Every client-facing statement or recommendation must be
+traceable to:
+\begin{enumerate}[nosep]
+\item The specific model (Model\_ID)
+\item The specific prediction(s) supporting it
+\item The parameter values and sources used
+\item The validation status at time of statement
+\end{enumerate}
+
+\textbf{Audit Query:} Given a statement, it must be possible to retrieve:
+\begin{equation}
+\text{Statement} \rightarrow \text{Model} \rightarrow \text{Predictions} \rightarrow \text{Parameters} \rightarrow \text{Sources}
+\end{equation}
+\end{tcolorbox}
+
+\subsection{Version Control}
+
+Models may be updated over time. Version control ensures:
+\begin{itemize}
+\item Historical versions remain accessible
+\item Changes are documented with rationale
+\item Statements reference specific versions
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Key Results}
+\label{sec:results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The analysis yields the following key results:
+
+\begin{enumerate}
+    \item \textbf{Result 1:} [TODO: Describe main finding]
+    \item \textbf{Result 2:} [TODO: Describe secondary finding]
+    \item \textbf{Result 3:} [TODO: Describe implication]
+\end{enumerate}
+
+\section{Integration with Other Appendices}
+\label{sec:fff-integration}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black,
+    title=Integration: METHOD-REGISTRY $\leftrightarrow$ METHOD-DESIGN (EEE)]
+\textbf{What METHOD-REGISTRY provides to EEE:}
+\begin{itemize}[nosep]
+\item Historical models for 3+1 option generation
+\item Similarity search functionality
+\item Validation status for option ranking
+\end{itemize}
+
+\textbf{What METHOD-REGISTRY requires from EEE:}
+\begin{itemize}[nosep]
+\item Completed models with full metadata
+\item Adherence to schema structure
+\item Quality standards for registration
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black,
+    title=Integration: METHOD-REGISTRY $\leftrightarrow$ DOMAIN Appendices]
+\textbf{What METHOD-REGISTRY provides:}
+\begin{itemize}[nosep]
+\item Domain-specific model retrieval
+\item Cross-domain learning opportunities
+\end{itemize}
+
+\textbf{What METHOD-REGISTRY requires:}
+\begin{itemize}[nosep]
+\item Domain tagging for all models
+\item Domain-specific validation criteria
+\end{itemize}
+\end{tcolorbox}
+
+
+% =============================================================================
+%                    PART 3: APPLICATION
+% =============================================================================
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Worked Example}
+\label{sec:fff-example}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Example: Complete Model Entry}
+
+\begin{tcolorbox}[colback=white, colframe=black,
+    title=Example Registry Entry: UNMAPPED_SHL-2026-001]
+\begin{verbatim}
+identification:
+  model_id: UNMAPPED_SHL-2026-001
+  designer: "Thomas Müller"
+  created: 2026-01-15
+  client: "PensionCo_CH"
+  project: "Voluntary Savings Enhancement"
+  version: 1.0
+
+metadata:
+  gestaltungsanlass: "Increase voluntary pension enrollment from 40% to 60%"
+  gestaltungsanlass_type: opportunity
+  entry_point: practice_driven
+  domain: "pension"
+  tags: ["retirement", "enrollment", "Switzerland", "B2C"]
+
+input:
+  scope:
+    description: "Binary enrollment decision for voluntary pension savings"
+    scope_type: decision
+  context_psi:
+    geographic: "Switzerland"
+    demographic: "Employees 25-65, all income levels"
+    temporal: "Decision at onboarding and annual review"
+    channel: "Digital (app, email) + HR personal"
+    regulatory: "Swiss BVG framework"
+
+specification:
+  variables_C: [F, E, S]
+  complementarity_gamma:
+    interactions: ["F*E", "temporal"]
+    values: {"gamma_FE": 0.3, "gamma_temporal": 0.15}
+  parameters_theta:
+    values: {"beta_F": 0.45, "beta_E": 0.30, "beta_S": 0.25}
+    sources: {"beta_F": "Thaler & Benartzi 2004", "beta_E": "Expert elicitation"}
+    confidence: {"beta_F": 0.8, "beta_E": 0.6, "beta_S": 0.6}
+  functional_form:
+    type: "logistic"
+    equation: "P(enroll) = 1/(1+exp(-(b0 + bF*F + bE*E + bS*S + gFE*F*E)))"
+
+output:
+  predictions:
+    - id: P1
+      statement: "Framing as 'future security' increases enrollment 8-12pp"
+      type: comparative
+      quantification: "8-12 percentage points"
+    - id: P2
+      statement: "Social proof increases enrollment 5-8pp"
+      type: comparative
+      quantification: "5-8 percentage points"
+  statements:
+    - date: 2026-02-01
+      audience: "PensionCo Board"
+      content: "Redesigned communication expected to increase participation by 15-20pp"
+      based_on: [P1, P2]
+  recommendations:
+    - id: R1
+      action: "Implement 'future security' framing in all communications"
+      expected_impact: "+8-12pp enrollment"
+      based_on: [P1]
+
+validation:
+  status: pending
+  validation_date: null
+  evidence: []
+  lessons_learned: null
+\end{verbatim}
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Implications for Practice}
+\label{sec:fff-practice}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=Practical Implications]
+\begin{enumerate}
+\item \textbf{Register every model:} Even ``small'' or ``quick'' models should
+    be registered. Organizational memory depends on completeness.
+\item \textbf{Complete all fields:} Partial entries reduce searchability and
+    audit capability. Use ``unknown'' explicitly rather than leaving blank.
+\item \textbf{Validate systematically:} Schedule validation reviews at project
+    close or 12-month mark. Unvalidated models have limited learning value.
+\item \textbf{Update on outcomes:} When outcomes become known, update the
+    Registry promptly. This is how organizational learning happens.
+\item \textbf{Use similarity search:} Before designing a new model, always
+    search the Registry. Standing on shoulders beats reinventing wheels.
+\end{enumerate}
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Seed Models: DACH Reference Repository}
+\label{sec:fff-seed}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The Registry is pre-populated with 8 validated reference models covering the
+DACH region (Switzerland, Austria, Germany). These seed models serve as:
+\begin{itemize}[nosep]
+\item Starting points for new model design (3+1 options)
+\item Templates demonstrating proper schema usage
+\item Benchmarks for model quality
+\end{itemize}
+
+\begin{table}[htbp]
+\centering
+\caption{DACH Seed Models Overview}
+\label{tab:fff-seed-overview}
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabular}{@{}llllll@{}}
+\toprule
+\textbf{ID} & \textbf{Level} & \textbf{Geo} & \textbf{Domain} & \textbf{Scope} & \textbf{Use Case} \\
+\midrule
+SEED-CH-01 & L=0 & 🇨🇭 & Vorsorge & Decision & PK Enrollment \\
+SEED-CH-02 & L=0 & 🇨🇭 & Vorsorge & Continuous & Beitragshöhe \\
+SEED-CH-03 & L=3 & 🇨🇭 & HR/Org & Process & Change Adoption \\
+SEED-CH-04 & L=1 & 🇨🇭 & Energy & Continuous & Verbrauchsreduktion \\
+\addlinespace
+SEED-UNMAPPED_P06-01 & L=0 & 🇦🇹 & Gesundheit & Decision & Vorsorgeuntersuchung \\
+SEED-UNMAPPED_P06-02 & L=0 & 🇦🇹 & Public & Decision & Steuer Compliance \\
+\addlinespace
+SEED-DE-01 & L=1 & 🇩🇪 & Finance & Decision & Riester Familie \\
+SEED-DE-02 & L=3 & 🇩🇪 & HR/Org & Process & Digitalisierung \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ---------------------------------------------------------------------------
+\subsection{Switzerland: SEED-CH-01 -- Pensionskasse Enrollment}
+% ---------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=white, colframe=red!50!black,
+    title=SEED-CH-01: Pensionskasse Voluntary Enrollment (Switzerland)]
+\begin{verbatim}
+identification:
+  model_id: SEED-CH-01
+  designer: "FehrAdvice Reference Team"
+  created: 2026-01-01
+  client: "Reference Model"
+  project: "DACH Seed Repository"
+  version: 1.0
+
+metadata:
+  gestaltungsanlass: "Increase voluntary pension (PK) enrollment rate"
+  gestaltungsanlass_type: opportunity
+  entry_point: practice_driven
+  domain: "vorsorge"
+  tags: ["pension", "enrollment", "Switzerland", "B2C", "BVG"]
+
+input:
+  scope:
+    description: "Binary enrollment decision for voluntary PK contributions"
+    scope_type: decision
+  context_psi:
+    geographic: "Switzerland"
+    demographic: "Employees 25-65, income CHF 60k+"
+    temporal: "Decision at onboarding and annual review"
+    channel: "Digital (HR portal) + HR personal consultation"
+    regulatory: "BVG/BVV2 framework, tax-deductible"
+    cultural: "High autonomy, strong savings culture"
+  constraints:
+    data_available: ["enrollment_rates", "demographics", "channel_usage"]
+
+specification:
+  variables_C: [F, E, S]
+  complementarity_gamma:
+    interactions: ["F*E", "temporal"]
+    values:
+      gamma_FE: 0.30
+      gamma_temporal: 0.20
+  parameters_theta:
+    values:
+      beta_F: 0.35
+      beta_E: 0.25
+      beta_S: 0.20
+      beta_0: -1.50
+    sources:
+      beta_F: "Thaler & Benartzi 2004, Swiss adjustment"
+      beta_E: "Expert elicitation FehrAdvice"
+      beta_S: "Duflo & Saez 2003"
+    confidence:
+      beta_F: 0.75
+      beta_E: 0.60
+      beta_S: 0.70
+  functional_form:
+    type: "logistic"
+    equation: "P(enroll) = 1/(1+exp(-(b0 + bF*F + bE*E + bS*S + gFE*F*E)))"
+    justification: "Binary outcome, standard choice model"
+
+output:
+  predictions:
+    - id: P1
+      statement: "Framing contributions as 'future security' increases
+                  enrollment by 8-12 percentage points"
+      type: comparative
+      quantification: "8-12pp"
+      testable: true
+    - id: P2
+      statement: "Social proof ('X% of colleagues enrolled') increases
+                  enrollment by 5-8 percentage points"
+      type: comparative
+      quantification: "5-8pp"
+      testable: true
+    - id: P3
+      statement: "Effect of P1 and P2 is superadditive due to gamma_FE > 0"
+      type: comparative
+      quantification: "Combined effect 15-22pp vs. sum 13-20pp"
+      testable: true
+
+validation:
+  status: validated
+  accuracy:
+    overall: 0.78
+    by_prediction: {P1: 0.82, P2: 0.75, P3: 0.68}
+  validation_date: 2025-06-15
+  validation_method: "Field experiment with 3 PK providers, n=4,200"
+  evidence:
+    - type: "field_experiment"
+      description: "RCT with randomized framing conditions"
+      source: "FehrAdvice internal study FA-2025-PK-01"
+  lessons_learned: "gamma_FE confirmed; social proof effect varies by age"
+\end{verbatim}
+\end{tcolorbox}
+
+% ---------------------------------------------------------------------------
+\subsection{Switzerland: SEED-CH-02 -- Contribution Level}
+% ---------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=white, colframe=red!50!black,
+    title=SEED-CH-02: Voluntary Contribution Amount (Switzerland)]
+\begin{verbatim}
+identification:
+  model_id: SEED-CH-02
+  designer: "FehrAdvice Reference Team"
+  created: 2026-01-01
+  client: "Reference Model"
+  project: "DACH Seed Repository"
+  version: 1.0
+
+metadata:
+  gestaltungsanlass: "Increase average voluntary contribution amount"
+  gestaltungsanlass_type: opportunity
+  entry_point: practice_driven
+  domain: "vorsorge"
+  tags: ["pension", "contribution", "Switzerland", "B2C", "continuous"]
+
+input:
+  scope:
+    description: "Continuous choice of monthly contribution amount (CHF)"
+    scope_type: continuous
+  context_psi:
+    geographic: "Switzerland"
+    demographic: "Employees already enrolled, income CHF 80k+"
+    temporal: "Annual adjustment window"
+    channel: "Digital self-service"
+    regulatory: "BVG max contribution limits"
+
+specification:
+  variables_C: [F, E, S, D]
+  complementarity_gamma:
+    interactions: ["F*E", "F*D", "temporal"]
+    values:
+      gamma_FE: 0.25
+      gamma_FD: 0.15
+      gamma_temporal: 0.30
+  parameters_theta:
+    values:
+      beta_F: 0.40
+      beta_E: 0.20
+      beta_S: 0.15
+      beta_D: 0.10
+    sources:
+      beta_F: "Madrian & Shea 2001"
+      beta_D: "Hershfield et al. 2011 (future self)"
+  functional_form:
+    type: "linear_with_anchoring"
+    equation: "Y = anchor + beta_F*F + beta_E*E + beta_S*S + beta_D*D + eps"
+    justification: "Continuous outcome, strong anchoring effects"
+
+output:
+  predictions:
+    - id: P1
+      statement: "Showing 'recommended' contribution increases average by 15-20%"
+      type: comparative
+      quantification: "15-20% increase"
+    - id: P2
+      statement: "Future-self visualization increases contribution by 10-15%"
+      type: comparative
+      quantification: "10-15% increase"
+
+validation:
+  status: validated
+  accuracy:
+    overall: 0.72
+  validation_date: 2025-09-01
+  validation_method: "A/B test with 2 PK providers"
+\end{verbatim}
+\end{tcolorbox}
+
+% ---------------------------------------------------------------------------
+\subsection{Switzerland: SEED-CH-03 -- Organizational Change Adoption}
+% ---------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=white, colframe=red!50!black,
+    title=SEED-CH-03: Change Adoption in Swiss Organizations (L=3)]
+\begin{verbatim}
+identification:
+  model_id: SEED-CH-03
+  designer: "FehrAdvice Reference Team"
+  created: 2026-01-01
+  client: "Reference Model"
+  project: "DACH Seed Repository"
+  version: 1.0
+
+metadata:
+  gestaltungsanlass: "Accelerate adoption of new processes/tools in organization"
+  gestaltungsanlass_type: situation
+  entry_point: practice_driven
+  domain: "hr_org"
+  tags: ["change", "adoption", "Switzerland", "B2B", "process", "L3"]
+
+input:
+  scope:
+    description: "Organizational journey through change adoption stages"
+    scope_type: process
+  context_psi:
+    geographic: "Switzerland"
+    demographic: "Mid-size companies, 100-500 employees"
+    temporal: "6-18 month change programs"
+    channel: "Internal communication + training"
+    regulatory: "Swiss labor law consultation requirements"
+    cultural: "Consensus-oriented, high employee voice"
+
+specification:
+  variables_C: [F, E, S, D]
+  complementarity_gamma:
+    interactions: ["S*E", "D*F", "cross_L0_L3"]
+    values:
+      gamma_SE: 0.35
+      gamma_DF: 0.20
+      gamma_cross: 0.25
+  parameters_theta:
+    values:
+      beta_S: 0.30
+      beta_E: 0.25
+      beta_D: 0.20
+      beta_F: 0.15
+      tau: 90  # days time constant
+    sources:
+      gamma_SE: "Organizational behavior literature"
+      tau: "FehrAdvice change projects 2020-2025"
+  functional_form:
+    type: "bcj_dynamic"
+    equation: "dS/dt = (1/tau) * [S*(A, WAX, Psi) - S(t)] + beta_social * S_peers"
+    justification: "Process scope requires BCJ dynamics"
+
+output:
+  predictions:
+    - id: P1
+      statement: "Leadership visible commitment reduces tau by 30-40%"
+      type: comparative
+      quantification: "tau reduction 30-40%"
+    - id: P2
+      statement: "Peer adoption above 30% triggers acceleration (social tipping)"
+      type: boundary
+      quantification: "Tipping point at ~30% adoption"
+    - id: P3
+      statement: "Cross-level alignment (L0-L3) increases final adoption by 20pp"
+      type: comparative
+      quantification: "+20pp final adoption"
+
+validation:
+  status: partially_validated
+  accuracy:
+    overall: 0.65
+    by_prediction: {P1: 0.70, P2: 0.72, P3: 0.55}
+  validation_date: 2025-11-01
+  validation_method: "Longitudinal study across 8 change projects"
+  lessons_learned: "P3 (cross-level) needs more data; cultural factors stronger than expected"
+\end{verbatim}
+\end{tcolorbox}
+
+% ---------------------------------------------------------------------------
+\subsection{Switzerland: SEED-CH-04 -- Energy Consumption Reduction}
+% ---------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=white, colframe=red!50!black,
+    title=SEED-CH-04: Household Energy Reduction (Switzerland, L=1)]
+\begin{verbatim}
+identification:
+  model_id: SEED-CH-04
+  designer: "FehrAdvice Reference Team"
+  created: 2026-01-01
+  client: "Reference Model"
+  project: "DACH Seed Repository"
+  version: 1.0
+
+metadata:
+  gestaltungsanlass: "Reduce household electricity consumption"
+  gestaltungsanlass_type: opportunity
+  entry_point: hybrid
+  domain: "energy"
+  tags: ["energy", "sustainability", "Switzerland", "household", "L1"]
+
+input:
+  scope:
+    description: "Continuous reduction in monthly kWh consumption"
+    scope_type: continuous
+  context_psi:
+    geographic: "Switzerland"
+    demographic: "Households, owners and renters"
+    temporal: "Monthly measurement, seasonal variation"
+    channel: "Smart meter app + utility communication"
+    regulatory: "Energiestrategie 2050"
+    cultural: "High environmental awareness"
+
+specification:
+  variables_C: [F, E, S, X]
+  complementarity_gamma:
+    interactions: ["F*X", "S*X", "temporal"]
+    values:
+      gamma_FX: 0.20
+      gamma_SX: 0.30
+      gamma_temporal: 0.25
+  parameters_theta:
+    values:
+      beta_F: 0.35
+      beta_E: 0.15
+      beta_S: 0.20
+      beta_X: 0.15
+    sources:
+      beta_S: "Allcott 2011 (OPOWER)"
+      beta_X: "Swiss Energy Survey 2024"
+  functional_form:
+    type: "linear_percentage"
+    equation: "Y_reduction = beta_F*F + beta_S*S + beta_X*X + gamma_SX*S*X + eps"
+
+output:
+  predictions:
+    - id: P1
+      statement: "Social comparison feedback reduces consumption 5-8%"
+      type: comparative
+      quantification: "5-8% reduction"
+    - id: P2
+      statement: "Environmental framing + social proof is superadditive (gamma_SX)"
+      type: comparative
+      quantification: "Combined 10-14% vs. sum 8-12%"
+    - id: P3
+      statement: "Effect decays without reinforcement (tau ~ 60 days)"
+      type: boundary
+      quantification: "Half-life ~60 days"
+
+validation:
+  status: validated
+  accuracy:
+    overall: 0.75
+  validation_date: 2025-08-01
+  validation_method: "Utility partnership pilot, n=12,000 households"
+\end{verbatim}
+\end{tcolorbox}
+
+% ---------------------------------------------------------------------------
+\subsection{Austria: SEED-UNMAPPED_P06-01 -- Preventive Health Screening}
+% ---------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=white, colframe=blue!50!black,
+    title=SEED-UNMAPPED_P06-01: Vorsorgeuntersuchung Participation (Austria)]
+\begin{verbatim}
+identification:
+  model_id: SEED-UNMAPPED_P06-01
+  designer: "FehrAdvice Reference Team"
+  created: 2026-01-01
+  client: "Reference Model"
+  project: "DACH Seed Repository"
+  version: 1.0
+
+metadata:
+  gestaltungsanlass: "Increase participation in preventive health screenings"
+  gestaltungsanlass_type: opportunity
+  entry_point: practice_driven
+  domain: "gesundheit"
+  tags: ["health", "prevention", "Austria", "B2C", "ASVG"]
+
+input:
+  scope:
+    description: "Binary decision to attend annual Vorsorgeuntersuchung"
+    scope_type: decision
+  context_psi:
+    geographic: "Austria"
+    demographic: "Adults 18+, ASVG-insured"
+    temporal: "Annual reminder cycle"
+    channel: "GKK letter + digital reminder"
+    regulatory: "ASVG preventive care coverage"
+    cultural: "Moderate health consciousness, trust in state system"
+
+specification:
+  variables_C: [P, E, F, S]
+  complementarity_gamma:
+    interactions: ["P*E", "temporal"]
+    values:
+      gamma_PE: 0.40
+      gamma_temporal: 0.35
+  parameters_theta:
+    values:
+      beta_P: 0.35
+      beta_E: 0.30
+      beta_F: 0.10
+      beta_S: 0.15
+    sources:
+      gamma_temporal: "Present bias literature (O'Donoghue & Rabin)"
+  functional_form:
+    type: "logistic"
+    equation: "P(attend) = 1/(1+exp(-(b0 + bP*P + bE*E + gPE*P*E)))"
+
+output:
+  predictions:
+    - id: P1
+      statement: "Implementation intentions ('when/where') increase attendance 12-18pp"
+      type: comparative
+      quantification: "12-18pp"
+    - id: P2
+      statement: "Loss-framed health messages outperform gain-framed by 5-8pp"
+      type: comparative
+      quantification: "5-8pp advantage"
+    - id: P3
+      statement: "SMS reminder 48h before reduces no-shows by 25-35%"
+      type: comparative
+      quantification: "25-35% no-show reduction"
+
+validation:
+  status: validated
+  accuracy:
+    overall: 0.70
+  validation_date: 2025-05-01
+  validation_method: "GKK Oberösterreich pilot program"
+\end{verbatim}
+\end{tcolorbox}
+
+% ---------------------------------------------------------------------------
+\subsection{Austria: SEED-UNMAPPED_P06-02 -- Tax Compliance}
+% ---------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=white, colframe=blue!50!black,
+    title=SEED-UNMAPPED_P06-02: Tax Declaration Timeliness (Austria)]
+\begin{verbatim}
+identification:
+  model_id: SEED-UNMAPPED_P06-02
+  designer: "FehrAdvice Reference Team"
+  created: 2026-01-01
+  client: "Reference Model"
+  project: "DACH Seed Repository"
+  version: 1.0
+
+metadata:
+  gestaltungsanlass: "Increase on-time tax declaration submission"
+  gestaltungsanlass_type: problem
+  entry_point: practice_driven
+  domain: "public"
+  tags: ["tax", "compliance", "Austria", "public sector", "nudging"]
+
+input:
+  scope:
+    description: "Binary: on-time vs. late submission of Einkommensteuererklärung"
+    scope_type: decision
+  context_psi:
+    geographic: "Austria"
+    demographic: "Self-employed and voluntary filers"
+    temporal: "Annual deadline April 30 / June 30 (FinanzOnline)"
+    channel: "FinanzOnline + postal reminder"
+    regulatory: "BAO deadlines, penalty structure"
+
+specification:
+  variables_C: [F, S, E]
+  complementarity_gamma:
+    interactions: ["S*F", "trust"]
+    values:
+      gamma_SF: 0.20
+      gamma_trust: 0.25
+  parameters_theta:
+    values:
+      beta_F: 0.30
+      beta_S: 0.25
+      beta_E: 0.15
+    sources:
+      beta_S: "Hallsworth et al. 2017 (UK tax letters)"
+  functional_form:
+    type: "logistic"
+
+output:
+  predictions:
+    - id: P1
+      statement: "Social norm message ('9 out of 10 pay on time') increases
+                  compliance by 3-5pp"
+      type: comparative
+      quantification: "3-5pp"
+    - id: P2
+      statement: "Simplified deadline reminder increases compliance by 2-4pp"
+      type: comparative
+      quantification: "2-4pp"
+    - id: P3
+      statement: "Combination with late fee salience increases effect to 6-9pp"
+      type: comparative
+      quantification: "6-9pp combined"
+
+validation:
+  status: validated
+  accuracy:
+    overall: 0.73
+  validation_date: 2025-07-01
+  validation_method: "BMF Austria pilot, n=50,000 letters"
+\end{verbatim}
+\end{tcolorbox}
+
+% ---------------------------------------------------------------------------
+\subsection{Germany: SEED-DE-01 -- Riester Family Decision}
+% ---------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=white, colframe=yellow!50!black,
+    title=SEED-DE-01: Riester Pension Family Decision (Germany, L=1)]
+\begin{verbatim}
+identification:
+  model_id: SEED-DE-01
+  designer: "FehrAdvice Reference Team"
+  created: 2026-01-01
+  client: "Reference Model"
+  project: "DACH Seed Repository"
+  version: 1.0
+
+metadata:
+  gestaltungsanlass: "Increase Riester pension uptake among eligible families"
+  gestaltungsanlass_type: opportunity
+  entry_point: practice_driven
+  domain: "finance"
+  tags: ["pension", "Riester", "Germany", "family", "L1", "Kinderzulage"]
+
+input:
+  scope:
+    description: "Household decision to open/maintain Riester contract"
+    scope_type: decision
+  context_psi:
+    geographic: "Germany"
+    demographic: "Families with children, income EUR 30-70k"
+    temporal: "Year-end decision, Zulageantrag deadline"
+    channel: "Bank/insurance advisor + digital"
+    regulatory: "Altersvermögensgesetz, Kinderzulage EUR 300/child"
+    cultural: "State-reliance orientation, complex product perception"
+
+specification:
+  variables_C: [F, E, S]
+  complementarity_gamma:
+    interactions: ["F*S", "complexity_barrier"]
+    values:
+      gamma_FS: 0.25
+      gamma_complexity: -0.30
+  parameters_theta:
+    values:
+      beta_F: 0.45
+      beta_E: 0.20
+      beta_S: 0.25
+    sources:
+      beta_F: "Riester uptake studies (Börsch-Supan)"
+      gamma_complexity: "DIA Studie 2024"
+  functional_form:
+    type: "logistic_with_friction"
+    equation: "P(riester) = 1/(1+exp(-(b0 + bF*F - friction + bS*S)))"
+
+output:
+  predictions:
+    - id: P1
+      statement: "Simplified calculator showing Kinderzulage increases uptake 8-12pp"
+      type: comparative
+      quantification: "8-12pp"
+    - id: P2
+      statement: "Pre-filled Zulageantrag reduces dropout by 15-25pp"
+      type: comparative
+      quantification: "15-25pp retention"
+    - id: P3
+      statement: "Social proof ('Familien wie Ihre') adds 4-6pp"
+      type: comparative
+      quantification: "4-6pp"
+
+validation:
+  status: partially_validated
+  accuracy:
+    overall: 0.62
+  validation_date: 2025-10-01
+  validation_method: "Insurance partner pilot, n=8,000"
+  lessons_learned: "Complexity barrier (-0.30) confirmed; simplification critical"
+\end{verbatim}
+\end{tcolorbox}
+
+% ---------------------------------------------------------------------------
+\subsection{Germany: SEED-DE-02 -- Digitalization Adoption}
+% ---------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=white, colframe=yellow!50!black,
+    title=SEED-DE-02: Digitalization Adoption in German SME (L=3)]
+\begin{verbatim}
+identification:
+  model_id: SEED-DE-02
+  designer: "FehrAdvice Reference Team"
+  created: 2026-01-01
+  client: "Reference Model"
+  project: "DACH Seed Repository"
+  version: 1.0
+
+metadata:
+  gestaltungsanlass: "Accelerate digital tool adoption in German Mittelstand"
+  gestaltungsanlass_type: situation
+  entry_point: practice_driven
+  domain: "hr_org"
+  tags: ["digitalization", "SME", "Germany", "Mittelstand", "L3", "process"]
+
+input:
+  scope:
+    description: "Organizational journey through digital transformation stages"
+    scope_type: process
+  context_psi:
+    geographic: "Germany"
+    demographic: "SME/Mittelstand, 50-250 employees, manufacturing focus"
+    temporal: "12-24 month transformation programs"
+    channel: "Management + Betriebsrat + training"
+    regulatory: "Betriebsverfassungsgesetz, Mitbestimmung"
+    cultural: "Hierarchical, risk-averse, process-oriented"
+
+specification:
+  variables_C: [F, E, S, D]
+  complementarity_gamma:
+    interactions: ["S*E", "D*F", "cross_L0_L3", "betriebsrat"]
+    values:
+      gamma_SE: 0.30
+      gamma_DF: 0.25
+      gamma_cross: 0.20
+      gamma_BR: 0.35
+  parameters_theta:
+    values:
+      beta_S: 0.25
+      beta_E: 0.30
+      beta_D: 0.15
+      beta_F: 0.20
+      tau: 120  # days, longer than CH due to process orientation
+    sources:
+      tau: "German transformation case studies"
+      gamma_BR: "Mitbestimmung literature"
+  functional_form:
+    type: "bcj_dynamic"
+    equation: "dS/dt = (1/tau) * [S*(A, WAX, Psi) - S(t)] + gamma_BR * BR_support"
+
+output:
+  predictions:
+    - id: P1
+      statement: "Betriebsrat early involvement reduces tau by 25-35%"
+      type: comparative
+      quantification: "tau reduction 25-35%"
+    - id: P2
+      statement: "Qualification guarantee ('no job loss') increases adoption 15-20pp"
+      type: comparative
+      quantification: "15-20pp"
+    - id: P3
+      statement: "Pilot group success stories accelerate diffusion (social proof)"
+      type: comparative
+      quantification: "Diffusion speed +40%"
+
+validation:
+  status: partially_validated
+  accuracy:
+    overall: 0.58
+  validation_date: 2025-12-01
+  validation_method: "4 Mittelstand digitalization projects"
+  lessons_learned: "Betriebsrat effect (gamma_BR) stronger than expected;
+                    hierarchy slows horizontal diffusion"
+\end{verbatim}
+\end{tcolorbox}
+
+\subsection{Seed Model Usage Guidelines}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=How to Use Seed Models]
+\begin{enumerate}
+\item \textbf{As 3+1 Options:} When designing a new model, similarity search
+    returns relevant seed models as starting options.
+\item \textbf{As Templates:} Copy schema structure; replace parameters with
+    project-specific values.
+\item \textbf{As Benchmarks:} Compare new model predictions against seed model
+    accuracy to assess quality.
+\item \textbf{Update When Validated:} If your project validates/improves a seed
+    model, propose updates to the reference repository.
+\end{enumerate}
+
+\textbf{Important:} Seed models are \textit{starting points}, not final answers.
+Always adjust for project-specific context ($\Psi$) and validate predictions.
+\end{tcolorbox}
+
+
+% =============================================================================
+%                    PART 4: BACK MATTER
+% =============================================================================
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Summary}
+\label{sec:fff-summary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=green!10!white, colframe=green!75!black,
+    title=\textbf{Appendix UNMAPPED_REG: Summary}]
+
+\textbf{Core Question:} How do we store, retrieve, and learn from behavioral models?
+
+\textbf{Main Contribution:}
+\begin{itemize}[nosep]
+    \item Defines the 6-component Model Schema
+    \item Specifies similarity search for 3+1 option retrieval
+    \item Establishes organizational learning loop
+    \item Ensures audit trail for recommendations
+\end{itemize}
+
+\textbf{Key Axioms:}
+\begin{itemize}[nosep]
+    \item UNMAPPED_REG-1: Similarity Computation
+    \item UNMAPPED_REG-2: Cold Start Handling
+    \item UNMAPPED_REG-3: Mandatory Validation Review
+    \item UNMAPPED_REG-4: Complete Traceability
+\end{itemize}
+
+\textbf{Integration:} This appendix connects to EEE (Design Workflow),
+BBB (Parameters), and all DOMAIN/PREDICT appendices.
+
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Glossary of Symbols}
+\label{sec:fff-glossary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{Central Reference:} For complete symbol definitions, see
+\textbf{Appendix UNMAPPED_GLS} (\textit{Glossary and Notation}, \S\ref{app:glossary}).
+
+This section lists only symbols introduced or specialized in this appendix.
+\end{tcolorbox}
+
+\vspace{0.5em}
+
+\begin{table}[htbp]
+\centering
+\caption{Symbols Introduced in Appendix UNMAPPED_REG}
+\label{tab:fff-symbols}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clp{6cm}c@{}}
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Definition} & \textbf{Also in G?} \\
+\midrule
+$\mathcal{R}$ & Registry & Set of all stored models & NEW \\
+$M_i$ & Model & A complete model entry & \checkmark \\
+$\text{Sim}(\cdot,\cdot)$ & Similarity & Similarity function between models & NEW \\
+$w_d$ & Weight & Dimension weight in similarity & NEW \\
+$\tau$ & Threshold & Minimum similarity for retrieval & NEW \\
+$\mathcal{D}$ & Dimensions & Set of comparison dimensions & NEW \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Critical Foundations and Objections}
+\label{sec:reg-foundations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Objection 1: Scope Limitations}
+
+\textbf{Objection:} The framework presented may have limited applicability
+outside the specific domain contexts discussed.
+
+\textbf{Response:} We acknowledge domain-specificity. The framework provides
+general principles that should be calibrated to specific contexts. Cross-domain
+validation remains an open research question.
+
+\subsection{Objection 2: Measurement Challenges}
+
+\textbf{Objection:} Key constructs may be difficult to measure reliably in
+practice.
+
+\textbf{Response:} We recommend using validated scales and instruments where
+available, and developing domain-specific proxies where necessary. Sensitivity
+analysis should assess robustness to measurement uncertainty.
+
+
+\section{Open Issues and Research Agenda}
+\label{sec:fff-open}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[htbp]
+\centering
+\caption{Research Roadmap for METHOD-REGISTRY}
+\label{tab:fff-roadmap}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clcl@{}}
+\toprule
+\textbf{\#} & \textbf{Issue} & \textbf{Priority} & \textbf{Status} \\
+\midrule
+1 & Optimal similarity weights & HIGH & Empirical calibration needed \\
+2 & Automated validation detection & MEDIUM & Exploratory \\
+3 & Cross-organizational registries & LOW & Future consideration \\
+4 & Privacy-preserving model sharing & MEDIUM & Design phase \\
+5 & ML-enhanced similarity search & LOW & Research \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{References}
+\label{sec:fff-references}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{Master Bibliography:} For complete reference details, see
+\texttt{bcm2\_master\_references.bib} in the repository.
+
+This section lists appendix-specific references and data sources.
+\end{tcolorbox}
+
+\vspace{0.5em}
+
+\subsection{Key References for This Appendix}
+
+\begin{itemize}[nosep]
+    \item \textbf{Knowledge Management:} Nonaka \& Takeuchi (1995), Davenport \& Prusak (1998)
+    \item \textbf{Organizational Learning:} Argyris \& Schön (1978), Senge (1990)
+    \item \textbf{Model Registries:} MLflow documentation, ModelDB (Vartak et al., 2016)
+\end{itemize}
+
+\nocite{bcm_master}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CROSS-REFERENCE FOOTER (Required)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\vspace{1em}
+\hrule
+\vspace{0.5em}
+
+\noindent\textit{Cross-references:}
+Appendix UNMAPPED_GLS (Central Glossary),
+Appendix UNMAPPED_DSN (METHOD-DESIGN),
+Appendix UNMAPPED_EST (CORE-WHERE),
+All DOMAIN- appendices.
+
+\noindent\textit{Master Bibliography:} \texttt{bcm2\_master\_references.bib}
+
+
+% =============================================================================
+% END OF APPENDIX FFF
+% =============================================================================

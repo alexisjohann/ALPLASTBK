@@ -1,0 +1,1332 @@
+# Script Registry: Inventory of all executable scripts
+#
+# Version: 1.0 | Date: 2026-01-15 | Protocol: OPS-SCRIPTS-001
+#
+# Purpose: Central documentation of all 69 scripts in /scripts/
+# Each entry includes: purpose, SOP references, preconditions, affected systems
+#
+# Status Values:
+#   ACTIVE: Currently maintained and used
+#   DEPRECATED: Superseded by newer script
+#   EXPERIMENTAL: Under development or testing
+#   MAINTENANCE: Being refactored to meet SOP requirements
+#   ARCHIVED: No longer used
+
+metadata:
+  total_scripts: 69
+  last_updated: "2026-01-15T22:00:00"
+  sop_reference: "SOP-SCRIPT-01: General Script Management & Execution Protocol"
+  audit_frequency: "Quarterly"
+
+scripts:
+
+  # ============================================================================
+  # CATEGORY: Appendix Management (Literature Registration)
+  # ============================================================================
+
+  - name: "register_lit_appendices.py"
+    category: "Appendix Management"
+    version: "1.0"
+    status: "DEPRECATED"
+    description: "Register literature-based appendices with code assignment"
+    sop_reference: ["SOP-SCRIPT-01", "SOP-APPEND-02", "SOP-INDEX-03"]
+
+    preconditions:
+      - "Appendix .tex files exist in /appendices/"
+      - "APPENDIX_CODE_REGISTRY.yaml is loaded and valid"
+      - "No code conflicts (check SOP-APPEND-02 5-point validation)"
+
+    postconditions:
+      - "All 4 index locations synchronized (Location 1-4 in appendix_index.tex)"
+      - "APPENDIX_CODE_REGISTRY.yaml updated with new codes"
+      - "Backup created before modifications (SOP-RECOVERY-04)"
+
+    affected_systems:
+      - "appendices/00_appendix_index.tex"
+      - "data/registries/APPENDIX_CODE_REGISTRY.yaml"
+      - "appendices/*.tex"
+
+    replacement: "register_lit_appendices_v2.py (being developed)"
+    bug_reference: "25 code conflicts: codes R, S, T, W, X assigned twice"
+    bug_analysis: "No precondition validation for code availability; missing Location 4 index update"
+
+    last_run: "2025-12-20T10:15:00"
+    next_scheduled: null
+
+  - name: "generate_lit_appendices.py"
+    category: "Appendix Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Generate new literature appendix files from case/paper data"
+    sop_reference: ["SOP-SCRIPT-01", "SOP-APPEND-02"]
+
+    preconditions:
+      - "Input data (papers, cases) exists in /data/"
+      - "Category code selected from APPENDIX_CODE_REGISTRY"
+      - "Category code availability verified"
+
+    postconditions:
+      - "New .tex appendix file created with standard structure"
+      - "File matches 00_appendix_template.tex structure"
+      - "Manual registration required (register_lit_appendices.py next)"
+
+    affected_systems:
+      - "appendices/*.tex (new files)"
+
+    last_run: "2026-01-10T14:32:00"
+
+  - name: "generate_6_lit_appendices.py"
+    category: "Appendix Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Batch generate 6 literature appendices at once"
+    sop_reference: ["SOP-SCRIPT-01", "SOP-APPEND-02"]
+
+    preconditions:
+      - "6 selected papers/cases ready for appendix creation"
+      - "Category codes pre-selected and verified"
+
+    postconditions:
+      - "6 new appendix files created (batch operation)"
+      - "Must run register_lit_appendices afterward"
+
+    affected_systems:
+      - "appendices/*.tex (6 new files)"
+
+    last_run: "2026-01-10T15:00:00"
+
+  - name: "regenerate_lit_aa.py"
+    category: "Appendix Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Regenerate literature appendix AA with latest papers"
+    sop_reference: ["SOP-SCRIPT-01", "SOP-INDEX-03"]
+
+    preconditions:
+      - "Paper database in /data/ is current"
+      - "Code AA exists and is eligible for overwrite"
+
+    postconditions:
+      - "appendices/AA_*.tex regenerated with new content"
+      - "Index Location 1 (summary) updated for AA"
+
+    affected_systems:
+      - "appendices/AA_*.tex"
+
+    last_run: "2026-01-08T09:00:00"
+
+  # ============================================================================
+  # CATEGORY: Paper Management (Add Authors' Papers)
+  # ============================================================================
+
+  - name: "add_fehr_papers_100.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add 100 papers from Ernst Fehr (behavioral economics pioneer)"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "data/papers/ directory exists"
+      - "Fehr paper list downloaded/imported"
+
+    postconditions:
+      - "100 new papers added to data/papers.yaml"
+      - "DOIs and citations formatted consistently"
+      - "No duplicate entries"
+
+    affected_systems:
+      - "data/papers.yaml"
+
+    last_run: "2025-12-01T08:00:00"
+
+  - name: "add_fehr_papers_50_more.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add 50 additional Fehr papers (complement to 100)"
+    sop_reference: ["SOP-SCRIPT-01"]
+    preconditions:
+      - "data/papers.yaml exists"
+      - "First 100 Fehr papers already loaded"
+    postconditions:
+      - "50 additional papers added (no duplicates)"
+    affected_systems:
+      - "data/papers.yaml"
+    last_run: "2025-12-05T10:30:00"
+
+  - name: "add_fehr_final_6.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add final 6 key Fehr papers (highest citations)"
+    sop_reference: ["SOP-SCRIPT-01"]
+    preconditions:
+      - "data/papers.yaml current"
+    postconditions:
+      - "6 key papers added, marked as tier-1"
+    affected_systems:
+      - "data/papers.yaml"
+    last_run: "2025-12-10T11:00:00"
+
+  - name: "add_fehr_final_6_more.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add 6 more final Fehr papers (latest research)"
+    sop_reference: ["SOP-SCRIPT-01"]
+    preconditions:
+      - "data/papers.yaml exists"
+    postconditions:
+      - "6 latest Fehr papers added"
+    affected_systems:
+      - "data/papers.yaml"
+    last_run: "2025-12-12T09:15:00"
+
+  - name: "add_kahneman_papers_50.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add 50 papers from Daniel Kahneman (Nobel laureate)"
+    sop_reference: ["SOP-SCRIPT-01"]
+    preconditions:
+      - "data/papers.yaml exists"
+    postconditions:
+      - "50 Kahneman papers added with citations"
+    affected_systems:
+      - "data/papers.yaml"
+    last_run: "2025-12-08T14:00:00"
+
+  - name: "add_kahneman_final_18.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add final 18 key Kahneman papers"
+    sop_reference: ["SOP-SCRIPT-01"]
+    preconditions:
+      - "data/papers.yaml current"
+    postconditions:
+      - "18 key papers from Kahneman added"
+    affected_systems:
+      - "data/papers.yaml"
+    last_run: "2025-12-14T10:45:00"
+
+  - name: "add_thaler_papers_20.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add 20 papers from Richard Thaler (behavioral finance)"
+    sop_reference: ["SOP-SCRIPT-01"]
+    preconditions:
+      - "data/papers.yaml exists"
+    postconditions:
+      - "20 Thaler papers added"
+    affected_systems:
+      - "data/papers.yaml"
+    last_run: "2025-12-06T15:30:00"
+
+  - name: "add_sunstein_papers_20.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add 20 papers from Cass Sunstein (behavioral policy)"
+    sop_reference: ["SOP-SCRIPT-01"]
+    preconditions:
+      - "data/papers.yaml exists"
+    postconditions:
+      - "20 Sunstein papers added"
+    affected_systems:
+      - "data/papers.yaml"
+    last_run: "2025-12-07T09:20:00"
+
+  - name: "add_ariely_papers_20.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add 20 papers from Dan Ariely (behavioral decision-making)"
+    sop_reference: ["SOP-SCRIPT-01"]
+    preconditions:
+      - "data/papers.yaml exists"
+    postconditions:
+      - "20 Ariely papers added"
+    affected_systems:
+      - "data/papers.yaml"
+    last_run: "2025-12-09T11:50:00"
+
+  - name: "add_loewenstein_papers_20.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add 20 papers from George Loewenstein (behavioral decision theory)"
+    sop_reference: ["SOP-SCRIPT-01"]
+    preconditions:
+      - "data/papers.yaml exists"
+    postconditions:
+      - "20 Loewenstein papers added"
+    affected_systems:
+      - "data/papers.yaml"
+    last_run: "2025-12-11T13:15:00"
+
+  - name: "add_camerer_papers_20.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add 20 papers from Colin Camerer (neuroeconomics)"
+    sop_reference: ["SOP-SCRIPT-01"]
+    preconditions:
+      - "data/papers.yaml exists"
+    postconditions:
+      - "20 Camerer papers added"
+    affected_systems:
+      - "data/papers.yaml"
+    last_run: "2025-12-02T08:45:00"
+
+  - name: "add_gaechter_papers.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add papers from Simon Gächter (social preferences, experimental econ)"
+    sop_reference: ["SOP-SCRIPT-01"]
+    preconditions:
+      - "data/papers.yaml exists"
+    postconditions:
+      - "Gächter papers added"
+    affected_systems:
+      - "data/papers.yaml"
+    last_run: "2025-12-03T10:00:00"
+
+  - name: "add_autor_papers_20.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add 20 papers from David Autor (labor economics, automation)"
+    sop_reference: ["SOP-SCRIPT-01"]
+    preconditions:
+      - "data/papers.yaml exists"
+    postconditions:
+      - "20 Autor papers added"
+    affected_systems:
+      - "data/papers.yaml"
+    last_run: "2025-12-04T14:22:00"
+
+  - name: "add_50_behavioral_econ_papers.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add 50 general behavioral economics papers (mixed authors)"
+    sop_reference: ["SOP-SCRIPT-01"]
+    preconditions:
+      - "data/papers.yaml exists"
+    postconditions:
+      - "50 diverse behavioral econ papers added"
+    affected_systems:
+      - "data/papers.yaml"
+    last_run: "2025-11-28T09:00:00"
+
+  - name: "add_50_malmendier_papers.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add 50 papers from Ulrike Malmendier (behavioral finance)"
+    sop_reference: ["SOP-SCRIPT-01"]
+    preconditions:
+      - "data/papers.yaml exists"
+    postconditions:
+      - "50 Malmendier papers added"
+    affected_systems:
+      - "data/papers.yaml"
+    last_run: "2025-11-25T08:30:00"
+
+  - name: "add_50_falk_papers.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add 50 papers from Armin Falk (labor econ, incentives)"
+    sop_reference: ["SOP-SCRIPT-01"]
+    preconditions:
+      - "data/papers.yaml exists"
+    postconditions:
+      - "50 Falk papers added"
+    affected_systems:
+      - "data/papers.yaml"
+    last_run: "2025-11-22T11:15:00"
+
+  - name: "add_50_shafir_papers.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add 50 papers from Eldar Shafir (behavioral decision-making)"
+    sop_reference: ["SOP-SCRIPT-01"]
+    preconditions:
+      - "data/papers.yaml exists"
+    postconditions:
+      - "50 Shafir papers added"
+    affected_systems:
+      - "data/papers.yaml"
+    last_run: "2025-11-20T15:45:00"
+
+  - name: "add_50_list_papers.py"
+    category: "Paper Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add 50 papers from provided list (catch-all)"
+    sop_reference: ["SOP-SCRIPT-01"]
+    preconditions:
+      - "data/papers.yaml exists"
+      - "Paper list CSV provided"
+    postconditions:
+      - "50 papers added from list"
+    affected_systems:
+      - "data/papers.yaml"
+    last_run: "2025-11-18T10:20:00"
+
+  # ============================================================================
+  # CATEGORY: Data Processing & Enrichment
+  # ============================================================================
+
+  - name: "add_doi_urls.py"
+    category: "Data Processing"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Add DOI URLs to papers missing them"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "data/papers.yaml has papers without DOIs"
+      - "DOI resolution service available"
+
+    postconditions:
+      - "DOI URLs populated for eligible papers"
+      - "Backup created (SOP-RECOVERY-04)"
+
+    affected_systems:
+      - "data/papers.yaml"
+
+    last_run: "2026-01-05T12:00:00"
+
+  - name: "populate_dois_comprehensive.py"
+    category: "Data Processing"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Comprehensive DOI population for entire paper database"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "data/papers.yaml complete"
+      - "DOI mapping table available"
+
+    postconditions:
+      - "All resolvable DOIs populated"
+      - "Audit log of unmapped papers"
+
+    affected_systems:
+      - "data/papers.yaml"
+
+    last_run: "2026-01-03T08:45:00"
+
+  - name: "populate_top100_dois.py"
+    category: "Data Processing"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Populate DOIs for top 100 most-cited papers"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "data/papers.yaml with citation counts"
+
+    postconditions:
+      - "Top 100 papers have DOIs verified"
+
+    affected_systems:
+      - "data/papers.yaml"
+
+    last_run: "2026-01-01T10:00:00"
+
+  - name: "expand_paper_database.py"
+    category: "Data Processing"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Expand paper database with new sources"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "New paper sources identified"
+      - "data/papers.yaml writable"
+
+    postconditions:
+      - "New papers added without duplicates"
+
+    affected_systems:
+      - "data/papers.yaml"
+
+    last_run: "2025-12-20T14:30:00"
+
+  - name: "complete_paper_database_50.py"
+    category: "Data Processing"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Complete paper database by adding 50 missing core papers"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Gap analysis completed"
+      - "50 missing papers identified"
+
+    postconditions:
+      - "Database completeness improved"
+
+    affected_systems:
+      - "data/papers.yaml"
+
+    last_run: "2025-11-15T09:30:00"
+
+  - name: "expand_mullainathan_papers.py"
+    category: "Data Processing"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Expand Mullainathan (behavioral economist) paper collection"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "data/papers.yaml exists"
+
+    postconditions:
+      - "Mullainathan papers expanded"
+
+    affected_systems:
+      - "data/papers.yaml"
+
+    last_run: "2025-11-10T11:00:00"
+
+  - name: "update_lit_list.py"
+    category: "Data Processing"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Update literature list with new additions"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "New papers identified"
+
+    postconditions:
+      - "Literature list synchronized"
+
+    affected_systems:
+      - "data/papers.yaml"
+
+    last_run: "2025-12-28T13:45:00"
+
+  # ============================================================================
+  # CATEGORY: Case & Intervention Management
+  # ============================================================================
+
+  - name: "generate_cases_auto.py"
+    category: "Case Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Auto-generate behavioral intervention cases from papers"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "data/papers.yaml with intervention data"
+      - "Case template defined"
+
+    postconditions:
+      - "New cases created in data/case-registry.yaml"
+      - "Cases indexed by 10C coordinates"
+
+    affected_systems:
+      - "data/case-registry.yaml"
+
+    last_run: "2026-01-08T10:15:00"
+
+  - name: "extract_cases_from_papers.py"
+    category: "Case Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Extract behavioral intervention cases from scientific papers"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Paper abstracts and data available"
+
+    postconditions:
+      - "Cases extracted with metadata"
+
+    affected_systems:
+      - "data/case-registry.yaml"
+
+    last_run: "2026-01-06T14:00:00"
+
+  - name: "deduplicate_cases.py"
+    category: "Case Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Remove duplicate cases from registry"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "data/case-registry.yaml potentially has duplicates"
+
+    postconditions:
+      - "Duplicate cases removed, audit log created"
+
+    affected_systems:
+      - "data/case-registry.yaml"
+
+    last_run: "2025-12-25T08:00:00"
+
+  - name: "case_paper_linker.py"
+    category: "Case Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Link behavioral intervention cases to source papers"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "data/papers.yaml and data/case-registry.yaml exist"
+
+    postconditions:
+      - "Case-paper mappings created"
+      - "Cross-references updated"
+
+    affected_systems:
+      - "data/case-registry.yaml"
+      - "data/papers.yaml"
+
+    last_run: "2026-01-04T11:30:00"
+
+  - name: "phase4_case_paper_linker.py"
+    category: "Case Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Phase 4 version: advanced case-paper linking with confidence scores"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Phase 3 complete, papers catalogued"
+
+    postconditions:
+      - "Cases linked with confidence scores"
+
+    affected_systems:
+      - "data/case-registry.yaml"
+
+    last_run: "2025-11-30T09:45:00"
+
+  - name: "phase5_intervention_design.py"
+    category: "Case Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Phase 5: Design new behavioral interventions based on cases"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Phase 4 complete, cases linked"
+      - "Intervention design rules defined"
+
+    postconditions:
+      - "New intervention designs generated"
+      - "Predictions attached"
+
+    affected_systems:
+      - "data/intervention-registry.yaml"
+
+    last_run: "2025-11-25T14:00:00"
+
+  - name: "phase5_intervention_analyzer.py"
+    category: "Case Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Phase 5: Analyze intervention outcomes"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Interventions executed with results"
+
+    postconditions:
+      - "Analysis results saved"
+
+    affected_systems:
+      - "data/intervention-registry.yaml"
+
+    last_run: "2025-11-22T10:30:00"
+
+  - name: "phase5_learnings_extractor.py"
+    category: "Case Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Phase 5: Extract learnings from intervention outcomes"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Intervention analysis complete"
+
+    postconditions:
+      - "Learnings extracted and categorized"
+
+    affected_systems:
+      - "data/intervention-registry.yaml"
+
+    last_run: "2025-11-20T15:15:00"
+
+  - name: "phase6_longterm_tracker.py"
+    category: "Case Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Phase 6: Track long-term intervention outcomes over time"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Phase 5 complete, initial outcomes recorded"
+      - "Temporal tracking enabled"
+
+    postconditions:
+      - "Long-term tracking data collected"
+
+    affected_systems:
+      - "data/intervention-registry.yaml"
+
+    last_run: "2025-11-18T12:00:00"
+
+  - name: "phase6_learnings_extractor.py"
+    category: "Case Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Phase 6: Extract learnings from long-term outcomes"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Phase 6 tracking complete"
+
+    postconditions:
+      - "Long-term learnings extracted"
+
+    affected_systems:
+      - "data/intervention-registry.yaml"
+
+    last_run: "2025-11-16T09:30:00"
+
+  - name: "phase6_decay_analyzer.py"
+    category: "Case Management"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Phase 6: Analyze behavioral decay in long-term outcomes"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Phase 6 long-term data available"
+      - "Time series with multiple measurements"
+
+    postconditions:
+      - "Decay patterns identified and modeled"
+
+    affected_systems:
+      - "data/intervention-registry.yaml"
+
+    last_run: "2025-11-14T14:45:00"
+
+  # ============================================================================
+  # CATEGORY: Query & Analysis Tools
+  # ============================================================================
+
+  - name: "query_cases.py"
+    category: "Query Tools"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Query case registry by 10C coordinates and filters"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "data/case-registry.yaml exists"
+      - "Query filters defined"
+
+    postconditions:
+      - "Query results returned (JSON/CSV)"
+
+    affected_systems:
+      - "data/case-registry.yaml (read-only)"
+
+    last_run: "2026-01-10T16:00:00"
+
+  - name: "query_interventions.py"
+    category: "Query Tools"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Query intervention registry by domain, outcome, phase"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "data/intervention-registry.yaml exists"
+
+    postconditions:
+      - "Intervention query results returned"
+
+    affected_systems:
+      - "data/intervention-registry.yaml (read-only)"
+
+    last_run: "2026-01-09T13:20:00"
+
+  - name: "paper_lit_matcher.py"
+    category: "Query Tools"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Match papers to literature appendices by content similarity"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "data/papers.yaml and appendices/ both available"
+
+    postconditions:
+      - "Paper-appendix mappings with confidence scores"
+
+    affected_systems:
+      - "data/papers.yaml (read-only)"
+      - "appendices/ (read-only)"
+
+    last_run: "2025-12-15T11:00:00"
+
+  - name: "analyze_paper_lit_mapping.py"
+    category: "Query Tools"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Analyze quality of paper-to-literature appendix mappings"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "paper_lit_matcher.py outputs available"
+
+    postconditions:
+      - "Mapping quality analysis report"
+
+    affected_systems:
+      - "data/papers.yaml (read-only)"
+
+    last_run: "2025-12-10T15:30:00"
+
+  - name: "mine_journal_papers.py"
+    category: "Query Tools"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Mine behavioral economics journals for new papers"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Journal access credentials available"
+      - "Mining parameters defined"
+
+    postconditions:
+      - "New papers discovered and added"
+
+    affected_systems:
+      - "data/papers.yaml"
+
+    last_run: "2025-10-15T08:00:00"
+
+  # ============================================================================
+  # CATEGORY: Calibration & LLMMC
+  # ============================================================================
+
+  - name: "llmmc_calibration.py"
+    category: "Calibration"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "LLMMC Calibration: fit parameters a, b, σ_model, τ from anchors"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Anchor set (10-40 anchors) in data/calibration_anchors.yaml"
+      - "Each anchor has: effect_true, se_true, theta_llm, eu_llm"
+      - "Mapping method (e.g., pp/50) defined"
+
+    postconditions:
+      - "Calibration parameters fitted (a, b, σ_model, τ)"
+      - "LOO cross-validation: MAE < 0.12, Coverage ∈ [0.85, 0.98]"
+      - "Results saved to data/calibration_v1.json"
+
+    affected_systems:
+      - "data/calibration_anchors.yaml (read-only)"
+      - "data/calibration_v1.json (write)"
+
+    reference: "docs/methods/llmmc-calibration-sop.md"
+    last_run: "2026-01-13T14:32:00"
+
+  - name: "run_llmmc_workflow.py"
+    category: "Calibration"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "End-to-end LLMMC workflow: extraction → mapping → fit → validation"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Anchor candidate list (20-30 papers identified)"
+
+    postconditions:
+      - "Complete calibration (Phases 1-6 of SOP)"
+      - "Validation metrics documented"
+
+    affected_systems:
+      - "data/calibration_anchors.yaml"
+      - "data/calibration_v1.json"
+
+    last_run: "2026-01-10T09:00:00"
+
+  - name: "calibrate_pp.py"
+    category: "Calibration"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Calibrate percentage-point effect sizes to θ scale"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Effects in percentage-points (pp) format"
+
+    postconditions:
+      - "θ values via mapping: θ = min(1, pp/50)"
+
+    affected_systems:
+      - "data/calibration_anchors.yaml"
+
+    last_run: "2025-12-08T10:20:00"
+
+  - name: "calibrate_d_smd.py"
+    category: "Calibration"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Calibrate Cohen's d (standardized mean difference) to θ scale"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Effects in Cohen's d format"
+
+    postconditions:
+      - "θ values via piecewise linear or logistic mapping"
+
+    affected_systems:
+      - "data/calibration_anchors.yaml"
+
+    last_run: "2025-12-05T13:45:00"
+
+  - name: "theta_mapping.py"
+    category: "Calibration"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "General effect-to-θ mapping for various effect measures"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Effect metric type and value specified"
+
+    postconditions:
+      - "θ and se_theta computed"
+
+    affected_systems:
+      - "data/calibration_anchors.yaml"
+
+    last_run: "2025-12-03T11:00:00"
+
+  - name: "llmmc_to_rscore.py"
+    category: "Calibration"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Convert LLMMC estimates to R-Score (Robustness Score)"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "LLMMC calibration complete (data/calibration_v1.json)"
+
+    postconditions:
+      - "R-Score estimates generated"
+
+    affected_systems:
+      - "data/calibration_v1.json (read-only)"
+      - "outputs/ (write R-Score results)"
+
+    last_run: "2026-01-07T15:30:00"
+
+  - name: "r_score.py"
+    category: "Calibration"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Compute R-Score (scientific robustness score) from parameters"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Appendix parameters available"
+
+    postconditions:
+      - "R-Score computed (0-100 scale)"
+
+    affected_systems:
+      - "outputs/ (write R-Score)"
+
+    last_run: "2026-01-05T09:15:00"
+
+  - name: "generate_bayesian_priors.py"
+    category: "Calibration"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Generate Bayesian priors from LLMMC calibration"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "LLMMC calibration parameters available"
+
+    postconditions:
+      - "Bayesian priors (mean, variance, bounds) generated"
+
+    affected_systems:
+      - "data/calibration_v1.json (read-only)"
+      - "outputs/ (write priors)"
+
+    last_run: "2026-01-02T14:00:00"
+
+  - name: "validate_paper_robustness.py"
+    category: "Calibration"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Validate paper robustness metrics (use for appendix PREDICT)"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Paper parameters from appendices available"
+
+    postconditions:
+      - "Robustness validation scores computed"
+
+    affected_systems:
+      - "appendices/*.tex (read-only)"
+
+    last_run: "2025-12-18T10:45:00"
+
+  # ============================================================================
+  # CATEGORY: Strategic Models (ALPLA, Customers)
+  # ============================================================================
+
+  - name: "alpla_2035_revenue_dashboard.py"
+    category: "Strategic Models"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Generate ALPLA 2035 revenue projections (3-scenario dashboard)"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "ALPLA profile: 3,800 employees, €5.5B baseline"
+      - "Scenario assumptions (Conservative, Base, Optimistic)"
+      - "Monte Carlo parameters defined"
+
+    postconditions:
+      - "3-scenario dashboard with financial metrics"
+      - "Monte Carlo validation (10,000 simulations)"
+      - "HTML/PDF outputs generated"
+
+    affected_systems:
+      - "data/customers/alpla/ (read)"
+      - "outputs/alpla_dashboard.html (write)"
+
+    last_run: "2026-01-13T11:00:00"
+
+  - name: "socm_alpla_monte_carlo.py"
+    category: "Strategic Models"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Strategic Organizational Complementarity Model (SOCM) for ALPLA"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "ALPLA assumptions: CAGRs, margin drivers, dependencies"
+
+    postconditions:
+      - "Monte Carlo simulation with complementarity effects"
+
+    affected_systems:
+      - "data/customers/alpla/ (read)"
+
+    last_run: "2026-01-12T13:30:00"
+
+  - name: "socm_alpla_monte_carlo_simple.py"
+    category: "Strategic Models"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Simplified ALPLA Monte Carlo (faster execution)"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "ALPLA profile available"
+
+    postconditions:
+      - "Quick Monte Carlo estimate (lower precision)"
+
+    affected_systems:
+      - "data/customers/alpla/ (read)"
+
+    last_run: "2026-01-11T09:45:00"
+
+  # ============================================================================
+  # CATEGORY: Models Subdirectory
+  # ============================================================================
+
+  - name: "revenue_projection.py"
+    category: "Models"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "General revenue projection model (parametric)"
+    sop_reference: ["SOP-SCRIPT-01"]
+    path: "scripts/models/"
+
+    preconditions:
+      - "Customer profile (baseline, CAGRs, scenarios)"
+
+    postconditions:
+      - "Revenue projections (2025-2035)"
+
+    affected_systems:
+      - "data/customers/ (read)"
+
+    last_run: "2026-01-10T12:00:00"
+
+  # ============================================================================
+  # CATEGORY: Literature Generation (Appendix by Author)
+  # ============================================================================
+
+  - name: "generate_lit_falk.py"
+    category: "Literature Generation"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Generate literature appendix for Armin Falk"
+    sop_reference: ["SOP-SCRIPT-01", "SOP-APPEND-02"]
+
+    preconditions:
+      - "Falk papers in data/papers.yaml"
+
+    postconditions:
+      - "appendices/[CODE]_LIT-FALK.tex generated"
+
+    affected_systems:
+      - "appendices/ (write new file)"
+
+    last_run: "2025-12-20T14:15:00"
+
+  - name: "generate_lit_malmendier.py"
+    category: "Literature Generation"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Generate literature appendix for Ulrike Malmendier"
+    sop_reference: ["SOP-SCRIPT-01", "SOP-APPEND-02"]
+
+    preconditions:
+      - "Malmendier papers in data/papers.yaml"
+
+    postconditions:
+      - "appendices/[CODE]_LIT-MALMENDIER.tex generated"
+
+    affected_systems:
+      - "appendices/ (write new file)"
+
+    last_run: "2025-12-18T10:00:00"
+
+  - name: "generate_lit_shafir.py"
+    category: "Literature Generation"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Generate literature appendix for Eldar Shafir"
+    sop_reference: ["SOP-SCRIPT-01", "SOP-APPEND-02"]
+
+    preconditions:
+      - "Shafir papers in data/papers.yaml"
+
+    postconditions:
+      - "appendices/[CODE]_LIT-SHAFIR.tex generated"
+
+    affected_systems:
+      - "appendices/ (write new file)"
+
+    last_run: "2025-12-16T15:45:00"
+
+  # ============================================================================
+  # CATEGORY: Data Science & Phase Workflows
+  # ============================================================================
+
+  - name: "phase3_complete_journal_mapping.py"
+    category: "Phase Workflows"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Phase 3: Complete mapping of papers to journal citations"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Phase 2 complete, papers categorized"
+
+    postconditions:
+      - "Journal-paper mappings complete"
+
+    affected_systems:
+      - "data/papers.yaml"
+
+    last_run: "2025-11-12T09:30:00"
+
+  - name: "phase3_massive_doi_expansion.py"
+    category: "Phase Workflows"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Phase 3: Massive expansion of DOI coverage (100s of papers)"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Phase 3 starting, baseline papers with partial DOIs"
+
+    postconditions:
+      - "DOI coverage significantly expanded"
+
+    affected_systems:
+      - "data/papers.yaml"
+
+    last_run: "2025-11-10T11:15:00"
+
+  # ============================================================================
+  # CATEGORY: Document Generation & Compilation
+  # ============================================================================
+
+  - name: "generate_paper.py"
+    category: "Document Generation"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Generate academic paper from chapter/appendix LaTeX"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Source chapter or appendix .tex file exists"
+      - "Style template selected (fehr, thaler, kahneman, sunstein)"
+
+    postconditions:
+      - "PDF output generated in outputs/"
+
+    affected_systems:
+      - "chapters/*.tex or appendices/*.tex (read-only)"
+      - "outputs/ (write PDF)"
+
+    last_run: "2026-01-08T16:00:00"
+
+  - name: "generate_style_prompt.py"
+    category: "Document Generation"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Generate style prompts for paper generation"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Document style parameters defined"
+
+    postconditions:
+      - "Style-specific prompts generated"
+
+    affected_systems:
+      - "outputs/ (write prompts)"
+
+    last_run: "2025-12-22T13:20:00"
+
+  # ============================================================================
+  # CATEGORY: Compliance & Validation
+  # ============================================================================
+
+  - name: "check_template_compliance.py"
+    category: "Validation"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Check appendix compliance with 00_appendix_template.tex"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Appendix .tex file path provided"
+      - "00_appendix_template.tex exists"
+
+    postconditions:
+      - "Compliance score (0-100%) returned"
+      - "Missing elements listed"
+
+    affected_systems:
+      - "appendices/*.tex (read-only)"
+      - "appendices/00_appendix_template.tex (read-only)"
+
+    last_run: "2026-01-14T10:30:00"
+
+  - name: "check_chapter_compliance.py"
+    category: "Validation"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Check chapter compliance with 00_chapter_template.tex"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "Chapter .tex file path provided"
+      - "00_chapter_template.tex exists"
+
+    postconditions:
+      - "Compliance score (0-100%) returned"
+      - "Missing elements (Intuition Box, Central Question, etc) listed"
+
+    affected_systems:
+      - "chapters/*.tex (read-only)"
+      - "chapters/00_chapter_template.tex (read-only)"
+
+    last_run: "2026-01-13T14:15:00"
+
+  - name: "validate_core_framework.py"
+    category: "Validation"
+    version: "1.0"
+    status: "ACTIVE"
+    description: "Validate 10C CORE framework consistency"
+    sop_reference: ["SOP-SCRIPT-01"]
+
+    preconditions:
+      - "docs/frameworks/core-framework-definition.yaml exists (SSOT)"
+
+    postconditions:
+      - "All 10C references validated (no typos, correct counts)"
+      - "Inconsistencies flagged"
+
+    affected_systems:
+      - "docs/frameworks/core-framework-definition.yaml (read-only)"
+      - "appendices/*CORE*.tex (read-only)"
+
+    last_run: "2026-01-10T09:00:00"
+
+---
+
+## Status Summary by Category
+
+| Category | # Scripts | ACTIVE | DEPRECATED | EXPERIMENTAL |
+|----------|-----------|--------|-----------|--------------|
+| Appendix Management | 4 | 3 | 1 (register v1) | 0 |
+| Paper Management | 18 | 18 | 0 | 0 |
+| Data Processing | 6 | 6 | 0 | 0 |
+| Case & Intervention Mgmt | 11 | 11 | 0 | 0 |
+| Query Tools | 4 | 4 | 0 | 0 |
+| Calibration & LLMMC | 10 | 10 | 0 | 0 |
+| Strategic Models | 3 | 3 | 0 | 0 |
+| Models Subdirectory | 1 | 1 | 0 | 0 |
+| Literature Generation | 3 | 3 | 0 | 0 |
+| Phase Workflows | 2 | 2 | 0 | 0 |
+| Document Generation | 2 | 2 | 0 | 0 |
+| Compliance & Validation | 4 | 4 | 0 | 0 |
+| **TOTAL** | **69** | **67** | **1** | **0** |
+
+---
+
+## Remediation: Phase 2 Tasks
+
+### ❌ Issue: register_lit_appendices.py has 25 code conflicts
+- **Status:** DEPRECATED
+- **Replacement:** register_lit_appendices_v2.py (in development)
+- **Fix Timeline:** Complete Phase 2 by 2026-01-20
+
+### ✅ Action Items
+- [ ] Implement register_lit_appendices_v2.py using SOP-SCRIPT-01 pattern
+- [ ] Use AppendixIndexManager from SOP-INDEX-03 for all 4 location updates
+- [ ] Add 5-point code validation from SOP-APPEND-02
+- [ ] Test with --dry-run mode before execution
+- [ ] Create backup using SOP-RECOVERY-04 before running
+
+---
+
+*Script Registry v1.0 | 2026-01-15 | Protocol: OPS-SCRIPTS-001*

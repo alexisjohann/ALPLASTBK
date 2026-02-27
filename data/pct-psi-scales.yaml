@@ -1,0 +1,299 @@
+# PCT Psi-Scales: Categorical Labels to Numeric Values
+# =====================================================
+#
+# Maps categorical psi_conditions (from paper-references/PAP-*.yaml)
+# to numeric values on [0, 1] for PCT delta computation.
+#
+# Source: 95 unique labels from 16 papers with measurement_contexts
+# Method: LLMMC-informed priors (Tier-2) — NOT empirically calibrated
+# Created: 2026-02-15
+#
+# USAGE IN PCT:
+#   delta_psi = scale[target_label] - scale[anchor_label]
+#   M(delta_psi) = multiplier from pct-multiplier-tables.yaml
+#
+# SCALE INTERPRETATION:
+#   0.0 = low end of dimension (minimal pressure/presence)
+#   0.5 = moderate / neutral
+#   1.0 = high end of dimension (maximal pressure/presence)
+#
+# UPDATE PROTOCOL:
+#   When new measurement_contexts are added to paper-references,
+#   run: python scripts/extract_measurement_contexts.py --update-scales
+#   to check for unmapped labels.
+
+version: "0.3"
+calibration_status: "llmmc_prior"
+n_labels: 128
+n_papers: 16
+last_updated: "2026-02-16"
+changelog:
+  - version: "0.3"
+    date: "2026-02-16"
+    change: "psi_T MECE redesign: removed 6 STAGE labels, 1 Ψ_C label; added 24 clean temporal-situation labels with 5 sub-facettes (T1-T5)"
+
+scales:
+
+  # =========================================================================
+  # Psi_S: Social Dimension (26 labels)
+  # Scale: 0 = no social pressure → 1 = extreme social pressure/stigma
+  # =========================================================================
+  psi_S:
+    description: "Social norms, stigma, peer effects, observation"
+    anchor_low: "no social pressure"
+    anchor_high: "extreme social stigma"
+
+    values:
+      no_relationship: 0.10
+      stranger_recipient: 0.15
+      anonymous_application: 0.10
+      digital_remote: 0.15
+      group_based_delivery: 0.30
+      customer_segment_dependent: 0.40
+      social_observation: 0.50
+      offering_signals_generosity: 0.50
+      request_removes_signal: 0.55
+      competence_signaling: 0.55
+      organized_labor_present: 0.45
+      strong_unions: 0.50
+      no_organized_labor: 0.25
+      professional_hierarchy: 0.55
+      120_isolated_cardinals: 0.70
+      public_social_media: 0.65
+      strong_network_ties: 0.60
+      ongoing_relationship: 0.65
+      reputation_at_stake: 0.70
+      elite_dominated_discourse: 0.60
+      intimate_bond: 0.80
+      illness_stigma: 0.75
+      evaluator_feedback_context: 0.55
+      structured_classroom_peers_teachers: 0.60
+      welfare_stigma: 0.85
+      identity_threat: 0.80
+
+  # =========================================================================
+  # Psi_I: Institutional Dimension (29 labels)
+  # Scale: 0 = no rules/informal → 1 = highly regulated/bureaucratic
+  # =========================================================================
+  psi_I:
+    description: "Rules, regulations, defaults, formality, institutional structure"
+    anchor_low: "no institutional constraints"
+    anchor_high: "heavy bureaucratic regulation"
+
+    values:
+      anonymous_application: 0.15
+      customer_service_response: 0.30
+      company_context: 0.35
+      purchasing_context: 0.35
+      german_retail_context: 0.40
+      german_marketing_practice: 0.45
+      competitive_labor_market: 0.40
+      university_systems: 0.50
+      professional_hierarchy: 0.55
+      optout_default: 0.55
+      standard_monetary_policy_environment: 0.55
+      democratic_with_labor_rights: 0.55
+      market_regulatory_environment: 0.60
+      school_entry_cutoff_RD: 0.60
+      tax_not_included_in_price: 0.50
+      tax_tripled_salient: 0.65
+      research_ethics_protocol: 0.70
+      academic_methodology: 0.65
+      high_powered_preregistered: 0.75
+      underpowered_study: 0.35
+      medical_gatekeeping: 0.70
+      bureaucratic_application: 0.80
+      weak_labor_protections: 0.30
+      shipping_costs_separate: 0.40
+      structured_program_environment: 0.55
+      populist_institutional_erosion: 0.25
+      ztree_otree_vs_custom: 0.45
+      welfare_stigma: 0.75
+      Universi_Dominici_Gregis: 0.85
+
+  # =========================================================================
+  # Psi_C: Cognitive Dimension (14 labels)
+  # Scale: 0 = low cognitive load → 1 = high cognitive load/depletion
+  # =========================================================================
+  psi_C:
+    description: "Cognitive load, stress, attention, depletion, processing mode"
+    anchor_low: "relaxed, full attention"
+    anchor_high: "depleted, overloaded, biased"
+
+    values:
+      warm_glow_active: 0.20
+      formal_vs_verbal_theory: 0.35
+      targeting_automatic_responses: 0.40
+      financial_market_processing: 0.50
+      performance_evaluation: 0.55
+      left_digit_heuristic: 0.60
+      complex_present_value_calculation: 0.65
+      low_attention_end_of_week: 0.65
+      reputation_at_stake: 0.55
+      information_avoidance: 0.70
+      winner_curse_susceptible: 0.70
+      ego_depletion_context: 0.75
+      high_arousal_emotional: 0.80
+      identity_threat: 0.75
+
+  # =========================================================================
+  # Psi_K: Cultural Dimension (11 labels)
+  # Scale: 0 = individualist/secular → 1 = collectivist/traditional
+  # Interpretation varies by research question
+  # =========================================================================
+  psi_K:
+    description: "Cultural values, traditions, norms, worldviews"
+    anchor_low: "individualist, secular, market-oriented"
+    anchor_high: "collectivist, traditional, norm-oriented"
+    note: "Cultural scales are inherently context-dependent; these are relative positions"
+
+    values:
+      western_techno_optimism: 0.15
+      US_culture_2024: 0.25
+      experimental_economics_vs_psychology: 0.35
+      german_consumer_expectations: 0.40
+      industry_norms: 0.45
+      self_reliance_norm: 0.50
+      reciprocity_expectation: 0.55
+      varies_by_country: 0.50
+      US_low_income_Medicaid: 0.35
+      Aristotelian_ethical_framework: 0.65
+      Universi_Dominici_Gregis: 0.85
+
+  # =========================================================================
+  # Psi_E: Economic/Resource Dimension (8 labels)
+  # Scale: 0 = abundant resources → 1 = scarce resources
+  # =========================================================================
+  psi_E:
+    description: "Budget, income, stakes, resource availability"
+    anchor_low: "abundant resources, low stakes"
+    anchor_high: "scarce resources, high stakes"
+
+    values:
+      very_low_stakes_relative: 0.10
+      real_vs_hypothetical_stakes: 0.30
+      low_stakes_grocery: 0.25
+      moderate_stakes_auction: 0.50
+      high_income_group: 0.20
+      low_income_group: 0.75
+      low_SES_populations: 0.80
+      high_stakes_car_purchase: 0.80
+
+  # =========================================================================
+  # Psi_T: Temporal Dimension (20 labels)
+  # Scale: 0 = no urgency, open horizon → 1 = extreme urgency, immediate
+  #
+  # DEFINITION: Temporal structure of the decision SITUATION
+  #   - Deadline proximity, consequence latency, reversibility window,
+  #     repetition structure, cyclical position
+  #
+  # ABGRENZUNG (MECE):
+  #   - NOT temporal preferences (β, δ) — those are PARAMETERS modulated BY Ψ_T
+  #   - NOT life phase / developmental stage — that is STAGE (10C #8, Ch. 13/24)
+  #   - NOT cognitive effects of time pressure — that is Ψ_C
+  #   - IS: the objective temporal features of the choice environment
+  #
+  # LITERATURE BASIS:
+  #   PRO separation: Frederick et al. (2002), Trope & Liberman (2003/2010),
+  #     Ariely & Wertenbroch (2002), Kahneman & Tversky (1979)
+  #   CONTRA (but accept analytical separation): Haushofer & Fehr (2014),
+  #     Mullainathan & Shafir (2013) — note Ψ_T → Ψ_C feedback channel
+  #
+  # PREVIOUS LABELS MIGRATED:
+  #   → early_childhood_investment → STAGE (ages 0-5 sensitive period)
+  #   → ages_0_5_sensitive_period  → STAGE
+  #   → ages_13_27                 → STAGE
+  #   → customer_journey_phase     → STAGE (BCJ phase)
+  #   → long_term_habit_accumulation → STAGE (repeated behavior over life)
+  #   → repeated_practice_over_time  → STAGE
+  #   → friday_reduced_processing  → Ψ_C (cognitive effect, not temporal situation)
+  #     (kept as end_of_week_friday for the temporal POSITION here)
+  # =========================================================================
+  psi_T:
+    description: "Temporal structure of the decision situation: deadline proximity, consequence latency, reversibility, repetition, cyclical position"
+    anchor_low: "no deadline, open horizon, fully reversible"
+    anchor_high: "immediate deadline, instant consequences, irreversible"
+
+    sub_facettes:
+      T1_deadline_proximity: "How soon must the decision be made?"
+      T2_consequence_latency: "How soon do consequences materialize?"
+      T3_reversibility_window: "How long can the decision be undone?"
+      T4_repetition_structure: "One-shot vs. repeated decision?"
+      T5_cyclical_position: "Time of day, day of week, season"
+
+    values:
+      # --- Low urgency (0.00 - 0.20): Open horizon ---
+      no_deadline_open_horizon: 0.05         # T1: no deadline at all
+      annual_planning_cycle: 0.10            # T1+T5: yearly decision
+      consequence_delayed_years: 0.10        # T2: outcome in years (pension, education)
+      fully_reversible_anytime: 0.08         # T3: can be undone at any point
+      quarterly_review_cycle: 0.15           # T1+T5: quarterly deadline
+      repeated_daily_routine: 0.18           # T4: daily habit, no urgency
+
+      # --- Low-moderate urgency (0.20 - 0.40): Structured, manageable ---
+      monthly_recurring_deadline: 0.22       # T1: monthly bills, subscriptions
+      consequence_delayed_months: 0.25       # T2: outcome materializes in months
+      reversible_within_weeks: 0.28          # T3: cooling-off period, return window
+      multi_day_consideration: 0.30          # T1: several days to decide
+      weekly_routine_decision: 0.35          # T4+T1: weekly pattern
+      seasonal_cyclical: 0.32               # T5: seasonal effect (winter heating, tax season)
+
+      # --- Moderate urgency (0.40 - 0.60): Noticeable pressure ---
+      one_week_deadline: 0.42                # T1: ~7 days remaining
+      consequence_delayed_days: 0.48         # T2: outcome in days
+      reversible_within_days: 0.45           # T3: short return window
+      end_of_week_friday: 0.55               # T5: Friday = temporal position (cognitive effect → Ψ_C)
+      repeated_but_infrequent: 0.50          # T4: happens few times per year
+
+      # --- High urgency (0.60 - 0.80): Significant pressure ---
+      same_day_deadline: 0.65                # T1: must decide today
+      consequence_within_hours: 0.68         # T2: fast feedback
+      irreversible_commitment: 0.72          # T3: no undo (contract, surgery)
+      one_shot_unique_decision: 0.75         # T4: once-only opportunity
+      countdown_timer_visible: 0.78          # T1: explicit countdown (auction, offer)
+
+      # --- Extreme urgency (0.80 - 1.00): Maximum pressure ---
+      minutes_remaining: 0.85                # T1: very short window
+      real_time_auction_bidding: 0.88        # T1+T4: live auction pressure
+      immediate_consequence: 0.90            # T2: instant outcome
+      emergency_triage: 0.95                 # T1+T2+T3: immediate, irreversible, critical
+
+  # =========================================================================
+  # Psi_M: Material/Technology Dimension (8 labels)
+  # Scale: 0 = simple/analog → 1 = complex/digital
+  # =========================================================================
+  psi_M:
+    description: "Technology, tools, infrastructure, material context"
+    anchor_low: "simple, analog, paper-based"
+    anchor_high: "complex digital, multi-platform"
+
+    values:
+      paper_form_analog: 0.10
+      telephone_survey: 0.30
+      shipping_costs_separate: 0.40
+      online_survey_platform: 0.50
+      ztree_otree_vs_custom: 0.60
+      mobile_app_interface: 0.65
+      automated_digital_system: 0.75
+      multi_channel_platform: 0.85
+
+  # =========================================================================
+  # Psi_F: Physical Environment Dimension (10 labels)
+  # Scale: 0 = private/home → 1 = public/institutional
+  # =========================================================================
+  psi_F:
+    description: "Physical location, setting, environment"
+    anchor_low: "private, home, isolated"
+    anchor_high: "public, institutional, crowded"
+
+    values:
+      home_private: 0.15
+      digital_remote: 0.20
+      retail_store: 0.40
+      field_naturalistic: 0.45
+      laboratory_setting: 0.50
+      classroom_educational: 0.55
+      office_workplace: 0.60
+      hospital_clinical: 0.70
+      public_outdoor: 0.80
+      Sistine_Chapel: 0.90

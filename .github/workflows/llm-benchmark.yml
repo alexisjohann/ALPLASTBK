@@ -1,0 +1,128 @@
+name: EBF LLM Benchmark (Claude vs. OpenAI)
+
+on:
+  workflow_dispatch:
+    inputs:
+      question:
+        description: 'Single question to benchmark (leave empty to use config file)'
+        required: false
+        default: ''
+      question_id:
+        description: 'Specific question ID from config (e.g., BQ-001)'
+        required: false
+        default: ''
+      openai_model:
+        description: 'OpenAI model'
+        required: false
+        default: 'gpt-4o'
+        type: choice
+        options:
+          - gpt-4o
+          - gpt-4o-mini
+          - gpt-4-turbo
+          - o1
+          - o1-mini
+          - o3-mini
+      anthropic_model:
+        description: 'Anthropic model'
+        required: false
+        default: 'claude-sonnet-4-5-20250929'
+        type: choice
+        options:
+          - claude-sonnet-4-5-20250929
+          - claude-haiku-4-5-20251001
+          - claude-opus-4-6
+      skip_anthropic:
+        description: 'Skip Anthropic (only OpenAI)?'
+        required: false
+        default: false
+        type: boolean
+      run_all:
+        description: 'Run ALL questions from config?'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install openai anthropic pyyaml
+
+      - name: Run benchmark (single question)
+        if: inputs.question != ''
+        env:
+          OPENAI_API_KEY: ${{ secrets.CHAT_GPT_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          ARGS="--question '${{ inputs.question }}'"
+          ARGS="$ARGS --openai-model ${{ inputs.openai_model }}"
+          ARGS="$ARGS --anthropic-model ${{ inputs.anthropic_model }}"
+          if [ "${{ inputs.skip_anthropic }}" = "true" ]; then
+            ARGS="$ARGS --skip-anthropic"
+          fi
+          eval python scripts/benchmark_llm_compare.py $ARGS
+
+      - name: Run benchmark (specific ID from config)
+        if: inputs.question == '' && inputs.question_id != '' && inputs.run_all == 'false'
+        env:
+          OPENAI_API_KEY: ${{ secrets.CHAT_GPT_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python scripts/benchmark_llm_compare.py \
+            --config data/benchmark-questions.yaml \
+            --id "${{ inputs.question_id }}" \
+            --openai-model "${{ inputs.openai_model }}" \
+            --anthropic-model "${{ inputs.anthropic_model }}" \
+            ${{ inputs.skip_anthropic == 'true' && '--skip-anthropic' || '' }}
+
+      - name: Run benchmark (all questions from config)
+        if: inputs.question == '' && inputs.run_all == 'true'
+        env:
+          OPENAI_API_KEY: ${{ secrets.CHAT_GPT_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python scripts/benchmark_llm_compare.py \
+            --config data/benchmark-questions.yaml \
+            --openai-model "${{ inputs.openai_model }}" \
+            --anthropic-model "${{ inputs.anthropic_model }}" \
+            ${{ inputs.skip_anthropic == 'true' && '--skip-anthropic' || '' }}
+
+      - name: Run benchmark (default — all from config)
+        if: inputs.question == '' && inputs.question_id == '' && inputs.run_all == 'false'
+        env:
+          OPENAI_API_KEY: ${{ secrets.CHAT_GPT_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python scripts/benchmark_llm_compare.py \
+            --config data/benchmark-questions.yaml \
+            --openai-model "${{ inputs.openai_model }}" \
+            --anthropic-model "${{ inputs.anthropic_model }}" \
+            ${{ inputs.skip_anthropic == 'true' && '--skip-anthropic' || '' }}
+
+      - name: Commit benchmark results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add outputs/benchmarks/
+          if git diff --cached --quiet; then
+            echo "No new benchmark results to commit"
+          else
+            git commit -m "benchmark: LLM comparison results $(date +%Y-%m-%d)"
+            git push
+          fi

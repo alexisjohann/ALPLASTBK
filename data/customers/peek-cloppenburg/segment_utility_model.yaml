@@ -1,0 +1,924 @@
+# ===========================================================================
+# PEEK & CLOPPENBURG — SEGMENT UTILITY MODEL
+# ===========================================================================
+#
+# Zweck:    Empirisch fundiertes Nutzenmodell pro Kundensegment.
+#           Leitet aus den NL-Experiment-Daten (Feb 2026) die FEPSDE-
+#           Nutzenstrukturen ab und verbindet sie mit EBF-Komplementa-
+#           ritaetsparametern und strategischen Implikationen.
+#
+# Methodik: Die Uplift-Werte der 5 NL-Typen (vs. Control-Baseline)
+#           werden als Proxies fuer 5 retail-spezifische Nutzen-
+#           dimensionen interpretiert. Gewichte = normalisierte
+#           Anteile am positiven Gesamtuplift.
+#
+# Quellen:  - segment_factsheets.yaml (Experiment-Daten)
+#           - data/parameter-registry.yaml (PAR-COMP-001 bis -008)
+#           - chapters/10_2_fepsde_dimensions.tex (FEPSDE-Theorie)
+#           - PeC_CRM_Workshop_Feb2026_Deck.md (Workshop-Slides)
+#
+# Erstellt: 2026-02-27
+# Version:  1.0
+# ===========================================================================
+
+metadata:
+  customer: "Peek & Cloppenburg"
+  model_id: "MOD-PC-SEGUTIL-001"
+  model_name: "P&C Segment Utility & Preference Model"
+  created: "2026-02-27"
+  version: "1.0"
+  ebf_framework: "10C + FEPSDE + Complementarity"
+  data_basis:
+    experiment: "Newsletter-A/B-Test (5 NL-Typen × 6 Segmente)"
+    interviews: "7 Stakeholder-Interviews (CRM, Analytics, Brand, Maerkte)"
+    identity_scores: "Segment-Enrichment via Verhaltensprofile"
+  source_factsheets: "data/customers/peek-cloppenburg/segment_factsheets.yaml"
+  source_context: "data/customers/peek-cloppenburg/peek-cloppenburg_context.yaml"
+
+# ===========================================================================
+# 1. THEORETISCHER RAHMEN
+# ===========================================================================
+# Die zentrale Gleichung fuer den Gesamtnutzen eines Kunden in Segment s:
+#
+#   U_s = SUM_d  w_{s,d} * u_d  +  SUM_{d!=d'}  gamma_{dd'} * u_d * u_d'
+#
+#   Wobei:
+#     d in {status, social, financial, identity, experience}
+#     w_{s,d}    = Gewicht der Nutzendimension d in Segment s
+#     u_d        = Nutzenbeitrag aus Dimension d (z.B. via NL-Typ)
+#     gamma_{dd'} = Komplementaritaet zwischen Dimensionen d und d'
+#
+#   Wenn gamma > 0: Dimensionen verstaerken sich (Synergie)
+#   Wenn gamma < 0: Dimensionen unterlaufen sich (Crowding-Out)
+#   Wenn gamma = 0: Dimensionen sind unabhaengig (additiv, Default)
+# ===========================================================================
+
+theoretical_framework:
+  utility_equation: "U_s = SUM_d w_{s,d} * u_d + SUM_{d!=d'} gamma_{dd'} * u_d * u_d'"
+  core_questions:
+    WHAT: "Welche Nutzendimensionen treiben Kundenbindung bei P&C?"
+    HOW: "Wie interagieren die Dimensionen (Komplementaritaet vs. Crowding-Out)?"
+    WHO: "Wie unterscheiden sich die Segmente in ihrer Nutzenstruktur?"
+    WHEN: "In welchem Kontext (Filiale, Online, Sale) aendern sich die Gewichte?"
+
+  # -----------------------------------------------------------------------
+  # 1a. NL-Typ → Nutzendimension Mapping
+  # -----------------------------------------------------------------------
+  # Jeder NL-Typ spricht eine dominante Nutzendimension an. Die Uplift-
+  # Werte (pp vs. Control) messen, wie stark diese Dimension fuer ein
+  # Segment relevant ist.
+  # -----------------------------------------------------------------------
+  nl_to_utility_mapping:
+    - nl_type: "transactional"
+      utility_dimension: "u_status"
+      symbol: "U^{Sta}"
+      description: "Kaufhistorie, Punktestand, Mitgliedschafts-Tier"
+      mechanism: "Aktiviert funktionale Wertschaetzung und Status-Bewusstsein"
+      fepsde_mapping: "F (Financial) + S (Social, Status-Aspekt)"
+
+    - nl_type: "relational"
+      utility_dimension: "u_social"
+      symbol: "U^S"
+      description: "Persoenliche Ansprache, Beziehungssprache, Wertschaetzung"
+      mechanism: "Aktiviert Zugehoerigkeit, Reziprozitaet, emotionale Bindung"
+      fepsde_mapping: "S (Social) + E (Emotional)"
+
+    - nl_type: "sales"
+      utility_dimension: "u_financial"
+      symbol: "U^F"
+      description: "Rabatte, Angebote, Preisnachlaesse"
+      mechanism: "Aktiviert oekonomische Nutzenkalkulation (Preis-Leistung)"
+      fepsde_mapping: "F (Financial)"
+
+    - nl_type: "inspirational"
+      utility_dimension: "u_identity"
+      symbol: "U^{ID}"
+      description: "Trends, Looks, Lifestyle-Content, Kuration"
+      mechanism: "Aktiviert Selbstkonzept, Aspiration, 'Wer bin ich als Kaeufer:in?'"
+      fepsde_mapping: "E (Emotional, Aspiration) + individuelle Identitaet"
+
+    - nl_type: "retail"
+      utility_dimension: "u_experience"
+      symbol: "U^{Exp}"
+      description: "Store-Events, lokale Inhalte, Filial-Bezug"
+      mechanism: "Aktiviert physisches Erleben, Community, lokale Zugehoerigkeit"
+      fepsde_mapping: "P (Physical) + S (Social, Community-Aspekt)"
+
+    - nl_type: "control"
+      utility_dimension: "baseline_receptivity"
+      symbol: "alpha_s"
+      description: "Standard-NL ohne spezifischen Frame"
+      mechanism: "Misst generelle Kommunikations-Offenheit des Segments"
+      note: "Nicht Teil der Nutzenstruktur — zeigt allgemeine Ansprechbarkeit"
+
+# ===========================================================================
+# 2. KOMPLEMENTARITAETSPARAMETER (aus EBF Parameter-Registry)
+# ===========================================================================
+# Diese gamma-Werte bestimmen, ob sich Nutzendimensionen gegenseitig
+# verstaerken oder untergraben — der Kern der strategischen Analyse.
+# ===========================================================================
+
+complementarity_parameters:
+  # --- Positive Synergien ---
+  - id: "PAR-COMP-001"
+    dimensions: ["u_identity", "u_social"]
+    gamma: +0.35
+    ci_68: [0.25, 0.45]
+    tier: 1
+    interpretation: |
+      Identitaet und soziale Zugehoerigkeit verstaerken sich gegenseitig.
+      Wer sich mit P&C identifiziert UND soziale Bestaetigung erhaelt,
+      erlebt mehr als die Summe beider Teile.
+    source: "Akerlof & Kranton (2000), PAP-akerlof2000identity"
+    pc_relevance: |
+      Smart Premium (w_identity=0.56, w_social=0.32) profitiert maximal:
+      U_bonus = 0.35 * 0.56 * 0.32 = +0.063 (6.3% Zusatznutzen).
+      Clearance Hunters (w_social=0.63, Identity 7.1/10) ebenfalls stark.
+
+  - id: "PAR-COMP-004"
+    dimensions: ["u_social", "u_experience"]
+    gamma: +0.28
+    ci_68: [0.18, 0.38]
+    tier: 1
+    interpretation: |
+      Soziale Beziehung und physisches Erleben verstaerken sich.
+      Ein Store-Event (u_experience), das gemeinschaftlich erlebt wird
+      (u_social), wirkt staerker als beide einzeln.
+    source: "Warm Glow + Social Visibility, PAP-andreoni1990impure"
+    pc_relevance: |
+      Core Loyalists (w_experience=0.60, w_social=0.18): Store-Events
+      mit Community-Charakter sind der optimale Hebel.
+
+  - id: "PAR-COMP-005"
+    dimensions: ["u_identity", "u_experience"]
+    gamma: +0.22
+    ci_68: [0.12, 0.32]
+    tier: 1
+    interpretation: |
+      Identitaets-Bestaetigung durch physisches Erleben. Wer sich als
+      'P&C-Kundin' sieht und ein exklusives In-Store-Erlebnis hat,
+      festigt dieses Selbstbild.
+    source: "Identity × Warm Glow, PAP-akerlof2000identity"
+    pc_relevance: |
+      Smart Premium: Inspirational Content (u_identity) + exklusive
+      In-Store-Events (u_experience) = optimale Kombination.
+
+  # --- Crowding-Out (KRITISCH) ---
+  - id: "PAR-COMP-002"
+    dimensions: ["u_social", "u_financial"]
+    gamma: -0.68
+    ci_68: [-0.78, -0.58]
+    tier: 1
+    interpretation: |
+      STAERKSTES CROWDING-OUT IM EBF.
+      Monetaere Anreize zerstoeren soziale/intrinsische Motivation.
+      Wenn eine Beziehung durch Geld 'bezahlt' wird, verliert sie
+      ihren sozialen Wert.
+    source: |
+      Frey & Oberholzer-Gee (1997): NIMBY 50.8% → 24.6% mit Geld.
+      Gneezy & Rustichini (2000): U-foermiger Effekt.
+      Benabou & Tirole (2003): Formales Signaling-Modell.
+      Meta-Analyse: phi = 0.65 ueber 128 Studien.
+    pc_relevance: |
+      KRITISCH fuer Clearance Hunters: w_social=0.63 + w_financial=0.16.
+      Wenn Relational-NL mit Sale-NL kombiniert wird:
+      Netto-Effekt = 0.63*u_S + 0.16*u_F + (-0.68)*u_S*u_F
+      → Der finanzielle Anteil zerstoert den sozialen Gewinn!
+
+  - id: "GAMMA-PC-STATUS-TRUST"
+    dimensions: ["u_status", "u_experience"]
+    gamma: -0.35
+    ci_68: [-0.50, -0.20]
+    tier: 2
+    interpretation: |
+      Abgeleitet aus P&C-Daten: Transactional NL (-8.3pp) bei Core
+      Loyalists, die Retail NL (+16.7pp) bevorzugen. Status-Reminder
+      ('Du hast X Punkte') untergräbt das Erlebnis der Zugehoerigkeit.
+    source: "P&C NL-Experiment Feb 2026 (empirisch)"
+    pc_relevance: |
+      Core Loyalists: NIEMALS Transactional + Retail kombinieren.
+      Der Punkte-Reminder verwandelt die Beziehung in eine Transaktion.
+
+  - id: "GAMMA-PC-FINANCIAL-IDENTITY"
+    dimensions: ["u_financial", "u_identity"]
+    gamma: -0.45
+    ci_68: [-0.60, -0.30]
+    tier: 2
+    interpretation: |
+      Abgeleitet aus P&C-Daten: Smart Premium reagiert negativ auf
+      Sales (-4pp) und positiv auf Inspirational (+14.2pp). Rabatte
+      signalisieren 'billig' — das Gegenteil von Aspiration.
+    source: "P&C NL-Experiment Feb 2026 (empirisch)"
+    pc_relevance: |
+      Smart Premium: NIEMALS Sales-Angebote in Inspirational-Content
+      einbetten. Der Rabatt entwertet die Kuration.
+
+# ===========================================================================
+# 3. SEGMENT-NUTZENPROFILE (empirisch abgeleitet)
+# ===========================================================================
+# Fuer jedes Segment: Nutzengewichte, strategisches Narrativ,
+# Kommunikationsstrategie und Massnahmen.
+# ===========================================================================
+
+segments:
+
+  # =========================================================================
+  # SEGMENT 1: CORE LOYALISTS (24%)
+  # =========================================================================
+  - id: "SEG-PC-001"
+    name: "Core Loyalists"
+    share: 0.24
+
+    # --- Nutzenstruktur ---
+    utility_profile:
+      derivation: |
+        Aus NL-Uplift (exkl. Control): Retail +16.7, Relational +5,
+        Inspirational +4, Sales +2, Transactional -8.3.
+        Positiver Gesamtuplift = 27.7pp.
+      weights:
+        u_experience: 0.60
+        u_social: 0.18
+        u_identity: 0.14
+        u_financial: 0.07
+        u_status: -0.30  # CROWDING-OUT (normalisiert aus -8.3pp)
+      baseline_receptivity: +10.0  # Control-Uplift (hoch)
+      dominant_dimension: "u_experience"
+      toxic_dimension: "u_status"
+
+    # --- Nutzen-Narrativ ---
+    utility_narrative: |
+      Core Loyalists sind Erlebnis-Kund:innen. Ihr Nutzen entsteht
+      primaer durch das physische Einkaufserlebnis in der Filiale (60%
+      des Nutzengewichts). Sie schaetzen die lokale Verankerung, das
+      Wiederkommen an einen vertrauten Ort, das Gefuehl 'mein Laden'.
+
+      Soziale Anerkennung spielt eine unterstuetzende Rolle (18%):
+      Sie wollen als Person wahrgenommen werden, nicht als Datenpunkt.
+
+      Status-Kommunikation (Punkte, Tier, Kaufhistorie) ist AKTIV
+      SCHAEDLICH (-8.3pp). Der Punkte-Reminder verwandelt eine
+      emotionale Beziehung in eine Transaktion — und zerstoert damit
+      genau das, was dieses Segment an P&C bindet.
+
+    # --- Komplementaritaeten ---
+    complementarity_analysis:
+      positive:
+        - pair: ["u_experience", "u_social"]
+          gamma_ref: "PAR-COMP-004"
+          gamma: +0.28
+          implication: |
+            Store-Events mit Community-Charakter sind der optimale Hebel.
+            Ein lokaler Styling-Abend (u_experience) mit persoenlicher
+            Einladung (u_social) wirkt staerker als beide einzeln.
+            Bonus-Nutzen: +0.28 * 0.60 * 0.18 = +0.030 (+3.0%)
+      negative:
+        - pair: ["u_status", "u_experience"]
+          gamma_ref: "GAMMA-PC-STATUS-TRUST"
+          gamma: -0.35
+          implication: |
+            NIEMALS Transactional + Retail in einem NL kombinieren.
+            'Du hast 347 Punkte — komm zum Store-Event' zerstoert
+            den Community-Charakter des Events.
+
+    # --- Strategische Implikationen ---
+    strategic_implications:
+      communication:
+        primary_channel: "Retail-NL (Store-Events, lokale Inhalte)"
+        secondary_channel: "Relational-NL (persoenliche Wertschaetzung)"
+        frequency: "Regelmaessig, rhythmisch (z.B. jeden Mittwoch)"
+        tone: "Warm, einladend, lokal verankert"
+        framing: "'Komm vorbei — wir freuen uns auf dich'"
+        avoid: |
+          Transactional NL (Punkte-Reminder, Status-Updates).
+          Jede Kommunikation, die die Beziehung in eine Transaktion
+          verwandelt.
+
+      measures:
+        high_impact:
+          - name: "Lokale Store-Events"
+            mechanism: "u_experience + u_social (gamma = +0.28)"
+            example: "Monats-Event 'P&C Abend' mit Styling-Tipps, Getraenken, exklusivem Pre-Shopping"
+            expected_effect: "Besuchsfrequenz +15-25%, emotionale Bindung vertieft"
+          - name: "Rhythmische Retail-NL"
+            mechanism: "u_experience via Trust & Consistency"
+            example: "Fester Wochentag, fester Absender, lokale Filial-Inhalte"
+            expected_effect: "Open Rate +16.7pp (gemessen)"
+        medium_impact:
+          - name: "Persoenliche Begruessungs-Signale"
+            mechanism: "u_social"
+            example: "Verkaufspersonal erkennt Stammkund:innen, nennt beim Namen"
+            expected_effect: "NPS +5-10 Punkte"
+        avoid:
+          - name: "Punkte-Kommunikation"
+            reason: "u_status ist TOXISCH (-8.3pp)"
+            alternative: "Punkte im Hintergrund sammeln, nicht kommunizieren"
+
+      value_creation_summary: |
+        Der groesste Wert fuer Core Loyalists entsteht durch ERLEBNIS
+        und VERLAESSLICHKEIT — nicht durch Angebote oder Status. P&C
+        sollte fuer dieses Segment wie ein 'dritter Ort' funktionieren:
+        weder Zuhause noch Arbeit, sondern ein vertrauter Platz, an dem
+        man sich willkommen fuehlt.
+
+  # =========================================================================
+  # SEGMENT 2: PREMIUM LOYALISTS (11%)
+  # =========================================================================
+  - id: "SEG-PC-002"
+    name: "Premium Loyalists"
+    share: 0.11
+
+    utility_profile:
+      derivation: |
+        Aus NL-Uplift (exkl. Control): Inspirational +9, Relational +7,
+        Retail +6, Transactional +3, Sales +1.
+        Positiver Gesamtuplift = 26.0pp. Alle Werte positiv — kein
+        Crowding-Out, aber klare Hierarchie.
+      weights:
+        u_identity: 0.35
+        u_social: 0.27
+        u_experience: 0.23
+        u_status: 0.12
+        u_financial: 0.04
+      baseline_receptivity: +10.0  # Control-Uplift (hoechster)
+      dominant_dimension: "u_identity"
+      toxic_dimension: null  # Kein negativer Wert — aber Financial fast null
+
+    utility_narrative: |
+      Premium Loyalists sind die anspruchsvollsten Kund:innen bei P&C.
+      Ihr Nutzen ist BREIT VERTEILT ueber alle Dimensionen — aber mit
+      klarer Identitaets-Dominanz (35%). Sie sehen sich als qualitaets-
+      bewusste, stilsichere Persoenlichkeiten und erwarten, dass P&C
+      dieses Selbstbild spiegelt.
+
+      Bemerkenswert: Der Control-NL hat den hoechsten Uplift (+10pp).
+      Das bedeutet: Premium Loyalists reagieren bereits auf JEDE
+      Kommunikation positiv — sie brauchen keinen lauten Frame. Die
+      beste Strategie ist ZURUECKHALTUNG mit subtilen Exklusivitaets-
+      signalen.
+
+      Finanzieller Nutzen (4%) ist nahezu irrelevant. Rabatte oder
+      Sale-Hinweise verfehlen dieses Segment fast vollstaendig.
+
+    complementarity_analysis:
+      positive:
+        - pair: ["u_identity", "u_social"]
+          gamma_ref: "PAR-COMP-001"
+          gamma: +0.35
+          implication: |
+            Exklusivitaet, die von anderen gesehen wird, verstaerkt
+            Identitaet. 'Premium-Mitglieder erhalten 48h Early Access'
+            ist sowohl identitaets- als auch sozial wirksam.
+            Bonus-Nutzen: +0.35 * 0.35 * 0.27 = +0.033 (+3.3%)
+        - pair: ["u_identity", "u_experience"]
+          gamma_ref: "PAR-COMP-005"
+          gamma: +0.22
+          implication: |
+            Exklusive In-Store-Erlebnisse (Private Shopping, Styling-
+            Session) bestaetigen die Premium-Identitaet physisch.
+      negative: []  # Kein Crowding-Out — aber Financial nahe Null
+
+    strategic_implications:
+      communication:
+        primary_channel: "Control-NL (Standard-Format, nicht ueberfrachtet)"
+        secondary_channel: "Inspirational-NL (Kuration, Trends, Lifestyle)"
+        frequency: "Massvoll (eher 2x/Monat als woechentlich)"
+        tone: "Dezent, kuratiert, qualitaetsvoll"
+        framing: "'Fuer Mitglieder. Vor allen anderen.'"
+        avoid: |
+          Zu viele NLs, zu laute Botschaften, Sale-Hinweise.
+          Dieses Segment interpretiert Ueberkommunkation als
+          Qualitaetsverlust der Marke.
+
+      measures:
+        high_impact:
+          - name: "Early Access (48h vor allen anderen)"
+            mechanism: "u_identity + u_social (gamma = +0.35)"
+            example: "'Neue Kollektion — fuer Sie ab Donnerstag, fuer alle ab Samstag'"
+            expected_effect: "Conversion +10-15%, Retention +5%"
+          - name: "Private Shopping / Personal Styling"
+            mechanism: "u_identity + u_experience (gamma = +0.22)"
+            example: "Terminvereinbarung, persoenliche Beratung, kuratierte Auswahl"
+            expected_effect: "AOV +20-30%, Experience-Gap zu Breuninger schliessen"
+        medium_impact:
+          - name: "Kuratierter Inspirational Content"
+            mechanism: "u_identity"
+            example: "Editorielle NL mit 3 Looks statt 30 Produkten"
+            expected_effect: "Open Rate +9pp (gemessen)"
+        avoid:
+          - name: "Massen-Sale-Kommunikation"
+            reason: "u_financial = 0.04 — nahezu wirkungslos"
+            alternative: "Sale separat an preissensitive Segmente kommunizieren"
+
+      value_creation_summary: |
+        Premium Loyalists wollen EXKLUSIVITAET und KURATION. Ihr Nutzen
+        entsteht dadurch, dass P&C ihnen das Gefuehl gibt, bevorzugt
+        behandelt zu werden — ohne es plakativ zu kommunizieren. Das
+        Schluesselwort ist SUBTILITAET. Die groesste Gefahr ist nicht
+        ein konkreter Fehler, sondern die Verwechslung dieses Segments
+        mit dem Massenmarkt. Die groesste Chance: den Experience-Gap
+        zu Breuninger durch kuratierte Exklusivitaet schliessen.
+
+  # =========================================================================
+  # SEGMENT 3: SMART VALUE SEEKERS (20%)
+  # =========================================================================
+  - id: "SEG-PC-003"
+    name: "Smart Value Seekers"
+    share: 0.20
+
+    utility_profile:
+      derivation: |
+        Aus NL-Uplift (exkl. Control): Relational +12, Sales +8,
+        Retail +7, Inspirational +5, Transactional +4.
+        Positiver Gesamtuplift = 36.0pp. Alle positiv, aber klare
+        Rangordnung: Social > Financial > Experience.
+      weights:
+        u_social: 0.33
+        u_financial: 0.22
+        u_experience: 0.19
+        u_identity: 0.14
+        u_status: 0.11
+      baseline_receptivity: +3.0  # Control-Uplift (niedrig!)
+      dominant_dimension: "u_social"
+      toxic_dimension: null  # Kein negativer Wert
+
+    utility_narrative: |
+      Smart Value Seekers haben das DIVERSIFIZIERTESTE Nutzenprofil
+      aller Segmente — kein Extrem, aber eine klare Rangordnung.
+      Soziale Wertschaetzung dominiert (33%), gefolgt von finanziellem
+      Nutzen (22%). Sie wollen BEIDES — guten Preis UND gute Beziehung.
+
+      ABER: Die EBF-Komplementaritaet warnt! gamma(social, financial)
+      = -0.68. Wenn beide Dimensionen GLEICHZEITIG aktiviert werden,
+      unterlaufen sie sich. Die Loesung: SEQUENZIERUNG. Zuerst
+      Beziehung aufbauen (Relational), dann Wert anbieten — aber als
+      Reciprocity (Goodie, Raffle), nicht als Rabatt.
+
+      Die niedrige Baseline-Receptivity (+3pp) zeigt: Generische
+      Kommunikation erreicht dieses Segment kaum. Es braucht einen
+      spezifischen Frame — und Relational (+12pp) ist dieser Frame.
+
+    complementarity_analysis:
+      positive:
+        - pair: ["u_social", "u_experience"]
+          gamma_ref: "PAR-COMP-004"
+          gamma: +0.28
+          implication: |
+            Wenn der finanzielle Aspekt durch Non-Monetary-Reziprozitaet
+            ersetzt wird (Goodie statt Rabatt), entsteht eine soziale
+            Erlebnis-Komplementaritaet.
+      negative:
+        - pair: ["u_social", "u_financial"]
+          gamma_ref: "PAR-COMP-002"
+          gamma: -0.68
+          implication: |
+            KRITISCHES CROWDING-OUT-RISIKO.
+            Netto-Effekt bei gleichzeitiger Aktivierung:
+            0.33*u_S + 0.22*u_F + (-0.68)*u_S*u_F
+            = 0.33 + 0.22 - 0.68*0.33*0.22 = 0.33 + 0.22 - 0.049
+            Das Crowding-Out (-0.049) ist moderat, ABER der
+            qualitative Schaden ist groesser: Die Beziehung wird als
+            'gekauft' wahrgenommen und verliert ihren sozialen Wert.
+            LOESUNG: Zeitliche Trennung (Social ZUERST, dann Value)
+            oder Non-Monetary-Substitute (Goodie statt Rabatt).
+
+    strategic_implications:
+      communication:
+        primary_channel: "Relational-NL (Wertschaetzung, persoenliche Ansprache)"
+        secondary_channel: "Retail-NL (lokale Angebote mit Beziehungsframe)"
+        frequency: "Woechentlich, aber segmentiert"
+        tone: "Persoenlich, wertschaetzend, transparent"
+        framing: "'Weil du uns wichtig bist — hier etwas Besonderes fuer dich'"
+        avoid: |
+          Relational + Sales in EINEM NL kombinieren. Die Beziehungs-
+          sprache wird durch den Rabatt-Code am Ende entwertet.
+
+      measures:
+        high_impact:
+          - name: "Non-Monetary Reciprocity (Goodie / Raffle)"
+            mechanism: "u_social + u_financial (umgeleitet auf Reciprocity)"
+            example: "Raffle-Teilnahme statt 10%-Gutschein, Goodie-Bag bei Store-Besuch"
+            expected_effect: "Conversion >= Rabatt bei geringeren Kosten (H3)"
+          - name: "Relational NL mit Fairness-Framing"
+            mechanism: "u_social + Fairness-Pillar"
+            example: "'Weil du seit 2 Jahren dabei bist — wir moechten dir danken'"
+            expected_effect: "Open Rate +12pp (gemessen)"
+        medium_impact:
+          - name: "Transparente Wert-Kommunikation"
+            mechanism: "Fairness-Pillar"
+            example: "Erklaeren WARUM ein Angebot kommt (nicht nur WAS)"
+            expected_effect: "Trust-Score erhoehen, Crowding-Out vermeiden"
+        avoid:
+          - name: "Rabatt + Beziehungssprache in einem NL"
+            reason: "gamma(social, financial) = -0.68"
+            alternative: "SEQUENZIEREN: Woche 1 = Relational, Woche 2 = Value-Angebot"
+
+      value_creation_summary: |
+        Smart Value Seekers sind das Segment, bei dem die EBF-Komple-
+        mentaritaetstheorie den groessten strategischen Wert liefert.
+        Ohne dieses Wissen wuerde man Social + Financial kombinieren
+        (naheliegend bei 33% + 22%) und damit das wirksamste Crowd-
+        ing-Out im gesamten Parameterraum triggern (gamma = -0.68).
+
+        Die Loesung: SEQUENZIERUNG und SUBSTITUTION. Beziehung
+        aufbauen (Relational NL), dann Wert bieten — aber als
+        Geschenk (Reciprocity), nicht als Transaktion (Rabatt).
+
+  # =========================================================================
+  # SEGMENT 4: SMART PREMIUM (11%)
+  # =========================================================================
+  - id: "SEG-PC-004"
+    name: "Smart Premium"
+    share: 0.11
+
+    utility_profile:
+      derivation: |
+        Aus NL-Uplift (exkl. Control): Inspirational +14.2, Relational +8,
+        Retail +3, Transactional -2, Sales -4.
+        Positiver Gesamtuplift = 25.2pp. ZWEI negative Dimensionen.
+      weights:
+        u_identity: 0.56
+        u_social: 0.32
+        u_experience: 0.12
+        u_status: -0.08  # CROWDING-OUT
+        u_financial: -0.16  # CROWDING-OUT (staerkstes negatives Signal)
+      baseline_receptivity: +5.0
+      dominant_dimension: "u_identity"
+      toxic_dimension: "u_financial"
+
+    utility_narrative: |
+      Smart Premium ist das IDENTITAETSSTÄRKSTE Segment. Ueber die
+      Haelfte ihres Nutzens (56%) stammt aus der Selbstkonzept-
+      Dimension: 'Wer bin ich als Kaeufer:in?' Sie sehen sich als
+      stilsicher, trendbewusst, anspruchsvoll — und erwarten, dass
+      P&C dieses Bild reflektiert.
+
+      Soziale Anerkennung (32%) spielt die zweitwichtigste Rolle:
+      Der Stil will gesehen und bestaetigt werden. Die Kombination
+      aus Identity + Social wird durch gamma = +0.35 verstaerkt —
+      das groesste Synergiepotenzial aller Segmente.
+
+      TOXISCH sind beide monetaeren Dimensionen: Sales (-4pp) und
+      Transactional (-2pp). Rabatte signalisieren 'billig', Punkte-
+      Reminder signalisieren 'Massenmarkt'. Beides widerspricht dem
+      Premium-Selbstbild.
+
+      Hoechster AOV aller Segmente. Verliert P&C nicht an Zalando
+      (Preis) sondern an Breuninger (Experience).
+
+    complementarity_analysis:
+      positive:
+        - pair: ["u_identity", "u_social"]
+          gamma_ref: "PAR-COMP-001"
+          gamma: +0.35
+          implication: |
+            STAERKSTES SYNERGIEPOTENZIAL.
+            Bonus-Nutzen: +0.35 * 0.56 * 0.32 = +0.063 (+6.3%)
+            Wenn Smart Premium Inspirational Content teilt (u_identity)
+            UND sozialen Zuspruch erhaelt (u_social), entsteht ein
+            Flywheel: Teilen → Feedback → Identitaetsbestaetigung → Bindung.
+      negative:
+        - pair: ["u_financial", "u_identity"]
+          gamma_ref: "GAMMA-PC-FINANCIAL-IDENTITY"
+          gamma: -0.45
+          implication: |
+            Rabatte zerstoeren Aspiration. Ein Inspirational-NL mit
+            Sale-Banner am Ende verwandelt Kuration in Kommerz.
+            Jede finanzielle Botschaft signalisiert: 'Wir muessen
+            dieses Produkt loswerden' — das Gegenteil von Exklusivitaet.
+
+    strategic_implications:
+      communication:
+        primary_channel: "Inspirational-NL (Looks, Trends, Lifestyle-Content)"
+        secondary_channel: "Relational-NL (persoenliche Stil-Beratung)"
+        frequency: "Kuratiert, nicht haeufig (1-2x/Monat)"
+        tone: "Editorisch, aspirational, magazinhaft"
+        framing: "'Dein Style. Kuratiert fuer dich.'"
+        avoid: |
+          Sale-Kommunikation jeder Art. Transactional-Inhalte.
+          Massen-NL. Alles was 'fuer alle' wirkt statt 'fuer dich'.
+
+      measures:
+        high_impact:
+          - name: "Kuratiertes Inspirational-Erlebnis"
+            mechanism: "u_identity + u_social (gamma = +0.35)"
+            example: "Editorial NL: '5 Looks fuer den Fruehling — kuratiert von unserer Style-Redaktion'"
+            expected_effect: "Open Rate +14.2pp (gemessen), Sharing-Rate erhoehen"
+          - name: "Experience-Upgrade In-Store"
+            mechanism: "u_identity + u_experience (gamma = +0.22)"
+            example: "Private Shopping, Styling-Session, kuratierte Auswahl statt volle Racks"
+            expected_effect: "Experience-Gap zu Breuninger schliessen, AOV halten"
+          - name: "Inspiration + Deal (Komplementaritaetstest)"
+            mechanism: "u_identity + u_financial (VORSICHTIG, H2 testet dies)"
+            example: "Inspirational Content + 'Und mit deinem Member-Vorteil: Early Access'"
+            expected_effect: "H2 testet ob Inspiration+Deal >= Inspiration > Sales"
+        medium_impact:
+          - name: "Social Sharing Triggers"
+            mechanism: "u_social"
+            example: "Teilbare Inhalte, Style-Guides, 'Zeig deinen Look'"
+            expected_effect: "Organische Reichweite, Word-of-Mouth"
+        avoid:
+          - name: "Sale-Banner im Inspirational-NL"
+            reason: "gamma(financial, identity) = -0.45"
+            alternative: "Sale nur an preissensitive Segmente, NICHT an Smart Premium"
+
+      value_creation_summary: |
+        Smart Premium ist das WERTVOLLSTE Segment pro Kopf (hoechster
+        AOV). Der Schluessel ist KURATION statt MASSE. P&C muss fuer
+        dieses Segment wie ein Style-Magazin wirken, nicht wie ein
+        Kaufhaus. Die Komplementaritaet Identity × Social (+0.35)
+        ist der staerkste Hebel: Inspirational Content, der geteilt
+        und sozial bestaetigt wird, bindet dieses Segment staerker
+        als jeder Rabatt.
+
+        Die strategische Prioritaet: Den Experience-Gap zu Breuninger
+        schliessen — nicht ueber Preis, sondern ueber Kuration,
+        Exklusivitaet und personalisierte Beratung.
+
+  # =========================================================================
+  # SEGMENT 5: CLEARANCE HUNTERS (29%)
+  # =========================================================================
+  - id: "SEG-PC-005"
+    name: "Clearance Hunters"
+    share: 0.29
+
+    utility_profile:
+      derivation: |
+        Aus NL-Uplift (exkl. Control): Relational +20, Sales +5,
+        Inspirational +4, Retail +3, Transactional -1.
+        Positiver Gesamtuplift = 32.0pp.
+      weights:
+        u_social: 0.63
+        u_financial: 0.16
+        u_identity: 0.13
+        u_experience: 0.09
+        u_status: -0.03  # Leicht negativ
+      baseline_receptivity: +2.0  # Control-Uplift (niedrigster!)
+      dominant_dimension: "u_social"
+      toxic_dimension: "u_status"  # Mild
+      identity_score: 7.1
+      identity_scale: "0-10"
+
+    utility_narrative: |
+      Clearance Hunters sind das GROESSTE und MISSVERSTANDENSTE Segment.
+      Ihr Name suggeriert: preisgetrieben, disloyal, nur im Sale aktiv.
+      Die Daten zeigen das GEGENTEIL.
+
+      63% ihres Nutzens stammen aus sozialer Wertschaetzung — der mit
+      ABSTAND hoechste Sozial-Anteil aller Segmente. Ihr Identity-Score
+      (7.1/10) ist der zweithoechste nach Smart Premium. Sie IDENTI-
+      FIZIEREN sich mit P&C — sie kaufen nur zufaellig haeufig im Sale.
+
+      Der Relational-Uplift von +20pp ist das STAERKSTE EINZELERGEBNIS
+      des gesamten Experiments. Kein anderes Segment reagiert so
+      eindeutig auf irgendeine Kommunikationsform.
+
+      Die niedrige Baseline (+2pp) zeigt: Generische Kommunikation
+      erreicht sie nicht. Sie brauchen das Gefuehl, PERSOENLICH
+      angesprochen zu werden.
+
+      KRITISCH: u_financial (0.16) und u_social (0.63) koexistieren
+      in diesem Segment. Das Crowding-Out-Risiko (gamma = -0.68) ist
+      REAL. Dieses Segment darf NIEMALS mit der Kombination
+      'Danke fuer deine Treue — hier ist ein Gutschein' angesprochen
+      werden. Der Gutschein entwertet das Danke.
+
+    complementarity_analysis:
+      positive:
+        - pair: ["u_social", "u_identity"]
+          gamma_ref: "PAR-COMP-001"
+          gamma: +0.35
+          implication: |
+            Die Kombination aus sozialer Wertschaetzung (0.63) und
+            Identitaetsbestaetigung (0.13, Identity 7.1/10) hat
+            Synergiepotenzial. 'Du gehoerst zu uns' (Social) +
+            'Du hast einen guten Stil' (Identity) = mehr als die Summe.
+            Bonus: +0.35 * 0.63 * 0.13 = +0.029 (+2.9%)
+        - pair: ["u_social", "u_experience"]
+          gamma_ref: "PAR-COMP-004"
+          gamma: +0.28
+          implication: |
+            Persoenliche Einladungen (Social) zu Store-Events
+            (Experience) wirken synergistisch.
+      negative:
+        - pair: ["u_social", "u_financial"]
+          gamma_ref: "PAR-COMP-002"
+          gamma: -0.68
+          implication: |
+            DAS GROESSTE RISIKO IM GESAMTEN P&C-CRM.
+            Clearance Hunters haben GLEICHZEITIG den hoechsten
+            Social-Anteil (0.63) UND einen messbaren Financial-Anteil
+            (0.16). Jede Kombination von Beziehung + Geld triggert
+            das staerkste Crowding-Out des EBF (gamma = -0.68).
+            'Danke + Gutschein' = Beziehung wird zur Transaktion.
+
+    strategic_implications:
+      communication:
+        primary_channel: "Relational-NL (Wertschaetzung, Anerkennung)"
+        secondary_channel: "Inspirational-NL (Identitaetsbestaetigung)"
+        frequency: "Regelmaessig, persoenlich (woechentlich)"
+        tone: "Anerkennend, warm, persoenlich"
+        framing: "'Du bist uns wichtig — nicht wegen deiner Kaeufe, sondern weil du dazugehörst'"
+        avoid: |
+          Relational + Sale in einem NL. 'Danke + Gutschein'-Muster.
+          Den Namen 'Clearance Hunters' in Kundenkommunikation.
+          Jede Kommunikation, die Sale-Verhalten als definierende
+          Eigenschaft des Segments behandelt.
+
+      measures:
+        high_impact:
+          - name: "Pure Relational Kommunikation"
+            mechanism: "u_social (0.63 — dominant)"
+            example: "Geburtstags-NL ohne Gutschein — nur 'Alles Gute, wir freuen uns ueber dich'"
+            expected_effect: "Open Rate +20pp (gemessen — staerkstes Ergebnis ueberhaupt)"
+          - name: "Reciprocity ohne Monetarisierung"
+            mechanism: "u_social via Reciprocity-Pillar"
+            example: "Kleine Ueberraschung bei Store-Besuch (Kaffee, Blume), KEIN Gutschein"
+            expected_effect: "Besuchsfrequenz +10-20%, Bindung vertieft"
+        medium_impact:
+          - name: "Segment-Umbenennung"
+            mechanism: "u_identity (Identity 7.1/10)"
+            example: "Interner Name von 'Clearance Hunters' zu z.B. 'Loyal Regulars' oder 'Community Members'"
+            expected_effect: "Intern: bessere Behandlung. Extern: kein Stigma"
+          - name: "Identitaets-Bestaetigung"
+            mechanism: "u_identity + u_social (gamma = +0.35)"
+            example: "'Dein Style ist einzigartig — und du weisst, wo du ihn findest'"
+            expected_effect: "Loyalty-Score erhoehen, Vollpreis-Anteil steigern"
+        avoid:
+          - name: "Danke + Gutschein Kombination"
+            reason: "gamma(social, financial) = -0.68"
+            alternative: "ENTKOPPELN: Danke separat. Gutschein (wenn noetig) zeitversetzt und ohne Beziehungsframe."
+          - name: "Sale-fokussierte Segmentierung"
+            reason: "Name und Behandlung als 'Schnaeppchenjaeger' widerspricht empirisch der Identitaet"
+            alternative: "Verhaltensdaten UND Identitaetsdaten fuer Segmentierung nutzen"
+
+      value_creation_summary: |
+        Clearance Hunters sind das STRATEGISCH WICHTIGSTE Segment fuer
+        die CRM-Transformation. Drei Gruende:
+
+        1. GROESSE: 29% des Kundenstamms — jede Verbesserung skaliert.
+        2. FEHLALLOKATION: Das aktuelle CRM behandelt sie als preis-
+           getrieben — die Daten zeigen, dass sie beziehungsgetrieben
+           sind. Die Korrektur dieser Fehlallokation ist der groesste
+           Quick Win.
+        3. CROWDING-OUT-RISIKO: gamma(social, financial) = -0.68.
+           Das haeufigste CRM-Muster ('Danke + Gutschein') zerstoert
+           bei GENAU DIESEM Segment den Nutzen. Aufhoeren ist gratis.
+
+        Die Kernmassnahme: ENTKOPPELN. Beziehung und Geld separat
+        kommunizieren. Oder besser: Geld durch Reciprocity ersetzen
+        (Geschenke statt Gutscheine, Anerkennung statt Rabatte).
+
+  # =========================================================================
+  # SEGMENT 6: DORMANT POTENTIALS (5%) — PLACEHOLDER
+  # =========================================================================
+  - id: "SEG-PC-006"
+    name: "Dormant Potentials"
+    share: 0.05
+    status: "PLACEHOLDER"
+
+    utility_profile:
+      derivation: "Keine ausreichende Datenbasis."
+      weights: null
+      baseline_receptivity: null
+      dominant_dimension: null
+      toxic_dimension: null
+
+    utility_narrative: |
+      Fuer Dormant Potentials liegen keine NL-Experiment-Daten vor.
+      Das Segment (5%) ist zu klein fuer statistische Aussagen.
+      Empfehlung: In Phase 4 gezielt Daten erheben oder das Segment
+      mit aehnlichen Profilen aus anderen Retailern abgleichen.
+
+    complementarity_analysis: null
+
+    strategic_implications:
+      communication:
+        primary_channel: "Noch zu bestimmen"
+        avoid: "Keine Massnahmen ohne Datenbasis"
+      measures:
+        next_step: "Datenerhebung in Phase 4 priorisieren (D1)"
+      value_creation_summary: "Zu wenig Daten fuer Empfehlungen."
+
+# ===========================================================================
+# 4. SEGMENT-VERGLEICHSMATRIX (Zusammenfassung)
+# ===========================================================================
+
+segment_comparison:
+  weights_matrix:
+    note: "Nutzengewichte pro Segment (abgeleitet aus NL-Experiment-Uplift)"
+    header: ["Segment", "u_experience", "u_social", "u_identity", "u_financial", "u_status", "Baseline"]
+    rows:
+      - ["Core Loyalists (24%)",     0.60, 0.18, 0.14, 0.07, -0.30, +10.0]
+      - ["Premium Loyalists (11%)",  0.23, 0.27, 0.35, 0.04,  0.12, +10.0]
+      - ["Smart Value (20%)",        0.19, 0.33, 0.14, 0.22,  0.11,  +3.0]
+      - ["Smart Premium (11%)",      0.12, 0.32, 0.56, -0.16, -0.08,  +5.0]
+      - ["Clearance Hunters (29%)",  0.09, 0.63, 0.13, 0.16, -0.03,  +2.0]
+
+  dominant_dimensions:
+    Core_Loyalists: "EXPERIENCE (0.60) — der Laden als Zuhause"
+    Premium_Loyalists: "IDENTITY (0.35) — der Stil als Ausdruck"
+    Smart_Value: "SOCIAL (0.33) — die Beziehung als Wert"
+    Smart_Premium: "IDENTITY (0.56) — das Selbstbild als Anker"
+    Clearance_Hunters: "SOCIAL (0.63) — die Anerkennung als Bindung"
+
+  key_patterns:
+    - pattern: "Social dominiert bei 3 von 5 Segmenten (Smart Value, Smart Premium, Clearance Hunters)"
+      implication: "P&C sollte generell von transaktionalem zu relationalem CRM wechseln"
+    - pattern: "Financial ist NIE dominant — maximal 22% (Smart Value)"
+      implication: "Rabatte sind kein primaerer Bindungshebel, bei keinem Segment"
+    - pattern: "Identity ist bei 2 Segmenten dominant (Premium Loyalists, Smart Premium)"
+      implication: "Kuration und Lifestyle-Content sind fuer 22% der Kunden der Schluesselhebel"
+    - pattern: "Experience ist NUR bei Core Loyalists dominant (24%)"
+      implication: "Store-Events lohnen sich primaer fuer das groesste Loyalitaets-Segment"
+    - pattern: "Status (Transactional) ist bei 3 Segmenten negativ"
+      implication: "Punkte-Kommunikation schadet mehr als sie nuetzt"
+
+# ===========================================================================
+# 5. STRATEGISCHE GESAMTBEWERTUNG
+# ===========================================================================
+
+strategic_synthesis:
+  headline: "Von Transactional CRM zu Relational CRM — empirisch begruendet"
+
+  core_finding: |
+    Das NL-Experiment zeigt ein konsistentes Bild: P&C-Kund:innen wollen
+    BEZIEHUNG, nicht TRANSAKTION. In 4 von 5 Segmenten ist Social oder
+    Identity die dominante Nutzendimension. Financial ist nirgends dominant.
+    Status (Transactional) ist bei 3 Segmenten aktiv schaedlich.
+
+    Das aktuelle CRM-Modell (transaktional, punkte-basiert, sale-getrieben)
+    spricht die FALSCHE Nutzendimension an — bei den meisten Kund:innen.
+
+  three_strategic_moves:
+    - move: "STOP: Transactional-Default abschalten"
+      segments_affected: ["Core Loyalists (24%)", "Smart Premium (11%)", "Clearance Hunters (29%)"]
+      total_share: 0.64
+      rationale: |
+        64% der Kund:innen reagieren negativ oder neutral auf Transactional.
+        Punkte-Reminder und Status-Updates sollten aus dem Standard-NL
+        entfernt und nur on-demand (App, Website) verfuegbar sein.
+      cost: "Null (weniger senden kostet nichts)"
+      expected_impact: "Open Rate +5-10pp durch Vermeidung negativer Effekte"
+
+    - move: "START: Segment-spezifische NL-Tracks"
+      implementation: |
+        5 separate NL-Tracks statt one-size-fits-all:
+        1. Core Loyalists    → Retail-NL (woechentlich, lokal)
+        2. Premium Loyalists → Control+ (2x/Monat, kuratiert, subtil)
+        3. Smart Value       → Relational-NL (woechentlich, persoenlich)
+        4. Smart Premium     → Inspirational-NL (2x/Monat, editorisch)
+        5. Clearance Hunters → Relational-NL (woechentlich, anerkennend)
+      cost: "Mittel (Content-Erstellung, Segmentierung in ESP)"
+      expected_impact: "Gewichteter Ø-Uplift: +14.3pp (vs. Control-Baseline)"
+
+    - move: "PROTECT: Crowding-Out-Firewall"
+      rule: |
+        NIEMALS Social + Financial in einem Touchpoint kombinieren.
+        gamma(social, financial) = -0.68 — das staerkste Crowding-Out
+        im EBF-Parameterraum. Gilt besonders fuer:
+        - Clearance Hunters (w_social=0.63, w_financial=0.16)
+        - Smart Value (w_social=0.33, w_financial=0.22)
+      implementation: |
+        CRM-System-Regel: Wenn ein NL Relational-Frame hat,
+        darf er KEINEN Rabatt-Code/Sale-Link enthalten.
+        Wenn ein NL Sale-Content hat, darf er KEINE
+        Beziehungssprache verwenden.
+      cost: "Gering (Prozessregel im CRM-Tool)"
+      expected_impact: "Vermeidung von -5 bis -15pp Crowding-Out-Verlust"
+
+  prioritized_actions:
+    - priority: 1
+      action: "Transactional-NL fuer Core Loyalists + Clearance Hunters stoppen"
+      effort: "Gering"
+      impact: "Hoch (53% der Kunden betroffen)"
+      timing: "Sofort"
+
+    - priority: 2
+      action: "Relational-NL-Track fuer Clearance Hunters aufsetzen"
+      effort: "Mittel"
+      impact: "Sehr hoch (+20pp bei 29% der Kunden)"
+      timing: "Maerz 2026 (mit H1-Test)"
+
+    - priority: 3
+      action: "Inspirational-NL-Track fuer Smart Premium aufsetzen"
+      effort: "Mittel-Hoch (Content-Produktion)"
+      impact: "Hoch (+14.2pp, hoechster AOV)"
+      timing: "Maerz 2026 (mit H2-Test)"
+
+    - priority: 4
+      action: "Store-Event-Programm fuer Core Loyalists pilotieren"
+      effort: "Hoch (Filial-Koordination)"
+      impact: "Hoch (+16.7pp, 24% der Kunden)"
+      timing: "April 2026 (mit H4-Test)"
+
+    - priority: 5
+      action: "Non-Monetary Reciprocity fuer Smart Value testen"
+      effort: "Mittel"
+      impact: "Mittel-Hoch (H3)"
+      timing: "Maerz 2026 (mit H3-Test)"
+
+    - priority: 6
+      action: "Early Access fuer Premium Loyalists einrichten"
+      effort: "Gering-Mittel"
+      impact: "Mittel (+10pp, 11%)"
+      timing: "April 2026 (mit H5-Test)"

@@ -1,0 +1,145 @@
+# Recommendation Tracking Log
+# ⚠️ DEPRECATED: Einträge migriert → data/task-log.yaml (SSOT)
+# Diese Datei bleibt als Referenz, neue Einträge NUR in task-log.yaml
+# Jeder Eintrag = 1 Empfehlung mit Default, User-Wahl und Outcome
+# DREI LERNSCHLEIFEN:
+#   1. Default-Kalibrierung: Akzeptanzrate → richtige Stufe empfehlen
+#   2. Reasoning-Kalibrierung: Override-Gründe → bessere Begründungen
+#   3. Outcome-Kalibrierung: Hat die Aktion das EBF weitergebracht?
+#
+# EMPFEHLUNGSALGORITHMUS (emergiert aus Evidenz):
+#   - Regeln werden ab ≥3 Datenpunkten mit gleichem Muster hinzugefügt
+#   - Bei Override: Kontext-Features analysieren (was war anders?)
+#   - Bei Akzeptanz: Reasoning-Muster verstärken
+#   - Bei Outcome: EBF-Impact bewerten → höher-Impact Aktionen bevorzugen
+
+entries:
+- id: REC-001
+  timestamp: "2026-02-08T09:01"
+  context: "Post-migration paper consistency"
+  options:
+    quick_win: "15 orphan YAMLs klären"
+    medium: "check_paper_consistency.py Script erstellen"
+    large: "Pre-Commit Hook Integration"
+  default: medium
+  reasoning: "Script fängt ad-hoc Wissen ein, Voraussetzung für Hook"
+  user_choice: medium
+  accepted_default: true
+  timing:
+    start: "2026-02-08T09:01"
+    completed: "2026-02-08T09:05"
+    duration_min: 4
+  outcome:
+    status: success
+    result: "check_paper_consistency.py mit 3 Modi (full/summary/exit-code)"
+    ebf_impact:
+      what_improved: "Wiederverwendbare Diagnose statt ad-hoc Bash-Befehle"
+      measurable: "Konsistenz jederzeit prüfbar in <1 Sekunde"
+      enables_next: "Pre-Commit Hook Integration (Prävention)"
+      would_different_choice_be_better: false
+
+- id: REC-002
+  timestamp: "2026-02-08T08:51"
+  context: "Post-migration nächster Schritt"
+  options:
+    quick_win: "Konsistenz-Check bib ↔ paper-references"
+    medium: "extracted_papers.yaml analysieren + migrieren"
+    large: "SSOT-Enforcement-Pipeline"
+  default: quick_win
+  reasoning: "Diagnose vor Therapie - Lücken zuerst sichtbar machen"
+  user_choice: quick_win
+  accepted_default: true
+  timing:
+    start: "2026-02-08T08:51"
+    completed: "2026-02-08T09:00"
+    duration_min: 9
+  outcome:
+    status: success
+    result: "98.4% Konsistenz erkannt, 24 Lücken gefunden und geschlossen → 100% BIB→YAML"
+    ebf_impact:
+      what_improved: "SSOT-Lücken sichtbar gemacht, 24 fehlende YAMLs generiert"
+      measurable: "BIB→YAML von 98.9% auf 100%"
+      enables_next: "Konsistenz-Script konnte auf sauberer Basis gebaut werden"
+      would_different_choice_be_better: false
+
+- id: REC-003
+  timestamp: "2026-02-08T09:06"
+  context: "Konsistenz-Script existiert, Automatisierung nächster Schritt"
+  options:
+    quick_win: "15 orphan YAMLs klären"
+    medium: "CLAUDE.md Recommendation-Prinzip permanent verankern"
+    large: "Pre-Commit Hook Integration für Konsistenz-Check"
+  default: large
+  reasoning: "Script existiert + --exit-code bereit, schliesst Kette Diagnose→Prävention"
+  user_choice: large
+  accepted_default: true
+  timing:
+    start: "2026-02-08T09:06"
+    completed: "2026-02-08T09:10"
+    duration_min: 4
+  outcome:
+    status: success
+    result: "Pre-Commit Hook warnt bei neuen BibTeX-Einträgen ohne YAML"
+    ebf_impact:
+      what_improved: "SSOT-Konsistenz wird automatisch bei jedem Commit geprüft"
+      measurable: "100% BIB→YAML Konsistenz wird dauerhaft gehalten"
+      enables_next: "Kette vollständig: Migration → Diagnose → Prävention"
+      would_different_choice_be_better: false
+
+# Metriken
+metrics:
+  total_recommendations: 3
+  default_accepted: 3
+  default_overridden: 0
+  acceptance_rate: 1.0
+  quick_win_chosen: 1
+  medium_chosen: 1
+  large_chosen: 1
+  # Timing (gemessen, nicht geschätzt!)
+  avg_duration_min:
+    quick_win: 9    # 1 Datenpunkt (REC-002)
+    medium: 4       # 1 Datenpunkt (REC-001)
+    large: 4        # 1 Datenpunkt (REC-003)
+    # Ab ≥3 Datenpunkten pro Stufe: Median + Range verwenden
+
+# Empfehlungsregeln (emergieren aus Evidenz, ≥3 Datenpunkte nötig)
+rules: []
+  # Format:
+  # - id: RULE-001
+  #   pattern: "nach Diagnose-Schritt"
+  #   then: "medium empfehlen (Wissen als Script einfangen)"
+  #   confidence: 0.8
+  #   evidence: [REC-001, REC-003, REC-007]
+  #   added: "2026-02-XX"
+
+# Learnings (nach jedem Override oder bemerkenswertem Outcome)
+learnings: []
+  # Format:
+  # - id: RL-001
+  #   trigger: "User override" | "User Korrektur" | "Outcome überraschend"
+  #   observation: "Was ist passiert?"
+  #   insight: "Was bedeutet das für zukünftige Empfehlungen?"
+  #   action: "Welche Regel anpassen/hinzufügen?"
+
+# Timing-Schema (PFLICHT bei jedem Eintrag, aus Git-Commits rekonstruieren):
+#   timing:
+#     start: "YYYY-MM-DDTHH:MM"       # Erster Commit oder Arbeitsbeginn
+#     completed: "YYYY-MM-DDTHH:MM"    # Letzter Commit des Tasks
+#     duration_min: N                   # Differenz in Minuten (gemessen!)
+
+# Outcome-Schema (PFLICHT bei jedem abgeschlossenen Eintrag):
+#   outcome:
+#     status: success | partial | failed
+#     result: "Was wurde konkret erreicht?"
+#     ebf_impact:
+#       what_improved: "Was ist im EBF jetzt besser?"
+#       measurable: "Messbare Verbesserung (Zahl, Prozent, Zustand)"
+#       enables_next: "Was wird dadurch als nächstes möglich?"
+#       would_different_choice_be_better: true/false + Begründung
+
+# Aktuell gelernt (aus dieser Session):
+# - User will IMMER einen Default-Vorschlag (nicht 3 gleichwertige Optionen)
+# - User will 3-Stufen-Format: Quick Win / Mittel / Gross
+# - User will keine Zeitschätzungen ohne Log-Evidenz
+# - User will dass Empfehlungen vom EBF-Kontext abhängen, nicht generisch sind
+# - Outcomes müssen EBF-Impact messen, nicht nur "hat funktioniert"

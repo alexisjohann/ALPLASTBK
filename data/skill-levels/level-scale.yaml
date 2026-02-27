@@ -1,0 +1,117 @@
+# =============================================================================
+# SKILL LEVEL SCALE DEFINITION
+# =============================================================================
+#
+# Based on O*NET Ability Level Scale (Fleishman & Reilly, 1992)
+# Adapted for EBF Skill Architecture
+#
+# SSOT for: How skill levels are measured across all tiers
+# Reference: https://www.onetonline.org/help/online/scales
+#
+# Version: 1.0
+# Created: 2026-02-22
+# =============================================================================
+
+scale:
+  name: "EBF Skill Level Scale"
+  type: "ordinal"
+  range: [1, 7]
+  source: "O*NET Ability Level Scale (adapted)"
+  description: |
+    A 7-point scale measuring the REQUIRED LEVEL of an ability or skill
+    for a specific job or role. This is a JOB REQUIREMENT scale, not a
+    person proficiency scale.
+
+    Key principle: Levels describe WHAT THE JOB DEMANDS, not what the
+    person currently has. The gap between job demand and person level
+    is the development need.
+
+  levels:
+    1:
+      label: "Minimal"
+      description: "Ability is present but barely required"
+      anchor_example: "Compare two numbers to see which is larger"
+      cognitive_equiv: "Recognition / recall of simple facts"
+      typical_jobs: ["Shelf stocker", "Basic assembly"]
+
+    2:
+      label: "Basic"
+      description: "Basic application in routine situations"
+      anchor_example: "Count the change to be given to a customer"
+      cognitive_equiv: "Apply simple rules in familiar contexts"
+      typical_jobs: ["Cashier", "Data entry clerk"]
+
+    3:
+      label: "Intermediate"
+      description: "Moderate application with some judgment needed"
+      anchor_example: "Calculate a monthly budget for a department"
+      cognitive_equiv: "Apply rules with some adaptation to context"
+      typical_jobs: ["Sales associate", "Administrative assistant"]
+
+    4:
+      label: "Advanced"
+      description: "Complex application requiring analysis and judgment"
+      anchor_example: "Determine the mathematics needed to solve a problem"
+      cognitive_equiv: "Analyze situations, choose between approaches"
+      typical_jobs: ["Store manager", "Project coordinator"]
+
+    5:
+      label: "High"
+      description: "Sophisticated application in complex, ambiguous situations"
+      anchor_example: "Develop a model to predict economic outcomes"
+      cognitive_equiv: "Synthesize multiple inputs, create new approaches"
+      typical_jobs: ["Regional manager", "Business analyst"]
+
+    6:
+      label: "Expert"
+      description: "Expert-level application, can handle novel situations"
+      anchor_example: "Design a new mathematical proof for a theorem"
+      cognitive_equiv: "Generate original solutions, evaluate competing theories"
+      typical_jobs: ["Director", "Senior consultant"]
+
+    7:
+      label: "Master"
+      description: "Highest level, redefines standards in the field"
+      anchor_example: "Develop a new mathematical theory"
+      cognitive_equiv: "Create paradigms, mentor experts"
+      typical_jobs: ["C-Level executive", "Thought leader"]
+
+  # How to use this scale in job profiles
+  usage:
+    importance:
+      description: "How important is this ability for the job? (separate from level)"
+      range: [0, 5]
+      anchors:
+        0: "Not important"
+        1: "Somewhat important"
+        2: "Important"
+        3: "Very important"
+        4: "Extremely important"
+        5: "Critical"
+
+    level:
+      description: "What level of this ability does the job require?"
+      range: [1, 7]
+      note: "Use the anchors above for calibration"
+
+  # Gap analysis
+  gap_interpretation:
+    positive: "Person exceeds job requirement (potential for advancement)"
+    zero: "Person meets job requirement"
+    negative_small: "Gap of 1: Addressable through on-the-job training (1-3 months)"
+    negative_medium: "Gap of 2: Requires structured development program (3-12 months)"
+    negative_large: "Gap of 3+: Significant upskilling needed (12+ months) or role mismatch"
+
+  # Transferability computation
+  transferability:
+    method: "cosine_similarity"
+    description: |
+      Transferability between two jobs is computed as the cosine similarity
+      of their ability requirement vectors. Each job is represented as a
+      52-dimensional vector (one dimension per O*NET ability).
+    formula: "cos(theta) = (A . B) / (|A| * |B|)"
+    interpretation:
+      high: ">= 0.85: High transferability, minimal retraining"
+      medium: "0.70 - 0.84: Moderate transferability, targeted upskilling"
+      low: "0.50 - 0.69: Low transferability, significant development needed"
+      minimal: "< 0.50: Different ability profiles, career change"

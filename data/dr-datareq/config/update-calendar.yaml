@@ -1,0 +1,104 @@
+# DR-DATAREQ: Update-Kalender
+# Version: 1.0
+# Letzte Aktualisierung: 2026-01-23
+
+# Automatisierungs-Zeitplan für Datenaktualisierungen
+
+schedule:
+  # =============================================================================
+  # Täglich (GitHub Actions)
+  # =============================================================================
+  daily:
+    sources:
+      - owid
+    time: "06:00 UTC"
+    action: "python scripts/fetch/fetch_owid.py"
+
+  # =============================================================================
+  # Wöchentlich
+  # =============================================================================
+  weekly:
+    sources:
+      - ecb
+      - snb
+    day: "Monday"
+    time: "07:00 UTC"
+    action: "python scripts/fetch/fetch_central_banks.py"
+
+  # =============================================================================
+  # Monatlich (1. des Monats)
+  # =============================================================================
+  monthly:
+    sources:
+      - bfs
+      - statistik_austria
+      - destatis
+      - eurostat
+    day: 1
+    time: "08:00 UTC"
+    action: "python scripts/fetch/fetch_dach_sources.py"
+    post_action: "python scripts/create_snapshot.py"
+
+  # =============================================================================
+  # Quartalsweise (1. Jan, Apr, Jul, Okt)
+  # =============================================================================
+  quarterly:
+    sources:
+      - oecd
+      - wgi
+    months: [1, 4, 7, 10]
+    day: 15
+    time: "09:00 UTC"
+    action: "python scripts/fetch/fetch_oecd.py"
+
+  # =============================================================================
+  # Jährlich
+  # =============================================================================
+  annual:
+    sources:
+      - hofstede
+    month: 1
+    day: 1
+    time: "10:00 UTC"
+    action: "python scripts/fetch/fetch_static_sources.py"
+    notes: "Manueller Review erforderlich"
+
+  # =============================================================================
+  # Alle 2 Jahre (ESS Release)
+  # =============================================================================
+  biennial:
+    sources:
+      - ess
+      - wvs
+    next_release: "2026-09"
+    action: "manual"
+    notes: "Manueller Download nach Release-Ankündigung"
+
+# =============================================================================
+# Benachrichtigungen
+# =============================================================================
+notifications:
+  on_success:
+    - type: commit
+      message: "chore(data): Auto-update {source} data"
+  on_failure:
+    - type: issue
+      title: "Data fetch failed: {source}"
+      labels: ["data", "automated"]
+  on_new_release:
+    - type: issue
+      title: "New data release available: {source}"
+      labels: ["data", "review-needed"]
+
+# =============================================================================
+# Monitoring
+# =============================================================================
+monitoring:
+  staleness_threshold_days:
+    daily: 2
+    weekly: 10
+    monthly: 45
+    quarterly: 120
+
+  alert_channels:
+    - github_issues

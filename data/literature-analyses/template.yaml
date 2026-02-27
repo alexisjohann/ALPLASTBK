@@ -1,0 +1,256 @@
+# ============================================================================
+# SYSTEMATIC LITERATURE ANALYSIS (SLA) - PROTOCOL TEMPLATE
+# Standard-Protokoll für systematische Literaturanalysen im EBF
+# Version: 1.0
+# ============================================================================
+#
+# ANLEITUNG:
+# 1. Diese Datei kopieren nach: data/literature-analyses/SLA-YYYY-MM-DD-TOPIC-NNN.yaml
+# 2. Claude füllt automatisch vor — User bestätigt/korrigiert
+# 3. Alle PFLICHT-Sections werden automatisch befüllt (markiert mit ★)
+# 4. Protokoll wird SCHRITTWEISE aktualisiert (Schritt 5→8→9→10→11→13)
+#
+# WORKFLOW-REFERENZ: .claude/commands/literature-analysis.md (14-Schritt-Algorithmus)
+# SSOT-DOKUMENTATION: docs/workflows/literature-analysis-workflow.md
+#
+# ============================================================================
+
+# === SECTION 1: PROTOKOLL-HEADER ★ PFLICHT ===
+protocol:
+  id: "SLA-"              # Format: SLA-YYYY-MM-DD-TOPIC-NNN
+  title: ""                # Deutscher Titel der Analyse
+  mode: "STANDARD"         # RAPID | STANDARD | SYSTEMATIC
+  date_started: ""         # Format: YYYY-MM-DD
+  date_completed: null     # Format: YYYY-MM-DD (gesetzt bei Abschluss)
+  status: "in_progress"    # in_progress | completed | paused
+  session_ref: ""          # EBF-S-YYYY-MM-DD-XXX-NNN (Session-Superkey)
+
+  # Forschungsfrage ★ PFLICHT
+  research_question:
+    format: "PICO"         # PICO | SPIDER
+    primary: ""            # Hauptfrage (1 Satz)
+    secondary: []          # Optionale Unterfragen
+    # PICO-Format (bei empirischen Fragen):
+    pico:
+      population: ""       # P: Wer? (z.B. "Schweizer Stimmbürger:innen")
+      intervention: ""     # I: Was? (z.B. "finanzielle Kompensation für NIMBY")
+      comparison: ""       # C: Verglichen mit? (z.B. "keine Kompensation")
+      outcome: ""          # O: Ergebnis? (z.B. "Akzeptanz von Infrastruktur")
+    # SPIDER-Format (bei qualitativen/explorativen Fragen):
+    spider:
+      sample: ""           # S: Stichprobe
+      phenomenon: ""       # PI: Phänomen
+      design: ""           # D: Forschungsdesign
+      evaluation: ""       # E: Bewertungskriterien
+      research_type: ""    # R: Forschungstyp
+
+  # Inklusions-/Exklusionskriterien ★ PFLICHT
+  inclusion_criteria:
+    population: ""         # Wer muss im Sample sein?
+    intervention: ""       # Welche Interventions-Typen?
+    outcome: ""            # Welche Outcomes?
+    study_design: []       # z.B. ["RCT", "IV", "DiD", "quasi-experimental"]
+    time_range: ""         # z.B. "1990-2026"
+    languages: []          # z.B. ["en", "de"]
+    evidence_tier: []      # z.B. [1, 2] (nur Tier 1-2)
+    additional: []         # Weitere Kriterien
+
+  exclusion_criteria:
+    # Standardisierte EX-Codes (mit Begründung):
+    EX-1: ""               # z.B. "Rein theoretisch ohne empirische Validierung"
+    EX-2: ""               # z.B. "n < 50"
+    EX-3: ""               # z.B. "Keine kausale Identifikationsstrategie"
+    EX-4: ""               # z.B. "Nicht-demokratischer Kontext"
+    EX-5: ""               # z.B. "Keine Peer-Review (ausser NBER/Top-WP)"
+    # Weitere EX-Codes nach Bedarf:
+    # EX-6: ""
+    # EX-7: ""
+
+# === SECTION 2: SUCHERGEBNISSE ★ PFLICHT ===
+search_results:
+  total_identified: 0      # N₀: Gesamtzahl identifizierte Papers
+  by_source:
+    bcm_master_bib: 0      # Aus interner Bibliographie
+    theory_catalog: 0      # Aus Theory Catalog (verlinkte Papers)
+    case_registry: 0       # Aus Case Registry (Quellen-Papers)
+    web_search: 0          # Aus WebSearch (Google Scholar, etc.)
+    snowballing: 0         # Forward/Backward Citation Chasing
+    user_provided: 0       # Vom User bereitgestellte Papers
+  duplicates_removed: 0    # Entfernte Duplikate
+  unique_candidates: 0     # N₀ - Duplikate = Screening-Kandidaten
+
+  # Such-Queries (PFLICHT für Reproduzierbarkeit):
+  search_queries:
+    internal: []           # Queries für bcm_master.bib
+    # Format:
+    # - query: "python scripts/search_bibliography.py --eip 'NIMBY compensation'"
+    #   results: 12
+    external: []           # Queries für WebSearch
+    # Format:
+    # - query: "NIMBY compensation acceptance behavioral economics"
+    #   source: "Google Scholar"
+    #   results: 25
+
+# === SECTION 3: SCREENING ★ PFLICHT ===
+screening:
+  screened: 0              # Anzahl gescreente Papers
+  excluded_title_abstract: 0  # Exkludiert nach Titel/Abstract
+  excluded_fulltext: 0     # Exkludiert nach Volltext-Prüfung (STANDARD+)
+  included: 0              # N₁: Finale inkludierte Papers
+
+  # PRISMA-Flow (STANDARD + SYSTEMATIC):
+  prisma:
+    identification: 0      # = total_identified
+    duplicates: 0          # = duplicates_removed
+    screened: 0            # = unique_candidates
+    excluded_screening: 0  # = excluded_title_abstract
+    assessed_fulltext: 0   # = screened - excluded_screening
+    excluded_fulltext: 0   # = excluded_fulltext
+    included_final: 0      # = included (N₁)
+
+  # Paper-Liste mit Screening-Scores ★ PFLICHT
+  papers: []
+  # Format pro Paper:
+  # - paper_id: "PAP-frey1997costofprice"  # BibTeX-Key
+  #   title: "Not Just for the Money"
+  #   authors: "Frey, Oberholzer-Gee"
+  #   year: 1997
+  #   source: "AER"
+  #   scores:
+  #     REL: 2        # 0-2: Relevanz (0=passt nicht, 1=teilrelevant, 2=kernrelevant)
+  #     MET: 1        # 0-2: Methodik (0=keine ID, 1=schwache ID, 2=RCT/IV/DiD)
+  #     TIR: 2        # 0-2: Evidenz-Tier (0=Tier3, 1=Tier2, 2=Tier1)
+  #     CTX: 2        # 0-2: Kontext-Match (0=anders, 1=ähnlich, 2=exakt)
+  #     AKT: 0        # 0-2: Aktualität (0=vor 2000, 1=2000-2015, 2=2015-2026)
+  #   total: 7        # Summe der 5 Scores (0-10)
+  #   decision: "INCLUDE"    # INCLUDE | EXCLUDE
+  #   reason: "Core NIMBY study, Swiss context, replicated"
+  #   ex_code: null          # EX-1..EX-7 (nur bei EXCLUDE)
+
+# === SECTION 4: KODIERUNG ★ PFLICHT ===
+coding: []
+# Format pro Paper (9-Dimensionen-Schema):
+# - paper_id: "PAP-frey1997costofprice"
+#   # 9 KODIERUNGS-DIMENSIONEN:
+#   DIR: -1                       # Effektrichtung: +1 (positiv) / 0 (null) / -1 (negativ)
+#   ES: "-0.51"                   # Effektstärke (quantifiziert: Koeffizient, OR, d, pp)
+#   MEC: "motivation_crowding_out"  # Wirkmechanismus
+#   MOD:                          # Moderatoren (Ψ-Dimensionen die Effekt moderieren)
+#     - "Ψ_S: community_size"
+#     - "Ψ_K: civic_duty_culture"
+#   CTX: "Switzerland, nuclear waste siting, 1993"  # Kontext (Land, Setting, Zeit)
+#   ID: "survey_experiment"       # Identifikation: RCT|IV|DiD|RDD|matching|survey_experiment|correlation
+#   PAR:                          # EBF-Parameter-Referenzen
+#     - "PAR-INF-001"
+#     - "PAR-COMP-002"
+#   PC: "PRO"                     # PRO/CONTRA zur Hypothese: PRO|CONTRA|NEUTRAL
+#   REP: "conceptual_replications"  # Replikation: replicated|partial|failed|none|conceptual
+
+# MODUS-ABHÄNGIGE KODIERUNG:
+# RAPID:      Nur DIR, ES, MEC, PC (4 Dimensionen)
+# STANDARD:   Alle 9 Dimensionen
+# SYSTEMATIC: 9 Dimensionen + Inter-Coder-Agreement + Abweichungsprotokoll
+
+# === SECTION 5: SYNTHESE ★ PFLICHT ===
+synthesis:
+  # 5.1 Evidenz-Synthese-Tabelle
+  evidence_table: []
+  # Format pro Befund:
+  # - finding: "Kompensation → Akzeptanz sinkt"
+  #   direction: "NEGATIV"        # POSITIV | NEGATIV | NULL | GEMISCHT
+  #   effect_size: "γ = -0.51"    # Quantifizierter Effekt
+  #   tier_1_papers: 1            # Anzahl Tier-1 Papers
+  #   tier_2_papers: 3            # Anzahl Tier-2 Papers
+  #   tier_3_papers: 0            # Anzahl Tier-3 Papers
+  #   confidence: "HOCH"          # HOCH | MITTEL | NIEDRIG
+  #   mechanism: "Motivation Crowding-Out"
+  #   replication: "Konzeptuell repliziert in 5+ Domains"
+  #   context_dependency: ""      # Wann gilt der Befund? Wann nicht?
+
+  # 5.2 PRO/CONTRA Bilanz ★ PFLICHT (KEINE reine PRO-Sammlung!)
+  pro_contra:
+    hypothesis: ""                # Haupthypothese aus Forschungsfrage
+
+    pro:
+      count: 0                    # Anzahl PRO-Papers
+      tier_1: 0                   # Davon Tier 1
+      tier_2: 0                   # Davon Tier 2
+      tier_3: 0                   # Davon Tier 3
+      weighted_votes: 0           # Gewichtet: T1×3 + T2×2 + T3×1 (×1.5 wenn repliziert)
+      key_findings: []            # Stichworte der Hauptbefunde
+      strongest_paper: ""         # BibTeX-Key des stärksten PRO-Papers
+
+    contra:
+      count: 0
+      tier_1: 0
+      tier_2: 0
+      tier_3: 0
+      weighted_votes: 0
+      key_findings: []
+      strongest_paper: ""
+
+    weighted_verdict: ""          # "PRO überwiegt" | "CONTRA überwiegt" | "Gemischt"
+    confidence: ""                # HOCH | MITTEL | NIEDRIG
+    context_dependency: ""        # Wann gilt PRO, wann CONTRA?
+
+  # Gewichtungsformel:
+  # Tier 1 Paper = 3 Stimmen
+  # Tier 2 Paper = 2 Stimmen
+  # Tier 3 Paper = 1 Stimme
+  # Repliziert   = × 1.5
+
+  # 5.3 Parameter-Aggregation
+  parameter_aggregation: []
+  # Format:
+  # - parameter_id: "PAR-INF-001"   # Bestehend oder "NEW"
+  #   symbol: "γ_crowd"
+  #   papers_count: 4
+  #   range: [-0.68, -0.35]
+  #   weighted_mean: -0.51
+  #   confidence: "HIGH"            # HIGH | MEDIUM | LOW
+  #   note: "Konsistent über 4 Studien"
+
+  # 5.4 Gesamtbewertung
+  overall_confidence: ""           # HOCH | MITTEL | NIEDRIG
+  overall_summary: ""              # 2-3 Sätze Zusammenfassung
+
+# === SECTION 6: GAP-ANALYSE ★ PFLICHT ===
+gaps:
+  empirical: []
+  # Format:
+  # - gap: "Kein RCT zu Infrastruktur-Kompensation in der Schweiz"
+  #   importance: "HIGH"           # HIGH | MEDIUM | LOW
+  #   researchable: true           # Kann erforscht werden?
+  #   suggested_design: "Field experiment mit randomisierter Kompensation"
+
+  theoretical: []
+  # Format:
+  # - gap: "Kein Modell für Interaktion Kompensation × Partizipation"
+  #   importance: "HIGH"
+  #   connects_to: "MS-SP-001"     # Welche EBF-Theorie betroffen?
+
+  methodological: []
+  # Format:
+  # - gap: "Keine Langzeitstudie über Akzeptanz-Dynamik"
+  #   importance: "MEDIUM"
+
+  contextual: []
+  # Format:
+  # - gap: "Keine Daten für Schweizer Energieinfrastruktur post-Energiestrategie 2050"
+  #   missing_context: "CH, Energie, nach 2020"
+
+# === SECTION 7: EBF-INTEGRATION ===
+integration:
+  new_papers_added: 0              # Anzahl neu in bcm_master.bib hinzugefügte Papers
+  new_parameters: []               # PAR-xxx-xxx IDs
+  new_cases: []                    # CAS-xxx IDs
+  new_theories: []                 # MS-XX-NNN IDs
+  bcm2_updates: []                 # BCM2-Faktor Updates
+  appendices_linked: []            # Verlinkte Appendices
+
+# === SECTION 8: OUTPUT ===
+output:
+  report_path: ""                  # z.B. "outputs/literature-analyses/SLA-{ID}/"
+  output_registry_id: ""           # z.B. "EBF-OUT-SLA-001"
+  format: "markdown"               # markdown | latex
+  pages: null                      # Geschätzte Seitenzahl

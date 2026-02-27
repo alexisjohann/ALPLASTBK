@@ -1,0 +1,156 @@
+# Model Routing Configuration
+# ============================
+# SSOT für die Modell-Steuerung bei Task-Delegation.
+# Claude konsultiert diese Datei bei JEDEM Task(subagent_type=...).
+#
+# DEFAULT: opus (wenn keine Regel greift)
+# AUSNAHMEN: Explizit definiert pro Task-Typ
+#
+# PRINZIP: Opus denkt, Sonnet/Haiku arbeitet.
+#   - Opus:   Komplexe Analyse, EBF-Modelling, Strategie
+#   - Sonnet: Strukturierte Arbeit (BIB, YAML, Extraktion)
+#   - Haiku:  Einfache Suche, Pattern Matching, Validierung
+
+default_model: opus
+
+# ============================================================
+# ROUTING-REGELN (task_type → model)
+# ============================================================
+
+routes:
+
+  # --- HAIKU ($0.80/1M input, $4.00/1M output) ---
+  # Einfache, repetitive Aufgaben
+
+  - task_type: file_search
+    model: haiku
+    description: "Dateien suchen, Grep, Glob"
+    examples:
+      - "Suche alle Papers mit 'loss aversion' in bcm_master.bib"
+      - "Finde alle YAML-Dateien die PAR-BEH referenzieren"
+
+  - task_type: validation_check
+    model: haiku
+    description: "Schema-Validierung, Compliance-Checks"
+    examples:
+      - "Prüfe ob YAML-Schema korrekt ist"
+      - "Zähle fehlende Felder in paper-references/"
+
+  - task_type: format_conversion
+    model: haiku
+    description: "Einfache Format-Konvertierungen"
+    examples:
+      - "Konvertiere BibTeX-Feld-Format"
+      - "Extrahiere Autor-Liste aus BIB-Eintrag"
+
+  # --- SONNET ($3.00/1M input, $15.00/1M output) ---
+  # Strukturierte Arbeit mit klarem Schema
+
+  - task_type: paper_integration
+    model: sonnet
+    description: "Paper lesen, BIB/YAML erstellen, klassifizieren"
+    examples:
+      - "/integrate-paper: Text lesen + BIB-Eintrag + YAML erstellen"
+      - "Paper identifizieren (Autor, Titel, Jahr aus Text)"
+      - "Content Level bestimmen (L0-L3)"
+      - "Integration Level klassifizieren (1-5)"
+
+  - task_type: paper_metadata
+    model: sonnet
+    description: "Paper-Metadaten extrahieren und strukturieren"
+    examples:
+      - "Abstract extrahieren und zusammenfassen"
+      - "Key Findings in structured YAML schreiben"
+      - "theory_support und use_for Felder bestimmen"
+
+  - task_type: registry_entry
+    model: sonnet
+    description: "Registry-Einträge erstellen (Case, Theory, Parameter)"
+    examples:
+      - "Neuen Case in case-registry.yaml erstellen"
+      - "Theory-Eintrag in theory-catalog.yaml erstellen"
+      - "Parameter-Eintrag in parameter-registry.yaml erstellen"
+
+  - task_type: document_drafting
+    model: sonnet
+    description: "Strukturierte Dokumente nach Template erstellen"
+    examples:
+      - "Meeting-Report nach Template ausfüllen"
+      - "PIP-Datei (Paper Intake Protocol) erstellen"
+      - "LaTeX-Appendix-Grundstruktur generieren"
+
+  - task_type: batch_processing
+    model: sonnet
+    description: "Batch-Verarbeitung mit bekanntem Pattern"
+    examples:
+      - "17 Papers nacheinander integrieren"
+      - "Alle Papers ohne evidence_tier ergänzen"
+      - "Fehlende use_for Felder in BIB nachpflegen"
+
+  # --- OPUS ($15.00/1M input, $75.00/1M output) ---
+  # Komplexe Analyse, Strategie, EBF-Modelling
+
+  - task_type: ebf_analysis
+    model: opus
+    description: "EBF-Modell bauen, 10C-Analyse, Kontextanalyse"
+    examples:
+      - "Schritt 1-4 des EBF Workflows"
+      - "Komplementaritäts-Analyse (γ-Werte)"
+      - "Parameter Context Transformation (PCT)"
+
+  - task_type: strategic_reasoning
+    model: opus
+    description: "Strategie, komplexe Entscheidungen, Kundenberatung"
+    examples:
+      - "SPÖ-Strategieberatung"
+      - "Kundenmodell designen (/design-model)"
+      - "Intervention designen (/design-intervention)"
+
+  - task_type: cross_reference_analysis
+    model: opus
+    description: "Komplexe Cross-Referenz-Entscheidungen (Level 5)"
+    examples:
+      - "6-Faktoren CORE-Appendix Integration"
+      - "Theory-Paper bidirektionale Verknüpfung"
+      - "Reverse Engineering Workflow (REW)"
+
+  - task_type: quality_assessment
+    model: opus
+    description: "Inhaltliche Qualitätsprüfung und Bewertung"
+    examples:
+      - "Evidence Integration Pipeline (EIP) — PRO/CONTRA Bewertung"
+      - "Researcher Registry — Paper-Bewertung (7 Kriterien)"
+      - "Forecast-Kalibrierung und Brier-Score"
+
+  - task_type: conversation
+    model: opus
+    description: "Direkte Interaktion mit User (DEFAULT)"
+    examples:
+      - "Fragen beantworten"
+      - "Empfehlungen geben"
+      - "Workflow steuern"
+
+# ============================================================
+# KOSTEN-ÜBERSICHT (Stand Februar 2026)
+# ============================================================
+#
+# Modell       Input/1M    Output/1M    Typisch pro Paper
+# ──────────   ─────────   ──────────   ─────────────────
+# Haiku 4.5    $0.80       $4.00        $0.03
+# Sonnet 4.5   $3.00       $15.00       $0.10
+# Opus 4.6     $15.00      $75.00       $0.51
+#
+# EINSPARUNG durch Routing:
+#   Ohne Routing (alles Opus):     $8.63 für 17 Papers
+#   Mit Routing (Sonnet delegiert): $1.73 für 17 Papers
+#   Ersparnis: ~80%
+
+# ============================================================
+# REGELN FÜR CLAUDE
+# ============================================================
+#
+# 1. Bei JEDEM Task(subagent_type=...) diese Datei konsultieren
+# 2. task_type aus Aufgabe ableiten
+# 3. Passendes model= Parameter setzen
+# 4. Wenn unklar → Default: opus
+# 5. User kann jederzeit überschreiben: "Nimm Opus dafür"

@@ -1,0 +1,128 @@
+# =============================================================================
+# Paper Upload Priority List Generator
+# =============================================================================
+# Generiert die priorisierte Top-100-Liste für das Frontend.
+# Das Frontend weiss dann, welche Papers als nächstes hochgeladen werden sollen.
+#
+# Trigger:
+#   - Push auf data/paper-references/ (neue/geänderte Papers)
+#   - Push auf data/paper-texts/ (neuer Volltext → Reprioritize)
+#   - Manuell via workflow_dispatch
+#   - Cron: Montags 06:00 UTC (wöchentlich)
+#
+# Output:
+#   - data/paper-upload-priority-top100.json (committed)
+#   - data/paper-upload-priority-top100.csv (committed)
+#   - Optional: Webhook an Frontend
+# =============================================================================
+
+name: Paper Upload Priorities
+
+on:
+  push:
+    paths:
+      - 'data/paper-references/**'
+      - 'data/paper-texts/**'
+      - 'bibliography/bcm_master.bib'
+    branches:
+      - main
+
+  schedule:
+    # Montags 06:00 UTC
+    - cron: '0 6 * * 1'
+
+  workflow_dispatch:
+    inputs:
+      top_n:
+        description: 'Number of papers to include'
+        required: false
+        type: number
+        default: 100
+      webhook_url:
+        description: 'Frontend webhook URL (optional)'
+        required: false
+        type: string
+      dry_run:
+        description: 'Dry run (no commit, no webhook)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  generate-priority-list:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Generate priority list
+        id: generate
+        run: |
+          TOP_N=${{ inputs.top_n || 100 }}
+          python scripts/generate_upload_priorities.py --top $TOP_N
+
+          # Extract stats for summary
+          echo "total=$(python3 -c "import json; d=json.load(open('data/paper-upload-priority-top${TOP_N}.json')); print(d['total_in_list'])")" >> $GITHUB_OUTPUT
+          echo "eligible=$(python3 -c "import json; d=json.load(open('data/paper-upload-priority-top${TOP_N}.json')); print(d['total_eligible'])")" >> $GITHUB_OUTPUT
+          echo "needs_upload=$(python3 -c "import json; d=json.load(open('data/paper-upload-priority-top${TOP_N}.json')); print(d['stats']['needs_upload'])")" >> $GITHUB_OUTPUT
+
+      - name: Check for changes
+        id: diff
+        run: |
+          git diff --name-only data/paper-upload-priority-top*.json data/paper-upload-priority-top*.csv
+          if git diff --quiet data/paper-upload-priority-top*.json data/paper-upload-priority-top*.csv 2>/dev/null; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit updated priority list
+        if: steps.diff.outputs.changed == 'true' && inputs.dry_run != true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/paper-upload-priority-top*.json data/paper-upload-priority-top*.csv
+          git commit -m "chore(paper-priorities): Update top ${{ inputs.top_n || 100 }} upload list [auto]
+
+          Eligible: ${{ steps.generate.outputs.eligible }} | Selected: ${{ steps.generate.outputs.total }} | Needs upload: ${{ steps.generate.outputs.needs_upload }}"
+          git push
+
+      - name: Send webhook to frontend
+        if: steps.diff.outputs.changed == 'true' && inputs.dry_run != true
+        env:
+          WEBHOOK_URL: ${{ inputs.webhook_url || secrets.PAPER_UPLOAD_WEBHOOK_URL }}
+        run: |
+          if [ -n "$WEBHOOK_URL" ]; then
+            echo "Sending webhook to frontend..."
+            python scripts/generate_upload_priorities.py \
+              --top ${{ inputs.top_n || 100 }} \
+              --webhook "$WEBHOOK_URL" \
+              --json-only \
+              --quiet
+          else
+            echo "No webhook URL configured. Skipping."
+            echo "Set PAPER_UPLOAD_WEBHOOK_URL secret or pass webhook_url input."
+          fi
+
+      - name: Summary
+        run: |
+          echo "## Paper Upload Priority List" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Eligible papers | ${{ steps.generate.outputs.eligible }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Selected | ${{ steps.generate.outputs.total }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Needs upload | ${{ steps.generate.outputs.needs_upload }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Changed | ${{ steps.diff.outputs.changed }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dry run | ${{ inputs.dry_run || false }} |" >> $GITHUB_STEP_SUMMARY
