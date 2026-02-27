@@ -1,0 +1,1096 @@
+# =============================================================================
+# AWE SG - 10C INTERVENTIONS-MODELL: ERNEUERBARE STROMPRODUKTION & INTEGRATION
+# =============================================================================
+# MODUL 2B - Verhaltensrobuste Strategien für PV-Ausbau und Systemintegration
+# BEATRIX-Anwendung für Kanton St. Gallen
+# =============================================================================
+
+metadata:
+  model_id: "MOD-AWE-SG-STROM-001"
+  customer_id: "AWE-SG"
+  model_name: "10C Erneuerbare Stromproduktion St. Gallen"
+  module: "Modul 2B"
+  version: "1.0"
+  created: "2026-02-02"
+  status: "ready_for_validation"
+
+  theoretical_basis:
+    - "Prospect Theory (Kahneman & Tversky 1979)"
+    - "Endowment Effect (Thaler 1980)"
+    - "Mental Accounting (Thaler 1999)"
+    - "Social Norms (Cialdini 2007)"
+    - "Present Bias (Laibson 1997)"
+    - "Default Effects (Johnson & Goldstein 2003)"
+    - "Identifiable Victim Effect (Small & Loewenstein 2003)"
+
+# =============================================================================
+# EXECUTIVE SUMMARY
+# =============================================================================
+
+executive_summary:
+
+  core_insight: |
+    Der PV-Ausbau scheitert nicht primär an Wirtschaftlichkeit, sondern an
+    psychologischen Barrieren: Komplexität, Unsicherheit, Trägheit. Bestehende
+    PV-Betreiber nutzen ihr Potenzial (Speicher, Eigenverbrauchsoptimierung) zu
+    wenig. Der Schlüssel liegt in Vereinfachung und sozialen Normen - "Mein
+    Nachbar hat auch eine Anlage" ist der stärkste Treiber.
+
+  strategic_priorities:
+    - priority: 1
+      intervention: "Solar-Nachbarschafts-Effekt Kampagne"
+      dimension: "WHAT.S"
+      rationale: "Social Proof ist stärkster PV-Treiber (+40%)"
+      expected_impact: "+25% PV-Anfragen in Zielgebieten"
+
+    - priority: 2
+      intervention: "One-Stop-Shop PV"
+      dimension: "AWARE"
+      rationale: "Komplexität ist Hauptbarriere"
+      expected_impact: "+35% Konversionsrate"
+
+    - priority: 3
+      intervention: "Speicher-Push für Bestandsanlagen"
+      dimension: "WHEN"
+      rationale: "Bestehende PV-Besitzer = warme Leads"
+      expected_impact: "+500 Speicher p.a."
+
+  key_numbers:
+    daecher_sg_total: 120000
+    daecher_geeignet: 85000
+    pv_anlagen_bestand: 12000
+    pv_potential_gwh: 2800
+    pv_aktuell_gwh: 350
+    ausschoepfung: 0.125
+    eigenverbrauchsquote_avg: 0.30
+
+# =============================================================================
+# 10C DIMENSION MAPPING
+# =============================================================================
+
+ebf_10c_mapping:
+
+  # -------------------------------------------------------------------------
+  # WHO: Wer sind die Zielgruppen?
+  # -------------------------------------------------------------------------
+  WHO:
+    code: "AAA"
+    question: "Wer hat Utility? Wer entscheidet?"
+
+    primary_segments:
+      - id: "SEG-EFH-NOCH"
+        name: "EFH-Eigentümer ohne PV"
+        population: 55000
+        share: 0.40
+        behavioral_profile:
+          lambda: 2.35
+          beta: 0.68
+          theta: 0.38
+          decision_mode: "avoidant"
+          key_barrier: "Komplexität, Unsicherheit, Trägheit"
+        sub_segments:
+          - name: "Interessiert, aber überfordert"
+            share: 0.35
+            conversion_potential: "high"
+          - name: "Skeptisch/abwartend"
+            share: 0.40
+            conversion_potential: "medium"
+          - name: "Ablehnend"
+            share: 0.25
+            conversion_potential: "low"
+
+      - id: "SEG-EFH-MIT"
+        name: "EFH-Eigentümer mit PV (Bestand)"
+        population: 10000
+        share: 0.15
+        behavioral_profile:
+          lambda: 1.90
+          beta: 0.78
+          theta: 0.55
+          decision_mode: "optimizing"
+          key_barrier: "Zufriedenheit mit Status quo"
+        priority: "HIGH"  # Speicher + Optimierung
+
+      - id: "SEG-MFH"
+        name: "MFH-Eigentümer/STWE"
+        population: 15000
+        share: 0.15
+        behavioral_profile:
+          lambda: 2.25
+          beta: 0.72
+          theta: 0.42
+          decision_mode: "committee"
+          key_barrier: "Abstimmungsprobleme, Kostenverteilung"
+        priority: "MEDIUM"
+
+      - id: "SEG-GEW"
+        name: "Gewerbe/Industrie"
+        population: 8000
+        share: 0.15
+        behavioral_profile:
+          lambda: 1.85
+          beta: 0.82
+          theta: 0.58
+          decision_mode: "rational"
+          key_barrier: "Kerngeschäft-Fokus, Liquidität"
+        priority: "HIGH"  # Grosse Dachflächen
+
+      - id: "SEG-EVU"
+        name: "Energieversorger"
+        population: 25
+        share: 0.05
+        behavioral_profile:
+          lambda: 1.70
+          beta: 0.88
+          theta: 0.65
+          decision_mode: "strategic"
+          key_barrier: "Netzstabilität, Regulierung"
+        priority: "HIGH"  # Systemintegration
+
+      - id: "SEG-INST"
+        name: "Installateure/Solarteure"
+        population: 80
+        share: 0.10
+        behavioral_profile:
+          lambda: 1.80
+          beta: 0.85
+          theta: 0.62
+          decision_mode: "business"
+          key_barrier: "Kapazität, Fachkräfte"
+        priority: "MEDIUM"  # Multiplikatoren
+
+    decision_influence_matrix:
+      pv_anschaffung:
+        eigentümer: 0.40
+        nachbar_bekannte: 0.25
+        installateur: 0.20
+        energieberater: 0.10
+        energieversorger: 0.05
+      speicher_nachruestung:
+        eigentümer: 0.50
+        installateur: 0.30
+        energieversorger: 0.15
+        nachbar: 0.05
+
+  # -------------------------------------------------------------------------
+  # WHAT: Was treibt die Entscheidung?
+  # -------------------------------------------------------------------------
+  WHAT:
+    code: "C"
+    question: "Was ist Utility? Welche Dimensionen?"
+
+    utility_dimensions:
+      u_F_financial:
+        weight: 0.35
+        components:
+          - "Stromkosten-Ersparnis"
+          - "Einspeisevergütung"
+          - "Förderung (Einmalvergütung)"
+          - "Wertsteigerung Immobilie"
+          - "Unabhängigkeit von Strompreisen"
+        current_perception:
+          pv_neu: 0.65
+          speicher: 0.45
+
+      u_A_autonomy:
+        weight: 0.25
+        components:
+          - "Energieautarkie"
+          - "Unabhängigkeit vom Netz"
+          - "Selbstversorgung"
+          - "Krisenresilienz"
+        current_perception:
+          pv_allein: 0.50
+          pv_speicher: 0.80
+
+      u_E_environmental:
+        weight: 0.20
+        components:
+          - "CO2-Reduktion"
+          - "Saubere Energie"
+          - "Beitrag Energiewende"
+          - "Vorbild sein"
+        current_perception: 0.75
+
+      u_S_social:
+        weight: 0.15
+        components:
+          - "Nachbarschaftseffekt"
+          - "Anerkennung"
+          - "Modernität"
+          - "Gespräch mit Nachbarn"
+        current_perception: 0.55
+
+      u_P_practical:
+        weight: 0.05
+        components:
+          - "Einfachheit"
+          - "Wartungsaufwand"
+          - "Zuverlässigkeit"
+        current_perception: 0.60
+
+    mental_accounting:
+      pv_investition:
+        framing_problem: "Grosse Einmal-Investition (CHF 20-35k)"
+        reframe: "CHF 150/Monat - weniger als Strom+Heizung"
+        intervention: "Ratenzahlung, Contracting"
+
+      eigenverbrauch:
+        framing_problem: "Verschenke Strom ans Netz"
+        reframe: "Endowment: MEIN Strom, selbst produziert"
+        intervention: "Visualisierung Eigenverbrauch"
+
+  # -------------------------------------------------------------------------
+  # HOW: Wie interagieren die Faktoren?
+  # -------------------------------------------------------------------------
+  HOW:
+    code: "B"
+    question: "Wie interagieren Dimensionen? Komplementarität?"
+
+    complementarity_matrix:
+      - pair: ["Nachbar hat PV", "Information"]
+        gamma: 0.65
+        effect: "Social Proof + Enablement"
+        mechanism: "Sehe es funktionieren + weiss wie → handle"
+
+      - pair: ["PV-Anlage", "Speicher"]
+        gamma: 0.55
+        effect: "Eigenverbrauchsmaximierung"
+        mechanism: "Synergieeffekt, Autarkie-Gefühl"
+
+      - pair: ["PV-Anlage", "Wärmepumpe"]
+        gamma: 0.60
+        effect: "Sektorkopplung"
+        mechanism: "Strom selbst nutzen für Heizung"
+
+      - pair: ["PV-Anlage", "E-Auto"]
+        gamma: 0.50
+        effect: "Mobilitätskopplung"
+        mechanism: "Eigenstrom tanken"
+
+      - pair: ["Vereinfachung", "Förderung"]
+        gamma: 0.45
+        effect: "Reibungsreduktion"
+        mechanism: "Einfach + attraktiv = Handlung"
+
+      - pair: ["ZEV", "MFH"]
+        gamma: 0.70
+        effect: "Enabling"
+        mechanism: "Zusammenschluss löst Kostenverteilungs-Problem"
+
+    crowding_effects:
+      - pair: ["Hohe Einspeisevergütung", "Eigenverbrauchsoptimierung"]
+        gamma: -0.30
+        risk: "Kein Anreiz für Speicher wenn Einspeisung attraktiv"
+        mitigation: "Eigenverbrauchsprämie, dynamische Tarife"
+
+  # -------------------------------------------------------------------------
+  # WHEN: Wann ist der richtige Zeitpunkt?
+  # -------------------------------------------------------------------------
+  WHEN:
+    code: "V"
+    question: "Wann zählt Kontext? Kritische Momente?"
+
+    critical_moments:
+      - id: "MOM-DACH"
+        name: "Dachsanierung"
+        frequency: 0.025  # Pro Jahr
+        time_window: "Monate"
+        context_multiplier: 2.5
+        intervention_priority: "CRITICAL"
+        interventions:
+          - "Automatische Information bei Baugesuch"
+          - "Kombi-Angebot Dach + PV"
+          - "Dachdecker-Kooperation"
+
+      - id: "MOM-NACHBAR"
+        name: "Nachbar installiert PV"
+        frequency: "varies"
+        time_window: "Wochen-Monate"
+        context_multiplier: 2.2
+        intervention_priority: "CRITICAL"
+        interventions:
+          - "Nachbarschafts-Ansprache"
+          - "Gruppen-Offerten"
+          - "Erfahrungsberichte"
+
+      - id: "MOM-STROMPREIS"
+        name: "Strompreis-Erhöhung"
+        frequency: "yearly"
+        time_window: "Wochen"
+        context_multiplier: 1.8
+        intervention_priority: "HIGH"
+        interventions:
+          - "Kampagne 'Jetzt unabhängig werden'"
+          - "Kostenvergleich personalisiert"
+
+      - id: "MOM-NEUBAU"
+        name: "Neubau (PV-Pflicht MuKEn)"
+        frequency: 0.005
+        time_window: "Planungsphase"
+        context_multiplier: 3.0  # Pflicht
+        intervention_priority: "HIGH"
+        interventions:
+          - "Optimierung über Minimum"
+          - "Speicher-Integration"
+          - "ZEV-Beratung"
+
+      - id: "MOM-BESTAND"
+        name: "PV-Anlage wird 5+ Jahre alt"
+        frequency: 0.15  # Der Bestandsanlagen
+        time_window: "laufend"
+        context_multiplier: 1.6
+        intervention_priority: "HIGH"
+        interventions:
+          - "Speicher-Nachrüstung Push"
+          - "Optimierungs-Check"
+          - "Erweiterungsmöglichkeiten"
+
+  # -------------------------------------------------------------------------
+  # WHERE: Welcher Kontext gilt?
+  # -------------------------------------------------------------------------
+  WHERE:
+    code: "BBB"
+    question: "Woher die Zahlen? Welcher Kontext?"
+
+    context_dimensions:
+      psi_I_institutional:
+        value: 0.75
+        description: "Gute Förderstruktur, aber komplex"
+        components:
+          - "Einmalvergütung Bund (bis 30%)"
+          - "Kantonale Zusatzförderung"
+          - "MuKEn-Vorschriften"
+          - "ZEV-Regulierung"
+
+      psi_T_temporal:
+        value: 0.70
+        description: "Günstiger Zeitpunkt"
+        components:
+          - "Steigende Strompreise"
+          - "Klimadebatte"
+          - "Technologie ausgereift"
+          - "Preise gesunken"
+
+      psi_E_economic:
+        value: 0.75
+        description: "Wirtschaftlich attraktiv"
+        components:
+          - "Amortisation 8-12 Jahre"
+          - "Hohe Strompreise"
+          - "Wertsteigerung Immobilie"
+
+      psi_K_cultural:
+        value: 0.60
+        description: "Wachsende Akzeptanz"
+        components:
+          - "PV ist 'normal' geworden"
+          - "Aber: Ostschweizer Zurückhaltung"
+          - "Ästhetik-Bedenken teilweise"
+
+      psi_C_cognitive:
+        value: 0.45
+        description: "Komplexität als Hauptbarriere"
+        components:
+          - "Viele Entscheidungen"
+          - "Unbekannte Akteure"
+          - "Technisches Unwissen"
+          - "Unsicherheit ROI"
+
+      psi_M_material:
+        value: 0.80
+        description: "Technologie verfügbar"
+        components:
+          - "Installateure vorhanden"
+          - "Komponenten verfügbar"
+          - "Smart Meter Rollout"
+
+      psi_S_social:
+        value: 0.65
+        description: "Soziale Dynamik im Gang"
+        components:
+          - "Nachbarschaftseffekte stark"
+          - "Sichtbarkeit auf Dächern"
+          - "Gespräche im Bekanntenkreis"
+
+      psi_F_physical:
+        value: 0.70
+        description: "Gute Voraussetzungen"
+        components:
+          - "Viele geeignete Dächer"
+          - "Gute Sonneneinstrahlung"
+          - "Netzinfrastruktur vorhanden"
+
+  # -------------------------------------------------------------------------
+  # AWARE: Wie bewusst ist die Zielgruppe?
+  # -------------------------------------------------------------------------
+  AWARE:
+    code: "AU"
+    question: "Wie bewusst? Awareness-Level?"
+
+    awareness_levels:
+      pv_grundsaetzlich:
+        level: 0.85
+        description: "Fast alle kennen PV"
+
+      wirtschaftlichkeit:
+        level: 0.45
+        description: "Viele unterschätzen Rendite"
+        gap: "MITTEL"
+
+      foerderung:
+        level: 0.55
+        description: "Bekannt, aber Details unklar"
+
+      prozess_komplexitaet:
+        level: 0.30
+        description: "Kaum bekannt wie einfach es sein kann"
+        gap: "HOCH"
+
+      speicher_sinnhaftigkeit:
+        level: 0.35
+        description: "Bei Bestandsanlagen oft nicht auf dem Radar"
+        gap: "HOCH"
+
+      zev_moeglichkeiten:
+        level: 0.20
+        description: "Zusammenschlüsse weitgehend unbekannt"
+        gap: "SEHR HOCH"
+
+    touchpoint_effectiveness:
+      - touchpoint: "Nachbar/Bekannte"
+        reach: 0.60
+        trust: 0.90
+        conversion: 0.40
+        timing: "Wenn sichtbar"
+
+      - touchpoint: "Installateur/Solarteur"
+        reach: 0.40
+        trust: 0.70
+        conversion: 0.55
+        timing: "Bei Anfrage"
+
+      - touchpoint: "Energieversorger"
+        reach: 0.70
+        trust: 0.55
+        conversion: 0.25
+        timing: "Rechnung, Newsletter"
+
+      - touchpoint: "Gemeinde"
+        reach: 0.50
+        trust: 0.60
+        conversion: 0.20
+        timing: "Baubewilligung, Events"
+
+      - touchpoint: "Online/Solarrechner"
+        reach: 0.35
+        trust: 0.50
+        conversion: 0.15
+        timing: "Recherche-Phase"
+
+  # -------------------------------------------------------------------------
+  # READY: Handlungsbereitschaft
+  # -------------------------------------------------------------------------
+  READY:
+    code: "AV"
+    question: "Handlungsbereit? Willingness?"
+
+    willingness_by_segment:
+      efh_ohne_pv_interessiert:
+        w_base: 0.40
+        barriers:
+          - "Komplexität (wo anfangen?)"
+          - "Unsicherheit (richtige Wahl?)"
+          - "Aufwand (Offerten, Entscheidungen)"
+          - "Investitionshöhe"
+        enablers:
+          - "Nachbar hat es gemacht"
+          - "Strompreis steigt"
+          - "Förderung verfügbar"
+          - "Autarkie-Wunsch"
+
+      efh_mit_pv:
+        w_base: 0.55
+        barriers:
+          - "Zufriedenheit mit Status quo"
+          - "Speicher-Kosten"
+          - "Aufwand Nachrüstung"
+        enablers:
+          - "Eigenverbrauch erhöhen"
+          - "Strompreis-Anstieg"
+          - "E-Auto Anschaffung"
+          - "Neue Förderung"
+
+      mfh_stwe:
+        w_base: 0.25
+        barriers:
+          - "Abstimmung Eigentümer"
+          - "Kostenverteilung"
+          - "Verantwortlichkeit"
+          - "ZEV-Komplexität"
+        enablers:
+          - "Nebenkosten senken"
+          - "Mieterinteresse"
+          - "Verwaltungs-Support"
+
+      gewerbe:
+        w_base: 0.45
+        barriers:
+          - "Nicht Kerngeschäft"
+          - "Liquidität"
+          - "Entscheidungsprozesse"
+        enablers:
+          - "Energiekosten senken"
+          - "Image/Marketing"
+          - "Grosses Dach"
+          - "Contracting-Angebote"
+
+  # -------------------------------------------------------------------------
+  # STAGE: Customer Journey Phase
+  # -------------------------------------------------------------------------
+  STAGE:
+    code: "AW"
+    question: "Wo in der Journey? Phase?"
+
+    journey_stages:
+      unaware:
+        share: 0.25
+        description: "Denkt nicht an PV"
+        intervention_focus: "Trigger, Sichtbarkeit"
+
+      aware:
+        share: 0.30
+        description: "Weiss von PV, aber nicht aktiv"
+        intervention_focus: "Relevanz herstellen, Nachbarn"
+
+      interested:
+        share: 0.25
+        description: "Interessiert, aber überfordert"
+        intervention_focus: "Vereinfachung, One-Stop-Shop"
+        drop_off_rate: 0.50  # Kritisch!
+
+      active:
+        share: 0.12
+        description: "Holt Offerten, plant"
+        intervention_focus: "Entscheidungshilfe, Vertrauen"
+
+      installed:
+        share: 0.08
+        description: "Hat PV, optimiert"
+        intervention_focus: "Speicher, Erweiterung, Advocacy"
+
+    critical_transition: "Interested → Active"
+    transition_barrier: "Komplexität, erster Schritt unklar"
+
+  # -------------------------------------------------------------------------
+  # HIERARCHY: Entscheidungsebenen
+  # -------------------------------------------------------------------------
+  HIERARCHY:
+    code: "HI"
+    question: "Wie stratifizieren Entscheidungen? Levels?"
+
+    decision_levels:
+      L0_automatic:
+        share: 0.05
+        description: "Impuls-Entscheidung (selten bei PV)"
+        typical_situation: "Dachsanierung + Angebot dabei"
+
+      L1_habitual:
+        share: 0.15
+        description: "Status quo beibehalten"
+        typical_situation: "Kein Anlass zum Nachdenken"
+        implication: "Trigger nötig"
+
+      L2_deliberate:
+        share: 0.60
+        description: "Bewusstes Abwägen"
+        typical_situation: "Normale PV-Entscheidung"
+        implication: "Information + Vereinfachung"
+
+      L3_strategic:
+        share: 0.20
+        description: "Gesamtkonzept Energie"
+        typical_situation: "Neubau, Gesamtsanierung"
+        implication: "Beratung, Systemdenken"
+
+  # -------------------------------------------------------------------------
+  # EIT: Emergent Intervention Targeting
+  # -------------------------------------------------------------------------
+  EIT:
+    code: "IE"
+    question: "Wie emergieren Interventionen?"
+
+    intervention_vector:
+      I_WHO: 0.70      # Nachbarn als Multiplikatoren
+      I_WHAT_F: 0.65   # Wirtschaftlichkeit kommunizieren
+      I_WHAT_A: 0.75   # Autarkie-Motiv stark
+      I_WHAT_S: 0.85   # Social Proof = stärkster Hebel
+      I_HOW: 0.60      # Komplementaritäten (PV+Speicher+WP)
+      I_WHEN: 0.80     # Timing kritisch (Dach, Nachbar)
+      I_WHERE: 0.55    # Kontext nutzen
+      I_AWARE: 0.90    # Awareness + Vereinfachung kritisch
+      I_READY: 0.70    # Barrieren abbauen
+
+# =============================================================================
+# INTERVENTIONS-PORTFOLIO
+# =============================================================================
+
+intervention_portfolio:
+
+  # -------------------------------------------------------------------------
+  # INTERVENTION 1: Solar-Nachbarschafts-Effekt (WHAT.S)
+  # -------------------------------------------------------------------------
+  - id: "INT-STROM-001"
+    name: "Solar-Nachbarschafts-Kampagne"
+    priority: 1
+    status: "design"
+
+    target_dimension: "WHAT"
+    utility_sub: "u_S"
+    target_segment: ["EFH-NOCH"]
+
+    mechanism:
+      primary: "Social Proof"
+      secondary: ["Visibility", "Word of Mouth", "Local Norms"]
+
+    behavioral_levers:
+      - lever: "Solarkataster mit Nachbar-Anzeige"
+        description: "Karte zeigt: 'X Anlagen in Ihrer Strasse'"
+        expected_shift: "+0.15"
+
+      - lever: "Nachbar-Testimonials"
+        description: "Video/Text: 'Warum ich es gemacht habe'"
+        expected_shift: "+0.12"
+
+      - lever: "Gruppen-Offerten"
+        description: "3+ Nachbarn = Rabatt + gemeinsame Planung"
+        expected_shift: "+0.18"
+
+      - lever: "Solar-Botschafter"
+        description: "Zufriedene PV-Besitzer als lokale Ansprechpartner"
+        expected_shift: "+0.10"
+
+    implementation:
+      components:
+        - "Interaktive Solar-Karte mit Bestandsanlagen"
+        - "Testimonial-Datenbank aufbauen"
+        - "Gruppen-Offerten-Programm mit Installateuren"
+        - "Solar-Botschafter-Netzwerk (50 Personen)"
+        - "Gemeinde-Events 'Solar-Apéro'"
+
+      timeline:
+        q1_2026: "Karte aufbauen, erste Testimonials"
+        q2_2026: "Launch Kampagne + Gruppen-Offerten"
+        q3_2026: "Solar-Botschafter-Netzwerk aufbauen"
+        q4_2026: "Skalierung, 10 Gemeinde-Events"
+
+      budget_estimate: "CHF 50-70k"
+
+    expected_impact:
+      reach: 40000  # EFH-Eigentümer
+      influenced_inquiries: 4000
+      additional_pv_anlagen: 800
+      mwp_zusaetzlich: 6.4
+
+  # -------------------------------------------------------------------------
+  # INTERVENTION 2: One-Stop-Shop PV (AWARE)
+  # -------------------------------------------------------------------------
+  - id: "INT-STROM-002"
+    name: "Solar-Einfach - One-Stop-Shop"
+    priority: 2
+    status: "design"
+
+    target_dimension: "AWARE"
+    target_segment: ["EFH-NOCH", "MFH"]
+
+    mechanism:
+      primary: "Complexity Reduction"
+      secondary: ["Default Packages", "Single Contact", "Process Guidance"]
+
+    behavioral_levers:
+      - lever: "Standardpakete"
+        description: "3 PV-Pakete (S/M/L) statt Einzelkomponenten"
+        expected_shift: "+0.20"
+
+      - lever: "Ein Ansprechpartner"
+        description: "Begleitung von Anfrage bis Inbetriebnahme"
+        expected_shift: "+0.15"
+
+      - lever: "Online-Konfigurator"
+        description: "5 Klicks zur Offerte (statt 50 Fragen)"
+        expected_shift: "+0.12"
+
+      - lever: "Förder-Integration"
+        description: "Antrag wird automatisch gestellt"
+        expected_shift: "+0.08"
+
+    implementation:
+      components:
+        - "Standardpakete mit Partner-Installateuren"
+        - "Online-Plattform mit Konfigurator"
+        - "Beratungs-Hotline"
+        - "Förder-Vollservice"
+        - "Qualitätssiegel für Installateure"
+
+      timeline:
+        q1_2026: "Konzept + Partner-Installateure gewinnen"
+        q2_2026: "Plattform-Launch"
+        q3_2026: "Marketing + Skalierung"
+
+      budget_estimate: "CHF 45-65k"
+
+    expected_impact:
+      conversion_rate_before: 0.20
+      conversion_rate_after: 0.45
+      additional_conversions: 600
+
+  # -------------------------------------------------------------------------
+  # INTERVENTION 3: Speicher-Push Bestandsanlagen (WHEN)
+  # -------------------------------------------------------------------------
+  - id: "INT-STROM-003"
+    name: "Speicher-Nachrüstungs-Kampagne"
+    priority: 3
+    status: "design"
+
+    target_dimension: "WHEN"
+    target_segment: ["EFH-MIT"]
+
+    mechanism:
+      primary: "Timing + Endowment"
+      secondary: ["Loss Framing", "Optimization", "Future-Proofing"]
+
+    behavioral_levers:
+      - lever: "Endowment-Framing"
+        description: "'DEIN Strom geht ins Netz - hol ihn zurück'"
+        expected_shift: "+0.15"
+
+      - lever: "5-Jahres-Check Mailing"
+        description: "Automatische Kontaktaufnahme bei älteren Anlagen"
+        expected_shift: "+0.12"
+
+      - lever: "Eigenverbrauchs-Dashboard"
+        description: "Visualisierung: 'Soviel verschenkst du'"
+        expected_shift: "+0.10"
+
+      - lever: "E-Auto Trigger"
+        description: "Bei E-Auto-Kauf → Speicher-Angebot"
+        expected_shift: "+0.08"
+
+    implementation:
+      components:
+        - "Datenbank PV-Bestand mit Alter"
+        - "Automatisiertes Mailing-Programm"
+        - "Eigenverbrauchs-Analyse-Tool"
+        - "Kooperation mit E-Auto-Händlern"
+
+      timeline:
+        q2_2026: "Datenbank + erstes Mailing"
+        q3_2026: "Dashboard + E-Auto-Kooperation"
+        q4_2026: "Skalierung"
+
+      budget_estimate: "CHF 30-45k"
+
+    expected_impact:
+      reach: 8000  # Anlagen 5+ Jahre
+      speicher_nachruestungen: 500
+      eigenverbrauch_erhoehung: "+25%"
+
+  # -------------------------------------------------------------------------
+  # INTERVENTION 4: ZEV-Vereinfachung MFH (AWARE + WHO)
+  # -------------------------------------------------------------------------
+  - id: "INT-STROM-004"
+    name: "ZEV-Einfach für Mehrfamilienhäuser"
+    priority: 4
+    status: "design"
+
+    target_dimension: "AWARE"
+    target_segment: ["MFH"]
+
+    mechanism:
+      primary: "Complexity Reduction"
+      secondary: ["Templates", "Legal Support", "Mediation"]
+
+    behavioral_levers:
+      - lever: "ZEV-Musterlösungen"
+        description: "Fertige Verträge, Abrechnungsmodelle"
+        expected_shift: "+0.15"
+
+      - lever: "Verwaltungs-Toolkit"
+        description: "Materialien für STWE-Versammlungen"
+        expected_shift: "+0.10"
+
+      - lever: "Mediation bei Konflikten"
+        description: "Neutrale Beratung bei Uneinigkeit"
+        expected_shift: "+0.08"
+
+    implementation:
+      components:
+        - "ZEV-Musterverträge (3 Varianten)"
+        - "Präsentations-Kit für Verwaltungen"
+        - "Beratungs-Hotline für STWE"
+        - "Kooperation mit Immobilienverwaltungen"
+
+      budget_estimate: "CHF 25-40k"
+
+  # -------------------------------------------------------------------------
+  # INTERVENTION 5: Gewerbe-PV Contracting (WHO + WHAT.F)
+  # -------------------------------------------------------------------------
+  - id: "INT-STROM-005"
+    name: "Gewerbe-Solar-Contracting"
+    priority: 5
+    status: "design"
+
+    target_dimension: "WHO"
+    target_segment: ["GEW"]
+
+    mechanism:
+      primary: "Risk Elimination"
+      secondary: ["Zero Upfront", "Professional Management", "Simplicity"]
+
+    behavioral_levers:
+      - lever: "Null-Investition Modell"
+        description: "PV ohne Eigenkapital, nur Stromabnahme"
+        expected_shift: "+0.25"
+
+      - lever: "Sorglos-Paket"
+        description: "Planung, Bau, Wartung alles inklusive"
+        expected_shift: "+0.15"
+
+      - lever: "Marketing-Benefit"
+        description: "'Produziert mit Solarstrom' für Kunden"
+        expected_shift: "+0.08"
+
+    implementation:
+      components:
+        - "Contracting-Anbieter-Netzwerk"
+        - "Gewerbe-Direktansprache (Dachkataster)"
+        - "Erfolgsgeschichten Gewerbe"
+        - "IHK/Gewerbeverband-Partnerschaft"
+
+      budget_estimate: "CHF 35-50k"
+
+# =============================================================================
+# SYSTEM-INTEGRATION KOMPONENTE
+# =============================================================================
+
+system_integration:
+
+  netzstabilitaet:
+    challenge: |
+      Hohe PV-Einspeisung an sonnigen Tagen kann Netz überlasten.
+      Speicher und flexible Lasten sind Teil der Lösung.
+
+    interventions:
+      - name: "Dynamische Einspeisetarife"
+        mechanism: "Preissignal für zeitliche Verschiebung"
+        evu_kooperation: true
+
+      - name: "Smart Home Integration"
+        mechanism: "Automatische Lastverschiebung"
+        evu_kooperation: true
+
+      - name: "Gemeinschaftsspeicher"
+        mechanism: "Quartier-Speicher statt Einzelspeicher"
+        evu_kooperation: true
+
+  evu_zusammenarbeit:
+    ziele:
+      - "EVU als Partner, nicht Gegner"
+      - "Netzausbau-Planung mit PV-Prognose"
+      - "Innovative Tarifmodelle ermöglichen"
+
+    massnahmen:
+      - "Runder Tisch AWE + EVU"
+      - "Pilotprojekte Smart Grid"
+      - "Daten-Sharing für Planung"
+
+# =============================================================================
+# SEGMENT-SPEZIFISCHE EMPFEHLUNGEN
+# =============================================================================
+
+segment_recommendations:
+
+  efh_ohne_pv:
+    primary_intervention: "INT-STROM-001"  # Nachbarschafts-Effekt
+    secondary_interventions:
+      - "INT-STROM-002"  # One-Stop-Shop
+    key_message: "Ihre Nachbarn machen es vor - jetzt ist Ihr Dach dran"
+    channel_priority: ["Nachbarn", "Gemeinde-Events", "Online"]
+
+  efh_mit_pv:
+    primary_intervention: "INT-STROM-003"  # Speicher-Push
+    key_message: "Holen Sie sich IHREN Strom zurück"
+    channel_priority: ["Direktmailing", "Installateur", "E-Auto-Händler"]
+
+  mfh_stwe:
+    primary_intervention: "INT-STROM-004"  # ZEV-Vereinfachung
+    secondary_interventions:
+      - "INT-STROM-002"  # One-Stop-Shop
+    key_message: "Gemeinsam günstiger - Solar für alle im Haus"
+    channel_priority: ["Verwaltungen", "STWE-Verbände"]
+
+  gewerbe:
+    primary_intervention: "INT-STROM-005"  # Contracting
+    key_message: "Solar ohne Investition - nur Stromkosten sparen"
+    channel_priority: ["IHK", "Direktansprache", "Gewerbeverband"]
+
+# =============================================================================
+# IMPLEMENTIERUNGS-ROADMAP
+# =============================================================================
+
+implementation_roadmap:
+
+  phase_1:
+    name: "Foundation & Quick Wins"
+    timeframe: "Q1-Q2 2026"
+
+    actions:
+      - intervention: "INT-STROM-001"
+        action: "Solar-Karte + erste Testimonials + 3 Pilot-Gemeinden"
+        budget: "CHF 30k"
+
+      - intervention: "INT-STROM-002"
+        action: "Standardpakete definieren + Partner-Installateure"
+        budget: "CHF 25k"
+
+      - intervention: "INT-STROM-003"
+        action: "Datenbank + erstes Mailing (2000 Anlagen)"
+        budget: "CHF 15k"
+
+  phase_2:
+    name: "Scale & Optimize"
+    timeframe: "Q3-Q4 2026"
+
+    actions:
+      - intervention: "INT-STROM-001"
+        action: "Kantonsweite Kampagne + 10 Events + Botschafter"
+        budget: "CHF 35k"
+
+      - intervention: "INT-STROM-002"
+        action: "Plattform-Launch + Marketing"
+        budget: "CHF 30k"
+
+      - intervention: "INT-STROM-004"
+        action: "ZEV-Toolkit + Verwaltungs-Outreach"
+        budget: "CHF 25k"
+
+      - intervention: "INT-STROM-005"
+        action: "Gewerbe-Contracting Launch"
+        budget: "CHF 30k"
+
+# =============================================================================
+# BUDGET-ÜBERSICHT
+# =============================================================================
+
+budget_summary:
+  total_budget_range: "CHF 185-270k"
+
+  by_intervention:
+    INT-STROM-001: "CHF 50-70k"
+    INT-STROM-002: "CHF 45-65k"
+    INT-STROM-003: "CHF 30-45k"
+    INT-STROM-004: "CHF 25-40k"
+    INT-STROM-005: "CHF 35-50k"
+
+  roi_estimate:
+    zusaetzliche_pv_anlagen: 1500
+    zusaetzliche_mwp: 12
+    zusaetzliche_gwh_pa: 10
+    co2_reduktion_tonnen: 2500
+    investitionen_ausgeloest: "CHF 45 Mio"
+
+# =============================================================================
+# WIRKUNGSMESSUNG
+# =============================================================================
+
+measurement_framework:
+
+  primary_kpis:
+    - metric: "Neue PV-Anlagen pro Jahr"
+      baseline: 1200
+      target: 2000
+      measurement: "Pronovo/Förderdaten"
+
+    - metric: "Speicher-Nachrüstungen"
+      baseline: 150
+      target: 500
+      measurement: "Förderdaten"
+
+    - metric: "Ausschöpfung Dachpotenzial"
+      baseline: 0.125
+      target: 0.20
+      measurement: "Solarkataster"
+
+  secondary_kpis:
+    - metric: "Anfragen One-Stop-Shop"
+      baseline: 0
+      target: 2000
+      measurement: "Plattform-Daten"
+
+    - metric: "Solar-Botschafter aktiv"
+      baseline: 0
+      target: 50
+      measurement: "Netzwerk-Registry"
+
+    - metric: "ZEV-Zusammenschlüsse"
+      baseline: 20
+      target: 80
+      measurement: "EVU-Daten"
+
+# =============================================================================
+# SYNERGIEN
+# =============================================================================
+
+synergies:
+
+  modul_1_heizen:
+    description: "PV + Wärmepumpe = perfekte Kombination"
+    transferable:
+      - "Segmentierung EFH/MFH"
+      - "Nachbarschafts-Effekt Mechanismus"
+      - "Installateur-Netzwerk"
+    combined_interventions:
+      - "Kombi-Paket PV + Wärmepumpe"
+      - "Gemeinsame Beratung"
+      - "Sektorkopplung kommunizieren"
+
+  modul_2a_mobilitaet:
+    description: "PV + E-Auto = Synergieeffekt"
+    transferable:
+      - "E-Auto-Käufer = PV-Interessenten"
+      - "Eigenverbrauch durch Laden"
+
+  energieversorger:
+    description: "Schlüsselpartner für Systemintegration"
+    potential:
+      - "Smart Meter Daten"
+      - "Dynamische Tarife"
+      - "Netzplanung"
+
+# =============================================================================
+# VALIDATION
+# =============================================================================
+
+_validation:
+  model_type: "10C Intervention Model"
+  completeness:
+    10c_dimensions: 10
+    interventions: 5
+    segments: 6
+  data_quality: "medium-high"
+  sources:
+    - "BFE Solarstatistik"
+    - "Sonnendach.ch"
+    - "Kantonale Energiestatistik"
+    - "LLMMC Priors"
+    - "Analogie andere Kantone"
+  gaps:
+    - "Detaillierte Bestandsanlagen-Daten"
+    - "Konversionsraten aktuell"
+    - "EVU-spezifische Daten"
+
+_changelog:
+  - version: "1.0"
+    date: "2026-02-02"
+    author: "Claude"
+    changes: "Initiale Erstellung Modul 2B Stromproduktion"

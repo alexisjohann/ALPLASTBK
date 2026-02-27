@@ -1,0 +1,286 @@
+# =============================================================================
+# K_OPTIMAL: WISSENSCHAFTLICHE HERLEITUNG DER PORTFOLIO-GRÖSSE
+# =============================================================================
+#
+# Bestimmt die optimale Anzahl aktiver Interventions-Dimensionen K*
+# basierend auf Kontext Ψ und wissenschaftlicher Evidenz.
+#
+# K ist NICHT willkürlich, sondern EMERGIERT aus:
+#   1. Empirischer Evidenz (Literatur)
+#   2. Kontextabhängigen Constraints
+#   3. Optimierungskriterien
+#
+# Version: 1.0 (Januar 2026)
+# =============================================================================
+
+metadata:
+  id: K-OPTIMAL
+  name: "Optimal Portfolio Size Specification"
+  extends: "EIT-EMP-2"
+  version: "1.0"
+  date: "2026-01-24"
+
+# =============================================================================
+# EMPIRISCHE EVIDENZ FÜR K-BEREICHE
+# =============================================================================
+
+empirical_evidence:
+
+  # Michie et al. (2013): BCT Taxonomy
+  michie_2013:
+    finding: "93 BCTs gruppiert in 16 Cluster"
+    implication: "Effektive Interventionen nutzen 3-7 BCTs aus verschiedenen Clustern"
+    source: "michie2013behavior"
+    K_range: [3, 7]
+    confidence: 0.8
+
+  # Sweller (1988): Cognitive Load Theory
+  sweller_1988:
+    finding: "Intrinsic + Extraneous Load begrenzen Lernkapazität"
+    implication: "Mehr als 7±2 Elemente überlasten das Arbeitsgedächtnis"
+    source: "sweller1988cognitive"
+    K_max: 9  # 7+2
+    confidence: 0.9
+
+  # Miller (1956): Magical Number Seven
+  miller_1956:
+    finding: "Working memory capacity 7±2 chunks"
+    implication: "Implementierer können max 9 Interventionen parallel verwalten"
+    source: "miller1956magical"
+    K_max: 9
+    confidence: 0.95
+
+  # Gabaix (2019): Behavioral Inattention
+  gabaix_2019:
+    finding: "Attention is sparse - people attend to limited features"
+    implication: "Zielgruppe kann nur begrenzte Interventionen wahrnehmen"
+    source: "PAP-gabaix2019behavioral"
+    K_effective_max: 5  # Nach Attention-Decay
+    confidence: 0.85
+
+  # BIT/Nudge Unit Practice
+  bit_practice:
+    finding: "Successful nudge programs typically use 2-5 interventions"
+    implication: "Praktisch bewährt: kleine, fokussierte Portfolios"
+    source: "halpern2015inside"
+    K_typical: [2, 5]
+    confidence: 0.75
+
+  # Meta-Analysis Summary
+  synthesis:
+    K_minimum: 2  # "Single intervention often insufficient"
+    K_optimal_range: [3, 6]
+    K_maximum: 9  # "Cognitive overload beyond this"
+    K_default: 4  # "Sweet spot for most contexts"
+
+# =============================================================================
+# DYNAMISCHE K-BERECHNUNG AUS KONTEXT Ψ
+# =============================================================================
+
+dynamic_k_computation:
+
+  description: |
+    K* emergiert aus dem Kontext Ψ durch folgende Formel:
+
+    K*(Ψ) = K_base + Σ δ_k · f_k(Ψ)
+
+    wobei δ_k die Anpassungsfaktoren und f_k(Ψ) kontextabhängige Funktionen sind.
+
+  formula: "K*(Ψ) = K_base + δ_budget + δ_complexity + δ_stage + δ_crowding"
+
+  base_value:
+    K_base: 4
+    rationale: "Empirical sweet spot from meta-evidence"
+
+  adjustment_factors:
+
+    # Budget-Abhängigkeit
+    budget_factor:
+      symbol: "δ_budget"
+      formula: "floor(log2(B / B_ref)) wenn B > B_ref, sonst 0"
+      parameters:
+        B_ref: 50  # Referenz-Budget (Einheiten)
+      range: [-2, +3]
+      examples:
+        - {B: 25, delta: -1, explanation: "Knappes Budget → weniger Dimensionen"}
+        - {B: 50, delta: 0, explanation: "Referenz-Budget"}
+        - {B: 100, delta: +1, explanation: "Doppeltes Budget → +1 Dimension"}
+        - {B: 200, delta: +2, explanation: "Vierfaches Budget → +2 Dimensionen"}
+
+    # Zielgruppen-Komplexitätstoleranz
+    complexity_factor:
+      symbol: "δ_complexity"
+      formula: "round(2 · (ψ_education - 0.5))"
+      description: "Höhere Bildung/Expertise → höhere K-Toleranz"
+      range: [-1, +1]
+      examples:
+        - {psi_education: 0.2, delta: -1, explanation: "Niedrige Bildung → einfacher halten"}
+        - {psi_education: 0.5, delta: 0, explanation: "Durchschnitt"}
+        - {psi_education: 0.8, delta: +1, explanation: "Hohe Bildung → komplexer OK"}
+
+    # Journey-Stage-Abhängigkeit
+    stage_factor:
+      symbol: "δ_stage"
+      formula: "BCJ_stage_adjustment[current_stage]"
+      description: "Frühe Stages brauchen fokussiertere Interventionen"
+      values:
+        pre_contemplation: -2  # Nur 2-3 Dimensionen
+        contemplation: -1      # 3-4 Dimensionen
+        preparation: 0         # 4-5 Dimensionen (Standard)
+        action: +1             # 5-6 Dimensionen
+        maintenance: 0         # 4-5 Dimensionen (Vereinfachen)
+      rationale: "Prochaska & DiClemente (1983): Stage-matched intervention intensity"
+
+    # Crowding-Out-Risiko
+    crowding_factor:
+      symbol: "δ_crowding"
+      formula: "-1 wenn P(crowding | K_current) > 0.3"
+      description: "Bei hohem Crowding-Out-Risiko K reduzieren"
+      mechanism: |
+        P(crowding) = 1 - Π_{i<j ∈ Active} (1 - p_ij)
+        wobei p_ij = max(0, -γ_ij(Ψ))
+
+        Wenn viele Paare negatives γ haben → K reduzieren
+      threshold: 0.3
+      adjustment: -1
+
+  # Finale Berechnung
+  final_computation:
+    formula: "K* = max(K_min, min(K_max, K_base + δ_budget + δ_complexity + δ_stage + δ_crowding))"
+    constraints:
+      K_min: 2
+      K_max: 9
+    default_if_unknown: 4
+
+# =============================================================================
+# KONTEXTPROFILE UND TYPISCHE K-WERTE
+# =============================================================================
+
+context_profiles:
+
+  low_resource_simple:
+    description: "Knappes Budget, einfache Zielgruppe, frühe Stage"
+    context:
+      budget: 30
+      psi_education: 0.3
+      stage: "pre_contemplation"
+    K_computed: 2
+    rationale: "K_base(4) + budget(-1) + complexity(-1) + stage(-2) = 0 → K_min=2"
+
+  standard:
+    description: "Durchschnittliches Budget, durchschnittliche Zielgruppe"
+    context:
+      budget: 50
+      psi_education: 0.5
+      stage: "preparation"
+    K_computed: 4
+    rationale: "K_base(4) + 0 + 0 + 0 = 4"
+
+  well_resourced_action:
+    description: "Gutes Budget, gebildete Zielgruppe, Action-Phase"
+    context:
+      budget: 150
+      psi_education: 0.7
+      stage: "action"
+    K_computed: 7
+    rationale: "K_base(4) + budget(+2) + complexity(+1) + stage(+1) = 8 → capped at practical 7"
+
+  high_crowding_risk:
+    description: "Kontext mit vielen negativen γ-Paaren"
+    context:
+      budget: 100
+      psi_education: 0.5
+      stage: "preparation"
+      crowding_pairs: 5  # Viele F+S Kombinationen relevant
+    K_computed: 4
+    rationale: "K_base(4) + budget(+1) + crowding(-1) = 4"
+
+# =============================================================================
+# INTEGRATION MIT EMERGE ALGORITHMUS
+# =============================================================================
+
+emerge_integration:
+
+  description: |
+    Der EMERGE Algorithmus verwendet K*(Ψ) statt eines fixen K-Werts.
+
+    Workflow:
+    1. Kontext Ψ erfassen
+    2. K*(Ψ) berechnen
+    3. EMERGE mit K = K*(Ψ) ausführen
+    4. Output enthält Begründung für K-Wahl
+
+  algorithm_modification:
+    before: "emerge(context, budget, complexity_limit=4, ...)"
+    after: "emerge(context, budget, complexity_limit=compute_k_optimal(context, budget), ...)"
+
+  output_extension:
+    - K_computed: "Berechneter K-Wert"
+    - K_rationale: "Begründung für K-Wahl"
+    - K_factors: "Aufschlüsselung der Anpassungsfaktoren"
+
+# =============================================================================
+# WISSENSCHAFTLICHE RECHTFERTIGUNG
+# =============================================================================
+
+scientific_justification:
+
+  principle: |
+    K ist keine willkürliche Konstante, sondern ein emergentes Ergebnis
+    der Optimierung unter Constraints:
+
+    K* = argmax_K [ E(K) - C(K) - R(K) ]
+
+    wobei:
+    - E(K) = Expected Effectiveness (steigt mit K, aber mit abnehmenden Grenznutzen)
+    - C(K) = Implementation Cost (steigt linear oder superlinear mit K)
+    - R(K) = Crowding-Out Risk (steigt überproportional mit K)
+
+  diminishing_returns:
+    description: "Jede zusätzliche Dimension bringt weniger Zusatznutzen"
+    formula: "dE/dK = α · exp(-β · K)"
+    parameters:
+      alpha: 0.5  # Anfänglicher Grenznutzen
+      beta: 0.3   # Decay-Rate
+    implication: "Nach K=6-7 ist dE/dK < Implementation Cost"
+
+  crowding_probability:
+    description: "Wahrscheinlichkeit eines Crowding-Out steigt mit K"
+    formula: "P(crowding) ≈ 1 - (1 - p_avg)^(K·(K-1)/2)"
+    parameters:
+      p_avg: 0.1  # Durchschnittliche Crowding-Out-Wahrscheinlichkeit pro Paar
+    examples:
+      - {K: 3, P: 0.27}
+      - {K: 4, P: 0.47}
+      - {K: 5, P: 0.65}
+      - {K: 6, P: 0.79}
+    implication: "Bei K>5 wird Crowding-Out-Vermeidung kritisch"
+
+# =============================================================================
+# THEOREM: K-OPTIMALITY
+# =============================================================================
+
+theorem_k_optimality:
+  name: "EIT-T15: Optimal Portfolio Size"
+
+  statement: |
+    Unter den Annahmen:
+    (A1) Diminishing returns: d²E/dK² < 0
+    (A2) Linear costs: dC/dK = c > 0
+    (A3) Convex crowding risk: d²R/dK² > 0
+
+    existiert ein eindeutiges K* ∈ [K_min, K_max] das den Netto-Nutzen maximiert.
+
+  proof_sketch: |
+    1. Netto-Nutzen N(K) = E(K) - C(K) - R(K) ist konkav in K
+       (da E konkav, C linear, R konvex)
+    2. N'(K) = E'(K) - c - R'(K)
+    3. Bei K=K_min: N'(K_min) > 0 (erste Dimensionen sehr wertvoll)
+    4. Bei K→∞: N'(K) < 0 (Grenznutzen → 0, Kosten/Risiko steigen)
+    5. ∃! K*: N'(K*) = 0 (Zwischenwertsatz + Monotonie von N')
+
+  corollary: |
+    K* ist eine Funktion des Kontexts:
+    - Höheres Budget → höheres K*
+    - Höheres Crowding-Risiko → niedrigeres K*
+    - Frühere BCJ-Stage → niedrigeres K*

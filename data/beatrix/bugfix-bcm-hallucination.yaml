@@ -1,0 +1,375 @@
+# BEATRIX Bugfix: BCM-Halluzination
+# ====================================
+# Version: 1.0.0
+# Datum: 2026-02-14
+# Schwere: KRITISCH
+# Status: DOKUMENTIERT — Patches muessen in bea-lab-upload/server.py angewendet werden
+#
+# Problem: BEATRIX-Chat erfindet falsche BCM-Informationen:
+#   - "Behavioral Competence Model" (korrekt: "Behavioral Change Model")
+#   - Erfundene Zahlen: "384 API-Endpoints", "Lambda=3.86/4.58"
+#   - Halluzinierte Elaborationen ohne Quellengrundlage
+#
+# Root Cause: 3 zusammenwirkende Fehler in server.py v3.19.0
+
+bugfix_id: "BFX-BEATRIX-001"
+title: "BCM-Halluzination im BEATRIX-Chat beheben"
+severity: CRITICAL
+affected_repo: "FehrAdvice-Partners-AG/bea-lab-upload"
+affected_file: "server.py"
+affected_version: "v3.19.0"
+date_identified: "2026-02-14"
+identified_by: "Code-Analyse (Claude Code Session)"
+
+# ============================================================================
+# ROOT CAUSE ANALYSIS
+# ============================================================================
+
+root_causes:
+  - id: "RC-1"
+    title: "Falscher BCM-Name im System-Prompt"
+    severity: CRITICAL
+    description: |
+      Der System-Prompt in server.py verwendet den falschen Namen
+      "Behavioral Competence Model" statt "Behavioral Change Model".
+      Dies betrifft 3 Stellen im Code.
+    locations:
+      - line: 4554
+        function: "chat_with_context()"
+        context: "Haupt-System-Prompt"
+      - line: 5974
+        function: "stream_chat_with_context()"
+        context: "Streaming-System-Prompt"
+      - line: 6342
+        function: "project_chat()"
+        context: "Projekt-System-Prompt"
+    evidence: "grep -n 'Behavioral Competence' server.py → 3 Treffer"
+
+  - id: "RC-2"
+    title: "Knowledge Base startet leer — kein Seeding"
+    severity: CRITICAL
+    description: |
+      Die Knowledge Base wird OHNE kanonische Definitionen gestartet.
+      Es gibt keinen Seeding-Mechanismus der beim Serverstart die
+      BCM/EBF/10C-Definitionen aus data/knowledge/canonical/ laedt.
+      Ergebnis: Bei der ersten BCM-Frage hat Claude KEIN Quellmaterial
+      und erfindet eine Antwort.
+    locations:
+      - line: "N/A"
+        function: "Kein Seeding-Code vorhanden"
+        context: "Fehlende Funktion"
+    evidence: "grep -n 'seed' server.py → 0 relevante Treffer"
+
+  - id: "RC-3"
+    title: "3x Score-Boost fuer halluzinierte Antworten"
+    severity: CRITICAL
+    description: |
+      Antworten mit source_type='ebf_answer' erhalten einen 3-fachen
+      Score-Boost in der Knowledge-Base-Suche. Sobald eine halluzinierte
+      Antwort einmal gecacht wird, wird sie bei der naechsten Frage mit
+      3x Prioritaet zurueckgegeben — der Halluzinations-Loop schliesst sich.
+    locations:
+      - line: 4424
+        function: "Knowledge Base scoring"
+        context: "score *= 3 fuer ebf_answer"
+    evidence: "Zeile 4424: 'if source_type == \"ebf_answer\": score *= 3'"
+
+  - id: "RC-4"
+    title: "KB-Freshness zu lang (90 Tage)"
+    severity: MEDIUM
+    description: |
+      KB_FRESHNESS_DAYS = 90 bedeutet dass einmal gecachte Halluzinationen
+      bis zu 90 Tage lang als 'frisch' behandelt werden.
+    locations:
+      - line: 4595
+        function: "KB freshness check"
+        context: "KB_FRESHNESS_DAYS = 90"
+    evidence: "Zeile 4595: 'KB_FRESHNESS_DAYS = 90'"
+
+# ============================================================================
+# HALLUZINATIONS-LOOP (Erklaerung)
+# ============================================================================
+
+hallucination_loop:
+  description: "Selbstverstaerkender Kreislauf der BCM-Halluzinationen"
+  steps:
+    - step: 1
+      action: "User fragt: 'Was ist BCM?'"
+      state: "KB leer → kein Fast Path (FAST_PATH_THRESHOLD=15, Zeile 4592)"
+    - step: 2
+      action: "Deep Path → Claude API-Call OHNE BCM-Quellmaterial"
+      state: "System-Prompt sagt 'Behavioral Competence Model' → Claude uebernimmt falschen Namen"
+    - step: 3
+      action: "Halluzinierte Antwort wird als 'ebf_answer' in KB gespeichert"
+      state: "Score-Boost: 3x (Zeile 4424)"
+    - step: 4
+      action: "Naechste BCM-Frage → KB findet gecachte Halluzination"
+      state: "Fast Path (Score > 15 durch 3x Boost)"
+    - step: 5
+      action: "Halluzination wird als 'verifiziertes EBF-Wissen' serviert"
+      state: "Loop geschlossen — jede weitere Frage verstaerkt die Halluzination"
+  breaking_the_loop:
+    - "Patch RC-1: Richtigen Namen verwenden → keine neue Halluzination"
+    - "Patch RC-2: KB seeden → korrekte Definition verfuegbar"
+    - "Patch RC-3: 3x Boost entfernen → Halluzinationen werden nicht priorisiert"
+    - "Cleanup: Alte halluzinierte KB-Eintraege loeschen"
+
+# ============================================================================
+# PATCHES (Copy-Paste Ready fuer server.py)
+# ============================================================================
+
+patches:
+  - id: "PATCH-1"
+    title: "BCM-Name korrigieren (3 Stellen)"
+    priority: 1
+    difficulty: EASY
+    description: "Suche+Ersetze an 3 Stellen"
+    search: "Behavioral Competence Model"
+    replace: "Behavioral Change Model"
+    affected_lines: [4554, 5974, 6342]
+    instructions: |
+      In server.py:
+        Suche: "Behavioral Competence Model"
+        Ersetze: "Behavioral Change Model"
+      Dies muss an ALLEN 3 Stellen gemacht werden.
+      Pruefung: grep -c "Behavioral Competence" server.py → muss 0 sein
+      Pruefung: grep -c "Behavioral Change" server.py → muss >= 3 sein
+
+  - id: "PATCH-2"
+    title: "System-Prompt mit BCM-Definition erweitern"
+    priority: 2
+    difficulty: MEDIUM
+    description: "BCM-Definition direkt in den System-Prompt einbauen"
+    instructions: |
+      Den System-Prompt an allen 3 Stellen (Zeilen ~4554, ~5974, ~6342)
+      durch den Inhalt von data/beatrix/system-prompt-template.yaml ersetzen.
+
+      Der neue System-Prompt enthaelt:
+        - Korrekte BCM-Kerngleichung
+        - 8 Psi-Dimensionen
+        - 10C CORE Framework
+        - FEPSDE-Dimensionen
+        - Explizite Regeln gegen Halluzination
+
+      Siehe: data/beatrix/system-prompt-template.yaml fuer den vollstaendigen Text.
+
+  - id: "PATCH-3"
+    title: "3x Score-Boost reduzieren"
+    priority: 3
+    difficulty: EASY
+    description: "ebf_answer Score-Multiplikator von 3 auf 1.5 reduzieren"
+    affected_lines: [4424]
+    instructions: |
+      Zeile ~4424 in server.py:
+
+      VORHER:
+        if source_type == "ebf_answer":
+            score *= 3
+
+      NACHHER:
+        if source_type == "ebf_answer":
+            score *= 1.5
+
+      ALTERNATIVE (sicherer):
+        # ebf_answer Score-Boost komplett entfernen
+        # if source_type == "ebf_answer":
+        #     score *= 3
+
+      ERKLAERUNG:
+        Der 3x-Boost war dafuer gedacht, EBF-verifizierte Antworten zu
+        priorisieren. In der Praxis fuehrt er aber dazu, dass JEDE Antwort
+        (auch halluzinierte) die als ebf_answer klassifiziert wird,
+        ueberproportional gewichtet wird. Ein Faktor von 1.5 reicht aus,
+        oder man entfernt den Boost komplett und setzt stattdessen auf
+        explizites Tagging (source_type='canonical').
+
+  - id: "PATCH-4"
+    title: "KB-Seeding beim Serverstart"
+    priority: 4
+    difficulty: MEDIUM
+    description: "Kanonische Definitionen beim Serverstart in KB laden"
+    instructions: |
+      Neue Funktion in server.py hinzufuegen (z.B. nach den DB-Init-Funktionen):
+
+      ```python
+      async def seed_knowledge_base():
+          """Seed KB with canonical definitions from kb-seed files."""
+          import os
+          import glob
+
+          seed_dir = os.path.join(os.path.dirname(__file__), "kb-seed")
+          if not os.path.exists(seed_dir):
+              logger.warning(f"KB seed directory not found: {seed_dir}")
+              return
+
+          seed_files = glob.glob(os.path.join(seed_dir, "KB-*.md"))
+          for filepath in seed_files:
+              filename = os.path.basename(filepath)
+              # Check if already seeded
+              existing = await db.fetch_one(
+                  "SELECT id FROM documents WHERE filename = $1 AND source_type = 'canonical'",
+                  filename
+              )
+              if existing:
+                  logger.info(f"KB seed already exists: {filename}")
+                  continue
+
+              with open(filepath, 'r') as f:
+                  content = f.read()
+
+              # Insert as canonical document
+              await db.execute(
+                  """INSERT INTO documents (filename, content, source_type, tags, created_at)
+                     VALUES ($1, $2, 'canonical', $3, NOW())""",
+                  filename, content, '["canonical", "ssot", "ebf"]'
+              )
+              logger.info(f"KB seed loaded: {filename}")
+
+          logger.info(f"KB seeding complete. {len(seed_files)} files processed.")
+      ```
+
+      Dann in der Startup-Sequenz aufrufen:
+      ```python
+      @app.on_event("startup")
+      async def startup():
+          # ... existing startup code ...
+          await seed_knowledge_base()  # <-- NEU
+      ```
+
+      ALTERNATIVE: KB-Seeds koennten auch ueber die bestehende Upload-API
+      hochgeladen werden (siehe data/beatrix/kb-seed/README.md).
+
+  - id: "PATCH-5"
+    title: "KB-Freshness von 90 auf 14 Tage reduzieren"
+    priority: 5
+    difficulty: EASY
+    description: "Gecachte Antworten schneller als veraltet markieren"
+    affected_lines: [4595]
+    instructions: |
+      Zeile ~4595 in server.py:
+
+      VORHER:
+        KB_FRESHNESS_DAYS = 90
+
+      NACHHER:
+        KB_FRESHNESS_DAYS = 14
+
+      ERKLAERUNG:
+        90 Tage bedeutet dass einmal gecachte Halluzinationen fast 3 Monate
+        als 'frisch' behandelt werden. 14 Tage ist ein vernuenftiger
+        Kompromiss zwischen Cache-Effizienz und Aktualitaet.
+
+# ============================================================================
+# SOFORTMASSNAHME (ohne server.py Aenderung)
+# ============================================================================
+
+immediate_action:
+  title: "KB-Seeds hochladen (Track 1)"
+  description: |
+    Diese Massnahme kann SOFORT umgesetzt werden, ohne server.py zu aendern:
+
+    1. Die 4 KB-Seed-Dateien aus data/beatrix/kb-seed/ in BEATRIX hochladen
+    2. Alte halluzinierte KB-Eintraege loeschen (siehe README.md)
+
+    Dies behebt das Problem TEILWEISE:
+    - Korrekte BCM-Definition ist nun in der KB vorhanden
+    - Fast Path findet korrektes Material BEVOR Claude halluziniert
+    - ABER: System-Prompt sagt immer noch "Competence" (bis Patch-1)
+    - ABER: 3x-Boost verstaerkt immer noch alte Eintraege (bis Patch-3)
+
+  steps:
+    - "KB-Seeds hochladen (siehe data/beatrix/kb-seed/README.md)"
+    - "Alte Halluzinationen in DB loeschen (SQL in README.md)"
+    - "Testen: 'Was ist BCM?' im Chat"
+    - "Ergebnis pruefen: Sagt es 'Change' oder 'Competence'?"
+
+  expected_improvement: |
+    Nach Upload der Seeds und Loeschung alter Halluzinationen:
+    - BCM-Name: WAHRSCHEINLICH korrekt (KB hat Vorrang vor Halluzination)
+    - Erfundene Zahlen: WAHRSCHEINLICH behoben (KB hat echte Definitionen)
+    - System-Prompt: IMMER NOCH FALSCH (bis Patch-1 angewendet)
+    - 3x-Boost: IMMER NOCH AKTIV (bis Patch-3 angewendet)
+
+# ============================================================================
+# VERIFIKATION
+# ============================================================================
+
+verification:
+  after_patches:
+    - test: "grep -c 'Behavioral Competence' server.py"
+      expected: "0"
+      description: "Kein falscher Name mehr"
+
+    - test: "grep -c 'Behavioral Change Model' server.py"
+      expected: ">= 3"
+      description: "Richtiger Name an allen Stellen"
+
+    - test: "grep -c 'score.*3' server.py (Zeile ~4424)"
+      expected: "0 (oder 1.5 statt 3)"
+      description: "3x-Boost entfernt oder reduziert"
+
+    - test: "grep 'KB_FRESHNESS_DAYS' server.py"
+      expected: "KB_FRESHNESS_DAYS = 14"
+      description: "Freshness reduziert"
+
+  after_deployment:
+    - test: "BEATRIX-Chat: 'Was ist BCM?'"
+      expected: |
+        - Sagt "Behavioral Change Model" (NICHT "Competence")
+        - Nennt P = f(W, A, C) Formel
+        - Nennt 8 Psi-Dimensionen
+        - Erfindet KEINE Zahlen
+      description: "BCM-Antwort korrekt"
+
+    - test: "BEATRIX-Chat: 'Was ist das 10C Framework?'"
+      expected: |
+        - Listet alle 10 COREs korrekt auf
+        - Keine erfundenen Statistiken
+      description: "10C-Antwort korrekt"
+
+    - test: "BEATRIX-Chat: 'Wie viele API-Endpoints hat BEATRIX?'"
+      expected: |
+        - Sagt NICHT "384" (halluziniert)
+        - Sagt entweder die korrekte Zahl oder "Ich bin nicht sicher"
+      description: "Keine erfundenen Zahlen"
+
+# ============================================================================
+# TIMELINE
+# ============================================================================
+
+timeline:
+  - phase: "Track 1: KB-Seeds"
+    effort: "30 min"
+    when: "SOFORT"
+    who: "Admin/Researcher via BEATRIX Upload-UI"
+    impact: "~70% Verbesserung"
+
+  - phase: "Track 2: Patch-1 (Name korrigieren)"
+    effort: "5 min"
+    when: "Naechstes server.py Update"
+    who: "Entwickler (bea-lab-upload Repo)"
+    impact: "Behebt Root Cause #1"
+
+  - phase: "Track 2: Patch-2 (System-Prompt)"
+    effort: "15 min"
+    when: "Naechstes server.py Update"
+    who: "Entwickler (bea-lab-upload Repo)"
+    impact: "Behebt Root Cause #1 vollstaendig"
+
+  - phase: "Track 2: Patch-3 (Score-Boost)"
+    effort: "5 min"
+    when: "Naechstes server.py Update"
+    who: "Entwickler (bea-lab-upload Repo)"
+    impact: "Behebt Root Cause #3"
+
+  - phase: "Track 2: Patch-4 (KB-Seeding)"
+    effort: "30 min"
+    when: "Naechstes server.py Update"
+    who: "Entwickler (bea-lab-upload Repo)"
+    impact: "Verhindert leere KB permanent"
+
+  - phase: "Track 2: Patch-5 (Freshness)"
+    effort: "2 min"
+    when: "Naechstes server.py Update"
+    who: "Entwickler (bea-lab-upload Repo)"
+    impact: "Behebt Root Cause #4"

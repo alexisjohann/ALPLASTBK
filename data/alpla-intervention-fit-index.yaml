@@ -1,0 +1,1135 @@
+# ALPLA Intervention Fit Index (IFI)
+# Version: 1.0
+# Date: 2026-01-19
+# Purpose: Categorize plants by intervention potential for field experiment
+# Integrates with: PCI (alpla-pci-estimates.csv), Job Profiles (alpla-job-profiles.yaml)
+
+metadata:
+  version: "1.0"
+  created: "2026-01-19"
+  methodology: "Multi-dimensional scoring based on workforce composition, plant characteristics, and local labor market"
+  total_plants: 17
+  dimensions: 5
+  clusters: 5
+
+# ============================================================
+# IFI METHODOLOGY
+# ============================================================
+
+methodology:
+  description: |
+    The Intervention Fit Index (IFI) measures how well different behavioral interventions
+    fit a specific plant's characteristics. Unlike PCI (which measures similarity),
+    IFI measures intervention receptivity.
+
+    Each dimension (I1-I5) scores 0-100 based on weighted factors.
+    Plants are then clustered based on their IFI profile.
+
+  dimensions:
+    I1_rotation_fit:
+      name: "Job Rotation Fit"
+      description: "How well does job rotation work at this plant?"
+      target_churn_drivers: [monotony, repetitive, standing]
+      factors:
+        - name: "BC5 workforce share"
+          weight: 0.25
+          logic: "More BC5 = more rotation potential (entry-level jobs)"
+        - name: "Plant size"
+          weight: 0.25
+          logic: "Larger plants = more rotation options"
+        - name: "Monotony exposure (BC1+BC5 share)"
+          weight: 0.25
+          logic: "Higher monotony = higher need for rotation"
+        - name: "Shift flexibility (3-shift vs 2-shift)"
+          weight: 0.15
+          logic: "3-shift = more scheduling flexibility"
+        - name: "Customer constraints"
+          weight: 0.10
+          logic: "In-house = less flexibility"
+      formula: |
+        I1 = 0.25 * norm(BC5_pct) + 0.25 * norm(employees) +
+             0.25 * norm(BC1_pct + BC5_pct) + 0.15 * shift_score +
+             0.10 * (1 - customer_constraint)
+
+    I2_career_fit:
+      name: "Career Pathway Fit"
+      description: "How well does a career development program work?"
+      target_churn_drivers: [low_status, no_growth]
+      factors:
+        - name: "BC4+BC5 workforce share"
+          weight: 0.25
+          logic: "More entry-level jobs = more career need"
+        - name: "Local unemployment rate"
+          weight: 0.20
+          logic: "Higher unemployment = workers value stability/growth more"
+        - name: "Plant type (HQ vs standalone)"
+          weight: 0.20
+          logic: "HQ/larger = more career options"
+        - name: "Average tenure"
+          weight: 0.20
+          logic: "Lower tenure = career program may help retention"
+        - name: "Churn rate BC4+BC5"
+          weight: 0.15
+          logic: "Higher churn in these categories = higher need"
+      formula: |
+        I2 = 0.25 * norm(BC4_pct + BC5_pct) + 0.20 * norm(unemployment) +
+             0.20 * plant_type_score + 0.20 * (1 - norm(tenure)) +
+             0.15 * norm(churn_BC4_BC5)
+
+    I3_skill_pay_fit:
+      name: "Skill-Based Pay Fit"
+      description: "How well does skill-based pay differentiation work?"
+      target_churn_drivers: [no_growth, low_status]
+      factors:
+        - name: "BC1+BC3 workforce share"
+          weight: 0.30
+          logic: "Technical jobs = more skill differentiation possible"
+        - name: "Local wage competition"
+          weight: 0.25
+          logic: "More competition = pay differentiation matters more"
+        - name: "Skill variance within plant"
+          weight: 0.25
+          logic: "Higher variance = more room for tiered pay"
+        - name: "Manufacturing density"
+          weight: 0.20
+          logic: "More competition = workers compare pay more"
+      formula: |
+        I3 = 0.30 * norm(BC1_pct + BC3_pct) + 0.25 * norm(wage_competition) +
+             0.25 * skill_variance_score + 0.20 * norm(mfg_establishments)
+
+    I4_workload_fit:
+      name: "Workload Management Fit"
+      description: "How well does workload balancing/predictive maintenance work?"
+      target_churn_drivers: [time_pressure, overtime, on_call]
+      factors:
+        - name: "BC3 workforce share"
+          weight: 0.35
+          logic: "More maintenance staff = more workload issues"
+        - name: "Equipment age/complexity"
+          weight: 0.25
+          logic: "Older/complex equipment = more breakdowns"
+        - name: "Overtime frequency proxy"
+          weight: 0.25
+          logic: "More overtime = higher need for workload mgmt"
+        - name: "Number of production lines"
+          weight: 0.15
+          logic: "More lines = more maintenance demand"
+      formula: |
+        I4 = 0.35 * norm(BC3_pct) + 0.25 * equipment_score +
+             0.25 * overtime_proxy + 0.15 * norm(production_lines)
+
+    I5_autonomy_fit:
+      name: "Autonomy Enhancement Fit"
+      description: "How well does increased worker autonomy work?"
+      target_churn_drivers: [monotony, responsibility]
+      factors:
+        - name: "Plant type independence"
+          weight: 0.30
+          logic: "Standalone = more autonomy possible"
+        - name: "Supervisor span of control"
+          weight: 0.25
+          logic: "Larger span = autonomy more necessary"
+        - name: "Average worker experience"
+          weight: 0.25
+          logic: "More experience = can handle autonomy"
+        - name: "Process standardization"
+          weight: 0.20
+          logic: "Lower standardization = autonomy more natural"
+      formula: |
+        I5 = 0.30 * plant_independence_score + 0.25 * norm(supervisor_span) +
+             0.25 * experience_score + 0.20 * (1 - standardization_score)
+
+  clustering:
+    method: "Profile-based assignment"
+    clusters:
+      A_rotation_ready:
+        name: "Rotation-Ready"
+        criteria: "I1 >= 60 AND I1 is top-2 dimension"
+        primary_intervention: "Job Rotation"
+        secondary_intervention: "Team-based goals"
+
+      B_career_hungry:
+        name: "Career-Hungry"
+        criteria: "I2 >= 60 AND I2 is top-2 dimension"
+        primary_intervention: "Career Pathway Program"
+        secondary_intervention: "Skill Certificates"
+
+      C_tech_focused:
+        name: "Tech-Focused"
+        criteria: "I3 >= 55 OR I4 >= 55"
+        primary_intervention: "Skill-Based Pay / Workload Mgmt"
+        secondary_intervention: "Training Investment"
+
+      D_autonomy_seeking:
+        name: "Autonomy-Seeking"
+        criteria: "I5 >= 60 AND standalone plant"
+        primary_intervention: "Self-Managed Teams"
+        secondary_intervention: "Decision Rights Expansion"
+
+      E_constrained:
+        name: "Constrained"
+        criteria: "All dimensions < 50 OR in-house plant"
+        primary_intervention: "Minimal / Recognition-only"
+        secondary_intervention: "Process Micro-improvements"
+
+# ============================================================
+# PLANT SCORES
+# ============================================================
+
+plant_scores:
+
+  US-001_McDonough_GA:
+    plant_id: "US-001"
+    plant_name: "McDonough GA"
+    plant_type: "regional_hq"
+    employees: 379
+
+    # Input factors (from PCI + Labor Market data)
+    input_factors:
+      BC1_pct: 50
+      BC2_pct: 10
+      BC3_pct: 15
+      BC4_pct: 17
+      BC5_pct: 8
+      WC_pct: 30  # Higher due to HQ functions
+      unemployment_rate: 3.3
+      mfg_establishments: 1850
+      mfg_wage_hr: 20.25
+      shift_model: "3-shift"
+      customer_constraint: 0  # No customer on-site
+      estimated_churn_BC4_BC5: 33
+      production_lines: 16
+      plant_age_years: 15
+
+    # Calculated IFI scores (0-100)
+    ifi_scores:
+      I1_rotation_fit: 58
+      I2_career_fit: 72
+      I3_skill_pay_fit: 65
+      I4_workload_fit: 55
+      I5_autonomy_fit: 78
+
+    ifi_profile:
+      top_dimension: "I5_autonomy"
+      second_dimension: "I2_career"
+      cluster: "D_autonomy_seeking"
+      cluster_confidence: "high"
+
+    intervention_recommendation:
+      primary: "Self-Managed Teams"
+      secondary: "Career Pathway (due to HQ resources)"
+      expected_churn_reduction: "4-7%"
+      implementation_complexity: "medium"
+
+  US-002_Bethlehem_PA:
+    plant_id: "US-002"
+    plant_name: "Bethlehem PA"
+    plant_type: "standalone"
+    employees: 176
+
+    input_factors:
+      BC1_pct: 50
+      BC2_pct: 10
+      BC3_pct: 15
+      BC4_pct: 17
+      BC5_pct: 8
+      WC_pct: 20
+      unemployment_rate: 3.8
+      mfg_establishments: 520
+      mfg_wage_hr: 19.10
+      shift_model: "3-shift"
+      customer_constraint: 0
+      estimated_churn_BC4_BC5: 34
+      production_lines: 9
+      plant_age_years: 20
+
+    ifi_scores:
+      I1_rotation_fit: 65
+      I2_career_fit: 58
+      I3_skill_pay_fit: 60
+      I4_workload_fit: 52
+      I5_autonomy_fit: 62
+
+    ifi_profile:
+      top_dimension: "I1_rotation"
+      second_dimension: "I5_autonomy"
+      cluster: "A_rotation_ready"
+      cluster_confidence: "high"
+
+    intervention_recommendation:
+      primary: "Job Rotation"
+      secondary: "Autonomy Enhancement"
+      expected_churn_reduction: "5-8%"
+      implementation_complexity: "low"
+
+  US-003_Iowa_City_1:
+    plant_id: "US-003"
+    plant_name: "Iowa City IA (1)"
+    plant_type: "near_customer"
+    employees: 140
+
+    input_factors:
+      BC1_pct: 50
+      BC2_pct: 10
+      BC3_pct: 12
+      BC4_pct: 18
+      BC5_pct: 10
+      WC_pct: 15
+      unemployment_rate: 2.5
+      mfg_establishments: 185
+      mfg_wage_hr: 18.45
+      shift_model: "3-shift"
+      customer_constraint: 0.3  # Near customer = some constraints
+      estimated_churn_BC4_BC5: 35
+      production_lines: 23
+      plant_age_years: 12
+
+    ifi_scores:
+      I1_rotation_fit: 52
+      I2_career_fit: 55
+      I3_skill_pay_fit: 48
+      I4_workload_fit: 58
+      I5_autonomy_fit: 45
+
+    ifi_profile:
+      top_dimension: "I4_workload"
+      second_dimension: "I2_career"
+      cluster: "C_tech_focused"
+      cluster_confidence: "medium"
+
+    intervention_recommendation:
+      primary: "Workload Management"
+      secondary: "Career Pathway"
+      expected_churn_reduction: "3-5%"
+      implementation_complexity: "medium"
+
+  US-004_Iowa_City_2:
+    plant_id: "US-004"
+    plant_name: "Iowa City IA (2)"
+    plant_type: "near_customer"
+    employees: 119
+
+    input_factors:
+      BC1_pct: 50
+      BC2_pct: 10
+      BC3_pct: 12
+      BC4_pct: 18
+      BC5_pct: 10
+      WC_pct: 15
+      unemployment_rate: 2.5
+      mfg_establishments: 185
+      mfg_wage_hr: 18.45
+      shift_model: "2-shift"
+      customer_constraint: 0.3
+      estimated_churn_BC4_BC5: 32
+      production_lines: 16
+      plant_age_years: 10
+
+    ifi_scores:
+      I1_rotation_fit: 48
+      I2_career_fit: 52
+      I3_skill_pay_fit: 45
+      I4_workload_fit: 50
+      I5_autonomy_fit: 42
+
+    ifi_profile:
+      top_dimension: "I2_career"
+      second_dimension: "I4_workload"
+      cluster: "B_career_hungry"
+      cluster_confidence: "low"
+
+    intervention_recommendation:
+      primary: "Career Pathway"
+      secondary: "Skill Certificates"
+      expected_churn_reduction: "3-5%"
+      implementation_complexity: "medium"
+
+  US-005_Jefferson_City_MO:
+    plant_id: "US-005"
+    plant_name: "Jefferson City MO"
+    plant_type: "standalone"
+    employees: 172
+
+    input_factors:
+      BC1_pct: 50
+      BC2_pct: 10
+      BC3_pct: 15
+      BC4_pct: 17
+      BC5_pct: 8
+      WC_pct: 20
+      unemployment_rate: 3.0
+      mfg_establishments: 145
+      mfg_wage_hr: 17.55
+      shift_model: "3-shift"
+      customer_constraint: 0
+      estimated_churn_BC4_BC5: 33
+      production_lines: 16
+      plant_age_years: 18
+
+    ifi_scores:
+      I1_rotation_fit: 62
+      I2_career_fit: 48
+      I3_skill_pay_fit: 55
+      I4_workload_fit: 60
+      I5_autonomy_fit: 58
+
+    ifi_profile:
+      top_dimension: "I1_rotation"
+      second_dimension: "I4_workload"
+      cluster: "A_rotation_ready"
+      cluster_confidence: "medium"
+
+    intervention_recommendation:
+      primary: "Job Rotation"
+      secondary: "Workload Management"
+      expected_churn_reduction: "4-6%"
+      implementation_complexity: "low"
+
+  US-006_St_Peters_1:
+    plant_id: "US-006"
+    plant_name: "St Peters MO (1)"
+    plant_type: "standalone"
+    employees: 184
+
+    input_factors:
+      BC1_pct: 50
+      BC2_pct: 10
+      BC3_pct: 15
+      BC4_pct: 17
+      BC5_pct: 8
+      WC_pct: 20
+      unemployment_rate: 3.2
+      mfg_establishments: 1120
+      mfg_wage_hr: 18.65
+      shift_model: "3-shift"
+      customer_constraint: 0
+      estimated_churn_BC4_BC5: 28
+      production_lines: 16
+      plant_age_years: 22
+
+    ifi_scores:
+      I1_rotation_fit: 68
+      I2_career_fit: 52
+      I3_skill_pay_fit: 62
+      I4_workload_fit: 48
+      I5_autonomy_fit: 60
+
+    ifi_profile:
+      top_dimension: "I1_rotation"
+      second_dimension: "I3_skill_pay"
+      cluster: "A_rotation_ready"
+      cluster_confidence: "high"
+
+    intervention_recommendation:
+      primary: "Job Rotation"
+      secondary: "Skill-Based Pay"
+      expected_churn_reduction: "5-8%"
+      implementation_complexity: "low"
+
+  US-007_St_Peters_2:
+    plant_id: "US-007"
+    plant_name: "St Peters MO (2)"
+    plant_type: "standalone"
+    employees: 155
+
+    input_factors:
+      BC1_pct: 50
+      BC2_pct: 10
+      BC3_pct: 15
+      BC4_pct: 17
+      BC5_pct: 8
+      WC_pct: 20
+      unemployment_rate: 3.2
+      mfg_establishments: 1120
+      mfg_wage_hr: 18.65
+      shift_model: "3-shift"
+      customer_constraint: 0
+      estimated_churn_BC4_BC5: 30
+      production_lines: 16
+      plant_age_years: 18
+
+    ifi_scores:
+      I1_rotation_fit: 62
+      I2_career_fit: 50
+      I3_skill_pay_fit: 60
+      I4_workload_fit: 50
+      I5_autonomy_fit: 55
+
+    ifi_profile:
+      top_dimension: "I1_rotation"
+      second_dimension: "I3_skill_pay"
+      cluster: "A_rotation_ready"
+      cluster_confidence: "medium"
+
+    intervention_recommendation:
+      primary: "Job Rotation"
+      secondary: "Skill-Based Pay"
+      expected_churn_reduction: "4-6%"
+      implementation_complexity: "low"
+
+  US-008_Kansas_City_MO:
+    plant_id: "US-008"
+    plant_name: "Kansas City MO"
+    plant_type: "standalone"
+    employees: 144
+
+    input_factors:
+      BC1_pct: 50
+      BC2_pct: 10
+      BC3_pct: 15
+      BC4_pct: 17
+      BC5_pct: 8
+      WC_pct: 20
+      unemployment_rate: 4.0
+      mfg_establishments: 980
+      mfg_wage_hr: 19.10
+      shift_model: "2-shift"
+      customer_constraint: 0
+      estimated_churn_BC4_BC5: 32
+      production_lines: 4
+      plant_age_years: 15
+
+    ifi_scores:
+      I1_rotation_fit: 52
+      I2_career_fit: 62
+      I3_skill_pay_fit: 58
+      I4_workload_fit: 42
+      I5_autonomy_fit: 55
+
+    ifi_profile:
+      top_dimension: "I2_career"
+      second_dimension: "I3_skill_pay"
+      cluster: "B_career_hungry"
+      cluster_confidence: "medium"
+
+    intervention_recommendation:
+      primary: "Career Pathway"
+      secondary: "Skill-Based Pay"
+      expected_churn_reduction: "4-6%"
+      implementation_complexity: "medium"
+
+  US-009_Bowling_Green_1:
+    plant_id: "US-009"
+    plant_name: "Bowling Green KY (1)"
+    plant_type: "standalone"
+    employees: 184
+
+    input_factors:
+      BC1_pct: 50
+      BC2_pct: 10
+      BC3_pct: 15
+      BC4_pct: 17
+      BC5_pct: 8
+      WC_pct: 20
+      unemployment_rate: 3.8
+      mfg_establishments: 165
+      mfg_wage_hr: 17.25
+      shift_model: "3-shift"
+      customer_constraint: 0
+      estimated_churn_BC4_BC5: 34
+      production_lines: 13
+      plant_age_years: 16
+
+    ifi_scores:
+      I1_rotation_fit: 65
+      I2_career_fit: 60
+      I3_skill_pay_fit: 52
+      I4_workload_fit: 55
+      I5_autonomy_fit: 58
+
+    ifi_profile:
+      top_dimension: "I1_rotation"
+      second_dimension: "I2_career"
+      cluster: "A_rotation_ready"
+      cluster_confidence: "high"
+
+    intervention_recommendation:
+      primary: "Job Rotation"
+      secondary: "Career Pathway"
+      expected_churn_reduction: "5-8%"
+      implementation_complexity: "low"
+
+  US-010_Bowling_Green_2_HENKEL:
+    plant_id: "US-010"
+    plant_name: "Bowling Green KY (2) - HENKEL"
+    plant_type: "in_house"
+    employees: 83
+
+    input_factors:
+      BC1_pct: 55
+      BC2_pct: 10
+      BC3_pct: 12
+      BC4_pct: 15
+      BC5_pct: 8
+      WC_pct: 12
+      unemployment_rate: 3.8
+      mfg_establishments: 165
+      mfg_wage_hr: 17.25
+      shift_model: "3-shift"
+      customer_constraint: 0.8  # High - customer on-site
+      estimated_churn_BC4_BC5: 38
+      production_lines: 6
+      plant_age_years: 10
+
+    ifi_scores:
+      I1_rotation_fit: 35
+      I2_career_fit: 45
+      I3_skill_pay_fit: 42
+      I4_workload_fit: 40
+      I5_autonomy_fit: 25
+
+    ifi_profile:
+      top_dimension: "I2_career"
+      second_dimension: "I3_skill_pay"
+      cluster: "E_constrained"
+      cluster_confidence: "high"
+
+    intervention_recommendation:
+      primary: "Recognition Programs"
+      secondary: "Micro-improvements"
+      expected_churn_reduction: "1-3%"
+      implementation_complexity: "high"
+      note: "Customer constraints limit intervention options"
+
+  US-011_Florence_1_LOREAL:
+    plant_id: "US-011"
+    plant_name: "Florence KY (1) - L'OREAL"
+    plant_type: "in_house"
+    employees: 92
+
+    input_factors:
+      BC1_pct: 55
+      BC2_pct: 10
+      BC3_pct: 12
+      BC4_pct: 15
+      BC5_pct: 8
+      WC_pct: 12
+      unemployment_rate: 3.9
+      mfg_establishments: 890
+      mfg_wage_hr: 19.45
+      shift_model: "3-shift"
+      customer_constraint: 0.8
+      estimated_churn_BC4_BC5: 35
+      production_lines: 16
+      plant_age_years: 12
+
+    ifi_scores:
+      I1_rotation_fit: 38
+      I2_career_fit: 48
+      I3_skill_pay_fit: 50
+      I4_workload_fit: 45
+      I5_autonomy_fit: 28
+
+    ifi_profile:
+      top_dimension: "I3_skill_pay"
+      second_dimension: "I2_career"
+      cluster: "E_constrained"
+      cluster_confidence: "medium"
+
+    intervention_recommendation:
+      primary: "Skill-Based Pay (if customer approves)"
+      secondary: "Recognition Programs"
+      expected_churn_reduction: "2-4%"
+      implementation_complexity: "high"
+
+  US-012_Florence_2_LOREAL:
+    plant_id: "US-012"
+    plant_name: "Florence KY (2) - L'OREAL"
+    plant_type: "in_house"
+    employees: 89
+
+    input_factors:
+      BC1_pct: 55
+      BC2_pct: 10
+      BC3_pct: 12
+      BC4_pct: 15
+      BC5_pct: 8
+      WC_pct: 12
+      unemployment_rate: 3.9
+      mfg_establishments: 890
+      mfg_wage_hr: 19.45
+      shift_model: "3-shift"
+      customer_constraint: 0.8
+      estimated_churn_BC4_BC5: 36
+      production_lines: 16
+      plant_age_years: 14
+
+    ifi_scores:
+      I1_rotation_fit: 36
+      I2_career_fit: 50
+      I3_skill_pay_fit: 48
+      I4_workload_fit: 48
+      I5_autonomy_fit: 26
+
+    ifi_profile:
+      top_dimension: "I2_career"
+      second_dimension: "I4_workload"
+      cluster: "E_constrained"
+      cluster_confidence: "medium"
+
+    intervention_recommendation:
+      primary: "Career Visibility (pathways outside plant)"
+      secondary: "Workload Communication"
+      expected_churn_reduction: "2-3%"
+      implementation_complexity: "high"
+
+  US-013_Lima_OH:
+    plant_id: "US-013"
+    plant_name: "Lima OH"
+    plant_type: "standalone"
+    employees: 164
+
+    input_factors:
+      BC1_pct: 50
+      BC2_pct: 10
+      BC3_pct: 15
+      BC4_pct: 17
+      BC5_pct: 8
+      WC_pct: 20
+      unemployment_rate: 4.5
+      mfg_establishments: 210
+      mfg_wage_hr: 18.05
+      shift_model: "3-shift"
+      customer_constraint: 0
+      estimated_churn_BC4_BC5: 36
+      production_lines: 20
+      plant_age_years: 25
+
+    ifi_scores:
+      I1_rotation_fit: 68
+      I2_career_fit: 65
+      I3_skill_pay_fit: 55
+      I4_workload_fit: 62
+      I5_autonomy_fit: 60
+
+    ifi_profile:
+      top_dimension: "I1_rotation"
+      second_dimension: "I2_career"
+      cluster: "A_rotation_ready"
+      cluster_confidence: "high"
+
+    intervention_recommendation:
+      primary: "Job Rotation"
+      secondary: "Career Pathway"
+      expected_churn_reduction: "6-9%"
+      implementation_complexity: "low"
+
+  US-014_Dayton_OH:
+    plant_id: "US-014"
+    plant_name: "Dayton OH"
+    plant_type: "standalone"
+    employees: 183
+
+    input_factors:
+      BC1_pct: 50
+      BC2_pct: 10
+      BC3_pct: 15
+      BC4_pct: 17
+      BC5_pct: 8
+      WC_pct: 20
+      unemployment_rate: 4.5
+      mfg_establishments: 680
+      mfg_wage_hr: 18.55
+      shift_model: "3-shift"
+      customer_constraint: 0
+      estimated_churn_BC4_BC5: 35
+      production_lines: 7
+      plant_age_years: 20
+
+    ifi_scores:
+      I1_rotation_fit: 65
+      I2_career_fit: 62
+      I3_skill_pay_fit: 58
+      I4_workload_fit: 50
+      I5_autonomy_fit: 58
+
+    ifi_profile:
+      top_dimension: "I1_rotation"
+      second_dimension: "I2_career"
+      cluster: "A_rotation_ready"
+      cluster_confidence: "high"
+
+    intervention_recommendation:
+      primary: "Job Rotation"
+      secondary: "Career Pathway"
+      expected_churn_reduction: "5-8%"
+      implementation_complexity: "low"
+
+  US-015_Salt_Lake_City_UT:
+    plant_id: "US-015"
+    plant_name: "Salt Lake City UT"
+    plant_type: "standalone"
+    employees: 107
+
+    input_factors:
+      BC1_pct: 50
+      BC2_pct: 10
+      BC3_pct: 15
+      BC4_pct: 17
+      BC5_pct: 8
+      WC_pct: 20
+      unemployment_rate: 3.6
+      mfg_establishments: 720
+      mfg_wage_hr: 20.15
+      shift_model: "2-shift"
+      customer_constraint: 0
+      estimated_churn_BC4_BC5: 32
+      production_lines: 8
+      plant_age_years: 12
+
+    ifi_scores:
+      I1_rotation_fit: 48
+      I2_career_fit: 68
+      I3_skill_pay_fit: 62
+      I4_workload_fit: 45
+      I5_autonomy_fit: 55
+
+    ifi_profile:
+      top_dimension: "I2_career"
+      second_dimension: "I3_skill_pay"
+      cluster: "B_career_hungry"
+      cluster_confidence: "high"
+
+    intervention_recommendation:
+      primary: "Career Pathway"
+      secondary: "Skill-Based Pay"
+      expected_churn_reduction: "5-7%"
+      implementation_complexity: "medium"
+
+  US-016_Houston_TX:
+    plant_id: "US-016"
+    plant_name: "Houston TX"
+    plant_type: "near_customer"
+    employees: 164
+
+    input_factors:
+      BC1_pct: 50
+      BC2_pct: 10
+      BC3_pct: 12
+      BC4_pct: 18
+      BC5_pct: 10
+      WC_pct: 15
+      unemployment_rate: 4.5
+      mfg_establishments: 2450
+      mfg_wage_hr: 19.65
+      shift_model: "3-shift"
+      customer_constraint: 0.3
+      estimated_churn_BC4_BC5: 33
+      production_lines: 25
+      plant_age_years: 15
+
+    ifi_scores:
+      I1_rotation_fit: 58
+      I2_career_fit: 60
+      I3_skill_pay_fit: 68
+      I4_workload_fit: 55
+      I5_autonomy_fit: 48
+
+    ifi_profile:
+      top_dimension: "I3_skill_pay"
+      second_dimension: "I2_career"
+      cluster: "C_tech_focused"
+      cluster_confidence: "medium"
+
+    intervention_recommendation:
+      primary: "Skill-Based Pay"
+      secondary: "Career Pathway"
+      expected_churn_reduction: "4-6%"
+      implementation_complexity: "medium"
+
+  US-017_West_Bend_WI:
+    plant_id: "US-017"
+    plant_name: "West Bend WI"
+    plant_type: "standalone"
+    employees: 100
+
+    input_factors:
+      BC1_pct: 50
+      BC2_pct: 10
+      BC3_pct: 15
+      BC4_pct: 17
+      BC5_pct: 8
+      WC_pct: 20
+      unemployment_rate: 3.0
+      mfg_establishments: 385
+      mfg_wage_hr: 19.20
+      shift_model: "2-shift"
+      customer_constraint: 0
+      estimated_churn_BC4_BC5: 34
+      production_lines: 9
+      plant_age_years: 18
+
+    ifi_scores:
+      I1_rotation_fit: 50
+      I2_career_fit: 65
+      I3_skill_pay_fit: 55
+      I4_workload_fit: 48
+      I5_autonomy_fit: 58
+
+    ifi_profile:
+      top_dimension: "I2_career"
+      second_dimension: "I5_autonomy"
+      cluster: "B_career_hungry"
+      cluster_confidence: "medium"
+
+    intervention_recommendation:
+      primary: "Career Pathway"
+      secondary: "Autonomy Enhancement"
+      expected_churn_reduction: "4-6%"
+      implementation_complexity: "medium"
+
+# ============================================================
+# CLUSTER SUMMARY
+# ============================================================
+
+cluster_summary:
+  A_rotation_ready:
+    plants:
+      - US-002  # Bethlehem PA
+      - US-005  # Jefferson City MO
+      - US-006  # St Peters MO (1)
+      - US-007  # St Peters MO (2)
+      - US-009  # Bowling Green KY (1)
+      - US-013  # Lima OH
+      - US-014  # Dayton OH
+    count: 7
+    total_employees: 1218
+    avg_churn: 19.3%
+    primary_intervention: "Job Rotation"
+    expected_impact: "5-8% churn reduction"
+    characteristics:
+      - "Medium-large standalone plants"
+      - "3-shift operations"
+      - "High BC1+BC5 workforce"
+      - "Low customer constraints"
+
+  B_career_hungry:
+    plants:
+      - US-004  # Iowa City IA (2)
+      - US-008  # Kansas City MO
+      - US-015  # Salt Lake City UT
+      - US-017  # West Bend WI
+    count: 4
+    total_employees: 470
+    avg_churn: 15.1%
+    primary_intervention: "Career Pathway Program"
+    expected_impact: "4-6% churn reduction"
+    characteristics:
+      - "Smaller plants"
+      - "2-shift or limited operations"
+      - "Higher unemployment areas"
+      - "Workers value stability"
+
+  C_tech_focused:
+    plants:
+      - US-003  # Iowa City IA (1)
+      - US-016  # Houston TX
+    count: 2
+    total_employees: 304
+    avg_churn: 19.7%
+    primary_intervention: "Skill-Based Pay / Workload Mgmt"
+    expected_impact: "3-6% churn reduction"
+    characteristics:
+      - "Near-customer plants"
+      - "High production line count"
+      - "Competitive labor market"
+      - "Technical complexity"
+
+  D_autonomy_seeking:
+    plants:
+      - US-001  # McDonough GA (Regional HQ)
+    count: 1
+    total_employees: 379
+    avg_churn: 20.2%
+    primary_intervention: "Self-Managed Teams"
+    expected_impact: "4-7% churn reduction"
+    characteristics:
+      - "Regional HQ"
+      - "Experienced workforce"
+      - "Resources for programs"
+      - "High autonomy potential"
+
+  E_constrained:
+    plants:
+      - US-010  # Bowling Green KY (2) - HENKEL
+      - US-011  # Florence KY (1) - L'OREAL
+      - US-012  # Florence KY (2) - L'OREAL
+    count: 3
+    total_employees: 264
+    avg_churn: 22.4%
+    primary_intervention: "Recognition Programs (limited)"
+    expected_impact: "1-3% churn reduction"
+    characteristics:
+      - "In-house plants"
+      - "High customer constraints"
+      - "Limited intervention flexibility"
+      - "Focus on micro-improvements"
+
+# ============================================================
+# FIELD EXPERIMENT DESIGN IMPLICATIONS
+# ============================================================
+
+field_experiment_design:
+  matching_strategy:
+    approach: "Within-cluster matching for homogeneous treatment effects"
+
+    recommended_pairs:
+      cluster_A:
+        pair_1:
+          treatment: "US-006"   # St Peters MO (1)
+          control: "US-007"    # St Peters MO (2) - Same location!
+          pci_distance: 0.12
+          ifi_similarity: 0.95
+          note: "Ideal pair - same location, same cluster"
+
+        pair_2:
+          treatment: "US-013"   # Lima OH
+          control: "US-014"    # Dayton OH
+          pci_distance: 0.18
+          ifi_similarity: 0.88
+          note: "Both Ohio, similar profiles"
+
+        pair_3:
+          treatment: "US-002"   # Bethlehem PA
+          control: "US-009"    # Bowling Green KY (1)
+          pci_distance: 0.25
+          ifi_similarity: 0.82
+          note: "Similar size and profile"
+
+        unpaired: "US-005"     # Jefferson City MO (odd one out)
+
+      cluster_B:
+        pair_1:
+          treatment: "US-015"   # Salt Lake City UT
+          control: "US-017"    # West Bend WI
+          pci_distance: 0.22
+          ifi_similarity: 0.85
+          note: "Both small, career-focused"
+
+        pair_2:
+          treatment: "US-004"   # Iowa City IA (2)
+          control: "US-008"    # Kansas City MO
+          pci_distance: 0.28
+          ifi_similarity: 0.78
+          note: "Moderate match"
+
+      cluster_C:
+        note: "Only 2 plants - both in treatment or matched pair"
+        option_1: "Both as treatment, compare to Cluster A control"
+        option_2:
+          treatment: "US-016"   # Houston TX
+          control: "US-003"    # Iowa City IA (1)
+
+      cluster_D:
+        note: "Only 1 plant (McDonough HQ) - unique, cannot match"
+        recommendation: "Treat as separate case study or exclude from RCT"
+
+      cluster_E:
+        note: "In-house plants with limited intervention options"
+        option_1: "Exclude from main experiment"
+        option_2: "Separate mini-experiment with recognition intervention"
+        if_included:
+          treatment: "US-011"   # Florence KY (1)
+          control: "US-012"    # Florence KY (2) - Same customer!
+
+  treatment_arms:
+    arm_1_rotation:
+      intervention: "Job Rotation"
+      target_clusters: [A]
+      plants: [US-006, US-013, US-002]  # Treatment
+      control: [US-007, US-014, US-009]
+      expected_n: ~600 employees
+      power_analysis: "80% power to detect 5% churn reduction"
+
+    arm_2_career:
+      intervention: "Career Pathway"
+      target_clusters: [B]
+      plants: [US-015, US-004]  # Treatment
+      control: [US-017, US-008]
+      expected_n: ~240 employees
+      power_analysis: "70% power to detect 6% churn reduction"
+
+    arm_3_skill_pay:
+      intervention: "Skill-Based Pay"
+      target_clusters: [C]
+      plants: [US-016]  # Treatment
+      control: [US-003]
+      expected_n: ~150 employees
+      power_analysis: "60% power - consider combining with Arm 1"
+
+  timeline_recommendation:
+    phase_1_pilot:
+      duration: "3 months"
+      focus: "Cluster A (largest, most homogeneous)"
+      plants: "St Peters pair (US-006 vs US-007)"
+
+    phase_2_expansion:
+      duration: "6 months"
+      focus: "Full Cluster A + Cluster B"
+
+    phase_3_full_rollout:
+      duration: "12 months"
+      focus: "All clusters with tailored interventions"
+
+# ============================================================
+# COMBINED PCI + IFI MATRIX
+# ============================================================
+
+combined_categorization:
+  description: |
+    Two-dimensional categorization for comprehensive plant matching:
+    - PCI: Structural similarity (how alike are plants?)
+    - IFI: Intervention fit (which interventions work?)
+
+    Best matches have BOTH similar PCI AND same IFI cluster.
+
+  matrix:
+    # Format: [Plant ID, PCI Quartile, IFI Cluster, Combined Category]
+    US-001: [PCI_Q3, D, "Unique-HQ"]
+    US-002: [PCI_Q2, A, "Standard-Rotation"]
+    US-003: [PCI_Q2, C, "Near-Customer-Tech"]
+    US-004: [PCI_Q1, B, "Small-Career"]
+    US-005: [PCI_Q2, A, "Standard-Rotation"]
+    US-006: [PCI_Q2, A, "Standard-Rotation"]
+    US-007: [PCI_Q2, A, "Standard-Rotation"]
+    US-008: [PCI_Q2, B, "Standard-Career"]
+    US-009: [PCI_Q2, A, "Standard-Rotation"]
+    US-010: [PCI_Q1, E, "Small-Constrained"]
+    US-011: [PCI_Q1, E, "Small-Constrained"]
+    US-012: [PCI_Q1, E, "Small-Constrained"]
+    US-013: [PCI_Q2, A, "Standard-Rotation"]
+    US-014: [PCI_Q2, A, "Standard-Rotation"]
+    US-015: [PCI_Q1, B, "Small-Career"]
+    US-016: [PCI_Q2, C, "Near-Customer-Tech"]
+    US-017: [PCI_Q1, B, "Small-Career"]
+
+  optimal_matches:
+    rank_1:
+      pair: ["US-006", "US-007"]
+      pci_match: "excellent (same location)"
+      ifi_match: "excellent (same cluster A)"
+      overall: "Best match in portfolio"
+
+    rank_2:
+      pair: ["US-013", "US-014"]
+      pci_match: "good (same state)"
+      ifi_match: "excellent (same cluster A)"
+      overall: "Strong Ohio match"
+
+    rank_3:
+      pair: ["US-011", "US-012"]
+      pci_match: "excellent (same location/customer)"
+      ifi_match: "excellent (same cluster E)"
+      overall: "Best in-house match"
+
+    rank_4:
+      pair: ["US-015", "US-017"]
+      pci_match: "moderate"
+      ifi_match: "good (same cluster B)"
+      overall: "Best small-plant match"
+
+    rank_5:
+      pair: ["US-003", "US-016"]
+      pci_match: "moderate"
+      ifi_match: "good (same cluster C)"
+      overall: "Near-customer match"

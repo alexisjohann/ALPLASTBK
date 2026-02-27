@@ -1,0 +1,424 @@
+---
+# ==============================================================================
+# Localsearch SME Digital Adoption Utility Model (MOD-LOC-001)
+# Formal Specification — 6 Dimensions, 5 Complementarities, 4 Psi-Moderators
+# ==============================================================================
+#
+# Three-Layer Architecture Compliance:
+#   Layer 1 (Python): scripts/pct.py for parameter context transformation
+#   Layer 2 (YAML): This file + parameter-registry.yaml (PAR-LOC-*)
+#   Layer 3 (LLMMC): Initial estimates, pending empirical calibration
+#
+# Created: 2026-02-25
+# Version: 1.0.0
+# Model-ID: MOD-LOC-001
+# Status: FORMALIZED — LLMMC priors, awaiting client data
+# ==============================================================================
+
+metadata:
+  model_id: "MOD-LOC-001"
+  name: "Localsearch SME Digital Adoption Model"
+  version: "1.0.0"
+  created: "2026-02-25"
+  customer_id: "CUST-LOCALSEARCH"
+  decision_context: "SME i in segment s decides whether to adopt/retain digitalONE"
+  estimation_method: "LLMMC"
+  evidence_tier: 2
+
+# ==============================================================================
+# FORMAL UTILITY FUNCTION
+# ==============================================================================
+#
+# U_i(adopt | s, Psi) = SUM_d [ w_d * u_d(x_d; theta_s, Psi) ]
+#                      + SUM_{j<k} [ gamma_{jk}(s) * u_j * u_k ]
+#
+# Decision rule: Adopt if U_i(adopt) > U_i(status_quo) = 0
+# (Reference point = current state, following MS-RD-001)
+
+utility_function:
+  type: "additiv_mit_komplementaritaeten"
+  reference_point: "status_quo"  # Prospect Theory: gains/losses relative to current
+  exc_justification: "EXC-1 (additiv default) + 5 begründete gamma != 0"
+
+  formula: |
+    U_i(adopt | s, Ψ) = u_F + u_S + u_X + u_T + u_C + u_D
+                        + γ_{SD} · u_S · u_D
+                        + γ_{FC} · u_F · u_C
+                        + γ_{SX} · u_S · u_X
+                        + γ_{FT} · u_F · u_T
+                        + γ_{XC} · u_X · u_C
+
+  temporal_discounting: |
+    U_total = u_now + β_s · SUM_{t=1}^{T} δ^t · u_future(t)
+    (β_s < 1 → present bias, MS-TP-001)
+
+# ==============================================================================
+# 6 UTILITY DIMENSIONS
+# ==============================================================================
+
+utility_dimensions:
+
+  - dimension_id: "u_F"
+    name: "Financial Utility"
+    description: "ROI from digital marketing investment, loss-framed"
+    formula: |
+      u_F = (1/λ_s) · expected_revenue_gain - λ_s · cost
+      Losses (cost) weighted λ× heavier than gains (Prospect Theory)
+    scale: "(-inf, +inf)"
+    sign: "positive if ROI > 0, negative if cost dominates"
+    parameters:
+      - id: "PAR-LOC-001"
+        symbol: "λ_marketing"
+        role: "loss aversion coefficient for marketing investment"
+    theory_basis:
+      - theory_id: "MS-RD-001"
+        name: "Prospect Theory"
+        authors: "Kahneman, Tversky"
+        year: 1979
+        restriction: "λ > 1"
+    funnel_phases_primary: ["F2_INTEREST", "F7_EXPANSION"]
+    funnel_phases_secondary: ["F3_TRIAL"]
+
+  - dimension_id: "u_S"
+    name: "Social Utility"
+    description: "Peer adoption influence — seeing competitors go digital"
+    formula: |
+      u_S = σ_s · (n_peers_adopted / n_peers_total)
+      Conditional on observable peer behavior
+    scale: "[0, σ_s]"
+    sign: "always non-negative"
+    parameters:
+      - id: "PAR-LOC-005"
+        symbol: "σ_peer"
+        role: "social proof strength for peer SME adoption"
+    theory_basis:
+      - theory_id: "MS-SP-008"
+        name: "Conditional Cooperation"
+        authors: "Fischbacher, Gaechter, Fehr"
+        year: 2001
+        restriction: "cooperation conditional on others"
+      - theory_id: "MS-SP-007"
+        name: "Social Image"
+        authors: "Benabou, Tirole"
+        year: 2006
+        restriction: "Ψ_visibility matters"
+    funnel_phases_primary: ["F1_REACH", "F7_EXPANSION"]
+    funnel_phases_secondary: ["F2_INTEREST"]
+
+  - dimension_id: "u_X"
+    name: "Identity Utility"
+    description: "Self-image as 'modern, digitally competent business'"
+    formula: |
+      u_X = ι_s · Δ(self_image)
+      where Δ = perceived modernity gain from adoption
+    scale: "[0, ι_s]"
+    sign: "always non-negative (adoption = modernization)"
+    parameters:
+      - id: "PAR-LOC-010"
+        symbol: "ι_identity"
+        role: "identity modernization drive"
+    theory_basis:
+      - theory_id: "MS-IB-001"
+        name: "Identity Economics"
+        authors: "Akerlof, Kranton"
+        year: 2000
+        restriction: "U_IDN > 0, category-specific prescriptions"
+    funnel_phases_primary: ["F2_INTEREST"]
+    funnel_phases_secondary: ["F5_ACTIVATION"]
+
+  - dimension_id: "u_T"
+    name: "Time Cost (negative)"
+    description: "Time investment to learn, set up, and manage digital tools"
+    formula: |
+      u_T = -τ_s · hours_required
+      Always negative — time is opportunity cost
+    scale: "(-inf, 0]"
+    sign: "always non-positive"
+    parameters:
+      - id: "PAR-LOC-011"
+        symbol: "τ_time"
+        role: "time cost weight (CHF equivalent per hour)"
+    theory_basis:
+      - theory_id: "MS-TP-001"
+        name: "Quasi-Hyperbolic Discounting"
+        authors: "Laibson"
+        year: 1997
+        restriction: "β < 1 (present bias for time costs)"
+    funnel_phases_primary: ["F5_ACTIVATION"]
+    funnel_phases_secondary: ["F3_TRIAL"]
+
+  - dimension_id: "u_C"
+    name: "Complexity Cost (negative)"
+    description: "Cognitive burden — each additional step/feature reduces utility"
+    formula: |
+      u_C = -χ_s · n_steps
+      Multiplicative interpretation: each step retains (1 - χ) fraction
+      → After k steps: retention = (1 - χ)^k
+    scale: "(-inf, 0]"
+    sign: "always non-positive"
+    parameters:
+      - id: "PAR-LOC-009"
+        symbol: "χ_complexity"
+        role: "complexity penalty per step (fraction lost)"
+    theory_basis:
+      - theory_id: "MS-NE-001"
+        name: "Dual-System Theory (S1/S2)"
+        authors: "Kahneman"
+        year: 2011
+        restriction: "high Ψ_load → System 1 dominates → complexity aversion"
+    funnel_phases_primary: ["F2_INTEREST", "F5_ACTIVATION"]
+    funnel_phases_secondary: ["F3_TRIAL"]
+
+  - dimension_id: "u_D"
+    name: "Default & Inertia Utility"
+    description: "Combined force of designed defaults + organic status quo bias"
+    formula: |
+      u_D = δ_s · I(default = adopt) + κ_s · I(current = status_quo)
+      For non-adopter: u_D(adopt) = δ · I(trial_auto_converts) - κ (switching cost)
+      For subscriber:  u_D(retain) = δ · I(auto_renewal) + κ (staying = default)
+    scale: "depends on adoption state"
+    sign: "context-dependent (inertia helps retention, hurts acquisition)"
+    parameters:
+      - id: "PAR-LOC-007"
+        symbol: "δ_renewal"
+        role: "default auto-renewal effect strength"
+      - id: "PAR-LOC-008"
+        symbol: "δ_premium"
+        role: "default premium vs basic selection"
+      - id: "PAR-LOC-004"
+        symbol: "κ_switching"
+        role: "status quo bias for switching behavior"
+    theory_basis:
+      - theory_id: "MS-NU-002"
+        name: "Default Effects"
+        authors: "Madrian, Shea"
+        year: 2001
+        restriction: "psi_default = reference point"
+      - theory_id: "MS-RD-004"
+        name: "Status Quo Bias"
+        authors: "Samuelson, Zeckhauser"
+        year: 1988
+        restriction: "psi_reference = status_quo"
+    funnel_phases_primary: ["F3_TRIAL", "F4_CONVERSION", "F6_RETENTION"]
+    funnel_phases_secondary: ["F1_REACH"]
+    note: |
+      DUAL ROLE of kappa: Suppresses adoption (F1-F4) but supports retention (F6).
+      This is a key insight — the same behavioral parameter works FOR and AGAINST
+      Localsearch at different funnel stages.
+
+# ==============================================================================
+# TEMPORAL DISCOUNTING (Present Bias)
+# ==============================================================================
+
+temporal_discounting:
+  formula: |
+    U_total = u_now + β_s · SUM_{t=1}^{T} δ^t · u_future(t)
+  parameters:
+    - id: "PAR-LOC-003"
+      symbol: "β_digital"
+      role: "present bias for digital adoption decisions"
+  theory_basis:
+    - theory_id: "MS-TP-001"
+      name: "Quasi-Hyperbolic Discounting"
+      authors: "Laibson"
+      year: 1997
+      restriction: "β < 1 → immediate costs overweighted vs future benefits"
+  implication: |
+    For digitalONE: Benefits accrue over months (more bookings, better visibility)
+    but costs are immediate (money, time, effort). β < 1 means SMEs systematically
+    undervalue the long-term ROI. This is the core barrier in F4 (conversion).
+
+# ==============================================================================
+# 5 COMPLEMENTARITIES (gamma)
+# ==============================================================================
+#
+# EXC-1 compliance: gamma = 0 is default. Each non-zero gamma has justification.
+# Segment-specific values in localsearch_gamma_matrix.yaml
+
+complementarities:
+
+  - gamma_id: "γ_SD"
+    interaction: "u_S × u_D"
+    name: "Social × Default"
+    sign: "positive"
+    mechanism: |
+      When peers use the product (high u_S) AND the default nudges toward
+      adoption (high u_D), the combined effect is super-additive: social
+      validation makes the default feel more legitimate ("everyone does it").
+    exc_justification: "V1: Without social proof (u_S=0), default alone is weaker"
+    theory_support: "MS-SP-008 × MS-NU-002"
+    range_across_segments: [0.25, 0.45]
+
+  - gamma_id: "γ_FC"
+    interaction: "u_F × u_C"
+    name: "Financial × Complexity"
+    sign: "negative"
+    mechanism: |
+      Complexity (u_C < 0) undermines perceived financial return (u_F).
+      When a product seems complex, SMEs discount the ROI more than
+      the sum of the individual effects. "I know it could help, but it
+      looks too complicated to be worth it."
+    exc_justification: "V2: High complexity flips ROI perception negative"
+    theory_support: "MS-RD-001 × MS-NE-001"
+    range_across_segments: [-0.50, -0.15]
+
+  - gamma_id: "γ_SX"
+    interaction: "u_S × u_X"
+    name: "Social × Identity"
+    sign: "positive"
+    mechanism: |
+      Peer adoption (u_S) validates the identity goal (u_X). Seeing
+      competitors go digital makes the "modern business" identity feel
+      achievable and socially rewarded, not aspirational and lonely.
+    exc_justification: "S1: Both factors are [0,1] scaled, product is reinforcement"
+    theory_support: "MS-IB-001 × MS-SP-007"
+    range_across_segments: [0.15, 0.40]
+
+  - gamma_id: "γ_FT"
+    interaction: "u_F × u_T"
+    name: "Financial × Time"
+    sign: "negative"
+    mechanism: |
+      Time cost (u_T < 0) erodes financial benefit (u_F). The more time
+      investment required, the less attractive the financial return appears.
+      For time-scarce SMEs, every hour spent on digital is an hour not
+      earning revenue directly.
+    exc_justification: "P1: Net benefit = revenue * time available (physical product)"
+    theory_support: "MS-TP-001 (opportunity cost)"
+    range_across_segments: [-0.45, -0.10]
+
+  - gamma_id: "γ_XC"
+    interaction: "u_X × u_C"
+    name: "Identity × Complexity"
+    sign: "negative"
+    mechanism: |
+      Complexity (u_C < 0) threatens the identity goal (u_X). If adopting
+      digital tools is supposed to make you feel "modern" but the tools
+      are confusing, the experience BACKFIRES — you feel less competent,
+      not more modern. Identity threat from failure.
+    exc_justification: "V2: Complexity can flip identity utility negative (backfire)"
+    theory_support: "MS-IB-001 × MS-NE-001"
+    range_across_segments: [-0.45, -0.10]
+
+# ==============================================================================
+# 4 CONTEXT MODERATORS (Psi)
+# ==============================================================================
+
+context_moderators:
+
+  - psi_id: "Ψ_I"
+    name: "Institutional Context"
+    description: "Regulations, market structure, institutional trust"
+    localsearch_specifics:
+      - "Swisscom backing → institutional trust premium"
+      - "Swiss data protection (DSG) → compliance as differentiator"
+      - "No mandatory digital presence regulation (vs. EU)"
+    moderation_effect: "Amplifies u_D (defaults feel more trustworthy with institutional backing)"
+
+  - psi_id: "Ψ_S"
+    name: "Social Context"
+    description: "Local business network density, peer visibility"
+    localsearch_specifics:
+      - "Swiss Gewerbe culture: local business associations"
+      - "Regional sales reps as social proof carriers"
+      - "Small-town visibility: competitors going digital is visible"
+    moderation_effect: "Amplifies u_S (stronger in dense local networks)"
+
+  - psi_id: "Ψ_K"
+    name: "Cultural Context"
+    description: "Swiss SME attitudes toward technology and change"
+    localsearch_specifics:
+      - "Swiss conservatism: slow but thorough adoption"
+      - "Quality over speed: digitalONE must feel 'Swiss quality'"
+      - "Trust in established brands (Swisscom heritage)"
+    moderation_effect: "Amplifies κ (status quo stronger in conservative culture)"
+
+  - psi_id: "Ψ_T"
+    name: "Temporal Context"
+    description: "Seasonality, business cycle, economic climate"
+    localsearch_specifics:
+      - "Gastro: high season spring/summer → adoption peaks"
+      - "Fitness: January rush → marketing investment"
+      - "Renovation/Trades: spring peak → renovero demand"
+      - "General: economic uncertainty → higher loss aversion"
+    moderation_effect: "Modulates λ (higher in recession) and σ (stronger in peak season)"
+
+# ==============================================================================
+# FUNNEL-DIMENSION MAPPING
+# ==============================================================================
+#
+# Which utility dimensions DRIVE each funnel phase?
+
+funnel_mapping:
+
+  F1_REACH:
+    primary_driver: "u_S"
+    mechanism: "Social proof triggers awareness (seeing peers)"
+    key_parameter: "σ_peer (PAR-LOC-005)"
+    key_barrier: "κ (PAR-LOC-004) — status quo prevents engagement"
+    psi_moderator: "Ψ_S (network density amplifies peer signals)"
+
+  F2_INTEREST:
+    primary_driver: "u_F + u_X"
+    mechanism: "ROI perception + identity aspiration create interest"
+    key_parameter: "λ (PAR-LOC-001), ι (PAR-LOC-010)"
+    key_barrier: "u_C (PAR-LOC-009) — complexity kills interest"
+    active_gamma: "γ_FC (-), γ_XC (-)"
+    note: "Interest phase is where complementarities matter most"
+
+  F3_TRIAL:
+    primary_driver: "u_D"
+    mechanism: "Default design (one-click trial) reduces friction"
+    key_parameter: "δ (PAR-LOC-007)"
+    key_barrier: "λ (PAR-LOC-001) — perceived loss from trying"
+    psi_moderator: "Ψ_I (Swisscom trust reduces perceived risk)"
+
+  F4_CONVERSION:
+    primary_driver: "u_D + u_F"
+    mechanism: "Auto-conversion default + demonstrated ROI during trial"
+    key_parameter: "δ (PAR-LOC-007), β (PAR-LOC-003)"
+    key_barrier: "β (present bias) — future benefits discounted"
+    active_gamma: "γ_SD (+) — social proof validates auto-conversion"
+
+  F5_ACTIVATION:
+    primary_driver: "-u_T - u_C"
+    mechanism: "Costs dominate — time and complexity are the barriers"
+    key_parameter: "τ (PAR-LOC-011), χ (PAR-LOC-009)"
+    key_barrier: "Complexity × Time interaction (γ_FT)"
+    intervention_type: "Implementation intentions (guided onboarding)"
+
+  F6_RETENTION:
+    primary_driver: "u_D (positive)"
+    mechanism: "Status quo bias + auto-renewal now HELP retention"
+    key_parameter: "κ (PAR-LOC-004), δ (PAR-LOC-007)"
+    key_barrier: "Perceived low ROI (insufficient u_F)"
+    note: |
+      REVERSAL: κ that blocked adoption now prevents churn.
+      Same parameter, opposite effect at different funnel stages.
+
+  F7_EXPANSION:
+    primary_driver: "u_S + u_F"
+    mechanism: "Peer upgrades + measurable ROI drive expansion"
+    key_parameter: "σ (PAR-LOC-005), λ (PAR-LOC-001)"
+    key_barrier: "λ (loss aversion for ADDITIONAL spend)"
+    active_gamma: "γ_SX (+) — peer upgrades validate ambition"
+
+# ==============================================================================
+# CROSS-REFERENCES
+# ==============================================================================
+
+cross_references:
+  parameter_registry: "PAR-LOC-001 through PAR-LOC-011"
+  gamma_matrix: "data/customers/localsearch/localsearch_gamma_matrix.yaml"
+  funnel_parameters: "data/customers/localsearch/localsearch_funnel_parameters.yaml"
+  context_overview: "data/customers/localsearch/localsearch_context_master_overview.yaml"
+  model_registry: "data/model-registry.yaml → MOD-LOC-001"
+  theories:
+    - "MS-RD-001 (Prospect Theory)"
+    - "MS-RD-004 (Status Quo Bias)"
+    - "MS-TP-001 (Quasi-Hyperbolic Discounting)"
+    - "MS-NU-002 (Default Effects)"
+    - "MS-SP-007 (Social Image)"
+    - "MS-SP-008 (Conditional Cooperation)"
+    - "MS-IB-001 (Identity Economics)"
+    - "MS-NE-001 (Dual-System S1/S2)"

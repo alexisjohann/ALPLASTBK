@@ -1,0 +1,848 @@
+# =============================================================================
+# REPORT FORMATTER LEARNINGS DATABASE
+# =============================================================================
+# Dokumentiert alle Learnings aus der Entwicklung und Nutzung des
+# FehrAdvice Report Formatters.
+#
+# SSOT: Diese Datei ist die Single Source of Truth für Troubleshooting
+# Wird automatisch vom /format-report Skill konsultiert
+#
+# Version: 1.0
+# Created: 2026-01-29
+# =============================================================================
+
+metadata:
+  name: "Report Formatter Learnings"
+  version: "1.2"
+  created: "2026-01-29"
+  last_updated: "2026-01-29"
+  maintainer: "EBF Team"
+  total_learnings: 19
+
+# =============================================================================
+# LEARNINGS KATEGORIEN
+# =============================================================================
+
+categories:
+  LATEX: "LaTeX/PDF Generierung"
+  UNICODE: "Unicode & Encoding"
+  TABLES: "Tabellen-Formatierung"
+  FONTS: "Schriftarten"
+  DEPS: "Dependencies & Installation"
+  WORKFLOW: "Workflow & Prozess"
+  LOGO: "Logo & Assets"
+
+# =============================================================================
+# LEARNINGS
+# =============================================================================
+
+learnings:
+
+  # ---------------------------------------------------------------------------
+  # LATEX / PDF GENERIERUNG
+  # ---------------------------------------------------------------------------
+
+  - id: "RPT-L-001"
+    category: "LATEX"
+    title: "Babel ngerman Option nicht verfügbar"
+    problem: |
+      Fehler: "Unknown option 'ngerman'. Either you misspelled it or the
+      language definition file ngerman.ldf was not found."
+    root_cause: |
+      Das Paket texlive-lang-german war nicht installiert, oder die babel
+      Option war falsch konfiguriert.
+    solution: |
+      1. texlive-lang-german installieren: apt-get install texlive-lang-german
+      2. babel Option ändern von [ngerman] zu [german,provide=*]
+    code_fix: |
+      # In LaTeX Template ändern:
+      # ALT:  \usepackage[ngerman]{babel}
+      # NEU:  \usepackage[german,provide=*]{babel}
+    prevention: |
+      - Session-Start Hook prüft texlive-lang-german
+      - Template verwendet robuste babel-Konfiguration
+    severity: "HIGH"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      Die babel-Option 'ngerman' erfordert ein separates Sprachpaket, das nicht
+      in der Basis-Installation enthalten ist. Die Option 'german,provide=*' ist
+      robuster und funktioniert auch ohne das spezifische Sprachpaket.
+    resolution: |
+      Template wurde permanent auf [german,provide=*] umgestellt. Session-Start
+      Hook installiert texlive-lang-german automatisch als Backup.
+    recurrence_probability: "5%"
+
+  - id: "RPT-L-002"
+    category: "LATEX"
+    title: "tightlist Command nicht definiert"
+    problem: |
+      Fehler: "Undefined control sequence. \tightlist"
+    root_cause: |
+      Pandoc generiert \tightlist für kompakte Listen, aber das LaTeX-Template
+      definiert diesen Befehl nicht.
+    solution: |
+      Im LaTeX-Template hinzufügen:
+      \providecommand{\tightlist}{%
+        \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+    prevention: |
+      Template enthält jetzt standardmässig die tightlist-Definition.
+    severity: "HIGH"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      Pandoc generiert LaTeX-Befehle, die nicht in allen Templates definiert sind.
+      Bei der Erstellung eigener Templates müssen Pandoc-spezifische Befehle wie
+      \tightlist explizit mit \providecommand definiert werden.
+    resolution: |
+      Der Befehl \providecommand{\tightlist}{...} wurde permanent in das
+      FehrAdvice LaTeX-Template (fehradvice-report.latex) integriert.
+    recurrence_probability: "0%"
+
+  - id: "RPT-L-003"
+    category: "LATEX"
+    title: "Missing number in longtable"
+    problem: |
+      Fehler: "Missing number, treated as zero. <to be read again> ("
+      bei \begin{longtable}
+    root_cause: |
+      Komplexe Markdown-Tabellen mit Progress-Bars oder speziellen Zeichen
+      werden von Pandoc in longtable konvertiert, was zu LaTeX-Fehlern führt.
+    solution: |
+      1. Tabellen-Format in Pandoc einschränken:
+         -f 'markdown-simple_tables-multiline_tables-grid_tables'
+      2. Oder: HTML-Output verwenden für komplexe Dokumente
+      3. Oder: Progress-Bars durch Text ersetzen
+    workaround: |
+      HTML-Output funktioniert zuverlässig für alle Tabellen-Formate.
+    prevention: |
+      - Dokumentation warnt vor komplexen Tabellen in PDF-Output
+      - Script empfiehlt HTML für Dokumente mit Progress-Bars
+    severity: "MEDIUM"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      LaTeX hat fundamentale Einschränkungen bei komplexen Tabellen. Progress-Bars
+      (█▓░) und andere visuelle Elemente in Tabellenzellen verursachen Parser-Fehler.
+      HTML ist das bessere Format für visuell reichhaltige Dokumente.
+    resolution: |
+      Das Script analysiert den Inhalt und empfiehlt automatisch HTML-Output wenn
+      Progress-Bars oder komplexe Tabellen erkannt werden. Pandoc-Optionen wurden
+      angepasst, um problematische Tabellen-Typen zu vermeiden.
+    recurrence_probability: "15%"
+
+  # ---------------------------------------------------------------------------
+  # UNICODE & ENCODING
+  # ---------------------------------------------------------------------------
+
+  - id: "RPT-L-004"
+    category: "UNICODE"
+    title: "Unicode Emojis nicht in LaTeX unterstützt"
+    problem: |
+      Fehler: "Unicode character ✅ (U+2705) not set up for use with LaTeX"
+    root_cause: |
+      pdflatex kann keine Unicode-Emojis rendern. XeTeX könnte, aber benötigt
+      spezielle Fonts.
+    solution: |
+      Python-Funktion replace_emojis_for_latex() ersetzt Emojis durch
+      ASCII-Äquivalente:
+      - ✅ → [OK]
+      - ❌ → [X]
+      - ⚠️ → [!]
+      - 🥇 → [1.]
+      etc.
+    prevention: |
+      - Preprocessing ersetzt automatisch alle bekannten Emojis
+      - Fallback entfernt unbekannte Emojis aus Unicode-Range
+    severity: "HIGH"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      pdflatex ist auf den ASCII/Latin-1 Zeichensatz beschränkt. Unicode-Emojis
+      erfordern entweder XeTeX mit speziellen Fonts oder ein Preprocessing, das
+      Emojis durch textuelle Äquivalente ersetzt. Das Preprocessing ist robuster.
+    resolution: |
+      Eine umfassende Emoji-Mapping-Tabelle (40+ Einträge) wurde in
+      replace_emojis_for_latex() implementiert. Zusätzlich entfernt ein Fallback
+      alle verbleibenden Unicode-Zeichen aus dem Emoji-Block (U+1F300-U+1F9FF).
+    recurrence_probability: "2%"
+
+  - id: "RPT-L-005"
+    category: "UNICODE"
+    title: "Unicode Minus (U+2212) nicht unterstützt"
+    problem: |
+      Fehler: "Unicode character − (U+2212) not set up for use with LaTeX"
+    root_cause: |
+      Das Unicode-Minus (−) unterscheidet sich vom ASCII-Minus (-) und wird
+      von pdflatex nicht unterstützt.
+    solution: |
+      In replace_emojis_for_latex() hinzufügen:
+      '−': '-',  # Unicode minus
+      '–': '-',  # En dash
+      '—': '--', # Em dash
+    prevention: |
+      Preprocessing ersetzt automatisch alle Unicode-Sonderzeichen.
+    severity: "MEDIUM"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      Es gibt mehrere Unicode-Zeichen, die wie bekannte ASCII-Zeichen aussehen,
+      aber technisch unterschiedlich sind (z.B. U+2212 MINUS SIGN vs U+002D
+      HYPHEN-MINUS). Diese müssen alle explizit gemappt werden.
+    resolution: |
+      Die Mapping-Tabelle wurde um mathematische Sonderzeichen erweitert:
+      Unicode-Minus, En-Dash, Em-Dash, Multiplikationszeichen (×), Divisionszeichen (÷).
+    recurrence_probability: "3%"
+
+  - id: "RPT-L-006"
+    category: "UNICODE"
+    title: "Schweizer Guillemets werden für LaTeX konvertiert"
+    problem: |
+      Guillemets « » können in pdflatex Probleme verursachen.
+    root_cause: |
+      Nicht alle LaTeX-Setups unterstützen Guillemets nativ.
+    solution: |
+      Für LaTeX-Output werden Guillemets zu ASCII-Anführungszeichen konvertiert:
+      '«': '"',
+      '»': '"',
+    note: |
+      Für HTML-Output bleiben Guillemets erhalten, da CSS sie korrekt rendert.
+    prevention: |
+      Preprocessing unterscheidet zwischen LaTeX und HTML-Output.
+    severity: "LOW"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      Schweizer Typografie (Guillemets « ») ist wichtig für das Corporate Design,
+      aber LaTeX-Kompatibilität hat Vorrang. Die Lösung ist format-abhängige
+      Konvertierung: Guillemets bleiben in HTML erhalten, werden aber in LaTeX
+      durch Standard-Anführungszeichen ersetzt.
+    resolution: |
+      Das Preprocessing prüft das Zielformat und wendet Guillemet-Konvertierung
+      nur für LaTeX/PDF an. HTML-Outputs behalten die originalen Guillemets.
+    recurrence_probability: "0%"
+
+  # ---------------------------------------------------------------------------
+  # FONTS
+  # ---------------------------------------------------------------------------
+
+  - id: "RPT-L-007"
+    category: "FONTS"
+    title: "Open Sans / Roboto Fonts nicht gefunden"
+    problem: |
+      Fehler: "The font 'Open Sans' cannot be found" bei XeTeX/fontspec
+    root_cause: |
+      Die FehrAdvice Corporate Fonts sind nicht im System installiert.
+    solution: |
+      1. Fonts installieren: apt-get install fonts-open-sans fonts-roboto
+      2. Font-Cache aktualisieren: fc-cache -fv
+      3. Oder: pdflatex statt XeTeX verwenden (nutzt Standard-Fonts)
+    prevention: |
+      - Session-Start Hook installiert Fonts automatisch
+      - Template verwendet pdflatex als Default (robuster)
+      - Fallback zu DejaVu Sans wenn Fonts fehlen
+    severity: "MEDIUM"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      Custom Fonts müssen im System installiert sein UND der Font-Cache muss
+      aktualisiert werden. pdflatex mit Standard-Fonts ist robuster als XeTeX
+      mit Custom Fonts, da keine zusätzlichen Abhängigkeiten bestehen.
+    resolution: |
+      Der Session-Start Hook installiert fonts-open-sans und fonts-roboto
+      automatisch. Das Template verwendet pdflatex als Default-Engine, was
+      Standard-Fonts nutzt und keine externen Font-Abhängigkeiten hat.
+    recurrence_probability: "5%"
+
+  # ---------------------------------------------------------------------------
+  # DEPENDENCIES
+  # ---------------------------------------------------------------------------
+
+  - id: "RPT-L-008"
+    category: "DEPS"
+    title: "Pandoc nicht installiert"
+    problem: |
+      Fehler: "Pandoc nicht installiert"
+    root_cause: |
+      Pandoc ist nicht im System verfügbar.
+    solution: |
+      apt-get install pandoc
+    prevention: |
+      Session-Start Hook installiert Pandoc automatisch.
+    severity: "HIGH"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      Pandoc ist die zentrale Konvertierungs-Engine und MUSS verfügbar sein.
+      Ohne Pandoc funktioniert kein einziges Output-Format. Die Abhängigkeit
+      sollte beim Session-Start proaktiv geprüft und installiert werden.
+    resolution: |
+      Der Session-Start Hook (.claude/hooks/session-start.sh) installiert
+      Pandoc automatisch bei jeder neuen Session.
+    recurrence_probability: "0%"
+
+  - id: "RPT-L-009"
+    category: "DEPS"
+    title: "texlive Pakete fehlen"
+    problem: |
+      Verschiedene LaTeX-Fehler wegen fehlender Pakete.
+    solution: |
+      Minimale Installation:
+      apt-get install texlive-xetex texlive-fonts-recommended \
+        texlive-latex-extra texlive-lang-german latexmk
+    prevention: |
+      Session-Start Hook installiert alle benötigten Pakete.
+    severity: "HIGH"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      LaTeX erfordert viele Pakete für verschiedene Features (Fonts, Sprachen,
+      erweiterte Formatierung). Eine Minimalinstallation ist nicht ausreichend.
+      Die komplette Liste der benötigten Pakete wurde dokumentiert.
+    resolution: |
+      Die vollständige Paketliste wurde in required_packages.apt definiert
+      und wird vom Session-Start Hook automatisch installiert: texlive-xetex,
+      texlive-fonts-recommended, texlive-fonts-extra, texlive-latex-extra,
+      texlive-lang-german, latexmk.
+    recurrence_probability: "0%"
+
+  # ---------------------------------------------------------------------------
+  # WORKFLOW
+  # ---------------------------------------------------------------------------
+
+  - id: "RPT-L-010"
+    category: "WORKFLOW"
+    title: "HTML als robuste Alternative für komplexe Dokumente"
+    problem: |
+      PDF-Generierung schlägt bei komplexen Dokumenten mit Emojis,
+      Progress-Bars oder speziellen Tabellen fehl.
+    solution: |
+      HTML-Output verwenden:
+      python scripts/format_report.py input.md -f html
+
+      HTML unterstützt:
+      - Alle Unicode-Zeichen
+      - Komplexe Tabellen
+      - CSS-basiertes Styling
+    recommendation: |
+      Für Dokumente mit vielen visuellen Elementen (Emojis, Progress-Bars,
+      komplexe Tabellen) HTML-Output bevorzugen. PDF für einfachere,
+      text-lastige Dokumente.
+    severity: "INFO"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      HTML ist universeller und robuster als PDF für moderne Dokumente mit
+      visuellen Elementen. Das Script sollte den Dokumentinhalt analysieren
+      und automatisch das optimale Format empfehlen.
+    resolution: |
+      Eine analyze_content_for_issues() Funktion wurde implementiert, die
+      den Markdown-Inhalt scannt und automatisch HTML empfiehlt, wenn Emojis,
+      Progress-Bars oder komplexe Tabellen erkannt werden.
+    recurrence_probability: "0%"
+
+  - id: "RPT-L-012"
+    category: "DEPS"
+    title: "WeasyPrint für komplexe Dokumente"
+    problem: |
+      LaTeX (pdflatex) kann komplexe Dokumente mit Emojis, Progress-Bars und
+      speziellen Unicode-Zeichen nicht korrekt rendern.
+    root_cause: |
+      pdflatex hat fundamentale Einschränkungen bei Unicode und komplexen
+      Tabellen. Die Preprocessing-Konvertierung kann nicht alle Fälle abdecken.
+    solution: |
+      WeasyPrint als alternative PDF-Engine verwenden:
+      python scripts/format_report.py input.md -f pdf --engine weasyprint
+    code_fix: |
+      pip install weasyprint
+    prevention: |
+      - WeasyPrint in requirements.txt aufnehmen
+      - Script empfiehlt automatisch --engine weasyprint bei komplexen Dokumenten
+    severity: "MEDIUM"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      Für Dokumente mit visuellen Elementen (Emojis, Progress-Bars, komplexe
+      Tabellen) ist WeasyPrint die bessere Wahl als LaTeX. WeasyPrint rendert
+      HTML/CSS zu PDF und unterstützt alle Unicode-Zeichen nativ.
+    resolution: |
+      WeasyPrint wurde als alternative --engine Option implementiert. Bei
+      komplexen Dokumenten wird automatisch WeasyPrint empfohlen.
+    recurrence_probability: "0%"
+
+  - id: "RPT-L-011"
+    category: "WORKFLOW"
+    title: "Font-Generierung kann lange dauern"
+    problem: |
+      Erste PDF-Generierung dauert sehr lange (mehrere Minuten) wegen
+      mktexpk Font-Generierung.
+    root_cause: |
+      METAFONT muss beim ersten Lauf Bitmap-Fonts für die verwendeten
+      Größen generieren.
+    solution: |
+      - Geduld haben beim ersten Lauf
+      - Fonts werden gecached für zukünftige Läufe
+      - Pre-generated Fonts installieren: texlive-fonts-extra
+    prevention: |
+      Session-Start Hook installiert texlive-fonts-extra für schnellere
+      erste Läufe.
+    severity: "LOW"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      LaTeX generiert Bitmap-Fonts on-demand, was beim ersten Lauf sehr lange
+      dauern kann. Die Installation von texlive-fonts-extra eliminiert dieses
+      Problem, da vorgerenderte Fonts verwendet werden.
+    resolution: |
+      texlive-fonts-extra wurde zur Session-Start Installation hinzugefügt.
+      Zusätzlich wurde dokumentiert, dass der erste Lauf länger dauern kann.
+    recurrence_probability: "10%"
+
+  - id: "RPT-L-013"
+    category: "WORKFLOW"
+    title: "Cover-Page Template für professionelle Reports"
+    problem: |
+      Kundenreports benötigen ein professionelles Deckblatt mit FehrAdvice
+      Corporate Design, Logo und strukturierten Metadaten.
+    root_cause: |
+      Das Standard-Template enthält nur eine einfache Titelseite. Für
+      Kundenreports ist ein vollständiges Cover-Sheet erforderlich.
+    solution: |
+      --cover Option verwenden:
+      python scripts/format_report.py input.md --cover
+
+      Das Cover-Template (templates/fehradvice-cover.latex) enthält:
+      - TikZ-basiertes Design mit Header/Footer-Bars
+      - FehrAdvice Corporate Colors
+      - Logo-Handling mit Fallback
+      - Parametrisierte Felder aus YAML-Frontmatter
+    prevention: |
+      Für alle Kundenreports immer --cover Option verwenden.
+      YAML-Frontmatter sollte enthalten: title, subtitle, doctype, client, date
+    severity: "INFO"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      Professionelle Cover-Pages erhöhen die Wahrnehmung der Dokumentqualität
+      signifikant. Ein TikZ-basiertes Template ermöglicht konsistentes Corporate
+      Design ohne externe Grafikprogramme.
+    resolution: |
+      Cover-Page Template wurde als templates/fehradvice-cover.latex erstellt.
+      Die --cover Option wurde in format_report.py integriert. PDFs werden
+      automatisch mit PyPDF2/pdftk zusammengefügt.
+    recurrence_probability: "0%"
+
+  - id: "RPT-L-014"
+    category: "WORKFLOW"
+    title: "Cover/Back-Sheet Template Redesign (Corporate Design Update)"
+    problem: |
+      Die Cover- und Back-Sheet Templates entsprachen nicht mehr dem aktuellen
+      FehrAdvice Corporate Design. Die neue Adresse (Binzmühlestrasse 170A,
+      8050 Zürich) war nicht enthalten.
+    root_cause: |
+      Templates wurden initial mit Platzhalter-Design erstellt und mussten
+      an das finale Corporate Design angepasst werden.
+    solution: |
+      Cover-Sheet (templates/fehradvice-cover.latex):
+      - Oberer blauer Balken: 3cm (voll)
+      - Unterer blauer Balken: 2cm
+      - Zentrierter Inhalt: Logo, Dokumenttyp, Titel, Untertitel, Kunde, Datum
+
+      Back-Sheet (templates/fehradvice-back.latex):
+      - Hellgrauer Hintergrund (#F5F5F5)
+      - Oberer blauer Balken: 1cm (dünn)
+      - Unterer blauer Balken: 4cm (breit)
+      - Neue Adresse: Binzmühlestrasse 170A, 8050 Zürich
+      - Logo, Firmenname, Tagline, Kontaktdaten
+      - Bilingualer Disclaimer (DE + EN)
+      - Copyright-Footer im unteren Balken
+    prevention: |
+      Bei Corporate Design Updates immer beide Templates synchron aktualisieren.
+      Die Adresse ist in templates/fehradvice-back.latex hartkodiert - bei
+      Adressänderungen muss diese Datei aktualisiert werden.
+    severity: "INFO"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      Cover- und Back-Sheets sollten als Einheit betrachtet werden. Änderungen
+      am Corporate Design erfordern Updates an beiden Templates. TikZ ermöglicht
+      präzise Kontrolle über Layout und Farben ohne externe Grafikprogramme.
+    resolution: |
+      Beide Templates wurden komplett überarbeitet. Die Struktur ist:
+      - Cover: Weisser Hintergrund, oberer 3cm Balken, unterer 2cm Balken
+      - Back: Hellgrauer Hintergrund, oberer 1cm Balken, unterer 4cm Balken
+      Farben: trustblue=#024079, fehrlightgray=#F5F5F5, fehrgray=#25212A
+    recurrence_probability: "5%"
+
+  - id: "RPT-L-015"
+    category: "WORKFLOW"
+    title: "Workflow Structure Validation (--verify / --fix)"
+    problem: |
+      Output-Dateien wurden an verschiedenen Stellen gespeichert, was zu
+      Verwirrung und verlorenen Dateien führte. Benutzeranforderung:
+      "Bitte unbedingt alles immer an einem Platz (Workflow) abspeichern"
+    root_cause: |
+      Das Script speicherte Outputs im aktuellen Verzeichnis oder im Verzeichnis
+      der Eingabedatei, ohne zentrale Struktur.
+    solution: |
+      Neue CLI-Optionen:
+      - --verify: Zeigt Status der Workflow-Verzeichnisstruktur
+      - --verify --fix: Repariert fehlende Verzeichnisse automatisch
+
+      Beispiel:
+      python scripts/format_report.py --verify
+      python scripts/format_report.py --verify --fix
+
+      Geprüfte Struktur:
+      - workflows/format-report/ (Hauptverzeichnis)
+      - workflows/format-report/outputs/ (zentrale Output-Ablage)
+      - workflows/format-report/docs/ (Dokumentation)
+      - templates/*.latex (Cover, Back, TOC Templates)
+    prevention: |
+      --verify am Anfang einer Session ausführen, um sicherzustellen dass
+      alle Verzeichnisse existieren. Das Script warnt automatisch wenn
+      Outputs ausserhalb des Workflow-Verzeichnisses gespeichert werden.
+    severity: "MEDIUM"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      Zentrale Dateiablage ist kritisch für reproduzierbare Workflows.
+      Ein --verify/--fix Mechanismus ermöglicht Self-Healing und gibt
+      Benutzern Vertrauen in die Korrektheit der Struktur.
+    resolution: |
+      verify_workflow_structure() und print_workflow_status() Funktionen
+      implementiert. Bei --verify werden alle erforderlichen Verzeichnisse,
+      Dateien und Templates geprüft. Bei --fix werden fehlende Elemente
+      automatisch erstellt (inkl. .gitignore für outputs/).
+    recurrence_probability: "0%"
+
+  - id: "RPT-L-016"
+    category: "WORKFLOW"
+    title: "Default Output Path und Pfad-Validierung"
+    problem: |
+      Outputs landeten in unvorhersehbaren Verzeichnissen, je nachdem wo
+      das Script aufgerufen wurde oder wo die Eingabedatei lag.
+    root_cause: |
+      Ohne explizite -o Option wurde der Output-Pfad aus dem Input-Pfad
+      abgeleitet, was zu verstreuten Dateien führte.
+    solution: |
+      1. Default Output-Verzeichnis: workflows/format-report/outputs/
+      2. Pfad-Validierung: Warnung wenn Output ausserhalb des Workflow-
+         Verzeichnisses gespeichert wird
+      3. Automatische Verzeichniserstellung wenn nötig
+
+      Beispiele:
+      # Speichert in workflows/format-report/outputs/report.pdf
+      python scripts/format_report.py input.md
+
+      # Speichert explizit woanders (mit Warnung)
+      python scripts/format_report.py input.md -o /tmp/output.pdf
+    prevention: |
+      Ohne -o Option werden alle Outputs automatisch zentral gespeichert.
+      Die Warnung bei externen Pfaden erinnert daran, das zentrale
+      Verzeichnis zu verwenden.
+    severity: "MEDIUM"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      "Convention over Configuration": Ein sinnvoller Default (zentrales
+      Output-Verzeichnis) verhindert die meisten Probleme. Warnungen statt
+      Fehler ermöglichen Flexibilität bei Bedarf.
+    resolution: |
+      get_default_output_path() generiert Pfad in workflows/format-report/outputs/.
+      validate_output_path() prüft ob Pfad im Workflow-Verzeichnis liegt.
+      Das Script gibt [WARNUNG] aus wenn Output ausserhalb gespeichert wird,
+      blockiert aber nicht.
+    recurrence_probability: "0%"
+
+  - id: "RPT-L-017"
+    category: "WORKFLOW"
+    title: "Automatischer Learnings-Reminder und --add-learning"
+    problem: |
+      Learnings aus Session-Änderungen wurden oft vergessen und nicht in
+      der Learnings-Datenbank dokumentiert. Erst bei Nachfrage fielen
+      fehlende Einträge auf.
+    root_cause: |
+      Es gab keinen automatischen Mechanismus, der an Learnings erinnerte.
+      Die manuelle Bearbeitung von YAML-Dateien war aufwändig.
+    solution: |
+      Drei Mechanismen implementiert:
+
+      1. CLI-Option --add-learning für interaktives Hinzufügen:
+         python scripts/format_report.py --add-learning
+
+      2. Automatischer Reminder wenn Script ohne Argumente aufgerufen:
+         - Prüft git diff auf Änderungen an format_report.py/templates
+         - Zeigt Hinweis-Box mit betroffenen Dateien
+
+      3. Pre-Commit Hook Erweiterung:
+         - Erkennt Änderungen an Report-Formatter Dateien
+         - Zeigt Reminder wenn Learnings-YAML nicht mit-geändert wurde
+         - Blockiert NICHT, nur Erinnerung
+    prevention: |
+      - Bei jeder Änderung an format_report.py oder templates wird
+        automatisch erinnert
+      - --add-learning macht das Dokumentieren einfacher
+      - Pre-Commit Hook fängt vergessene Learnings ab
+    severity: "MEDIUM"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      Dokumentation muss Teil des Workflows sein, nicht nachgelagert.
+      Automatische Reminder sind effektiver als manuelle Checklisten.
+      Die Hürde zum Dokumentieren muss niedrig sein (interaktives CLI).
+    resolution: |
+      Implementiert in format_report.py:
+      - add_learning_interactive(): Interaktive Eingabe
+      - get_next_learning_id(): Automatische ID-Generierung
+      - check_learning_reminder(): Git-basierte Änderungsprüfung
+
+      Pre-Commit Hook erweitert:
+      - Prüft STAGED_FORMAT_REPORT vs STAGED_LEARNINGS
+      - Zeigt Reminder-Box wenn Learnings fehlen
+    recurrence_probability: "0%"
+
+  # ---------------------------------------------------------------------------
+  # GITIGNORE / PUSH VERIFICATION
+  # ---------------------------------------------------------------------------
+
+  - id: "RPT-L-018"
+    category: "WORKFLOW"
+    title: "PDFs nicht gepusht wegen .gitignore - keine Verifikation"
+    problem: |
+      PDFs wurden lokal erfolgreich generiert, aber der User konnte sie nicht
+      auf GitHub sehen. Claude behauptete "committed und gepusht" ohne zu
+      verifizieren, dass die Dateien tatsächlich im Remote-Repository sind.
+    root_cause: |
+      1. Das Verzeichnis workflows/format-report/outputs/ enthält eine
+         .gitignore mit "*.pdf" - alle PDFs werden ignoriert
+      2. "git add" ignoriert diese Dateien stillschweigend
+      3. "git push" meldet Erfolg, obwohl keine PDFs enthalten sind
+      4. Keine Verifikation nach dem Push durchgeführt
+    solution: |
+      Drei-Schritt-Verifikation implementieren:
+
+      1. VOR dem Commit prüfen ob Dateien gitignored sind:
+         git check-ignore <datei>
+         → Wenn Output, dann ist Datei ignoriert
+
+      2. Bei gitignored Dateien: Force-Add verwenden:
+         git add -f <datei>
+
+      3. NACH dem Push verifizieren:
+         git ls-tree origin/<branch> <pfad> | grep <datei>
+         → Bestätigt Datei ist auf Remote
+    prevention: |
+      PFLICHT-WORKFLOW für PDF-Outputs:
+
+      1. Nach PDF-Generierung:
+         git check-ignore workflows/format-report/outputs/*.pdf
+
+      2. Falls ignoriert:
+         git add -f <spezifische-pdfs>
+
+      3. Nach Push:
+         git fetch origin <branch>
+         git ls-tree origin/<branch> <pfad> | grep ".pdf"
+
+      4. Erst nach Verifikation dem User bestätigen
+    severity: "HIGH"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      NIEMALS behaupten "Datei ist gepusht" ohne Verifikation!
+
+      Vertraue nicht auf:
+      - "git push" Erfolgsmeldung (ignoriert gitignored Dateien)
+      - "git commit" Erfolgsmeldung (kann leer sein)
+      - Lokale Datei-Existenz (≠ Remote-Existenz)
+
+      IMMER verifizieren mit:
+      - git ls-tree origin/<branch> <pfad>
+    resolution: |
+      Workflow angepasst:
+      1. git check-ignore vor jedem "fertig" Claim
+      2. git add -f für explizit gewünschte PDFs
+      3. git ls-tree Verifikation nach Push
+      4. Erst dann User-Bestätigung
+    recurrence_probability: "0%"
+
+  # ---------------------------------------------------------------------------
+  # LOGO / ASSETS
+  # ---------------------------------------------------------------------------
+
+  - id: "RPT-L-019"
+    category: "LOGO"
+    title: "Logo-Dateien waren komplette Präsentationsfolien, nicht isolierte Logos"
+    problem: |
+      Alle "Logo"-Dateien im assets/logo/ Verzeichnis waren tatsächlich komplette
+      Seiten aus dem CI-Guide PDF - ganze Präsentationsfolien mit Überschriften,
+      Text und verschiedenen Logo-Varianten zusammen, nicht isolierte Logo-Bilder.
+
+      Betroffene Dateien (alle 7.7MB oder grösser):
+      - fehradvice-logo-color-tagline.png → Folie "Visual implementation of excellence"
+      - fehradvice-schlussstein-symbol.png → Komplette Folie mit Symbol-Kontext
+      - fehradvice-logo-white.png → Folie mit Farbfilter
+      - fehradvice-profile-square.png → Folie, quadratisch zugeschnitten
+      - favicon-512x512.png → Folie, quadratisch zugeschnitten
+
+      Die Dateien waren NICHT praktisch verwendbar für Templates.
+    root_cause: |
+      Die ursprüngliche Logo-Extraktion verwendete pdf2svg oder ähnliche Tools,
+      die komplette PDF-Seiten exportierten, anstatt einzelne Logos zu isolieren.
+      Die Dateinamen suggerierten isolierte Logos, aber der Inhalt war anders.
+    solution: |
+      Korrektes Logo aus CI-Guide PDF extrahieren:
+
+      1. PDF-Seite mit Logos als Bild exportieren (300 DPI):
+         pdftoppm -png -r 300 "Corporate-Identity-Guide.pdf" page8 -f 8 -l 8
+
+      2. Logo-Bereich identifizieren und mit ImageMagick ausschneiden:
+         convert page8-08.png -crop 1600x320+4220+2720 +repage -trim +repage logo.png
+
+      3. Ergebnis: Sauberes Logo (1133x272 Pixel, ~19KB)
+         → assets/logo/color/fehradvice-logo-2lines.png
+
+      Der korrekte Crop-Bereich für "Large, 2 lines" Logo auf Seite 8:
+      - Breite: 1600px
+      - Höhe: 320px
+      - X-Offset: 4220px
+      - Y-Offset: 2720px
+    prevention: |
+      PFLICHT bei Logo-Verwendung:
+
+      1. IMMER Datei visuell prüfen (nicht nur Dateiname vertrauen):
+         - Dateigrösse als Indikator: Isoliertes Logo < 100KB, Folie > 1MB
+         - Im Image Viewer öffnen und Inhalt verifizieren
+
+      2. Bei neuen Logo-Extraktionen:
+         - Crop-Koordinaten dokumentieren
+         - Ziel-Auflösung angeben (300 DPI für Print)
+         - Ergebnis mit Original in CI-Guide vergleichen
+
+      3. Bevorzugte Logo-Variante für Templates:
+         → assets/logo/color/fehradvice-logo-2lines.png
+         (Symbol + "FEHR" + "ADVICE", ohne Tagline)
+    severity: "HIGH"
+    first_encountered: "2026-01-29"
+    lesson_learned: |
+      Dateinamen können täuschen! Eine Datei namens "fehradvice-logo-color.png"
+      muss nicht ein isoliertes Logo sein. Bei Assets aus PDF-Extraktionen immer:
+
+      1. Dateigrösse prüfen (Logos sind klein, Folien sind gross)
+      2. Inhalt visuell verifizieren
+      3. Bei Problemen: Neu aus Quelldokument extrahieren mit präzisem Crop
+
+      Die korrekte Extraktion erfordert:
+      - Seite als hochauflösendes Bild exportieren (pdftoppm)
+      - Präzisen Bereich ausschneiden (ImageMagick -crop)
+      - Weissen Rand entfernen (-trim)
+    resolution: |
+      1. Neues sauberes Logo extrahiert:
+         → assets/logo/color/fehradvice-logo-2lines.png (1133x272px, 19KB)
+
+      2. Templates aktualisiert:
+         → templates/fehradvice-cover.latex
+         → templates/fehradvice-back.latex
+
+      3. Spezifikation aktualisiert:
+         → workflows/format-report/specs/cover-spec.yaml
+         (Logo-Pfad und Dokumentation)
+
+      4. Crop-Koordinaten dokumentiert für zukünftige Extraktionen
+    recurrence_probability: "5%"
+
+# =============================================================================
+# QUICK REFERENCE: HÄUFIGE FEHLER UND LÖSUNGEN
+# =============================================================================
+
+quick_reference:
+  - error: "Unknown option 'ngerman'"
+    fix: "apt-get install texlive-lang-german"
+    learning_id: "RPT-L-001"
+
+  - error: "Undefined control sequence. \\tightlist"
+    fix: "Template aktualisieren (bereits behoben)"
+    learning_id: "RPT-L-002"
+
+  - error: "Missing number, treated as zero"
+    fix: "HTML-Output verwenden: -f html"
+    learning_id: "RPT-L-003"
+
+  - error: "Unicode character (emoji) not set up"
+    fix: "Script konvertiert automatisch (bereits behoben)"
+    learning_id: "RPT-L-004"
+
+  - error: "Unicode character − (U+2212)"
+    fix: "Script konvertiert automatisch (bereits behoben)"
+    learning_id: "RPT-L-005"
+
+  - error: "font cannot be found"
+    fix: "apt-get install fonts-open-sans fonts-roboto && fc-cache -fv"
+    learning_id: "RPT-L-007"
+
+  - error: "Pandoc nicht installiert"
+    fix: "apt-get install pandoc"
+    learning_id: "RPT-L-008"
+
+  - error: "LaTeX kann komplexe Tabellen nicht rendern"
+    fix: "--engine weasyprint verwenden oder pip install weasyprint"
+    learning_id: "RPT-L-012"
+
+  - error: "Outputs an verschiedenen Stellen verstreut"
+    fix: "Ohne -o Option verwenden → Default: workflows/format-report/outputs/"
+    learning_id: "RPT-L-016"
+
+  - error: "Workflow-Verzeichnisse fehlen"
+    fix: "--verify --fix zum automatischen Reparieren"
+    learning_id: "RPT-L-015"
+
+  - error: "Falsche Adresse auf Back-Sheet"
+    fix: "templates/fehradvice-back.latex aktualisieren (Binzmühlestrasse 170A)"
+    learning_id: "RPT-L-014"
+
+  - error: "Learnings vergessen zu dokumentieren"
+    fix: "--add-learning für interaktives Hinzufügen"
+    learning_id: "RPT-L-017"
+
+  - error: "PDFs nicht auf GitHub obwohl 'gepusht'"
+    fix: "git check-ignore prüfen, dann git add -f, dann git ls-tree verifizieren"
+    learning_id: "RPT-L-018"
+
+  - error: "Logo in Template ist eine komplette Folie statt isoliertes Logo"
+    fix: "assets/logo/color/fehradvice-logo-2lines.png verwenden (korrekt extrahiert)"
+    learning_id: "RPT-L-019"
+
+# =============================================================================
+# EMPFOHLENE OUTPUT-FORMATE NACH DOKUMENTTYP
+# =============================================================================
+
+format_recommendations:
+  - document_type: "Einfacher Text-Report"
+    recommended_format: "pdf"
+    engine: "latex"
+    reason: "Saubere Typografie, professionelles Layout"
+
+  - document_type: "Report mit Emojis/Icons"
+    recommended_format: "pdf"
+    engine: "weasyprint"
+    reason: "WeasyPrint unterstützt Unicode nativ"
+
+  - document_type: "Report mit Progress-Bars"
+    recommended_format: "pdf"
+    engine: "weasyprint"
+    reason: "CSS kann Progress-Bars korrekt rendern"
+
+  - document_type: "Report mit komplexen Tabellen"
+    recommended_format: "html"
+    reason: "Flexiblere Tabellen-Darstellung"
+
+  - document_type: "Präsentation"
+    recommended_format: "pptx"
+    reason: "Direkt in PowerPoint editierbar"
+
+  - document_type: "Zur Weiterbearbeitung"
+    recommended_format: "docx"
+    reason: "Editierbar in Word"
+
+# =============================================================================
+# ABHÄNGIGKEITEN (für Session-Start Hook)
+# =============================================================================
+
+required_packages:
+  apt:
+    - pandoc
+    - texlive-xetex
+    - texlive-fonts-recommended
+    - texlive-fonts-extra
+    - texlive-latex-extra
+    - texlive-lang-german
+    - latexmk
+    - fonts-roboto
+    - fonts-open-sans
+
+  pip:
+    - pyyaml
+    - weasyprint  # Optional für CSS-basierte PDF-Generierung

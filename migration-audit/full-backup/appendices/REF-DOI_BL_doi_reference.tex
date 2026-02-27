@@ -1,0 +1,701 @@
+% Language: English
+% Category: REF
+% ============================================================================
+% APPENDIX BL: REF-DOI
+% Digital Object Identifier Reference System
+% ============================================================================
+
+\chapter{Digital Object Identifier Reference System}
+\label{app:doi-reference}
+
+% ----------------------------------------------------------------------------
+% HEADER BLOCK
+% ----------------------------------------------------------------------------
+\begin{tcolorbox}[colback=gray!5, colframe=gray!50, title=Appendix: BL REF-DOI]
+\small
+\begin{tabular}{ll}
+\textbf{Category:} & REF (Reference Tools) \\
+\textbf{Code:} & BL \\
+\textbf{Name:} & DOI \\
+\textbf{Version:} & 1.0 \\
+\textbf{Last Updated:} & 2026-01-27 \\
+\textbf{Status:} & ACTIVE \\
+\end{tabular}
+
+\vspace{0.5em}
+\textbf{Purpose:} Documents the DOI system for EBF bibliography management, including ISO 26324 standard, publisher algorithms, journal-era model, and strategy determination for predictive DOI generation vs. API lookup.
+
+\textbf{Dependencies:} \texttt{journal-database.yaml} (v3.0), \texttt{doi\_strategy.py}, \texttt{bcm\_master.bib}
+\end{tcolorbox}
+
+% ----------------------------------------------------------------------------
+% CROSS-REFERENCE MAP
+% ----------------------------------------------------------------------------
+\begin{tcolorbox}[colback=gray!5, colframe=gray!50, title=Cross-Reference Map]
+\small
+\textbf{Primary Coverage:}
+\begin{itemize}[noitemsep]
+    \item Bibliography Management (bcm\_master.bib)
+    \item Paper SuperKey System (PAP- prefix)
+    \item Journal SuperKey System (JRN- prefix)
+\end{itemize}
+
+\textbf{Related Appendices:}
+\begin{itemize}[noitemsep]
+    \item Appendix G (Glossary) -- DOI terminology
+    \item Appendix BM (METHOD-API) -- External API integration via GitHub Actions
+    \item Appendix BBB (CORE-WHERE) -- Parameter sources from literature
+    \item Appendix MS (REF-MODELSPACE) -- Theory catalog with paper references
+\end{itemize}
+
+\textbf{Data Sources:}
+\begin{itemize}[noitemsep]
+    \item \texttt{data/journal-database.yaml} -- Journal patterns and eras
+    \item \texttt{scripts/doi\_strategy.py} -- Strategy determination
+    \item \texttt{bibliography/bcm\_master.bib} -- 2,324 papers
+\end{itemize}
+\end{tcolorbox}
+
+% ----------------------------------------------------------------------------
+% CHAPTER LINKAGE
+% ----------------------------------------------------------------------------
+\begin{tcolorbox}[colback=blue!5, colframe=blue!50, title=Chapter Linkage]
+\small
+\textbf{Primary Function:} This appendix serves as a \emph{reference utility} for all EBF chapters that cite literature. It does not link to a specific chapter but supports the entire framework's bibliography management.
+
+\textbf{Used By:}
+\begin{itemize}[noitemsep]
+    \item All chapters citing papers from \texttt{bcm\_master.bib}
+    \item LIT-Appendices (R, M, O) for author-specific bibliographies
+    \item Appendix BBB (CORE-WHERE) for parameter source references
+    \item Appendix MS (REF-MODELSPACE) for theory-paper linkages
+\end{itemize}
+
+\textbf{Workflow Integration:}
+\begin{enumerate}[noitemsep]
+    \item New paper entry $\to$ Run \texttt{doi\_strategy.py --key \{key\}}
+    \item PATTERN result $\to$ Generate and add DOI
+    \item LOOKUP result $\to$ Trigger GitHub Action (see Appendix BM)
+    \item Validation $\to$ Verify via \texttt{doi.org}
+\end{enumerate}
+\end{tcolorbox}
+
+% ----------------------------------------------------------------------------
+% SCOPE BOX
+% ----------------------------------------------------------------------------
+\begin{tcolorbox}[colback=yellow!5, colframe=yellow!50, title=Appendix Scope: What This Appendix Covers]
+\small
+\textbf{In-Scope:}
+\begin{itemize}[noitemsep]
+    \item ISO 26324 DOI standard and syntax
+    \item Publisher-specific suffix algorithms
+    \item Journal-era model for DOI prediction
+    \item Strategy determination (PATTERN vs. LOOKUP)
+    \item Implementation: \texttt{journal-database.yaml}, \texttt{doi\_strategy.py}
+\end{itemize}
+
+\textbf{Out-of-Scope:}
+\begin{itemize}[noitemsep]
+    \item ISBN lookup for books (see future OI-4)
+    \item Automated API integration (see future OI-2)
+    \item Citation network analysis
+    \item DOI metadata enrichment (DataCite, CrossRef metadata)
+\end{itemize}
+
+\textbf{Lieferobjekte (Deliverables):}
+\begin{itemize}[noitemsep]
+    \item Journal database with 45 journals and DOI eras
+    \item Strategy determination algorithm
+    \item Per-paper strategy export (CSV)
+    \item Predictability rates for prioritization
+\end{itemize}
+\end{tcolorbox}
+
+% ----------------------------------------------------------------------------
+% ABSTRACT
+% ----------------------------------------------------------------------------
+\begin{abstract}
+This appendix documents the Digital Object Identifier (DOI) system as implemented in the Evidence-Based Framework (EBF) bibliography. We present the international standard ISO 26324, analyze publisher-specific suffix algorithms, and develop a journal-era model that enables predictive DOI generation for approximately 24\% of papers. For the remaining 76\%, we document the appropriate lookup strategies (CrossRef, JSTOR, publisher APIs). The journal database covers 45 journals with 2,324 papers, achieving 31\% DOI coverage with a clear path to 100\% through systematic application of the strategy determination algorithm.
+\end{abstract}
+
+% ----------------------------------------------------------------------------
+% QUICK REFERENCE
+% ----------------------------------------------------------------------------
+\begin{tcolorbox}[colback=blue!5, colframe=blue!50, title=Quick Reference: DOI Fundamentals]
+\small
+\textbf{DOI Structure (ISO 26324):}
+\begin{verbatim}
+doi:10.RRRR/SUFFIX
+    |  |    |
+    |  |    +-- Suffix (publisher-specific)
+    |  +------- Registrant Code (assigned by RA)
+    +---------- Directory Indicator (always "10")
+\end{verbatim}
+
+\textbf{Example:} \texttt{10.1257/aer.109.4.1256}
+\begin{itemize}[noitemsep]
+    \item \texttt{10} -- DOI namespace (Handle System)
+    \item \texttt{1257} -- American Economic Association
+    \item \texttt{aer.109.4.1256} -- Journal.Volume.Issue.Page
+\end{itemize}
+
+\textbf{Key Insight:} The prefix is standardized, but the suffix algorithm is publisher-specific and often era-dependent.
+\end{tcolorbox}
+
+% ============================================================================
+\section{Introduction: The DOI Identification Problem}
+\label{sec:doi-intro}
+% ============================================================================
+
+The Digital Object Identifier system provides persistent, unique identifiers for scholarly publications. For the EBF bibliography management, DOIs serve three critical functions:
+
+\begin{enumerate}
+    \item \textbf{Unique Identification:} Each paper receives a globally unique identifier
+    \item \textbf{Persistent Resolution:} DOIs resolve to current URLs even when publishers change
+    \item \textbf{Citation Linking:} DOIs enable automated citation networks and impact metrics
+\end{enumerate}
+
+\subsection{The Challenge}
+
+While DOI \emph{resolution} is standardized (via \texttt{doi.org}), DOI \emph{construction} is not. Each publisher implements their own suffix algorithm, and these algorithms have evolved over time. This creates a fundamental question:
+
+\begin{tcolorbox}[colback=yellow!10, colframe=orange!50, title=Central Question]
+Given a paper's metadata (journal, year, volume, issue, pages), can we \emph{predict} its DOI, or must we \emph{lookup} via external APIs?
+\end{tcolorbox}
+
+% ============================================================================
+\section{ISO 26324: The International DOI Standard}
+\label{sec:iso-standard}
+% ============================================================================
+
+\subsection{Standard Evolution}
+
+\begin{table}[h]
+\centering
+\caption{ISO 26324 Standard Versions}
+\begin{tabular}{lll}
+\toprule
+\textbf{Version} & \textbf{Year} & \textbf{Key Features} \\
+\midrule
+ISO 26324:2012 & 2012 & Initial standardization \\
+ISO 26324:2022 & 2022 & Updated syntax, registration rules \\
+ISO 26324:2025 & 2025 & Current version, extended metadata \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{DOI Syntax Specification}
+
+The standard defines:
+
+\begin{enumerate}
+    \item \textbf{Prefix:} Always \texttt{10.NNNN} where NNNN $\geq$ 1000
+    \item \textbf{Separator:} Forward slash (\texttt{/})
+    \item \textbf{Suffix:} Any alphanumeric string, case-insensitive
+    \item \textbf{Character Set:} \texttt{a-z}, \texttt{A-Z}, \texttt{0-9}, \texttt{-.\_;}()/
+    \item \textbf{Length:} No defined limit (optimal: 6-10 characters for suffix)
+\end{enumerate}
+
+\subsection{What ISO 26324 Does NOT Standardize}
+
+Critically, the standard does \emph{not} specify:
+
+\begin{itemize}
+    \item How suffixes should be constructed
+    \item Whether suffixes should encode metadata
+    \item How publishers should organize their namespace
+\end{itemize}
+
+This gap is the source of the prediction problem.
+
+% ============================================================================
+\section{Publisher Suffix Algorithms}
+\label{sec:publisher-algorithms}
+% ============================================================================
+
+Through empirical analysis of 720 DOIs in the EBF bibliography, we identified six distinct suffix pattern types:
+
+\subsection{Pattern Type Classification}
+
+\begin{table}[h]
+\centering
+\caption{DOI Suffix Pattern Types}
+\label{tab:pattern-types}
+\begin{tabular}{llll}
+\toprule
+\textbf{Type} & \textbf{Pattern} & \textbf{Predictable} & \textbf{Example} \\
+\midrule
+STRUCTURED & \texttt{j.v.i.p} & Yes & \texttt{10.1257/aer.109.4.1256} \\
+ISSN\_YEAR & \texttt{j.issn.yyyy} & Yes & \texttt{10.1111/j.1540-6261.2007.x} \\
+NUMERIC & \texttt{NNNNNNN} & No & \texttt{10.2307/1914185} \\
+LONG\_CODE & \texttt{15-digit} & No & \texttt{10.1257/000282803322655392} \\
+ALPHA\_NUM & \texttt{xxxNNN} & No & \texttt{10.3982/ECTA18709} \\
+OTHER & Various & No & \texttt{10.1126/science.aax3100} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Publisher-Specific Algorithms}
+
+\subsubsection{American Economic Association (10.1257)}
+
+AEA journals show clear era-dependent patterns:
+
+\begin{table}[h]
+\centering
+\caption{AEA DOI Pattern Evolution}
+\begin{tabular}{llll}
+\toprule
+\textbf{Era} & \textbf{Years} & \textbf{Pattern} & \textbf{Predictable} \\
+\midrule
+JSTOR Legacy & 1911--1975 & \texttt{10.2307/NNNNNNN} & No \\
+AEA Code & 1975--2005 & \texttt{10.1257/NNNNNNNNNNNNNNN} & No \\
+Modern & 2005--present & \texttt{10.1257/\{j\}.\{v\}.\{i\}.\{p\}} & Yes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Modern Pattern:}
+\begin{equation}
+\text{DOI}_{\text{AER}} = \texttt{10.1257/aer.} \| V \| \texttt{.} \| I \| \texttt{.} \| P_{\text{start}}
+\end{equation}
+
+where $V$ is volume, $I$ is issue, and $P_{\text{start}}$ is the starting page.
+
+\subsubsection{University of Chicago Press (10.1086)}
+
+Chicago uses an internal article ID system with \emph{no predictable pattern}:
+
+\begin{equation}
+\text{DOI}_{\text{JPE}} = \texttt{10.1086/} \| \text{ArticleID}
+\end{equation}
+
+The ArticleID is assigned sequentially by the publisher and cannot be derived from metadata.
+
+\subsubsection{Elsevier (10.1016)}
+
+Elsevier transitioned from PII codes to structured patterns:
+
+\begin{table}[h]
+\centering
+\caption{Elsevier DOI Pattern Evolution}
+\begin{tabular}{llll}
+\toprule
+\textbf{Era} & \textbf{Years} & \textbf{Pattern} & \textbf{Predictable} \\
+\midrule
+Old PII & pre-2000 & \texttt{10.1016/ISSN(YY)VVV-S} & No \\
+Modern & 2000--present & \texttt{10.1016/j.\{jcode\}.\{yyyy\}.\{mm\}.\{nnn\}} & Partial \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Science and Nature (Hash-Based)}
+
+High-impact journals use hash-based suffixes that are \emph{never} predictable:
+
+\begin{align}
+\text{DOI}_{\text{Science}} &= \texttt{10.1126/science.} \| \text{Hash} \\
+\text{DOI}_{\text{Nature}} &= \texttt{10.1038/} \| \text{Hash}
+\end{align}
+
+% ============================================================================
+\section{Journal-Era Model}
+\label{sec:journal-era-model}
+% ============================================================================
+
+\subsection{Model Structure}
+
+We formalize the DOI prediction problem as a journal-era model:
+
+\begin{definition}[Journal-Era Model]
+For each journal $j$, define a set of eras $\mathcal{E}_j = \{e_1, e_2, \ldots, e_n\}$ where each era $e_i$ is characterized by:
+\begin{itemize}
+    \item Year range: $[y_{\text{start}}, y_{\text{end}}]$
+    \item DOI prefix: $\pi_i$
+    \item Pattern type: $\tau_i \in \{\text{STRUCTURED}, \text{ISSN\_YEAR}, \text{NUMERIC}, \ldots\}$
+    \item Predictability: $\rho_i \in \{0, 1\}$
+    \item Pattern function: $f_i: \text{Metadata} \to \text{DOI}$ (if $\rho_i = 1$)
+\end{itemize}
+\end{definition}
+
+\begin{definition}[Predictability Rate]
+For journal $j$, the predictability rate $R_j$ is:
+\begin{equation}
+R_j = \frac{\sum_{e \in \mathcal{E}_j} \rho_e \cdot N_e}{\sum_{e \in \mathcal{E}_j} N_e}
+\end{equation}
+where $N_e$ is the number of papers in era $e$.
+\end{definition}
+
+\subsection{Strategy Determination Algorithm}
+
+\begin{algorithm}[H]
+\caption{DOI Strategy Determination}
+\label{alg:doi-strategy}
+\begin{algorithmic}[1]
+\Require Paper $p$ with metadata $(j, y, v, i, \text{pages})$
+\Ensure Strategy $\in \{\text{PATTERN}, \text{LOOKUP}\}$ with details
+\State $J \gets \textsc{FindJournal}(j)$
+\If{$J = \text{null}$}
+    \State \Return $(\text{LOOKUP}, \text{CrossRef})$
+\EndIf
+\State $E \gets \textsc{FindEra}(J, y)$
+\If{$E.\rho = 1$} \Comment{Predictable era}
+    \If{$\textsc{HasRequiredFields}(p, E.\text{requires})$}
+        \State $\text{doi} \gets E.f(p)$ \Comment{Generate DOI}
+        \State \Return $(\text{PATTERN}, \text{doi})$
+    \EndIf
+\EndIf
+\State $\text{source} \gets \textsc{DetermineLookupSource}(E.\pi)$
+\State \Return $(\text{LOOKUP}, \text{source})$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Lookup Source Determination}
+
+\begin{table}[h]
+\centering
+\caption{Lookup Source by DOI Prefix}
+\begin{tabular}{lll}
+\toprule
+\textbf{Prefix} & \textbf{Source} & \textbf{Reason} \\
+\midrule
+\texttt{10.2307} & JSTOR & Historical digitization \\
+\texttt{10.1086} & CrossRef/Chicago & Internal codes \\
+\texttt{10.1126} & CrossRef/Publisher & Hash-based (Science) \\
+\texttt{10.1038} & CrossRef/Publisher & Hash-based (Nature) \\
+Other & CrossRef & Default resolution \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+\section{Empirical Results}
+\label{sec:results}
+% ============================================================================
+
+\subsection{Bibliography Statistics}
+
+\begin{table}[h]
+\centering
+\caption{EBF Bibliography DOI Coverage}
+\begin{tabular}{lr}
+\toprule
+\textbf{Metric} & \textbf{Value} \\
+\midrule
+Total papers & 2,324 \\
+Papers with DOI & 720 (31.0\%) \\
+Papers without DOI & 1,604 (69.0\%) \\
+Journals in database & 45 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Strategy Distribution}
+
+For the 1,604 papers without DOI:
+
+\begin{table}[h]
+\centering
+\caption{DOI Strategy Distribution}
+\begin{tabular}{lrrl}
+\toprule
+\textbf{Strategy} & \textbf{Papers} & \textbf{Percent} & \textbf{Action} \\
+\midrule
+PATTERN & 173 & 10.8\% & Generate from metadata \\
+LOOKUP & 1,152 & 71.8\% & Query external API \\
+SKIP & 279 & 17.4\% & Books, not journals \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Predictability by Journal}
+
+\begin{table}[h]
+\centering
+\caption{Journal Predictability Rates (Top 15)}
+\label{tab:predictability}
+\begin{tabular}{llrrr}
+\toprule
+\textbf{SuperKey} & \textbf{Journal} & \textbf{Rate} & \textbf{Error} & \textbf{Type} \\
+\midrule
+JRN-1016-JPUBE & J. Public Economics & 100\% & 0\% & ISSN\_YEAR \\
+JRN-1016-JOEP & J. Economic Psychology & 100\% & 0\% & ISSN\_YEAR \\
+JRN-3386-NBER & NBER Working Paper & 100\% & 0\% & ALPHA\_NUM \\
+JRN-1162-REST & Rev. Econ. \& Statistics & 100\% & 0\% & STRUCTURED \\
+JRN-1257-JEP & J. Economic Perspectives & 96\% & 4\% & STRUCTURED \\
+JRN-1257-AER & American Economic Review & 92\% & 8\% & STRUCTURED \\
+JRN-1016-JFE & J. Financial Economics & 80\% & 20\% & ISSN\_YEAR \\
+JRN-1111-JF & Journal of Finance & 75\% & 25\% & ISSN\_YEAR \\
+JRN-1016-GEB & Games \& Econ. Behavior & 75\% & 25\% & ISSN\_YEAR \\
+JRN-1257-JEL & J. Economic Literature & 71\% & 29\% & STRUCTURED \\
+\midrule
+JRN-1093-QJE & Quarterly J. of Economics & 1\% & 99\% & LOOKUP \\
+JRN-1086-JPE & J. Political Economy & 0\% & 100\% & LOOKUP \\
+JRN-3982-ECTA & Econometrica & 5\% & 95\% & LOOKUP \\
+JRN-1126-SCI & Science & 0\% & 100\% & LOOKUP \\
+JRN-1038-NAT & Nature & 0\% & 100\% & LOOKUP \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Forecast Error Interpretation}
+
+The \emph{forecast error} represents the proportion of papers for which DOI prediction fails:
+
+\begin{equation}
+\text{Forecast Error}_j = 1 - R_j
+\end{equation}
+
+\begin{tcolorbox}[colback=green!5, colframe=green!50, title=Practical Interpretation]
+\begin{itemize}
+    \item \textbf{Error < 10\%:} Use PATTERN strategy; validate sample via CrossRef
+    \item \textbf{Error 10--50\%:} Use PATTERN for modern papers; LOOKUP for legacy
+    \item \textbf{Error > 50\%:} Use LOOKUP strategy exclusively
+\end{itemize}
+\end{tcolorbox}
+
+% ============================================================================
+\section{Implementation}
+\label{sec:implementation}
+% ============================================================================
+
+\subsection{Data Files}
+
+\begin{table}[h]
+\centering
+\caption{DOI System Data Files}
+\begin{tabular}{ll}
+\toprule
+\textbf{File} & \textbf{Purpose} \\
+\midrule
+\texttt{data/journal-database.yaml} & Journal eras and patterns (v3.0) \\
+\texttt{scripts/doi\_strategy.py} & Strategy determination \\
+\texttt{scripts/batch\_doi\_by\_journal.py} & Batch DOI generation \\
+\texttt{data/doi\_strategy\_export.csv} & Per-paper strategy export \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Usage Examples}
+
+\begin{verbatim}
+# Check strategy for a specific paper
+python scripts/doi_strategy.py --key fama1993
+
+# Show statistics
+python scripts/doi_strategy.py --stats
+
+# Export all strategies to CSV
+python scripts/doi_strategy.py --export
+
+# Generate DOIs where possible
+python scripts/doi_strategy.py --generate
+\end{verbatim}
+
+\subsection{Journal Database Schema}
+
+The \texttt{journal-database.yaml} uses the following structure:
+
+\begin{verbatim}
+journals:
+  - superkey: "JRN-1257-AER"
+    name: "American Economic Review"
+    abbreviation: "AER"
+    papers_in_ebf: 186
+    papers_with_doi: 133
+    publisher: "American Economic Association"
+    predictability_rate: 0.92
+    doi_eras:
+      - era: "JSTOR Legacy"
+        years: [1911, 1975]
+        prefix: "10.2307"
+        pattern_type: "NUMERIC"
+        predictable: false
+      - era: "Modern"
+        years: [2005, 2030]
+        prefix: "10.1257"
+        pattern: "10.1257/aer.{volume}.{issue}.{startpage}"
+        pattern_type: "STRUCTURED"
+        predictable: true
+        requires: [volume, issue, pages]
+\end{verbatim}
+
+% ============================================================================
+\section{Integration with EBF}
+\label{sec:integration}
+% ============================================================================
+
+\subsection{SuperKey Architecture}
+
+The DOI system integrates with the EBF SuperKey architecture:
+
+\begin{table}[h]
+\centering
+\caption{SuperKey Prefixes}
+\begin{tabular}{lll}
+\toprule
+\textbf{Prefix} & \textbf{Entity} & \textbf{Format} \\
+\midrule
+PAP- & Paper & \texttt{PAP-\{author\}\{year\}\{keyword\}} \\
+JRN- & Journal & \texttt{JRN-\{registrant\}-\{abbrev\}} \\
+DOI- & DOI & \texttt{10.\{registrant\}/\{suffix\}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Workflow Integration}
+
+\begin{enumerate}
+    \item \textbf{New Paper Entry:} Run \texttt{doi\_strategy.py --key \{key\}} to determine strategy
+    \item \textbf{PATTERN Result:} Add generated DOI to \texttt{bcm\_master.bib}
+    \item \textbf{LOOKUP Result:} Query CrossRef/JSTOR, then add DOI
+    \item \textbf{Validation:} Verify DOI resolves correctly via \texttt{doi.org}
+\end{enumerate}
+
+% ============================================================================
+\section{Limitations and Future Work}
+\label{sec:limitations}
+% ============================================================================
+
+\subsection{Current Limitations}
+
+\begin{enumerate}
+    \item \textbf{Partial Coverage:} Only 45 of $\sim$100+ economics journals modeled
+    \item \textbf{Era Boundaries:} Transition years are approximate ($\pm$2 years)
+    \item \textbf{Pattern Validation:} Generated DOIs should be validated against CrossRef
+    \item \textbf{API Blocking:} CrossRef/JSTOR APIs may rate-limit bulk requests
+\end{enumerate}
+
+\subsection{Future Extensions}
+
+\begin{enumerate}
+    \item Expand journal database to cover all journals in bibliography
+    \item Implement automated CrossRef validation for generated DOIs
+    \item Add ISBN lookup for books (currently SKIPped)
+    \item Integrate with Zotero/Mendeley for automated bibliography management
+\end{enumerate}
+
+% ============================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+% ============================================================================
+
+The DOI prediction problem can be decomposed into a journal-era model where predictability depends on:
+
+\begin{enumerate}
+    \item The journal's publisher and their suffix algorithm
+    \item The publication year and applicable era
+    \item Availability of required metadata (volume, issue, pages)
+\end{enumerate}
+
+For the EBF bibliography:
+\begin{itemize}
+    \item \textbf{24\%} of journals have fully predictable DOIs (forecast error < 10\%)
+    \item \textbf{38\%} have partially predictable DOIs (era-dependent)
+    \item \textbf{38\%} require external lookup (hash-based or legacy systems)
+\end{itemize}
+
+The \texttt{doi\_strategy.py} script operationalizes this model, enabling systematic DOI completion for the entire bibliography.
+
+% ============================================================================
+\section{Summary}
+\label{sec:summary}
+% ============================================================================
+
+This appendix presented a systematic approach to DOI management in the EBF bibliography:
+
+\begin{enumerate}
+    \item \textbf{ISO 26324 Standard:} DOIs follow the structure \texttt{10.RRRR/SUFFIX}, where the prefix is standardized but the suffix is publisher-specific.
+
+    \item \textbf{Publisher Algorithms:} Six pattern types were identified (STRUCTURED, ISSN\_YEAR, NUMERIC, LONG\_CODE, ALPHA\_NUM, OTHER), with predictability varying by publisher and era.
+
+    \item \textbf{Journal-Era Model:} Each journal has distinct eras with different DOI patterns. The predictability rate $R_j$ quantifies the proportion of papers with deterministic DOI generation.
+
+    \item \textbf{Strategy Determination:} The \texttt{doi\_strategy.py} script implements Algorithm~\ref{alg:doi-strategy} to classify each paper as PATTERN (generate) or LOOKUP (query API).
+
+    \item \textbf{Results:} For 1,604 papers without DOI:
+    \begin{itemize}
+        \item 11\% can have DOIs generated from metadata
+        \item 72\% require API lookup (CrossRef, JSTOR)
+        \item 17\% are books/proceedings (skipped)
+    \end{itemize}
+\end{enumerate}
+
+The journal database (\texttt{journal-database.yaml} v3.0) provides the foundation for systematic DOI completion.
+
+% ============================================================================
+\section{Glossary}
+\label{sec:glossary}
+% ============================================================================
+
+Key terms used in this appendix (see also Appendix G for comprehensive glossary):
+
+\begin{description}
+    \item[DOI] Digital Object Identifier -- a persistent identifier for digital objects, standardized in ISO 26324.
+
+    \item[Registrant] An organization authorized to assign DOIs within a specific prefix (e.g., 10.1257 = American Economic Association).
+
+    \item[Registration Agency (RA)] An organization that assigns DOI prefixes to registrants (e.g., CrossRef for scholarly publications).
+
+    \item[Suffix] The publisher-specific part of a DOI following the prefix and slash.
+
+    \item[Predictability Rate] The proportion of papers in a journal for which DOIs can be generated from metadata.
+
+    \item[Forecast Error] $1 - R_j$; the proportion of papers requiring API lookup.
+
+    \item[Era] A time period during which a journal used a consistent DOI pattern.
+
+    \item[SuperKey] EBF's unique identifier format: JRN- for journals, PAP- for papers.
+
+    \item[JSTOR] A digital library providing archival access to academic journals; assigns DOIs with prefix 10.2307.
+
+    \item[CrossRef] The primary DOI registration agency for scholarly publications.
+\end{description}
+
+% ============================================================================
+\section{Critical Foundations}
+\label{sec:foundations}
+% ============================================================================
+
+The DOI reference system rests on three foundations:
+
+\begin{enumerate}
+    \item \textbf{ISO 26324 Compliance:} All DOIs in the EBF bibliography conform to the international standard syntax.
+
+    \item \textbf{Empirical Pattern Analysis:} Publisher algorithms were reverse-engineered from 720 known DOIs in the bibliography, not assumed.
+
+    \item \textbf{Conservative Prediction:} When uncertain, the system defaults to LOOKUP rather than generating potentially invalid DOIs.
+\end{enumerate}
+
+% ============================================================================
+\section{Open Issues}
+\label{sec:open-issues}
+% ============================================================================
+
+\begin{enumerate}
+    \item \textbf{OI-1: Expanded Journal Coverage} -- Currently 45 of $\sim$100+ journals are modeled. Priority: High.
+
+    \item \textbf{OI-2: API Integration} -- Automated CrossRef/JSTOR lookup not yet implemented. Priority: Medium.
+
+    \item \textbf{OI-3: Validation Pipeline} -- Generated DOIs should be validated against CrossRef before storage. Priority: High.
+
+    \item \textbf{OI-4: Book ISBN Support} -- 279 book entries currently skipped; ISBN lookup needed. Priority: Low.
+\end{enumerate}
+
+% ----------------------------------------------------------------------------
+% REFERENCES
+% ----------------------------------------------------------------------------
+\section{References}
+\label{sec:references}
+
+\begin{itemize}
+    \item ISO 26324:2022. \textit{Information and documentation -- Digital object identifier system}. International Organization for Standardization.
+    \item CrossRef. \textit{Constructing your DOIs}. \url{https://www.crossref.org/documentation/member-setup/constructing-your-dois/}
+    \item DataCite. \textit{DOI Basics}. \url{https://support.datacite.org/docs/doi-basics}
+    \item International DOI Foundation. \textit{DOI Handbook}. \url{https://www.doi.org/doi-handbook/}
+\end{itemize}
+
+% Link to master bibliography
+\nocite{bcm_master}
+
+\end{chapter}

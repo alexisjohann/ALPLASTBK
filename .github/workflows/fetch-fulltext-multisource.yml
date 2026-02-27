@@ -1,0 +1,258 @@
+# =============================================================================
+# MULTI-SOURCE FULL-TEXT FETCH WORKFLOW
+# =============================================================================
+# Searches multiple OA sources for PDFs: Unpaywall → OpenAlex → EconStor → S2
+#
+# Design: "The PDF exists SOMEWHERE — find it."
+# Learned from Engel cross-validation: PuRe had only 2/250 papers,
+# but EconStor, ScienceDirect, and ResearchGate had many more.
+#
+# Triggers:
+#   - Manual: workflow_dispatch
+#   - Push: data/fulltext-fetch-trigger.yaml (from sandbox without token)
+#   - From sandbox: bash scripts/api.sh multisource scan|fetch
+# =============================================================================
+
+name: Fetch Full-Texts (Multi-Source)
+
+on:
+  workflow_dispatch:
+    inputs:
+      author_name:
+        description: 'Author filter for bibtex (e.g., engel, sutter, fehr)'
+        required: false
+        default: ''
+      batch_size:
+        description: 'Max papers to process'
+        required: false
+        default: '50'
+      mode:
+        description: 'Run mode'
+        required: true
+        default: 'scan-only'
+        type: choice
+        options:
+          - 'scan-only'
+          - 'scan-and-fetch'
+      dry_run:
+        description: 'Dry run (scan only, no downloads)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+      dois:
+        description: 'Specific DOIs (comma-separated, overrides author filter)'
+        required: false
+        default: ''
+      target_branch:
+        description: 'Branch to commit results to'
+        required: false
+        default: 'main'
+
+  push:
+    paths:
+      - 'data/fulltext-fetch-trigger.yaml'
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-multisource:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_branch || github.ref_name }}
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Read trigger file (push-triggered)
+        id: trigger
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          TRIGGER_FILE="data/fulltext-fetch-trigger.yaml"
+          if [ ! -f "$TRIGGER_FILE" ]; then
+            echo "No trigger file found"
+            exit 1
+          fi
+
+          echo "=== Trigger File ==="
+          cat "$TRIGGER_FILE"
+          echo ""
+
+          # Parse YAML with Python
+          python3 -c "
+          import yaml, os
+          with open('$TRIGGER_FILE') as f:
+              cfg = yaml.safe_load(f)
+          # Write to GITHUB_OUTPUT
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              out.write(f'dois={cfg.get(\"dois\", \"\")}\n')
+              out.write(f'batch_size={cfg.get(\"batch_size\", 50)}\n')
+              out.write(f'mode={cfg.get(\"mode\", \"scan-and-fetch\")}\n')
+              out.write(f'dry_run={cfg.get(\"dry_run\", False)}\n')
+              out.write(f'author_name={cfg.get(\"author_name\", \"\")}\n')
+              out.write(f'bib_file={cfg.get(\"bib_file\", \"\")}\n')
+              out.write(f'description={cfg.get(\"description\", \"\")}\n')
+          "
+
+          echo "Parsed trigger: dois=${{ steps.trigger.outputs.dois || '(pending)' }}"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests pyyaml
+          sudo apt-get update && sudo apt-get install -y poppler-utils
+
+      - name: Verify tools
+        run: |
+          python --version
+          which pdftotext
+          pdftotext -v 2>&1 || true
+          echo "Dependencies OK"
+
+      # Determine effective parameters (inputs or trigger file)
+      - name: Set parameters
+        id: params
+        run: |
+          # Push-trigger values override workflow_dispatch inputs
+          if [ "${{ github.event_name }}" = "push" ]; then
+            DOIS="${{ steps.trigger.outputs.dois }}"
+            BATCH="${{ steps.trigger.outputs.batch_size }}"
+            MODE="${{ steps.trigger.outputs.mode }}"
+            DRY_RUN="${{ steps.trigger.outputs.dry_run }}"
+            AUTHOR="${{ steps.trigger.outputs.author_name }}"
+            BIB="${{ steps.trigger.outputs.bib_file }}"
+          else
+            DOIS="${{ inputs.dois }}"
+            BATCH="${{ inputs.batch_size }}"
+            MODE="${{ inputs.mode }}"
+            DRY_RUN="${{ inputs.dry_run }}"
+            AUTHOR="${{ inputs.author_name }}"
+            BIB=""
+          fi
+
+          echo "dois=$DOIS" >> $GITHUB_OUTPUT
+          echo "batch=$BATCH" >> $GITHUB_OUTPUT
+          echo "mode=$MODE" >> $GITHUB_OUTPUT
+          echo "dry_run=$DRY_RUN" >> $GITHUB_OUTPUT
+          echo "author=$AUTHOR" >> $GITHUB_OUTPUT
+          echo "bib=$BIB" >> $GITHUB_OUTPUT
+
+          echo "=== Effective Parameters ==="
+          echo "DOIs: $DOIS"
+          echo "Batch: $BATCH"
+          echo "Mode: $MODE"
+          echo "Dry run: $DRY_RUN"
+          echo "Author: $AUTHOR"
+          echo "Bib: $BIB"
+
+      # Scan + Fetch (unified step for both triggers)
+      # NOTE: Do NOT build an ARGS string — shell quoting breaks DOIs.
+      # Instead, call Python directly with proper variable quoting.
+      - name: "Fetch full texts"
+        env:
+          FETCH_DOIS: ${{ steps.params.outputs.dois }}
+          FETCH_BATCH: ${{ steps.params.outputs.batch }}
+          FETCH_MODE: ${{ steps.params.outputs.mode }}
+          FETCH_DRY_RUN: ${{ steps.params.outputs.dry_run }}
+          FETCH_AUTHOR: ${{ steps.params.outputs.author }}
+          FETCH_BIB: ${{ steps.params.outputs.bib }}
+        run: |
+          echo "=========================================="
+          echo "Multi-Source Full-Text Fetch"
+          echo "=========================================="
+          echo "DOIs: ${FETCH_DOIS:-(none)}"
+          echo "Batch: $FETCH_BATCH"
+          echo "Mode: $FETCH_MODE"
+
+          # Build command array (proper quoting via env vars)
+          CMD="python scripts/fetch_fulltext_multisource.py"
+
+          if [ "$FETCH_MODE" = "scan-only" ]; then
+            CMD="$CMD --scan"
+          else
+            CMD="$CMD --scan --fetch"
+          fi
+
+          CMD="$CMD --batch $FETCH_BATCH"
+
+          if [ "$FETCH_DRY_RUN" = "true" ] || [ "$FETCH_DRY_RUN" = "True" ]; then
+            CMD="$CMD --dry-run"
+          fi
+
+          if [ -n "$FETCH_AUTHOR" ]; then
+            CMD="$CMD --author $FETCH_AUTHOR"
+          fi
+
+          if [ -n "$FETCH_BIB" ]; then
+            CMD="$CMD --bib $FETCH_BIB"
+          fi
+
+          # DOIs passed via env var to avoid shell quoting issues
+          if [ -n "$FETCH_DOIS" ]; then
+            echo "Running: $CMD --dois <${#FETCH_DOIS} chars>"
+            $CMD --dois "$FETCH_DOIS"
+          else
+            echo "Running: $CMD"
+            $CMD
+          fi
+
+      - name: Show results
+        if: always()
+        run: |
+          echo "=== MULTI-SOURCE LOG ==="
+          if [ -f data/multisource-fetch-log.yaml ]; then
+            head -100 data/multisource-fetch-log.yaml
+          else
+            echo "No log generated"
+          fi
+
+          echo ""
+          echo "=== NEW/UPDATED FILES ==="
+          git status --short data/paper-texts/ data/paper-references/ data/ || true
+
+      - name: Upload log artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: multisource-fetch-logs
+          path: |
+            data/multisource-fetch-log.yaml
+
+      # Commit results
+      - name: Commit results
+        if: ${{ steps.params.outputs.dry_run != 'true' && steps.params.outputs.dry_run != 'True' }}
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          git add data/paper-texts/ data/paper-references/ \
+                  data/multisource-fetch-log.yaml 2>/dev/null || true
+
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            CHANGED=$(git diff --staged --name-only | wc -l)
+            DESC="${{ steps.trigger.outputs.description || steps.params.outputs.author || 'batch' }}"
+            git commit -m "feat(fulltext): Fetch $CHANGED full texts via multi-source cascade
+
+          Description: $DESC
+          DOIs: ${{ steps.params.outputs.dois }}
+          Batch: ${{ steps.params.outputs.batch }}
+          Sources: Unpaywall → OpenAlex → EconStor → Semantic Scholar
+          Mode: ${{ steps.params.outputs.mode }}
+
+          https://claude.ai/code/session_01DJGzodmAQQvVx9TXCfW7NE"
+
+            git push
+            echo "Committed and pushed $CHANGED files"
+          fi

@@ -1,0 +1,652 @@
+# =============================================================================
+# G1: SURVEY-MAPPING — Jede Frage → Konstrukt + Literatur + Effektrichtung
+# UBS Growth Marketing Pre-Analysis
+# Created: 2026-02-25
+# Session: EBF-S-2026-02-25-FIN-001
+# =============================================================================
+
+metadata:
+  analysis_id: UBS-GMA-G1
+  title: "Survey-Mapping: Vollständige Zuordnung aller Fragen zu Konstrukten"
+  type: survey_mapping
+  phase: G
+  created: "2026-02-25"
+  session_ref: "EBF-S-2026-02-25-FIN-001"
+  depends_on:
+    - UBS-GMA-A1   # 10C Journey Modell
+    - UBS-GMA-A2   # Trust-Kaskade
+    - UBS-GMA-A3   # Channel-Präferenz-Matrix
+    - UBS-GMA-B1   # Algorithm Aversion
+    - UBS-GMA-B2   # TAM/UTAUT
+    - UBS-GMA-B3   # Brand Extension
+
+# =============================================================================
+# 1. MORTGAGE CUSTOM GPT — SURVEY-FRAGEN (~15 Kernfragen)
+# =============================================================================
+# Rekonstruiert aus A1-A3, B1-B2 Analysen und Survey-Design-Empfehlungen.
+# Jede Frage wird einem theoretischen Konstrukt zugeordnet.
+# =============================================================================
+
+mortgage_gpt_survey:
+
+  # -------------------------------------------------------------------------
+  # BLOCK A: KANAL & KONTEXT (3 Fragen)
+  # -------------------------------------------------------------------------
+  block_A_context:
+    description: "Kanalidentifikation und Situationskontext"
+
+    Q_M01:
+      text_de: "Wie sind Sie auf diesen Service aufmerksam geworden?"
+      text_en: "How did you become aware of this service?"
+      construct: "Channel Identification"
+      10c_dimension: "AWARE"
+      type: "single_choice"
+      options: ["UBS Website", "UBS App", "ChatGPT Marketplace", "Homegate/ImmoScout24", "Social Media", "Empfehlung", "Andere"]
+      literature: "A3 Channel-Präferenz-Matrix: Kanal bestimmt Psi-Kontext"
+      analysis_ref: "ANA-UBS-GM-A3-CHANNEL"
+      effect_direction: "n/a (Moderator)"
+      priority: "PFLICHT"
+      rationale: |
+        Ohne Kanal-Zuordnung ist die gesamte Datenanalyse wertlos.
+        Die Psi-Kontexte (Trust, Intent, Attention) variieren um Faktor 2-3
+        zwischen Kanälen (A3: tau_marketplace = 0.142 vs tau_website = 0.228).
+
+    Q_M02:
+      text_de: "Haben Sie bereits ein konkretes Objekt im Blick?"
+      text_en: "Do you already have a specific property in mind?"
+      construct: "Purchase Stage / Intent Level"
+      10c_dimension: "STAGE"
+      type: "single_choice"
+      options: ["Ja, konkretes Objekt", "Ja, aktiv suchend", "Nein, informiere mich allgemein", "Nein, Refinanzierung bestehend"]
+      literature: "A1 Journey Model: 4 Segments (Erstkäufer, Refinanzierer, Erben, Informationssuchende)"
+      analysis_ref: "ANA-UBS-GM-A1-JOURNEY"
+      effect_direction: "Intent ↑ → Conversion ↑ (A1: Life Transition Multiplier = 1.5)"
+      priority: "PFLICHT"
+      rationale: |
+        Segment-Zuordnung für Analyse. Erstkäufer (AWARE=0.20, READY_W=0.70)
+        brauchen anderen GPT-Dialog als Refinanzierer (AWARE=0.75, READY_W=0.40).
+
+    Q_M03:
+      text_de: "Wie vertraut sind Sie mit Hypothekenfinanzierung?"
+      text_en: "How familiar are you with mortgage financing?"
+      construct: "Domain Knowledge / Financial Literacy"
+      10c_dimension: "AWARE"
+      type: "5-point_likert"
+      anchors: ["Gar nicht vertraut", "Sehr vertraut"]
+      literature: "A1: AWARE variiert von 0.20 (Erstkäufer) bis 0.75 (Refinanzierer)"
+      analysis_ref: "ANA-UBS-GM-A1-JOURNEY"
+      effect_direction: "Knowledge ↑ → Algorithm Appreciation ↑ (Logg 2019: objective tasks)"
+      priority: "HOCH"
+
+  # -------------------------------------------------------------------------
+  # BLOCK B: AI-WAHRNEHMUNG & ALGORITHM AVERSION (4 Fragen)
+  # -------------------------------------------------------------------------
+  block_B_ai_perception:
+    description: "KI-Transparenz, Aversion, Modifizierbarkeit"
+
+    Q_M04:
+      text_de: "Wissen Sie, dass die Zinsindikation von einem KI-System berechnet wird?"
+      text_en: "Are you aware that the rate indication is calculated by an AI system?"
+      construct: "AI Awareness / Transparency"
+      10c_dimension: "AWARE"
+      parameter: "A_algo"
+      type: "binary"
+      options: ["Ja", "Nein"]
+      literature:
+        primary: "Dietvorst et al. (2015): Transparency increases trust initially but triggers aversion after errors"
+        secondary: "Castelo & Ward (2019): Task objectivity moderates disclosure effect"
+      analysis_ref: "UBS-GMA-B1, Q_AA1"
+      effect_direction: "Disclosure + objective framing → Appreciation (+0.38); Disclosure + error → Aversion (-0.85)"
+      parameter_ref: "PAR-DIG-001 (beta_PU = 0.49 includes AI perception)"
+      priority: "PFLICHT"
+      experimental_condition: "Factor 1 in 2x2 design (B1: AI disclosed vs. not disclosed)"
+
+    Q_M05:
+      text_de: "Wie wichtig ist es Ihnen zu wissen, ob ein Mensch oder eine KI antwortet?"
+      text_en: "How important is it for you to know whether a human or AI is responding?"
+      construct: "AI Transparency Preference"
+      10c_dimension: "AWARE"
+      type: "7-point_likert"
+      anchors: ["Überhaupt nicht wichtig", "Sehr wichtig"]
+      literature:
+        primary: "Dietvorst et al. (2015): 73% refuse algorithm after seeing it err"
+        secondary: "Jussupow et al. (2020): Performance expectation cluster"
+      analysis_ref: "UBS-GMA-B1, Q_AA2"
+      effect_direction: "Transparency importance ↑ → Aversion risk ↑ (d = 0.85)"
+      expected_mean: "5.2 (above midpoint — Swiss consumers value transparency)"
+      priority: "HOCH"
+
+    Q_M06:
+      text_de: "Würden Sie eine KI-generierte Zinsindikation als Entscheidungsgrundlage nutzen?"
+      text_en: "Would you use an AI-generated rate indication as a basis for your decision?"
+      construct: "Algorithm Usage Willingness"
+      10c_dimension: "READY"
+      parameter: "W_algo"
+      type: "7-point_likert"
+      anchors: ["Auf keinen Fall", "Auf jeden Fall"]
+      literature:
+        primary: "Dietvorst et al. (2018): 32% without modification, 73% with modification"
+        secondary: "Logg et al. (2019): Appreciation for objective tasks (d = 0.40-0.65)"
+        tertiary: "Burton et al. (2020): Aversion strongest with high-stakes personal decisions"
+      analysis_ref: "UBS-GMA-B1, Q_AA3"
+      effect_direction: "W_algo ≈ 0.52-0.73 depending on modification feature (B1)"
+      expected_mean: "4.1-5.1 (above midpoint due to task objectivity, but below 6 due to high stakes)"
+      parameter_ref: "alpha_aversion = 0.68, beta_modification = 0.41"
+      priority: "PFLICHT (Primary DV)"
+
+    Q_M07:
+      text_de: "Wäre es für Sie wichtig, Parameter (z.B. Risikobereitschaft, Laufzeit) selbst anpassen zu können?"
+      text_en: "Would it be important for you to adjust parameters (e.g., risk tolerance, term) yourself?"
+      construct: "Modification Preference"
+      10c_dimension: "HOW"
+      type: "7-point_likert"
+      anchors: ["Überhaupt nicht wichtig", "Sehr wichtig"]
+      literature:
+        primary: "Dietvorst et al. (2018): Modifiability restores algorithm use (+41pp, Cohen's h = 0.85)"
+      analysis_ref: "UBS-GMA-B1, Q_AA4"
+      effect_direction: "Modification preference ↑ → Usage ↑ (+41pp, largest single design lever)"
+      expected_mean: "5.5-6.0 (strong preference expected; THE critical design choice per B1)"
+      parameter_ref: "beta_modification = 0.41 (PAR-DIG-008 via B1)"
+      priority: "PFLICHT"
+      experimental_condition: "Factor 2 in 2x2 design (B1: fixed output vs. adjustable parameters)"
+
+  # -------------------------------------------------------------------------
+  # BLOCK C: TRUST & PERFORMANCE (4 Fragen)
+  # -------------------------------------------------------------------------
+  block_C_trust_performance:
+    description: "Vertrauen, Nützlichkeit, Risiko"
+
+    Q_M08:
+      text_de: "Wie sehr vertrauen Sie UBS bei der Berechnung einer Hypothekar-Zinsindikation?"
+      text_en: "How much do you trust UBS to calculate a mortgage rate indication?"
+      construct: "Institutional Trust (UBS Brand)"
+      10c_dimension: "READY"
+      parameter: "tau_institutional"
+      type: "7-point_likert"
+      anchors: ["Vertraue überhaupt nicht", "Vertraue voll und ganz"]
+      literature:
+        primary: "Kim et al. (2009): Trust (0.38) > PU (0.31) > PEOU (0.14) for mobile banking"
+        secondary: "Gefen et al. (2003): Trust dual-path: direct (0.21) + via PU (0.34)"
+        tertiary: "Mayer et al. (1995): Trust = f(Ability, Benevolence, Integrity)"
+      analysis_ref: "UBS-GMA-A2 (Trust-Kaskade), UBS-GMA-B2"
+      effect_direction: "Trust ↑ → Adoption ↑ (total effect 0.55; DOMINANT predictor per B2)"
+      expected_mean: "5.0-5.5 (UBS brand trust is strong but AI component reduces)"
+      parameter_ref: "PAR-DIG-005 (beta_Trust_direct = 0.21), PAR-DIG-006 (beta_Trust_via_PU = 0.34)"
+      priority: "PFLICHT"
+
+    Q_M09:
+      text_de: "Wie nützlich wäre eine sofortige, indikative Zinsberechnung für Ihre Hypothekarentscheidung?"
+      text_en: "How useful would an immediate, indicative rate calculation be for your mortgage decision?"
+      construct: "Performance Expectancy / Perceived Usefulness"
+      10c_dimension: "WHAT"
+      parameter: "PE"
+      type: "7-point_likert"
+      anchors: ["Überhaupt nicht nützlich", "Äusserst nützlich"]
+      literature:
+        primary: "Davis (1989): PU beta = 0.42-0.66 on Behavioral Intention"
+        secondary: "Venkatesh et al. (2003): PE is strongest UTAUT predictor"
+      analysis_ref: "UBS-GMA-B2"
+      effect_direction: "PE ↑ → Adoption ↑ (beta = 0.32 for mortgage context; Rank 2 after Trust)"
+      expected_mean: "5.5-6.0 (high — 24/7 availability and speed are clear benefits)"
+      parameter_ref: "PAR-DIG-001 (beta_PU = 0.49)"
+      priority: "PFLICHT"
+
+    Q_M10:
+      text_de: "Wie einfach war die Nutzung des KI-Zinsrechners?"
+      text_en: "How easy was it to use the AI rate calculator?"
+      construct: "Effort Expectancy / Perceived Ease of Use"
+      10c_dimension: "AWARE (ability)"
+      parameter: "EE"
+      type: "7-point_likert"
+      anchors: ["Sehr schwierig", "Sehr einfach"]
+      literature:
+        primary: "Davis (1989): PEOU beta = 0.16-0.25"
+        secondary: "Kim et al. (2009): EE = 0.14 for mobile banking (reduced for conversational UI)"
+      analysis_ref: "UBS-GMA-B2"
+      effect_direction: "EE ↑ → Adoption ↑ (beta = 0.14; weakest UTAUT predictor but hygiene factor)"
+      expected_mean: "5.0-5.5 (conversational UI reduces effort, but financial complexity increases it)"
+      parameter_ref: "PAR-DIG-002 (beta_PEOU = 0.20)"
+      priority: "HOCH"
+      note: "Post-usage question; requires GPT interaction before answering"
+
+    Q_M11:
+      text_de: "Wie riskant empfinden Sie es, eine Hypothekarentscheidung auf Basis einer KI-Indikation zu treffen?"
+      text_en: "How risky do you perceive it to make a mortgage decision based on an AI indication?"
+      construct: "Perceived Risk"
+      10c_dimension: "READY (barrier)"
+      parameter: "risk_perceived"
+      type: "7-point_likert"
+      anchors: ["Überhaupt nicht riskant", "Sehr riskant"]
+      literature:
+        primary: "Pavlou (2003): Perceived risk beta = -0.28 on adoption intention"
+        secondary: "Burton et al. (2020): Aversion strongest with high-stakes personal decisions"
+      analysis_ref: "UBS-GMA-B2 (mortgage_specific)"
+      effect_direction: "Risk ↑ → Adoption ↓ (beta = -0.28; high stakes amplify)"
+      expected_mean: "4.5-5.0 (above midpoint — mortgage is high-stakes, personal)"
+      parameter_ref: "PAR-DIG-007 (beta_Risk = -0.28)"
+      priority: "HOCH"
+
+  # -------------------------------------------------------------------------
+  # BLOCK D: SOZIAL & PERSONALISIERUNG (2 Fragen)
+  # -------------------------------------------------------------------------
+  block_D_social_personalization:
+    description: "Soziale Einflüsse und Personalisierungswahrnehmung"
+
+    Q_M12:
+      text_de: "Würde die Empfehlung Ihres UBS-Beraters Ihre Bereitschaft erhöhen, den KI-Zinsrechner zu nutzen?"
+      text_en: "Would your UBS advisor's recommendation increase your willingness to use the AI rate calculator?"
+      construct: "Social Influence (Advisor Endorsement)"
+      10c_dimension: "WHO"
+      parameter: "sigma_SI"
+      type: "7-point_likert"
+      anchors: ["Überhaupt nicht", "Sehr stark"]
+      literature:
+        primary: "Venkatesh et al. (2003): SI beta = 0.18, moderated by age (stronger for 45+)"
+        secondary: "Dietvorst et al. (2018): Highest trust in human-AI combination"
+      analysis_ref: "UBS-GMA-B2 (Social_Influence mapping)"
+      effect_direction: "SI ↑ → Adoption ↑ (beta = 0.18 × age_moderator; critical for 45+ segment)"
+      expected_mean: "4.5 (moderate; advisor endorsement is a proxy for social influence)"
+      parameter_ref: "PAR-DIG-003 (beta_SI = 0.18)"
+      priority: "HOCH"
+      moderator: "Age (stronger effect for traditional_affluent segment, 45-60)"
+
+    Q_M13:
+      text_de: "Wie gut hat der KI-Zinsrechner Ihre persönliche Situation berücksichtigt?"
+      text_en: "How well did the AI rate calculator consider your personal situation?"
+      construct: "Perceived Personalization / Uniqueness Neglect (inverse)"
+      10c_dimension: "WHAT (identity)"
+      parameter: "personalization_perceived"
+      type: "7-point_likert"
+      anchors: ["Überhaupt nicht", "Vollständig"]
+      literature:
+        primary: "Longoni et al. (2019): Uniqueness neglect indirect effect = -0.83 (STRONG)"
+        secondary: "B1: Signal personalization actively (Priority 3)"
+      analysis_ref: "UBS-GMA-B1 (uniqueness_neglect)"
+      effect_direction: "Personalization ↑ → Aversion ↓ (mitigates -0.83 indirect effect)"
+      expected_mean: "3.5-4.5 (risk area — GPT may feel generic; design must signal personalization)"
+      parameter_ref: "delta_uniqueness = -0.83"
+      priority: "PFLICHT"
+      design_critical: true
+      note: "Post-usage question. LOW scores here trigger aversion cascade (Longoni 2019)."
+
+  # -------------------------------------------------------------------------
+  # BLOCK E: HANDLUNGSABSICHT & FOLLOW-UP (2 Fragen)
+  # -------------------------------------------------------------------------
+  block_E_intention:
+    description: "Conversion-Intent und Human-Handoff"
+
+    Q_M14:
+      text_de: "Wie wahrscheinlich ist es, dass Sie nach dieser Indikation einen Beratungstermin bei UBS vereinbaren?"
+      text_en: "How likely are you to schedule a consultation with UBS after this indication?"
+      construct: "Behavioral Intention / Lead Conversion"
+      10c_dimension: "STAGE (transition)"
+      type: "7-point_likert"
+      anchors: ["Sehr unwahrscheinlich", "Sehr wahrscheinlich"]
+      literature:
+        primary: "Venkatesh et al. (2003): Behavioral Intention as primary DV in UTAUT"
+        secondary: "A1 Journey: C_GPT_to_RM conversion rate estimated 8-15%"
+      analysis_ref: "ANA-UBS-GM-A1-JOURNEY (conversion)"
+      effect_direction: "This IS the primary outcome measure"
+      expected_mean: "3.5-4.5 (conversion intent; 8-15% will score 6-7)"
+      priority: "PFLICHT (Secondary DV)"
+
+    Q_M15:
+      text_de: "Möchten Sie diese Indikation mit einem Berater besprechen?"
+      text_en: "Would you like to discuss this indication with an advisor?"
+      construct: "Human Handoff Preference / AI-Human Complementarity"
+      10c_dimension: "HOW"
+      parameter: "gamma_ai_human"
+      type: "binary_plus"
+      options: ["Ja, sofort Termin vereinbaren", "Ja, aber später", "Nein, Indikation reicht", "Nein, anderer Anbieter"]
+      literature:
+        primary: "Dietvorst et al. (2018): Highest trust in human-AI combination"
+        secondary: "Prahl & Van Swol (2017): Reliance vs compliance framework"
+        tertiary: "B1: Position GPT as complement, not replacement (gamma_ai_human = 0.35)"
+      analysis_ref: "UBS-GMA-B1 (HOW mapping)"
+      effect_direction: "Complementarity framing → higher overall adoption (gamma = 0.35)"
+      priority: "PFLICHT"
+      note: "Direct conversion CTA. This question IS the lead generation mechanism."
+
+# =============================================================================
+# 2. TRAVEL-eSIM — SURVEY-FRAGEN (~11 Kernfragen)
+# =============================================================================
+
+esim_survey:
+
+  # -------------------------------------------------------------------------
+  # BLOCK F: REISEVERHALTEN & KONTEXT (2 Fragen)
+  # -------------------------------------------------------------------------
+  block_F_travel_context:
+    description: "Reiseverhalten und eSIM-Relevanz"
+
+    Q_E01:
+      text_de: "Wie oft reisen Sie pro Jahr ausserhalb der 'Roam-like-home'-Zone (EU/EWR)?"
+      text_en: "How often do you travel outside the 'Roam-like-home' zone per year?"
+      construct: "Travel Frequency / Need Intensity"
+      10c_dimension: "WHEN (frequency)"
+      type: "single_choice"
+      options: ["Nie", "1x pro Jahr", "2-3x pro Jahr", "4+ Mal pro Jahr"]
+      literature: "A1-eSIM: Target = Swiss retail customers traveling 1-2x/year outside Roam-like-home zones"
+      analysis_ref: "UBS-GMA-A1-eSIM"
+      effect_direction: "Frequency ↑ → Price Value ↑ → Adoption ↑ (B2: PV beta = 0.28)"
+      priority: "PFLICHT (Segmentation)"
+      note: "Filters out non-travelers (Nie = screen-out or separate analysis)"
+
+    Q_E02:
+      text_de: "Wie lösen Sie heute Ihr Daten-/Roaming-Problem im Ausland?"
+      text_en: "How do you currently solve your data/roaming problem abroad?"
+      construct: "Current Solution / Competitive Reference"
+      10c_dimension: "STAGE (status quo)"
+      type: "multiple_choice"
+      options: ["Roaming meines Anbieters", "Lokale SIM-Karte kaufen", "eSIM-Anbieter (z.B. Airalo, Holafly)", "WiFi suchen", "Nichts, verzichte auf Daten", "Andere"]
+      literature: "B2: Habit (beta=0.26) — existing behavior predicts new adoption"
+      analysis_ref: "UBS-GMA-B2 (esim_adoption)"
+      effect_direction: "eSIM experience ↑ → Adoption ↑ (habit transfer); Roaming pain ↑ → PV ↑"
+      priority: "PFLICHT"
+
+  # -------------------------------------------------------------------------
+  # BLOCK G: BRAND FIT & TRUST (3 Fragen)
+  # -------------------------------------------------------------------------
+  block_G_brand_fit:
+    description: "Markenpassung und Vertrauen für Bankprodukt im Telco-Bereich"
+
+    Q_E03:
+      text_de: "Es passt gut, dass UBS einen eSIM-Reisedatenservice anbietet."
+      text_en: "It is a good fit for UBS to offer an eSIM travel data service."
+      construct: "Perceived Brand Extension Fit"
+      10c_dimension: "WHAT (brand utility)"
+      parameter: "BFS"
+      type: "7-point_likert"
+      anchors: ["Stimme überhaupt nicht zu", "Stimme voll und ganz zu"]
+      literature:
+        primary: "Voelckner & Sattler (2006): Fit is STRONGEST predictor (beta=0.41)"
+        secondary: "Aaker & Keller (1990): Extension evaluation = f(quality, fit, difficulty)"
+        tertiary: "Monga & John (2010): Analytic thinkers (Swiss) are stricter on fit"
+      analysis_ref: "UBS-GMA-B3 (BFS analysis)"
+      effect_direction: "Fit ↑ → Adoption ↑ (beta = 0.41; MOST IMPORTANT predictor for eSIM)"
+      expected_mean: "3.8-4.5 (below midpoint risk — base BFS = 0.405, below Swiss threshold 0.47)"
+      parameter_ref: "PAR-BX-001 (beta_Fit = 0.41)"
+      priority: "PFLICHT (Critical metric — determines go/no-go)"
+      design_critical: true
+      note: |
+        THIS is the question A1-eSIM identified as MISSING from original survey.
+        If mean < 3.5 (7-point) → fundamental acceptance problem.
+        If mean 3.5-4.5 → fit enhancement strategy required (B3).
+        If mean > 4.5 → green light for extension.
+
+    Q_E04:
+      text_de: "Ich kann mir vorstellen, dass UBS einen guten Reise-Datenservice liefern kann."
+      text_en: "I can imagine that UBS can deliver a good travel data service."
+      construct: "Brand Conviction / Competence Transfer"
+      10c_dimension: "READY (ability perception)"
+      parameter: "brand_conviction"
+      type: "7-point_likert"
+      anchors: ["Stimme überhaupt nicht zu", "Stimme voll und ganz zu"]
+      literature:
+        primary: "Voelckner & Sattler (2006): Brand Conviction beta = 0.36 (Rank 2)"
+        secondary: "Broniarczyk & Alba (1994): Specific associations > general attitude"
+      analysis_ref: "UBS-GMA-B3"
+      effect_direction: "Brand Conviction ↑ → Extension Success ↑ (beta = 0.36)"
+      expected_mean: "4.0-4.8 (moderate — UBS competence in banking acknowledged, telco uncertain)"
+      parameter_ref: "PAR-BX-002 (beta_Conviction = 0.36)"
+      priority: "HOCH"
+
+    Q_E05:
+      text_de: "Wie sehr vertrauen Sie UBS, Ihre persönlichen Reise-Daten sicher zu verwalten?"
+      text_en: "How much do you trust UBS to securely manage your personal travel data?"
+      construct: "Data Trust / Privacy Concern"
+      10c_dimension: "READY (trust)"
+      type: "7-point_likert"
+      anchors: ["Vertraue überhaupt nicht", "Vertraue voll und ganz"]
+      literature:
+        primary: "Gefen et al. (2003): Trust→Intention direct = 0.21"
+        secondary: "B3: Trust_esim = Trust_UBS × BFS_adjustment (0.405)"
+        tertiary: "G2 Benchmark: 58% Swiss fear data misused for AI (EY 2025)"
+      analysis_ref: "UBS-GMA-B2 (Trust construct), UBS-GMA-B3"
+      effect_direction: "Trust ↑ → Adoption ↑ (total effect 0.55 per B2; but reduced for non-core service)"
+      expected_mean: "4.5-5.5 (UBS brand trust transfers partially; data security is UBS strength)"
+      priority: "HOCH"
+
+  # -------------------------------------------------------------------------
+  # BLOCK H: NUTZEN & PREIS (3 Fragen)
+  # -------------------------------------------------------------------------
+  block_H_value:
+    description: "Preiswahrnehmung, Nützlichkeit, Convenience"
+
+    Q_E06:
+      text_de: "Wie viel würden Sie maximal für einen Tages-Datenpass (1GB) im Ausland bezahlen?"
+      text_en: "What is the maximum you would pay for a daily data pass (1GB) abroad?"
+      construct: "Willingness to Pay / Price Value"
+      10c_dimension: "WHAT (financial utility)"
+      parameter: "U_PV"
+      type: "single_choice"
+      options: ["CHF 0-2", "CHF 2-5", "CHF 5-8", "CHF 8-12", "CHF 12+", "Keine Angabe"]
+      literature:
+        primary: "Venkatesh et al. (2012): Price Value beta = 0.18 in UTAUT2"
+        secondary: "B2: Price Value is Rank 1 driver for eSIM adoption (beta = 0.28)"
+      analysis_ref: "UBS-GMA-B2 (esim_adoption)"
+      effect_direction: "Price Value ↑ (savings vs roaming) → Adoption ↑ (PRIMARY driver, beta = 0.28)"
+      expected_mean: "CHF 5-8 modal (competitive with Airalo ~CHF 4-7/day for 1GB)"
+      priority: "PFLICHT"
+      note: "Compare response distribution with actual UBS pricing to assess PV fit."
+
+    Q_E07:
+      text_de: "Wie nützlich wäre es, Ihre Reise-Daten direkt in der UBS Mobile Banking App zu verwalten?"
+      text_en: "How useful would it be to manage your travel data directly in the UBS Mobile Banking app?"
+      construct: "Performance Expectancy (In-App Integration)"
+      10c_dimension: "WHAT (functional utility)"
+      parameter: "PE_esim"
+      type: "7-point_likert"
+      anchors: ["Überhaupt nicht nützlich", "Äusserst nützlich"]
+      literature:
+        primary: "Venkatesh et al. (2003): PE is strongest UTAUT predictor"
+        secondary: "B2: Pilot (landing page) vs Final (in-app) modifier = 0.75 vs 1.0"
+      analysis_ref: "UBS-GMA-B2 (pilot_vs_final_differences)"
+      effect_direction: "PE ↑ → Adoption ↑ (beta = 0.22 for eSIM; in-app adds habit bonus +0.26)"
+      expected_mean: "5.0-5.5 (high convenience value, but only relevant for existing UBS app users)"
+      priority: "HOCH"
+      note: |
+        CRITICAL for pilot-to-final projection: If PE_in_app >> PE_landing_page,
+        this validates the B2 adoption modifier (1.33× from pilot to final).
+
+    Q_E08:
+      text_de: "Wie wichtig ist Ihnen, Roaming-Kosten im Ausland zu sparen?"
+      text_en: "How important is it for you to save on roaming costs abroad?"
+      construct: "Cost Saving Motivation / Pain Point"
+      10c_dimension: "WHAT (financial utility)"
+      type: "7-point_likert"
+      anchors: ["Überhaupt nicht wichtig", "Äusserst wichtig"]
+      literature:
+        primary: "B2: Price Value is PRIMARY driver for eSIM adoption (Rank 1, beta = 0.28)"
+      analysis_ref: "UBS-GMA-B2"
+      effect_direction: "Cost motivation ↑ → PV ↑ → Adoption ↑"
+      expected_mean: "5.5-6.0 (high — roaming costs are a known pain point for Swiss travelers)"
+      priority: "HOCH"
+
+  # -------------------------------------------------------------------------
+  # BLOCK I: NUTZUNGSBEREITSCHAFT & ADOPTION (3 Fragen)
+  # -------------------------------------------------------------------------
+  block_I_adoption:
+    description: "Nutzungsabsicht, App-Nutzung, Weiterempfehlung"
+
+    Q_E09:
+      text_de: "Wie wahrscheinlich ist es, dass Sie den UBS eSIM-Service bei Ihrer nächsten Reise nutzen würden?"
+      text_en: "How likely would you be to use the UBS eSIM service on your next trip?"
+      construct: "Behavioral Intention / Adoption"
+      10c_dimension: "READY (willingness)"
+      type: "7-point_likert"
+      anchors: ["Sehr unwahrscheinlich", "Sehr wahrscheinlich"]
+      literature:
+        primary: "Venkatesh et al. (2003): BI as primary DV in UTAUT"
+        secondary: "B3: BFS composite 0.87 indicates SUCCESS ZONE"
+      analysis_ref: "UBS-GMA-B2, UBS-GMA-B3"
+      effect_direction: "This IS the primary outcome measure for eSIM"
+      expected_mean: "4.0-4.8 (moderate-positive; fit concern dampens otherwise high interest)"
+      priority: "PFLICHT (Primary DV)"
+
+    Q_E10:
+      text_de: "Wie häufig nutzen Sie die UBS Mobile Banking App?"
+      text_en: "How frequently do you use the UBS Mobile Banking app?"
+      construct: "Habit / App Usage Frequency"
+      10c_dimension: "STAGE (behavioral inertia)"
+      parameter: "phi_habit"
+      type: "single_choice"
+      options: ["Täglich", "Mehrmals pro Woche", "Wöchentlich", "Monatlich", "Selten/Nie", "Bin nicht UBS-Kunde"]
+      literature:
+        primary: "Venkatesh et al. (2012): Habit beta = 0.26 (strongest new UTAUT2 predictor)"
+        secondary: "B2: Habit bonus for in-app = +0.26; for landing page = 0.0"
+      analysis_ref: "UBS-GMA-B2 (Habit mapping)"
+      effect_direction: "Habit ↑ → eSIM adoption ↑ (beta = 0.26; Rank 2 driver per B2)"
+      expected_mean: "Bimodal: heavy users (daily/weekly) vs non-UBS"
+      parameter_ref: "PAR-DIG-004 (beta_Habit = 0.26)"
+      priority: "PFLICHT (Key moderator)"
+      note: |
+        Segments: Daily/weekly UBS app users → high eSIM adoption (habit transfer).
+        Selten/Nie → low adoption (no habit bonus, no trust transfer).
+
+    Q_E11:
+      text_de: "Würden Sie den UBS eSIM-Service Ihrem Reise-Umfeld weiterempfehlen?"
+      text_en: "Would you recommend the UBS eSIM service to your travel circle?"
+      construct: "Net Promoter Score Proxy / Word of Mouth"
+      10c_dimension: "WHO (social spread)"
+      type: "7-point_likert"
+      anchors: ["Auf keinen Fall", "Auf jeden Fall"]
+      literature:
+        primary: "Venkatesh et al. (2003): SI beta = 0.18; peer recommendation amplifies adoption"
+        secondary: "B3: Testimonial strategy expected +0.03 BFS increase"
+      analysis_ref: "UBS-GMA-B3 (testimonial_strategy)"
+      effect_direction: "WOM ↑ → Social Proof ↑ → Adoption by others ↑ (network effect)"
+      expected_mean: "4.0-4.8 (moderate; depends on brand fit perception)"
+      priority: "HOCH"
+
+# =============================================================================
+# 3. CROSS-SURVEY KONSTRUKT-MATRIX
+# =============================================================================
+# Welche Konstrukte werden in BEIDEN Surveys gemessen?
+# =============================================================================
+
+cross_survey_matrix:
+  shared_constructs:
+    - construct: "Trust"
+      mortgage_question: "Q_M08"
+      esim_question: "Q_E05"
+      comparability: "HIGH — same scale, different domain"
+      literature: "Gefen et al. (2003), Kim et al. (2009)"
+
+    - construct: "Performance Expectancy"
+      mortgage_question: "Q_M09"
+      esim_question: "Q_E07"
+      comparability: "MEDIUM — different functional benefits"
+      literature: "Venkatesh et al. (2003, 2012)"
+
+    - construct: "Behavioral Intention"
+      mortgage_question: "Q_M14"
+      esim_question: "Q_E09"
+      comparability: "HIGH — same Likert scale"
+      literature: "Venkatesh et al. (2003)"
+
+  mortgage_only_constructs:
+    - construct: "Algorithm Aversion/Appreciation"
+      questions: ["Q_M04", "Q_M05", "Q_M06", "Q_M07"]
+      literature: "Dietvorst (2015, 2018), Logg (2019)"
+
+    - construct: "Perceived Risk"
+      questions: ["Q_M11"]
+      literature: "Pavlou (2003)"
+
+    - construct: "Uniqueness Neglect"
+      questions: ["Q_M13"]
+      literature: "Longoni et al. (2019)"
+
+  esim_only_constructs:
+    - construct: "Brand Extension Fit"
+      questions: ["Q_E03", "Q_E04"]
+      literature: "Voelckner & Sattler (2006), Aaker & Keller (1990)"
+
+    - construct: "Price Value"
+      questions: ["Q_E06", "Q_E08"]
+      literature: "Venkatesh et al. (2012)"
+
+    - construct: "Habit (App Usage)"
+      questions: ["Q_E10"]
+      literature: "Venkatesh et al. (2012)"
+
+# =============================================================================
+# 4. EXPERIMENTAL DESIGN INTEGRATION
+# =============================================================================
+
+experimental_design:
+  mortgage_gpt:
+    design: "2x2 between-subjects"
+    factor_1:
+      name: "AI Disclosure"
+      levels: ["disclosed", "not_disclosed"]
+      manipulation: "GPT identifies as AI vs. no identification"
+      relevant_questions: ["Q_M04", "Q_M05"]
+    factor_2:
+      name: "Modifiability"
+      levels: ["fixed_output", "adjustable_parameters"]
+      manipulation: "User can adjust risk/term/LTV vs. fixed recommendation"
+      relevant_questions: ["Q_M07"]
+    primary_dv: "Q_M06 (Algorithm Usage Willingness)"
+    secondary_dvs: ["Q_M08 (Trust)", "Q_M13 (Personalization)", "Q_M14 (Conversion Intent)"]
+    expected_pattern: |
+      Modifiable + Disclosed: HIGHEST adoption (73% from Dietvorst 2018)
+      Modifiable + Not Disclosed: HIGH adoption (benefit of modifiability without aversion trigger)
+      Fixed + Disclosed: LOWEST adoption (32% from Dietvorst 2018; aversion without mitigation)
+      Fixed + Not Disclosed: MODERATE adoption (no aversion trigger, but no modification benefit)
+    sample_per_cell: "n ≥ 50 (total N ≥ 200 for 2x2)"
+    source: "UBS-GMA-B1 (survey_design_recommendations)"
+
+  esim:
+    design: "Single-group with moderator analysis"
+    moderators:
+      - "Travel frequency (Q_E01)"
+      - "UBS app usage / Habit (Q_E10)"
+      - "Current roaming solution (Q_E02)"
+    primary_dv: "Q_E09 (Adoption Intention)"
+    secondary_dvs: ["Q_E03 (Brand Fit)", "Q_E06 (WTP)", "Q_E11 (WOM)"]
+    note: |
+      No between-subjects manipulation for eSIM — the product is fixed.
+      Instead, moderator analysis identifies which segments adopt and why.
+      Key hypothesis: App users (Q_E10 = daily/weekly) adopt 1.33× faster than
+      non-app-users (B2 pilot_vs_final modifier).
+
+# =============================================================================
+# 5. FRAGE-PRIORISIERUNG NACH KANAL
+# =============================================================================
+
+channel_prioritization:
+  description: |
+    Nicht alle Kanäle erlauben alle 15 Mortgage-Fragen.
+    A3 definiert kanal-spezifische Limits.
+
+  mortgage_channels:
+    website:
+      max_questions: 15
+      include: "ALL (Q_M01-Q_M15)"
+      reason: "Self-paced, deliberate, full attention budget"
+
+    app:
+      max_questions: 10
+      include: ["Q_M01", "Q_M02", "Q_M04", "Q_M06", "Q_M07", "Q_M08", "Q_M09", "Q_M13", "Q_M14", "Q_M15"]
+      exclude: ["Q_M03", "Q_M05", "Q_M10", "Q_M11", "Q_M12"]
+      reason: "Micro-moments, bereits Kunde (skip known info), kürzere Attention"
+
+    marketplace:
+      max_questions: 8
+      include: ["Q_M01", "Q_M04", "Q_M06", "Q_M08", "Q_M09", "Q_M13", "Q_M14", "Q_M15"]
+      exclude: ["Q_M02", "Q_M03", "Q_M05", "Q_M07", "Q_M10", "Q_M11", "Q_M12"]
+      reason: "Niedrigster Trust, höchste Skepsis, Attention-Budget minimal (A3)"
+
+    partner:
+      max_questions: 12
+      include: ["Q_M01", "Q_M02", "Q_M04", "Q_M06", "Q_M07", "Q_M08", "Q_M09", "Q_M10", "Q_M11", "Q_M13", "Q_M14", "Q_M15"]
+      exclude: ["Q_M03", "Q_M05", "Q_M12"]
+      reason: "Hohe Intent, geteiltes Branding, intent-level-Frage ergänzt"
+
+    social:
+      max_questions: 5
+      include: ["Q_M01", "Q_M06", "Q_M09", "Q_M14", "Q_M15"]
+      exclude: ["Q_M02", "Q_M03", "Q_M04", "Q_M05", "Q_M07", "Q_M08", "Q_M10", "Q_M11", "Q_M12", "Q_M13"]
+      reason: "Niedrigste Attention, Scroll-Kontext (A3: max 5 Einstiegsfragen)"

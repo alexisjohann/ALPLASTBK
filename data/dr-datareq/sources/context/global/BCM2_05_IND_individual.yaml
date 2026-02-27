@@ -1,0 +1,659 @@
+# BCM2_05_IND: Individual Context
+# Evidence-Based Framework - Behavioral Change Model
+# Version: 1.0 | Created: 2026-01-25
+
+metadata:
+  name: "Individual Context"
+  code: "BCM2_05_IND"
+  version: "1.0"
+  last_updated: "2026-01-25"
+  total_factors: 48
+  sub_axes: 6
+  scope: "global"
+  description: >
+    Individuelle Kontextfaktoren für verhaltensökonomische Parametrisierung.
+    Modifiziert Basis-Parameter (λ, β, δ, A) basierend auf persönlichen Merkmalen.
+
+  hierarchy_position: 4
+  hierarchy:
+    1: "MACRO (Land/Markt)"
+    2: "MESO (Branche/Kunde)"
+    3: "MICRO (Situation)"
+    4: "INDIVIDUAL (Person)"  # ← Diese Ebene
+
+  bcm_coupling:
+    primary: "BCM2_04_KON"  # Kontext
+    secondary: "BCM2_03_IDN"  # Identität
+
+  ebf_integration:
+    modifies:
+      - parameter: "λ"
+        description: "Loss Aversion"
+        baseline: 2.25
+      - parameter: "β"
+        description: "Present Bias / Time Discounting"
+        baseline: 0.95
+      - parameter: "δ"
+        description: "Long-term Discount Factor"
+        baseline: 0.99
+      - parameter: "A"
+        description: "Awareness"
+        baseline: 0.70
+      - parameter: "σ"
+        description: "Social Norm Sensitivity"
+        baseline: 0.60
+
+# =============================================================================
+# SUB-AXIS: DEM - Demografische Faktoren
+# =============================================================================
+DEM:
+  name: "Demografische Faktoren"
+  description: "Alters-, Geschlechts- und Bildungseffekte auf Verhaltensparameter"
+
+  factors:
+    - id: IND-DEM-01
+      name: "Age Effect on Loss Aversion"
+      definition: "Ältere Personen zeigen höhere Verlustaversion"
+      parameter: "λ"
+      modifier: "λ × (1 + 0.008 × max(0, age - 40))"
+      evidence:
+        - "Älter als 40: +0.8% λ pro Jahr"
+        - "65-jährig: λ × 1.20"
+        - "80-jährig: λ × 1.32"
+      reference: "mather2006aging"
+      uncertainty: "mittel"
+
+    - id: IND-DEM-02
+      name: "Age Effect on Time Discounting"
+      definition: "Ältere Personen zeigen mehr Geduld (höheres β)"
+      parameter: "β"
+      modifier: "β + 0.002 × max(0, age - 25)"
+      evidence:
+        - "25-jährig: β = 0.95 (Baseline)"
+        - "65-jährig: β = 1.03 (effektiv gekappt bei 1.0)"
+      reference: "green1994temporal"
+      uncertainty: "gering"
+
+    - id: IND-DEM-03
+      name: "Gender Effect on Risk Taking"
+      definition: "Frauen zeigen im Durchschnitt höhere Risikoaversion"
+      parameter: "λ"
+      modifier:
+        female: "λ × 1.15"
+        male: "λ × 1.00"
+        other: "λ × 1.05"
+      evidence:
+        - "Meta-Analyse: d = 0.13 (kleine Effektstärke)"
+        - "Kontextabhängig: Finanzentscheidungen > Gesundheit"
+      reference: "byrnes1999gender"
+      uncertainty: "mittel"
+      note: "Effekt variiert stark nach Kontext und Kultur"
+
+    - id: IND-DEM-04
+      name: "Education Effect on Financial Literacy"
+      definition: "Höhere Bildung korreliert mit besserer Financial Literacy"
+      parameter: "A"
+      modifier:
+        no_degree: "A × 0.70"
+        high_school: "A × 0.85"
+        bachelor: "A × 1.00"
+        master_phd: "A × 1.10"
+      reference: "lusardi2014economic"
+      uncertainty: "gering"
+
+    - id: IND-DEM-05
+      name: "Income Effect on Present Bias"
+      definition: "Niedrigeres Einkommen korreliert mit höherem Present Bias"
+      parameter: "β"
+      modifier:
+        low_income: "β × 0.90"
+        middle_income: "β × 1.00"
+        high_income: "β × 1.05"
+      evidence:
+        - "Scarcity mindset reduziert Zukunftsorientierung"
+        - "Bandwidth tax durch finanzielle Sorgen"
+      reference: "PAP-mullainathan2013scarcity"
+      uncertainty: "mittel"
+
+    - id: IND-DEM-06
+      name: "Urbanity Effect"
+      definition: "Stadt vs. Land Unterschiede in Sozialverhalten"
+      parameter: "σ"
+      modifier:
+        rural: "σ × 1.15"
+        suburban: "σ × 1.00"
+        urban: "σ × 0.90"
+      evidence:
+        - "Höhere Anonymität in Städten"
+        - "Stärkere soziale Kontrolle in ländlichen Gebieten"
+      uncertainty: "mittel"
+
+    - id: IND-DEM-07
+      name: "Family Status Effect"
+      definition: "Elternschaft erhöht Zeithorizont und Risikoaversion"
+      parameter: "δ"
+      modifier:
+        no_children: "δ × 1.00"
+        with_children: "δ × 1.03"
+      evidence:
+        - "Intergenerationelle Perspektive"
+        - "Legacy concerns"
+      uncertainty: "mittel"
+
+    - id: IND-DEM-08
+      name: "Migration Background"
+      definition: "Migrationshintergrund beeinflusst institutionelles Vertrauen"
+      parameter: "trust_institutions"
+      modifier:
+        native: "trust × 1.00"
+        second_generation: "trust × 0.95"
+        first_generation: "trust × 0.85"
+      note: "Stark abhängig von Herkunfts- und Zielland"
+      uncertainty: "hoch"
+
+# =============================================================================
+# SUB-AXIS: PSY - Psychografische Faktoren
+# =============================================================================
+PSY:
+  name: "Psychografische Faktoren"
+  description: "Persönlichkeitsmerkmale und psychologische Dispositionen"
+
+  factors:
+    - id: IND-PSY-01
+      name: "Baseline Risk Aversion"
+      definition: "Individuelle Risikopräferenz (Trait)"
+      parameter: "λ"
+      measurement: "Lottery choice tasks, DOSPERT scale"
+      range: [1.0, 4.0]
+      default: 2.25
+      distribution: "Log-normal, μ=0.81, σ=0.43"
+      reference: "fehr2022economics"
+      uncertainty: "gering"
+
+    - id: IND-PSY-02
+      name: "Time Preference (Trait)"
+      definition: "Individuelle Zeitpräferenz"
+      parameter: "β"
+      measurement: "Intertemporal choice tasks"
+      range: [0.5, 1.0]
+      default: 0.95
+      reference: "frederick2002time"
+      uncertainty: "gering"
+
+    - id: IND-PSY-03
+      name: "Big Five: Conscientiousness"
+      definition: "Gewissenhaftigkeit korreliert mit Selbstkontrolle"
+      parameter: "β"
+      modifier:
+        low: "β × 0.92"
+        medium: "β × 1.00"
+        high: "β × 1.06"
+      reference: "deyoung2010facets"
+      uncertainty: "mittel"
+
+    - id: IND-PSY-04
+      name: "Big Five: Neuroticism"
+      definition: "Neurotizismus erhöht Verlustaversion"
+      parameter: "λ"
+      modifier:
+        low: "λ × 0.90"
+        medium: "λ × 1.00"
+        high: "λ × 1.15"
+      reference: "lauriola2001personality"
+      uncertainty: "mittel"
+
+    - id: IND-PSY-05
+      name: "Big Five: Extraversion"
+      definition: "Extraversion erhöht soziale Norm-Sensitivität"
+      parameter: "σ"
+      modifier:
+        low: "σ × 0.85"
+        medium: "σ × 1.00"
+        high: "σ × 1.15"
+      uncertainty: "mittel"
+
+    - id: IND-PSY-06
+      name: "Big Five: Openness"
+      definition: "Offenheit korreliert mit Informationssuche"
+      parameter: "A"
+      modifier:
+        low: "A × 0.90"
+        medium: "A × 1.00"
+        high: "A × 1.10"
+      uncertainty: "mittel"
+
+    - id: IND-PSY-07
+      name: "Big Five: Agreeableness"
+      definition: "Verträglichkeit erhöht Kooperationsbereitschaft"
+      parameter: "cooperation_weight"
+      modifier:
+        low: "coop × 0.85"
+        medium: "coop × 1.00"
+        high: "coop × 1.20"
+      uncertainty: "mittel"
+
+    - id: IND-PSY-08
+      name: "Regulatory Focus: Prevention vs. Promotion"
+      definition: "Prevention Focus erhöht Verlustaversion"
+      parameter: "λ"
+      modifier:
+        promotion: "λ × 0.85"
+        neutral: "λ × 1.00"
+        prevention: "λ × 1.20"
+      reference: "higgins1997beyond"
+      uncertainty: "gering"
+
+    - id: IND-PSY-09
+      name: "Locus of Control"
+      definition: "Internaler LoC erhöht Selbstwirksamkeit und Handlungsbereitschaft"
+      parameter: "action_probability"
+      modifier:
+        external: "P × 0.80"
+        neutral: "P × 1.00"
+        internal: "P × 1.15"
+      reference: "rotter1966generalized"
+      uncertainty: "mittel"
+
+    - id: IND-PSY-10
+      name: "Need for Cognition"
+      definition: "Hoher NFC führt zu mehr deliberativem Denken"
+      parameter: "system2_weight"
+      modifier:
+        low: "S2 × 0.80"
+        medium: "S2 × 1.00"
+        high: "S2 × 1.25"
+      reference: "cacioppo1982need"
+      uncertainty: "gering"
+
+# =============================================================================
+# SUB-AXIS: EXP - Erfahrung & Expertise
+# =============================================================================
+EXP:
+  name: "Erfahrung & Expertise"
+  description: "Domain-spezifisches Wissen und Erfahrung"
+
+  factors:
+    - id: IND-EXP-01
+      name: "Financial Literacy Level"
+      definition: "Verständnis von Finanzkonzepten"
+      parameter: "A"
+      measurement: "Lusardi-Mitchell 3-Question Test"
+      modifier:
+        low_0_1: "A × 0.60"
+        medium_2: "A × 0.85"
+        high_3: "A × 1.10"
+      reference: "lusardi2011financial"
+      uncertainty: "gering"
+
+    - id: IND-EXP-02
+      name: "Domain Expertise"
+      definition: "Erfahrung im spezifischen Entscheidungsbereich"
+      parameter: "A"
+      modifier:
+        novice: "A × 0.70"
+        intermediate: "A × 1.00"
+        expert: "A × 1.20"
+      note: "Domain-spezifisch anzuwenden"
+      uncertainty: "mittel"
+
+    - id: IND-EXP-03
+      name: "Past Experience with Similar Decisions"
+      definition: "Frühere Erfahrungen mit ähnlichen Entscheidungen"
+      parameter: "confidence"
+      modifier:
+        no_experience: "conf × 0.80"
+        some_experience: "conf × 1.00"
+        extensive_experience: "conf × 1.15"
+      note: "Kann zu Overconfidence führen"
+      uncertainty: "hoch"
+
+    - id: IND-EXP-04
+      name: "Negative Past Experience"
+      definition: "Schlechte Erfahrungen erhöhen Risikoaversion"
+      parameter: "λ"
+      modifier:
+        no_negative: "λ × 1.00"
+        some_negative: "λ × 1.15"
+        severe_negative: "λ × 1.35"
+      evidence:
+        - "Once bitten, twice shy"
+        - "Trauma-induzierte Risikovermeidung"
+      uncertainty: "mittel"
+
+    - id: IND-EXP-05
+      name: "Digital Literacy"
+      definition: "Kompetenz im Umgang mit digitalen Tools"
+      parameter: "digital_channel_effectiveness"
+      modifier:
+        low: "eff × 0.60"
+        medium: "eff × 1.00"
+        high: "eff × 1.20"
+      uncertainty: "gering"
+
+    - id: IND-EXP-06
+      name: "Health Literacy"
+      definition: "Verständnis von Gesundheitsinformationen"
+      parameter: "A_health"
+      modifier:
+        low: "A × 0.65"
+        medium: "A × 1.00"
+        high: "A × 1.15"
+      reference: "berkman2011health"
+      uncertainty: "gering"
+
+# =============================================================================
+# SUB-AXIS: STA - Aktueller Zustand (State)
+# =============================================================================
+STA:
+  name: "Aktueller Zustand"
+  description: "Momentaner psychophysischer Zustand der Person"
+
+  factors:
+    - id: IND-STA-01
+      name: "Cognitive Load"
+      definition: "Aktuelle kognitive Belastung"
+      parameter: "system2_capacity"
+      modifier:
+        low: "S2 × 1.20"
+        medium: "S2 × 1.00"
+        high: "S2 × 0.60"
+      evidence:
+        - "Ego Depletion reduziert Selbstkontrolle"
+        - "Cognitive Load erhöht System 1 Nutzung"
+      reference: "baumeister2007strength"
+      uncertainty: "gering"
+
+    - id: IND-STA-02
+      name: "Emotional State: Stress"
+      definition: "Akutes Stressniveau"
+      parameter: "λ"
+      modifier:
+        relaxed: "λ × 0.90"
+        normal: "λ × 1.00"
+        stressed: "λ × 1.25"
+        highly_stressed: "λ × 1.50"
+      reference: "porcelli2009acute"
+      uncertainty: "gering"
+
+    - id: IND-STA-03
+      name: "Emotional State: Mood"
+      definition: "Aktuelle Stimmung"
+      parameter: "risk_taking"
+      modifier:
+        negative: "risk × 0.85"
+        neutral: "risk × 1.00"
+        positive: "risk × 1.15"
+      evidence:
+        - "Gute Stimmung erhöht Risikobereitschaft"
+        - "Affect Heuristic"
+      reference: "isen1987positive"
+      uncertainty: "mittel"
+
+    - id: IND-STA-04
+      name: "Fatigue Level"
+      definition: "Müdigkeit und Erschöpfung"
+      parameter: "β"
+      modifier:
+        alert: "β × 1.05"
+        normal: "β × 1.00"
+        tired: "β × 0.90"
+        exhausted: "β × 0.75"
+      evidence:
+        - "Müdigkeit erhöht Present Bias"
+        - "Selbstkontrolle als erschöpfbare Ressource"
+      uncertainty: "gering"
+
+    - id: IND-STA-05
+      name: "Hunger State"
+      definition: "Hunger beeinflusst Zeitpräferenz"
+      parameter: "β"
+      modifier:
+        satiated: "β × 1.05"
+        normal: "β × 1.00"
+        hungry: "β × 0.85"
+      reference: "read2001time"
+      uncertainty: "mittel"
+
+    - id: IND-STA-06
+      name: "Time Pressure"
+      definition: "Aktueller Zeitdruck"
+      parameter: "system2_usage"
+      modifier:
+        no_pressure: "S2 × 1.10"
+        some_pressure: "S2 × 1.00"
+        high_pressure: "S2 × 0.70"
+        extreme_pressure: "S2 × 0.40"
+      evidence:
+        - "Zeitdruck führt zu Heuristik-Nutzung"
+        - "Satisficing statt Maximizing"
+      uncertainty: "gering"
+
+    - id: IND-STA-07
+      name: "Information Overload"
+      definition: "Überforderung durch Informationsmenge"
+      parameter: "decision_quality"
+      modifier:
+        optimal: "qual × 1.10"
+        manageable: "qual × 1.00"
+        overloaded: "qual × 0.70"
+      reference: "iyengar2000choice"
+      uncertainty: "gering"
+
+    - id: IND-STA-08
+      name: "Social Presence"
+      definition: "Anwesenheit anderer Personen"
+      parameter: "σ"
+      modifier:
+        alone: "σ × 0.70"
+        strangers: "σ × 1.00"
+        peers: "σ × 1.30"
+        authority: "σ × 1.50"
+      uncertainty: "gering"
+
+# =============================================================================
+# SUB-AXIS: MOT - Motivation & Ziele
+# =============================================================================
+MOT:
+  name: "Motivation & Ziele"
+  description: "Aktuelle Motivation und Zielsetzung"
+
+  factors:
+    - id: IND-MOT-01
+      name: "Intrinsic Motivation"
+      definition: "Interesse am Thema selbst"
+      parameter: "engagement"
+      modifier:
+        low: "eng × 0.70"
+        medium: "eng × 1.00"
+        high: "eng × 1.40"
+      note: "Kann durch extrinsische Anreize untergraben werden (Crowding Out)"
+      uncertainty: "mittel"
+
+    - id: IND-MOT-02
+      name: "Goal Commitment"
+      definition: "Verbindlichkeit gegenüber einem Ziel"
+      parameter: "persistence"
+      modifier:
+        low: "pers × 0.60"
+        medium: "pers × 1.00"
+        high: "pers × 1.30"
+      uncertainty: "mittel"
+
+    - id: IND-MOT-03
+      name: "Implementation Intentions"
+      definition: "Konkrete Wenn-Dann Pläne vorhanden"
+      parameter: "action_probability"
+      modifier:
+        no_plan: "P × 1.00"
+        vague_plan: "P × 1.15"
+        specific_plan: "P × 1.35"
+      reference: "gollwitzer1999implementation"
+      uncertainty: "gering"
+
+    - id: IND-MOT-04
+      name: "Self-Efficacy"
+      definition: "Glaube an eigene Fähigkeit zur Zielerreichung"
+      parameter: "action_probability"
+      modifier:
+        low: "P × 0.70"
+        medium: "P × 1.00"
+        high: "P × 1.25"
+      reference: "bandura1977self"
+      uncertainty: "gering"
+
+    - id: IND-MOT-05
+      name: "Outcome Expectancy"
+      definition: "Erwartung positiver Konsequenzen"
+      parameter: "motivation"
+      modifier:
+        pessimistic: "mot × 0.75"
+        neutral: "mot × 1.00"
+        optimistic: "mot × 1.20"
+      uncertainty: "mittel"
+
+    - id: IND-MOT-06
+      name: "Personal Relevance"
+      definition: "Persönliche Relevanz des Themas"
+      parameter: "attention"
+      modifier:
+        low: "att × 0.60"
+        medium: "att × 1.00"
+        high: "att × 1.40"
+      uncertainty: "gering"
+
+# =============================================================================
+# SUB-AXIS: SOC - Soziale Identität & Rollen
+# =============================================================================
+SOC:
+  name: "Soziale Identität & Rollen"
+  description: "Soziale Zugehörigkeiten und aktive Rollen"
+
+  factors:
+    - id: IND-SOC-01
+      name: "Group Identity Salience"
+      definition: "Aktivierung der Gruppenidentität"
+      parameter: "σ"
+      modifier:
+        not_salient: "σ × 0.80"
+        somewhat_salient: "σ × 1.00"
+        highly_salient: "σ × 1.40"
+      reference: "tajfel1979integrative"
+      uncertainty: "mittel"
+
+    - id: IND-SOC-02
+      name: "Role: Professional vs. Private"
+      definition: "Aktive Rolle beeinflusst Verhalten"
+      parameter: "formality"
+      modifier:
+        private: "form × 0.80"
+        semi_formal: "form × 1.00"
+        professional: "form × 1.20"
+      uncertainty: "gering"
+
+    - id: IND-SOC-03
+      name: "Social Status Concern"
+      definition: "Sorge um sozialen Status"
+      parameter: "status_weight"
+      modifier:
+        low: "stat × 0.80"
+        medium: "stat × 1.00"
+        high: "stat × 1.30"
+      uncertainty: "mittel"
+
+    - id: IND-SOC-04
+      name: "In-Group Identification"
+      definition: "Stärke der Identifikation mit relevanter Gruppe"
+      parameter: "norm_compliance"
+      modifier:
+        weak: "comp × 0.70"
+        moderate: "comp × 1.00"
+        strong: "comp × 1.35"
+      reference: "cialdini1998social"
+      uncertainty: "gering"
+
+    - id: IND-SOC-05
+      name: "Authority Orientation"
+      definition: "Respekt vor Autoritäten"
+      parameter: "authority_compliance"
+      modifier:
+        low: "auth × 0.70"
+        medium: "auth × 1.00"
+        high: "auth × 1.30"
+      note: "Kulturabhängig (Power Distance)"
+      uncertainty: "mittel"
+
+    - id: IND-SOC-06
+      name: "Accountability"
+      definition: "Müssen Entscheidungen gerechtfertigt werden?"
+      parameter: "deliberation"
+      modifier:
+        no_accountability: "delib × 0.80"
+        informal_accountability: "delib × 1.00"
+        formal_accountability: "delib × 1.25"
+      uncertainty: "gering"
+
+# =============================================================================
+# EBF Parameter Integration
+# =============================================================================
+ebf_integration:
+  calculation_order:
+    1: "Start with baseline parameters from BBB (CORE-WHERE)"
+    2: "Apply MACRO modifiers (BCM2_04_KON)"
+    3: "Apply MESO modifiers (client/industry)"
+    4: "Apply MICRO modifiers (situation)"
+    5: "Apply INDIVIDUAL modifiers (this file)"
+    6: "Cap/floor values at reasonable bounds"
+
+  parameter_bounds:
+    λ:
+      min: 1.0
+      max: 5.0
+      note: "Loss aversion below 1.0 is gain-seeking (rare)"
+    β:
+      min: 0.5
+      max: 1.0
+      note: "β > 1.0 implies negative time discounting"
+    δ:
+      min: 0.90
+      max: 1.0
+      note: "Long-term discount factor"
+    A:
+      min: 0.0
+      max: 1.0
+      note: "Awareness bounded probability"
+    σ:
+      min: 0.0
+      max: 2.0
+      note: "Social norm sensitivity"
+
+  example_calculation:
+    scenario: "65-jährige Frau, gestresst, mit Kindern, hohe Bildung"
+    baseline_λ: 2.25
+    modifiers:
+      - factor: "IND-DEM-01 (Age 65)"
+        calculation: "× (1 + 0.008 × 25) = × 1.20"
+      - factor: "IND-DEM-03 (Female)"
+        calculation: "× 1.15"
+      - factor: "IND-STA-02 (Stressed)"
+        calculation: "× 1.25"
+    final_λ: "2.25 × 1.20 × 1.15 × 1.25 = 3.88"
+    interpretation: "Sehr hohe Verlustaversion - starke Loss Framing empfohlen"
+
+# =============================================================================
+# Data Quality & Updates
+# =============================================================================
+data_quality:
+  evidence_base: "Meta-analyses and replicated experimental findings"
+  update_frequency: "Annual review"
+  known_limitations:
+    - "Individual differences often larger than group averages"
+    - "Many factors interact non-linearly"
+    - "Cultural context can reverse some effects"
+    - "Self-report measures may be biased"
+
+  recommended_measurement:
+    λ: "Lottery choice tasks (Holt & Laury 2002)"
+    β: "Intertemporal choice (Kirby 2009)"
+    Big_Five: "BFI-10 or NEO-FFI"
+    Financial_Literacy: "Lusardi-Mitchell 3 Questions"
+    Regulatory_Focus: "RFQ (Higgins et al. 2001)"

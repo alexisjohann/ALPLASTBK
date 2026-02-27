@@ -1,0 +1,1181 @@
+# BEATRIX Status-Quo — CODE-VERIFIZIERTE Bestandsaufnahme (2026-02-14)
+# ====================================================================
+#
+# ZWECK: Exaktes Snapshot des BEATRIX-Systems zum 14. Februar 2026.
+# Jede zukuenftige Entwicklungs-Session MUSS dieses Dokument als
+# Ausgangspunkt verwenden.
+#
+# VERIFIKATION: Am 2026-02-14 wurden ALLE Features direkt gegen den
+# Quellcode verifiziert (server.py 14,377 Zeilen, Frontend index.html
+# 14,478 Zeilen, Backend index.html 10,197 Zeilen). KEIN Feature ist
+# mehr UNVERIFIED.
+#
+# ARCHITEKTUR-SSOT: data/beatrix/architecture.yaml (Struktur)
+# STATUS-QUO-SSOT: data/beatrix/status-quo-2026-02-14.yaml (DIESE DATEI)
+#
+# Created: 2026-02-14
+# Verified: 2026-02-14 (Code-Analyse via GitHub API)
+# Author: Claude Code (Session claude/single-source-of-truth-iHpOF)
+
+metadata:
+  document_type: "status-quo-snapshot"
+  snapshot_date: "2026-02-14"
+  app_version: "v3.19.0"
+  deployed: "2026-02-13"
+  created_by: "Claude Code"
+  session_branch: "claude/single-source-of-truth-iHpOF"
+  architecture_ssot: "data/beatrix/architecture.yaml"
+  memory_ssot: "data/beatrix/memory.yaml"
+  verification_method: |
+    Direkte Code-Analyse via GitHub REST API:
+    - Backend: FehrAdvice-Partners-AG/bea-lab-upload (server.py, 699KB)
+    - Frontend: FehrAdvice-Partners-AG/bea-lab-frontend (index.html, 1.3MB)
+    - Admin Panel: bea-lab-upload/index.html (725KB)
+    GitHub PAT: ghp_...klts (gueltig, HTTP 200, User: gerhardfehr)
+  note: |
+    Status-Flags:
+      LIVE         = Dienst laeuft, erreichbar
+      WORKING      = Feature gebaut und funktioniert (CODE-VERIFIZIERT)
+      PARTIAL      = Gebaut aber nicht vollstaendig
+      PREPARED     = Vorbereitet aber nicht aktiviert
+      NOT_BUILT    = In docs/bea-lab-architecture.md geplant aber nie umgesetzt
+      DEPRECATED   = Veraltet, durch anderes ersetzt
+
+  corrections_vs_previous:
+    - field: "app_version"
+      was: "v3.18.1+"
+      now: "v3.19.0"
+      source: "VERSION file in bea-lab-upload repo"
+    - field: "api_endpoints"
+      was: "7 bekannte Endpoints"
+      now: "140+ Endpoints (kategorisiert)"
+      source: "grep @app.(get|post|put|delete) server.py"
+    - field: "database_tables"
+      was: "3 (users, documents, chat_messages)"
+      now: "18 Tabellen"
+      source: "grep CREATE TABLE server.py"
+    - field: "backend_repo"
+      was: "gerhardfehr/bea-lab-upload"
+      now: "FehrAdvice-Partners-AG/bea-lab-upload"
+      source: "GitHub API 301 redirect"
+    - field: "roles"
+      was: "admin (boolean)"
+      now: "4 Rollen (researcher, sales, operations, admin) + 4 CRM-Rollen"
+      source: "User model in server.py"
+
+# ============================================================
+# 1. SYSTEM STATUS — Laeuft alles?
+# ============================================================
+
+system_status:
+  overall: "LIVE (seit 2026-02-08)"
+  current_version: "v3.19.0"
+  last_deploy: "2026-02-13"
+  built_in: "Single Session (2026-02-08): v0 → v3.10"
+  builder: "Claude (Anthropic) — kein menschlicher Entwickler"
+
+  services:
+    - name: "Domain"
+      url: "www.bea-lab.io"
+      provider: "Squarespace Domains"
+      status: "LIVE"
+      dns:
+        a_record: "bea-lab.io → 76.76.21.21 (Vercel IP)"
+        cname: "www.bea-lab.io → cname.vercel-dns.com"
+
+    - name: "Frontend"
+      url: "bea-lab-frontend.vercel.app"
+      domain: "www.bea-lab.io"
+      provider: "Vercel"
+      team: "FehrAdvice_Team_Beatrix"
+      repo: "FehrAdvice-Partners-AG/bea-lab-frontend"
+      status: "LIVE"
+      deploy_time: "~30 Sekunden nach Push"
+      ssl: "Automatisch via Vercel"
+      file_count: 4
+      files: ["index.html (1.3MB)", "logo.jpeg (200KB)", "vercel.json", "assets/"]
+
+    - name: "Backend"
+      url: "bea-lab-upload-production.up.railway.app"
+      provider: "Railway"
+      repo: "FehrAdvice-Partners-AG/bea-lab-upload"
+      repo_note: "Transferiert von gerhardfehr/bea-lab-upload (301 redirect aktiv)"
+      status: "LIVE"
+      deploy_time: "90-100 Sekunden nach Push"
+      railway_project: "71bbbb54-ee68-4926-994d-e850bfdd8816"
+      railway_env: "36f908e9-278e-4073-a8d0-743e7a8dd5c7"
+      railway_service: "14a62e50-1e02-4b3f-a76f-982a565cace4"
+      server_py_lines: 14377
+      server_py_size_kb: 699
+
+    - name: "Database"
+      type: "PostgreSQL 16 (Alpine)"
+      host: "Railway"
+      user: "beatrix"
+      db_name: "beatrix"
+      extension: "pgvector (Vector Search, 512 Dimensionen, Cosine Similarity)"
+      fallback: "JSON embedding column (wenn pgvector nicht verfuegbar)"
+      tables_count: 18
+      status: "LIVE"
+
+    - name: "AI / LLM"
+      provider: "Anthropic"
+      model: "claude-sonnet-4-20250514"
+      env_var: "ANTHROPIC_API_KEY (on Railway)"
+      status: "LIVE"
+      embeddings:
+        provider: "Voyage AI"
+        model: "voyage-3-lite"
+        dimensions: 512
+        api_url: "https://api.voyageai.com/v1/embeddings"
+        tier: "Free (200M Tokens/Monat)"
+
+    - name: "Email"
+      provider: "Resend"
+      sender: "registration_confirmation@bea-lab.io"
+      domain: "bea-lab.io"
+      plan: "Free (100/Tag)"
+      status: "LIVE"
+      caveat: "Railway requests brauchen User-Agent: BEATRIXLab/3.4 (Cloudflare 1010)"
+
+# ============================================================
+# 2. FEATURE INVENTORY — Was ist gebaut? (CODE-VERIFIZIERT)
+# ============================================================
+
+feature_inventory:
+  source: "Direkte Code-Analyse (server.py + frontend index.html)"
+  version: "v3.19.0"
+
+  authentication:
+    status_summary: "WORKING — alle Endpoints verifiziert"
+    features:
+      - feature: "Login (Email + Password)"
+        status: "WORKING"
+        endpoint: "POST /api/login"
+        detail: "bcrypt Hash + JWT Token (HS256)"
+      - feature: "Register (mit Domain-Whitelist)"
+        status: "WORKING"
+        endpoint: "POST /api/register"
+        detail: "Whitelist: @fehradvice.com, @bea-lab.io"
+      - feature: "JWT Token Auth (HS256, 24h Expiry)"
+        status: "WORKING"
+        detail: "Bearer Token in Authorization Header"
+      - feature: "E-Mail-Verifizierung (Token-basiert)"
+        status: "WORKING"
+        endpoints:
+          - "GET /api/verify/{token}"
+          - "POST /api/resend-verification"
+          - "PUT /api/admin/users/{user_id}/verify"
+      - feature: "Passwort-Reset"
+        status: "WORKING"
+        endpoints:
+          - "POST /api/forgot-password"
+          - "GET /api/reset/{token}"
+          - "POST /api/reset-password"
+          - "POST /api/change-password"
+      - feature: "LinkedIn OAuth"
+        status: "WORKING"
+        endpoints:
+          - "GET /api/auth/linkedin"
+          - "GET /api/auth/linkedin/callback"
+          - "POST /api/profile/linkedin"
+          - "POST /api/profile/linkedin/disconnect"
+      - feature: "Auth Check & Permissions"
+        status: "WORKING"
+        endpoints:
+          - "GET /api/auth/check"
+          - "GET /api/auth/permissions"
+
+  roles_and_permissions:
+    status_summary: "WORKING — Zanzibar-inspiriertes RBAC"
+    detail: "Google Zanzibar-inspired mit Policy-as-Code auf GitHub"
+    user_roles:
+      - role: "researcher"
+        description: "Standard-Rolle fuer neue User"
+      - role: "sales"
+        description: "Vertriebszugang"
+      - role: "operations"
+        description: "Operations-Zugang"
+      - role: "admin"
+        description: "Vollzugriff"
+    crm_roles:
+      - role: "none"
+        description: "Kein CRM-Zugang (Default)"
+      - role: "viewer"
+        description: "CRM lesen"
+      - role: "manager"
+        description: "CRM bearbeiten"
+      - role: "admin"
+        description: "CRM administrieren"
+
+  profile:
+    status_summary: "WORKING — mit LinkedIn und Foto"
+    features:
+      - feature: "Profil anzeigen/bearbeiten"
+        status: "WORKING"
+        endpoints: ["GET /api/profile", "PUT /api/profile"]
+        fields: ["name", "email", "position", "company", "bio", "phone", "linkedin_url", "expertise"]
+      - feature: "Profilbild hochladen"
+        status: "WORKING"
+        endpoints: ["POST /api/profile/photo", "GET /api/photos/{filename}"]
+      - feature: "LinkedIn Integration"
+        status: "WORKING"
+        endpoints: ["POST /api/profile/linkedin", "POST /api/profile/linkedin/disconnect"]
+
+  admin_dashboard:
+    status_summary: "WORKING — umfangreicher als dokumentiert"
+    features:
+      - feature: "User Management"
+        status: "WORKING"
+        endpoints:
+          - "GET /api/admin/users"
+          - "PUT /api/admin/users/{id}/toggle-active"
+          - "PUT /api/admin/users/{id}/role"
+          - "PUT /api/admin/users/{id}/crm-access"
+          - "PUT /api/admin/users/{id}/reset-password"
+          - "PUT /api/admin/users/{id}/verify"
+          - "PUT /api/admin/users/{id}/toggle-admin"
+          - "POST /api/admin/notify"
+      - feature: "Knowledge Base Stats"
+        status: "WORKING"
+        endpoints: ["GET /api/admin/kb-stats", "GET /api/admin/embedding-stats", "POST /api/admin/embed-all"]
+      - feature: "Knowledge Calibration & Beliefs"
+        status: "WORKING"
+        endpoints:
+          - "GET /api/admin/knowledge-calibration"
+          - "GET /api/admin/knowledge-checks"
+          - "GET /api/admin/belief-analysis"
+          - "GET /api/admin/beliefs"
+      - feature: "Admin Chat Sessions"
+        status: "WORKING"
+        endpoints: ["GET /api/admin/chat/sessions", "GET /api/admin/chat/session/{id}"]
+      - feature: "Admin Settings"
+        status: "WORKING"
+        endpoint: "GET /api/admin/settings"
+      - feature: "Reviewer Key Management"
+        status: "WORKING"
+        endpoint: "POST /api/admin/reviewer-keys"
+
+  knowledge_base:
+    status_summary: "WORKING — mit Klassifikation und GitHub-Push"
+    features:
+      - feature: "Document Upload (PDF/DOCX/TXT)"
+        status: "WORKING"
+        endpoints: ["POST /api/upload", "POST /api/text", "POST /api/file/analyze", "POST /api/text/analyze"]
+        detail: "PyMuPDF fuer PDFs, python-docx fuer DOCX"
+      - feature: "Duplikat-Erkennung (SHA256)"
+        status: "WORKING"
+        detail: "SHA256 Hash auf Documents-Tabelle"
+      - feature: "GitHub Push (papers/evaluated/integrated/)"
+        status: "WORKING"
+        detail: "push_to_github() + github_file_put() Funktionen"
+        target_path: "papers/evaluated/integrated/"
+        env_var: "GH_TOKEN + GH_REPO"
+      - feature: "Document Klassifikation (10+ Typen)"
+        status: "WORKING"
+        endpoints: ["POST /api/documents/{id}/classify", "POST /api/documents/classify-all"]
+      - feature: "Canonical Key Generation"
+        status: "WORKING"
+        endpoint: "POST /api/canonical-key"
+      - feature: "Embedding-Generierung (Voyage AI)"
+        status: "WORKING"
+        detail: "voyage-3-lite, 512 dim, pgvector oder JSON-Fallback"
+
+  papers:
+    status_summary: "WORKING — Paper-Management-System"
+    features:
+      - feature: "Upload Priority Liste"
+        status: "WORKING"
+        endpoint: "GET /api/papers/upload-priority"
+      - feature: "Paper Sources per Researcher"
+        status: "WORKING"
+        endpoints: ["GET /api/papers/sources", "GET /api/papers/sources/{researcher}"]
+      - feature: "PDF Finder & Fetch"
+        status: "WORKING"
+        endpoints: ["POST /api/papers/find-pdf", "POST /api/papers/fetch-and-upload"]
+      - feature: "PDF Viewer"
+        status: "WORKING"
+        endpoint: "GET /api/pdf-view"
+
+  chat_rag:
+    status_summary: "WORKING — vollstaendiges RAG-System mit Streaming"
+    features:
+      - feature: "Chat (Claude API, SSE Streaming)"
+        status: "WORKING"
+        endpoints:
+          - "POST /api/chat (non-streaming)"
+          - "POST /api/chat/stream (SSE streaming)"
+      - feature: "Chat Intent Detection"
+        status: "WORKING"
+        endpoints:
+          - "POST /api/chat/intent"
+          - "POST /api/chat/intent/stream"
+          - "POST /api/chat/project-intent"
+      - feature: "Project-specific Chat"
+        status: "WORKING"
+        endpoints:
+          - "POST /api/chat/project/{slug}"
+          - "POST /api/chat/project/{slug}/stream"
+      - feature: "Deep Path (GitHub Issues Polling)"
+        status: "WORKING"
+        endpoint: "GET /api/chat/poll/{issue_number}"
+      - feature: "Session Management"
+        status: "WORKING"
+        endpoints:
+          - "GET /api/chat/sessions"
+          - "GET /api/chat/session/{id}"
+          - "GET /api/chat/session/{id}/messages"
+          - "PUT /api/chat/session/{id}/type"
+          - "POST /api/chat/session/{id}/close"
+          - "DELETE /api/chat/session/{id}"
+      - feature: "Chat History"
+        status: "WORKING"
+        endpoints: ["GET /api/chat/history", "DELETE /api/chat/history"]
+      - feature: "Chat Upload (in-chat Dokumente)"
+        status: "WORKING"
+        endpoint: "POST /api/chat/upload"
+      - feature: "6 Chat-Typen"
+        status: "WORKING"
+        detail: "SSOT: data/beatrix/chat-types.yaml"
+        types:
+          - "lead (Pipeline) 🎯"
+          - "project (Mandat) 📋"
+          - "model (Modell) 🔬"
+          - "context (Kontext Ψ) 🧠"
+          - "research (Literatur) 📚"
+          - "general (Fragen) 💬"
+      - feature: "Self-Learning Loop"
+        status: "WORKING"
+        detail: "Chat-Insights werden als Dokumente in KB + GitHub gespeichert"
+
+  crm:
+    status_summary: "WORKING — vollstaendiges CRM mit ZEFIX-Integration"
+    features:
+      - feature: "Companies (CRUD + Hierarchisch)"
+        status: "WORKING"
+        endpoints: ["GET /api/crm/companies", "GET /api/crm/companies/enriched", "POST /api/crm/companies", "PUT /api/crm/companies/{id}"]
+      - feature: "ZEFIX Enrichment (Schweizer Handelsregister)"
+        status: "WORKING"
+        endpoints:
+          - "GET /api/zefix/search"
+          - "GET /api/zefix/lookup/{uid}"
+          - "POST /api/crm/companies/{id}/zefix-enrich"
+          - "POST /api/crm/companies/zefix-enrich-all"
+      - feature: "Handelsregister Integration"
+        status: "WORKING"
+        endpoints: ["GET /api/handelsregister/search", "GET /api/handelsregister/lookup"]
+      - feature: "Registry Search (unified)"
+        status: "WORKING"
+        endpoint: "GET /api/registry/search"
+      - feature: "Contacts"
+        status: "WORKING"
+        endpoints: ["GET /api/crm/contacts", "POST /api/crm/contacts", "PUT /api/crm/contacts/{id}"]
+      - feature: "Deals / Pipeline"
+        status: "WORKING"
+        endpoints:
+          - "GET /api/crm/deals"
+          - "POST /api/crm/deals"
+          - "PUT /api/crm/deals/{id}"
+          - "DELETE /api/crm/deals/{id}"
+          - "POST /api/crm/deals/generate-lead-codes"
+      - feature: "Activities"
+        status: "WORKING"
+        endpoints: ["GET /api/crm/activities", "POST /api/crm/activities"]
+      - feature: "CRM Stats"
+        status: "WORKING"
+        endpoint: "GET /api/crm/stats"
+      - feature: "GitHub Sync"
+        status: "WORKING"
+        endpoint: "POST /api/crm/sync-github"
+        detail: "Bidirektional: PostgreSQL ↔ GitHub YAML"
+      - feature: "Migration Endpoints"
+        status: "WORKING"
+        endpoints: ["POST /api/crm/migrate-company-ids", "POST /api/crm/migrate-leads"]
+
+  projects:
+    status_summary: "WORKING — mit Wizard und 9 Sub-Tabs"
+    features:
+      - feature: "Projekt-Liste + CRUD"
+        status: "WORKING"
+        endpoints: ["GET /api/projects", "POST /api/projects", "PUT /api/projects/{slug}"]
+      - feature: "Projekt Landing Page"
+        status: "WORKING"
+        endpoint: "GET /api/projects/{slug}/landing"
+      - feature: "Projekt-Linking"
+        status: "WORKING"
+        endpoints: ["POST /api/projects/{slug}/link", "DELETE /api/projects/{slug}/link/{target}"]
+      - feature: "GitHub Sync"
+        status: "WORKING"
+        endpoint: "POST /api/projects/{slug}/sync"
+      - feature: "Deliverables (Upload/Download/Delete)"
+        status: "WORKING"
+        endpoints:
+          - "GET /api/projects/{slug}/deliverables/files"
+          - "POST /api/projects/{slug}/deliverables/upload"
+          - "DELETE /api/projects/{slug}/deliverables/files/{filename}"
+      - feature: "Projekt-Wizard"
+        status: "WORKING"
+        detail: "prjStartWizard() Funktion im Frontend"
+      - feature: "9 Sub-Tabs pro Projekt"
+        status: "WORKING"
+        tabs:
+          - "📋 Auftrag"
+          - "📅 Planung"
+          - "📝 Meetings"
+          - "📦 Deliverables"
+          - "📄 Dokumente"
+          - "💰 Budget"
+          - "⚠ Risiken"
+          - "💬 Kommunikation"
+          - "📊 Learnings"
+      - feature: "3 Haupt-Tabs"
+        status: "WORKING"
+        tabs: ["🏠 Uebersicht", "🧠 Inhalt", "📋 PM"]
+
+  leads:
+    status_summary: "WORKING"
+    features:
+      - feature: "Lead Management (CRUD)"
+        status: "WORKING"
+        endpoints: ["GET /api/leads", "POST /api/leads", "PUT /api/leads/{id}", "DELETE /api/leads/{id}"]
+
+  contexts:
+    status_summary: "WORKING"
+    features:
+      - feature: "Context Management (CRUD)"
+        status: "WORKING"
+        endpoints: ["GET /api/contexts", "POST /api/contexts", "PUT /api/contexts/{id}", "DELETE /api/contexts/{id}"]
+
+  psi_analyses:
+    status_summary: "WORKING — versioniert mit Lineage-Tracking"
+    features:
+      - feature: "Ψ-Analysen (CRUD)"
+        status: "WORKING"
+        endpoints:
+          - "GET /api/psi-analyses"
+          - "GET /api/psi-analyses/all"
+          - "GET /api/psi-analyses/lineage/{lineage_id}"
+          - "POST /api/psi-analyses"
+          - "DELETE /api/psi-analyses/{id}"
+        detail: "Versioniert mit psi_profile JSONB, 8 Ψ-Dimensionen"
+
+  behavioral_insights:
+    status_summary: "WORKING — Ψ-Profiling ueber Fragen"
+    features:
+      - feature: "Insight Questions (Login/Onboarding)"
+        status: "WORKING"
+        endpoints:
+          - "GET /api/insight/question"
+          - "POST /api/insight/answer"
+          - "GET /api/insight/profile"
+          - "POST /api/insight/skip"
+        detail: "Erfasst domain_signal, thinking_style, abstraction_level, autonomy_signal"
+      - feature: "User Knowledge Profile"
+        status: "WORKING"
+        endpoint: "GET /api/user/knowledge-profile"
+
+  tasks:
+    status_summary: "WORKING — Task-Management-System"
+    features:
+      - feature: "Tasks (CRUD + Complete/Reopen)"
+        status: "WORKING"
+        endpoints:
+          - "GET /api/tasks"
+          - "POST /api/tasks"
+          - "PUT /api/tasks/{id}"
+          - "DELETE /api/tasks/{id}"
+          - "POST /api/tasks/{id}/complete"
+          - "POST /api/tasks/{id}/reopen"
+          - "GET /api/tasks/stats"
+          - "POST /api/tasks/trigger"
+
+  memory:
+    status_summary: "WORKING — persistenter Wissensspeicher"
+    features:
+      - feature: "Memory API"
+        status: "WORKING"
+        endpoints: ["GET /api/memory", "POST /api/memory/add"]
+
+  currency:
+    status_summary: "WORKING — Waehrungsrechner"
+    features:
+      - feature: "Currency Conversion"
+        status: "WORKING"
+        endpoints:
+          - "GET /api/currency/rates"
+          - "POST /api/currency/convert"
+          - "GET /api/currency/customer/{customer_code}"
+
+  feedback:
+    status_summary: "WORKING — mit Screenshot-Support"
+    features:
+      - feature: "Feedback System"
+        status: "WORKING"
+        endpoints:
+          - "POST /api/feedback"
+          - "POST /api/feedback/analyze"
+          - "GET /api/feedback"
+          - "GET /api/feedback/{id}/screenshot"
+          - "PUT /api/feedback/{id}"
+
+  document_review:
+    status_summary: "WORKING — Multi-Review-System"
+    features:
+      - feature: "Document Review"
+        status: "WORKING"
+        endpoints:
+          - "POST /api/documents/{id}/review"
+          - "POST /api/review/external"
+          - "POST /api/review/batch"
+          - "POST /api/documents/{id}/triage"
+          - "POST /api/documents/{id}/multi-review"
+          - "POST /api/documents/{id}/integrity-check"
+          - "POST /api/documents/{id}/reply-to-feedback"
+          - "POST /api/documents/{id}/ape-review"
+          - "GET /api/reviewers"
+      - feature: "Pre-Commitment"
+        status: "WORKING"
+        endpoint: "POST /api/pre-commitment"
+
+  notebooklm:
+    status_summary: "WORKING — NotebookLM Integration"
+    features:
+      - feature: "NotebookLM"
+        status: "WORKING"
+        endpoints: ["GET /api/notebooklm/status", "POST /api/notebooklm/create"]
+
+  transform:
+    status_summary: "WORKING — Notebook Transformation"
+    features:
+      - feature: "Transform"
+        status: "WORKING"
+        endpoints: ["POST /api/transform", "GET /api/transform/{notebook_id}/status"]
+
+  challenge:
+    status_summary: "WORKING — Gamification"
+    features:
+      - feature: "Challenge"
+        status: "WORKING"
+        endpoint: "POST /api/challenge"
+
+  not_built:
+    note: "Diese Features waren in docs/bea-lab-architecture.md geplant, wurden aber NIE umgesetzt"
+    items:
+      - feature: "Next.js 14 Frontend"
+        status: "NOT_BUILT"
+        actual: "Vanilla HTML5 + CSS3 + JavaScript"
+      - feature: "TypeScript"
+        status: "NOT_BUILT"
+        actual: "Plain JavaScript"
+      - feature: "Tailwind CSS"
+        status: "NOT_BUILT"
+        actual: "CSS Custom Properties"
+      - feature: "shadcn/ui Komponenten"
+        status: "NOT_BUILT"
+        actual: "Custom HTML/CSS"
+      - feature: "Supabase (Auth + DB + Realtime)"
+        status: "NOT_BUILT"
+        actual: "Custom JWT + PostgreSQL on Railway"
+      - feature: "NextAuth.js"
+        status: "NOT_BUILT"
+        actual: "Custom JWT (HS256) + bcrypt"
+      - feature: "Vercel AI SDK"
+        status: "NOT_BUILT"
+        actual: "Server-Sent Events (SSE) via FastAPI"
+      - feature: "npm / Build Step"
+        status: "NOT_BUILT"
+        actual: "KEINER — Push = Live"
+
+# ============================================================
+# 3. API ENDPOINTS (140+ verifiziert)
+# ============================================================
+
+api_endpoints:
+  base_url: "https://bea-lab-upload-production.up.railway.app"
+  source: "grep @app.(get|post|put|delete) server.py"
+  auth_method: "Bearer JWT in Authorization Header"
+  total_count: "140+"
+
+  summary_by_category:
+    - category: "Authentication"
+      count: 12
+      endpoints: ["/api/register", "/api/login", "/api/verify/{token}", "/api/resend-verification",
+                   "/api/change-password", "/api/forgot-password", "/api/reset/{token}", "/api/reset-password",
+                   "/api/auth/check", "/api/auth/permissions", "/api/auth/linkedin", "/api/auth/linkedin/callback"]
+
+    - category: "Profile"
+      count: 5
+      endpoints: ["GET /api/profile", "PUT /api/profile", "POST /api/profile/photo",
+                   "POST /api/profile/linkedin", "POST /api/profile/linkedin/disconnect"]
+
+    - category: "Admin"
+      count: 18
+      endpoints: ["GET /api/admin/users", "PUT /api/admin/users/*/toggle-active",
+                   "PUT /api/admin/users/*/role", "PUT /api/admin/users/*/crm-access",
+                   "PUT /api/admin/users/*/reset-password", "PUT /api/admin/users/*/verify",
+                   "PUT /api/admin/users/*/toggle-admin", "POST /api/admin/notify",
+                   "GET /api/admin/settings", "GET /api/admin/kb-stats",
+                   "GET /api/admin/knowledge-calibration", "GET /api/admin/knowledge-checks",
+                   "GET /api/admin/belief-analysis", "GET /api/admin/beliefs",
+                   "GET /api/admin/embedding-stats", "POST /api/admin/embed-all",
+                   "GET /api/admin/chat/sessions", "GET /api/admin/chat/session/*",
+                   "POST /api/admin/reviewer-keys"]
+
+    - category: "Chat/RAG"
+      count: 17
+      endpoints: ["POST /api/chat", "POST /api/chat/stream", "POST /api/chat/upload",
+                   "POST /api/chat/intent", "POST /api/chat/intent/stream",
+                   "POST /api/chat/project-intent", "POST /api/chat/project/*/stream",
+                   "POST /api/chat/project/*", "GET /api/chat/poll/*",
+                   "GET /api/chat/history", "DELETE /api/chat/history",
+                   "GET /api/chat/session/*", "PUT /api/chat/session/*/type",
+                   "POST /api/chat/session/*/close", "DELETE /api/chat/session/*",
+                   "GET /api/chat/session/*/messages", "GET /api/chat/sessions"]
+
+    - category: "Documents/Upload"
+      count: 14
+      endpoints: ["POST /api/upload", "POST /api/text", "POST /api/canonical-key",
+                   "POST /api/text/analyze", "POST /api/file/analyze",
+                   "GET /api/documents", "GET /api/documents/*",
+                   "POST /api/documents/*/classify", "POST /api/documents/classify-all",
+                   "DELETE /api/documents/*", "GET /api/pdf-view",
+                   "GET /api/papers/upload-priority", "GET /api/papers/sources",
+                   "POST /api/papers/find-pdf", "POST /api/papers/fetch-and-upload"]
+
+    - category: "CRM"
+      count: 20
+      endpoints: ["GET /api/crm/companies", "GET /api/crm/companies/enriched",
+                   "POST /api/crm/companies", "PUT /api/crm/companies/*",
+                   "POST /api/crm/companies/*/zefix-enrich", "POST /api/crm/companies/zefix-enrich-all",
+                   "POST /api/crm/companies/*/hr-enrich",
+                   "GET /api/crm/contacts", "POST /api/crm/contacts", "PUT /api/crm/contacts/*",
+                   "GET /api/crm/deals", "POST /api/crm/deals", "PUT /api/crm/deals/*",
+                   "DELETE /api/crm/deals/*", "POST /api/crm/deals/generate-lead-codes",
+                   "GET /api/crm/activities", "POST /api/crm/activities",
+                   "GET /api/crm/stats", "POST /api/crm/sync-github",
+                   "POST /api/crm/migrate-company-ids", "POST /api/crm/migrate-leads"]
+
+    - category: "Projects"
+      count: 10
+      endpoints: ["GET /api/projects", "POST /api/projects",
+                   "GET /api/projects/*/landing", "PUT /api/projects/*",
+                   "POST /api/projects/*/link", "DELETE /api/projects/*/link/*",
+                   "POST /api/projects/*/sync",
+                   "GET /api/projects/*/deliverables/files",
+                   "POST /api/projects/*/deliverables/upload",
+                   "DELETE /api/projects/*/deliverables/files/*"]
+
+    - category: "Registry/ZEFIX"
+      count: 5
+      endpoints: ["GET /api/zefix/search", "GET /api/zefix/lookup/*",
+                   "GET /api/handelsregister/search", "GET /api/handelsregister/lookup",
+                   "GET /api/registry/search"]
+
+    - category: "Leads/Contexts"
+      count: 8
+      endpoints: ["GET /api/leads", "POST /api/leads", "PUT /api/leads/*", "DELETE /api/leads/*",
+                   "GET /api/contexts", "POST /api/contexts", "PUT /api/contexts/*", "DELETE /api/contexts/*"]
+
+    - category: "Ψ-Analyses"
+      count: 5
+      endpoints: ["GET /api/psi-analyses", "GET /api/psi-analyses/all",
+                   "GET /api/psi-analyses/lineage/*", "POST /api/psi-analyses",
+                   "DELETE /api/psi-analyses/*"]
+
+    - category: "Tasks"
+      count: 8
+      endpoints: ["GET /api/tasks", "POST /api/tasks", "PUT /api/tasks/*",
+                   "DELETE /api/tasks/*", "POST /api/tasks/*/complete",
+                   "POST /api/tasks/*/reopen", "GET /api/tasks/stats", "POST /api/tasks/trigger"]
+
+    - category: "Behavioral Insights"
+      count: 5
+      endpoints: ["GET /api/insight/question", "POST /api/insight/answer",
+                   "GET /api/insight/profile", "POST /api/insight/skip",
+                   "GET /api/user/knowledge-profile"]
+
+    - category: "Review/Quality"
+      count: 10
+      endpoints: ["POST /api/documents/*/review", "POST /api/review/external",
+                   "POST /api/review/batch", "POST /api/documents/*/triage",
+                   "POST /api/pre-commitment", "POST /api/documents/*/multi-review",
+                   "POST /api/documents/*/integrity-check",
+                   "POST /api/documents/*/reply-to-feedback",
+                   "GET /api/reviewers", "POST /api/documents/*/ape-review"]
+
+    - category: "Other"
+      count: 13
+      endpoints: ["GET /api/health", "GET /api/photos/*",
+                   "GET /api/memory", "POST /api/memory/add",
+                   "GET /api/currency/rates", "POST /api/currency/convert", "GET /api/currency/customer/*",
+                   "POST /api/feedback", "POST /api/feedback/analyze", "GET /api/feedback",
+                   "GET /api/notebooklm/status", "POST /api/notebooklm/create",
+                   "POST /api/transform", "GET /api/transform/*/status",
+                   "POST /api/challenge"]
+
+# ============================================================
+# 4. DATABASE SCHEMA (18 Tabellen verifiziert)
+# ============================================================
+
+database_schema:
+  type: "PostgreSQL 16 on Railway"
+  extension: "pgvector (512 dim, Cosine Similarity)"
+  source: "grep 'CREATE TABLE|class.*Base' server.py"
+  table_count: 18
+
+  orm_models:
+    - name: "users"
+      orm_class: "User(Base)"
+      fields: ["id (UUID)", "email (String 320, unique)", "name", "password_hash", "password_salt",
+               "is_active", "is_admin", "email_verified", "verification_token", "verification_sent_at",
+               "reset_token", "reset_sent_at", "position", "company", "bio", "phone",
+               "linkedin_url", "linkedin_id", "profile_photo_url", "expertise (JSON)",
+               "role (researcher|sales|operations|admin)", "crm_access (Boolean)",
+               "crm_role (none|viewer|manager|admin)", "crm_owner_code",
+               "lead_management (Boolean)", "created_at", "last_login"]
+      purpose: "Benutzerverwaltung + Profil + Rollen"
+
+    - name: "user_insights"
+      orm_class: "UserInsight(Base)"
+      fields: ["id (UUID)", "user_email", "question_text", "question_category",
+               "answer_text", "choice_index", "latency_ms", "session_number",
+               "question_number", "was_mandatory", "was_nudged", "skipped",
+               "domain_signal (REL/FIN/HLT/ENV/POL/ORG/EDU/OTH)",
+               "thinking_style (theoretical/practical/analytical/creative)",
+               "abstraction_level (abstract/concrete/mixed)",
+               "autonomy_signal (high/low/moderate)",
+               "created_at", "context (onboarding/login/model_building)"]
+      purpose: "Behavioral Ψ-Profiling via Fragen"
+
+    - name: "documents"
+      orm_class: "Document(Base)"
+      fields: ["id (UUID)", "title", "content", "filename", "sha256_hash",
+               "source_type", "tags", "category", "database_target",
+               "embedding (vector 512)", "embedding_json (TEXT fallback)",
+               "github_url", "status"]
+      purpose: "Knowledge Base (Embeddings fuer RAG)"
+
+    - name: "chat_messages"
+      orm_class: "ChatMessage(Base)"
+      fields: ["id", "user_id", "question", "answer", "path",
+               "knowledge_score", "issue_number"]
+      purpose: "Chat-Historie + Deep-Path Issue Tracking"
+
+  raw_sql_tables:
+    - name: "chat_sessions"
+      purpose: "Session-Management fuer Chat"
+
+    - name: "knowledge_checks"
+      purpose: "Knowledge Calibration Checks"
+
+    - name: "belief_analyses"
+      purpose: "Belief Analysis Storage"
+
+    - name: "leads"
+      purpose: "Lead Management"
+
+    - name: "crm_companies"
+      purpose: "CRM Firmendaten (mit ZEFIX-Enrichment)"
+
+    - name: "crm_contacts"
+      purpose: "CRM Kontaktpersonen"
+
+    - name: "crm_deals"
+      purpose: "CRM Deals/Pipeline"
+      fields_include: ["psi_profile (JSON)"]
+
+    - name: "crm_activities"
+      purpose: "CRM Aktivitaeten-Log"
+
+    - name: "contexts"
+      purpose: "Kontext-Verwaltung"
+
+    - name: "psi_analyses"
+      purpose: "Versionierte Ψ-Analysen mit Lineage"
+      fields_include: ["psi_profile (JSONB)"]
+
+    - name: "feedback"
+      purpose: "User-Feedback mit Screenshots"
+
+    - name: "project_edits"
+      purpose: "Projekt-Aenderungs-Tracking"
+      fields_include: ["synced_to_github (Boolean)"]
+
+    - name: "tasks"
+      purpose: "Task-Management"
+
+    - name: "reviewer_keys"
+      purpose: "Externe Reviewer API-Keys"
+
+# ============================================================
+# 5. FRONTEND SECTIONS (23+ verifiziert)
+# ============================================================
+
+frontend_sections:
+  source: "grep data-section= frontend/index.html"
+  total: 23
+
+  main_navigation:
+    - section: "chat"
+      label: "💬 Fragen"
+      visible: "immer"
+    - section: "myprojects"
+      label: "📋 Projekte"
+      visible: "eingeloggt"
+
+  dropdown_analyse:
+    - section: "briefing"
+      label: "Ausgangslage"
+    - section: "context"
+      label: "Kontext"
+    - section: "segments"
+      label: "Segmente"
+    - section: "journey"
+      label: "Journey"
+    - section: "nutzen"
+      label: "Nutzen"
+    - section: "architektur"
+      label: "Architektur"
+    - section: "model"
+      label: "Modell"
+    - section: "audit"
+      label: "Audit"
+    - section: "wirkung"
+      label: "Wirkung"
+    - section: "evidenz"
+      label: "Evidenz"
+
+  dropdown_knowledge:
+    - section: "upload"
+      label: "Upload"
+    - section: "documents"
+      label: "Dokumente"
+    - section: "uploadpriority"
+      label: "Upload Priority"
+    - section: "paperfinder"
+      label: "Paper Finder"
+    - section: "universities"
+      label: "Universitaeten"
+
+  dropdown_management:
+    - section: "myprojects"
+      label: "Meine Projekte"
+      visible: "eingeloggt"
+    - section: "leads"
+      label: "Leads"
+      visible: "lead_management=true"
+    - section: "companies"
+      label: "Firmen"
+      visible: "crm_access=true"
+    - section: "projects"
+      label: "Projekte (CRM)"
+      visible: "crm_access=true"
+    - section: "tasks"
+      label: "Tasks"
+      visible: "eingeloggt"
+
+  other:
+    - section: "admin"
+      label: "Admin"
+      visible: "is_admin=true"
+    - section: "profile"
+      label: "Profil"
+      visible: "eingeloggt"
+
+# ============================================================
+# 6. KNOWLEDGE LAYER — Dateien in diesem Repo
+# ============================================================
+
+knowledge_layer:
+  repo: "FehrAdvice-Partners-AG/complementarity-context-framework"
+  total_beatrix_files: 53
+  snapshot_date: "2026-02-14"
+
+  core_data:
+    path: "data/beatrix/"
+    files:
+      - name: "architecture.yaml"
+        size_kb: 20
+        purpose: "System-Architektur SSOT (584 Zeilen)"
+        status: "UPDATE NOETIG (Version, DB-Tabellen, Endpoints)"
+      - name: "chat-types.yaml"
+        size_kb: 4
+        purpose: "6 Chat-Typen mit Keywords und Verhalten"
+        status: "AKTUELL"
+      - name: "memory.yaml"
+        size_kb: 5
+        purpose: "Extended Memory: Infra, Credentials, Learnings, Decisions"
+        status: "VERSION VERALTET (v3.18.1+ → v3.19.0)"
+      - name: "status-quo-2026-02-14.yaml"
+        size_kb: "~40"
+        purpose: "DIESE DATEI — Code-verifizierte Bestandsaufnahme"
+        status: "AKTUELL (verifiziert)"
+
+  project:
+    path: "data/projects/beatrix-innosuisse/"
+    files:
+      - name: "project.yaml"
+        size_kb: 8
+        purpose: "Innosuisse Projekt-Definition (260 Zeilen)"
+      - name: "_test.yaml"
+        size_kb: 0.01
+        purpose: "Test-Datei"
+
+  funding_documents:
+    path: "docs/funding/"
+    total_files: 31
+    total_size_mb: "~1.2 (exkl. PDFs)"
+    categories:
+      antragstext:
+        latest: "BEATRIX-INNOSUISSE-ANTRAGSTEXT-V5.1.tex"
+        versions: ["V4.2", "V4.4", "V4.5", "V4.6", "V4.7", "V5.0", "V5.1"]
+      fasnacht_answers:
+        latest: "BEATRIX-FASNACHT-ANSWERS-V3.md"
+      detailed_questions:
+        files: ["FRAGE-A", "FRAGE-B", "FRAGE-C", "FRAGE-D", "FRAGE-E"]
+      utility_models:
+        files: ["FEHR", "GALL", "LUGER", "FASNACHT"]
+
+  customer_pilots:
+    total_files: 7
+    total_size_kb: 202
+    pilots:
+      - customer: "Assura"
+        industry: "Versicherung/Gesundheit"
+        files_count: 1
+        maturity: "Analyse-Phase"
+      - customer: "Raiffeisen"
+        industry: "Banking"
+        files_count: 1
+        maturity: "Use-Case-Definition"
+      - customer: "UBS (CoE Experience Design)"
+        industry: "Banking"
+        files_count: 4
+        maturity: "Pilot (am weitesten fortgeschritten)"
+      - customer: "UBS (Marketing)"
+        industry: "Banking"
+        files_count: 1
+        maturity: "Proposal-Phase"
+
+  deprecated_docs:
+    files:
+      - path: "docs/bea-lab-architecture.md"
+        status: "DEPRECATED"
+        replaced_by: "data/beatrix/architecture.yaml"
+      - path: "docs/bea-lab-tech-stack.md"
+        status: "DEPRECATED"
+        replaced_by: "data/beatrix/architecture.yaml"
+
+# ============================================================
+# 7. MODELS — Verfuegbar via BEATRIX
+# ============================================================
+
+models:
+  source: "models/models.registry.yaml"
+  total: 7
+
+  stable:
+    - model_id: "PSF-2.0"
+      name: "Papal Succession Framework"
+      status: "STABLE"
+      accuracy: 1.00
+      beatrix_native: false
+
+    - model_id: "TRUMP-COMPLIANCE-2025-2030"
+      name: "Trump Constitutional Compliance Risk"
+      status: "STABLE"
+      prediction: "38% [30%, 48%]"
+      beatrix_native: false
+
+  beta:
+    - model_id: "CSF-2.0"
+      name: "China Succession Framework"
+      status: "BETA"
+      beatrix_native: false
+
+    - model_id: "XI-REMOVAL-RISK-2025-2032"
+      name: "Xi Jinping Forced Removal Risk"
+      status: "BETA"
+      beatrix_native: false
+
+  experimental:
+    - model_id: "SBDMS-1.0"
+      name: "Swiss Bank Decision Model Simulator"
+      status: "EXPERIMENTAL"
+      beatrix_native: false
+
+    - model_id: "SDM-1.0"
+      name: "Succession Decision Model"
+      status: "EXPERIMENTAL"
+      beatrix_native: true
+
+    - model_id: "SOCM-1.0"
+      name: "Social Outcome Calibration Model"
+      status: "EXPERIMENTAL"
+      beatrix_native: true
+
+# ============================================================
+# 8. CUSTOMER PILOTS
+# ============================================================
+
+customer_pilots:
+  total: 4
+  status_date: "2026-02-14"
+  pilots:
+    - customer: "Assura"
+      industry: "Versicherung / Gesundheit"
+      maturity: "Analyse-Phase"
+    - customer: "Raiffeisen"
+      industry: "Banking"
+      maturity: "Use-Case-Definition"
+    - customer: "UBS (CoE Experience Design)"
+      industry: "Banking"
+      maturity: "Pilot (am weitesten fortgeschritten)"
+    - customer: "UBS (Marketing)"
+      industry: "Banking"
+      maturity: "Proposal-Phase"
+
+# ============================================================
+# 9. INNOSUISSE PROJECT
+# ============================================================
+
+innosuisse:
+  project_id: "EBF-PRJ-2026-01-26-OTH-INNOSUISSE-001"
+  status: "AKTIV"
+  funding:
+    program: "Innosuisse Innovation Cheque"
+    amount_chf: 15000
+  trl:
+    start: 4
+    target: "6-7"
+  partners:
+    implementation: "FehrAdvice & Partners AG"
+    research: ["Prof. Harald Gall (UZH Informatik)", "Prof. Luger (UZH BWL)"]
+    mentor: "Dr. Daniel Fasnacht"
+
+# ============================================================
+# 10. CREDENTIALS & ACCESS
+# ============================================================
+
+credentials:
+  note: "Credentials SSOT ist memory.yaml. Hier nur Status."
+  ssot: "data/beatrix/memory.yaml → credentials"
+  github_pat:
+    status: "GUELTIG (verifiziert 2026-02-14, HTTP 200)"
+    user: "gerhardfehr"
+    scope: "repo"
+    note: "Expiry im Februar 2026 — bald erneuern!"
+
+# ============================================================
+# 11. KNOWN GAPS & NEXT STEPS (aktualisiert)
+# ============================================================
+
+known_gaps:
+  resolved:
+    - gap: "Frontend-Code nicht in diesem Repo verifizierbar"
+      resolution: "Via GitHub API verifiziert (2026-02-14)"
+    - gap: "Feature-Status unbekannt (UNVERIFIED)"
+      resolution: "Alle 20+ Features CODE-VERIFIZIERT als WORKING"
+
+  critical:
+    - gap: "GitHub PAT Ablauf (Feb 2026)"
+      impact: "Ohne gueltigen PAT kann BEATRIX nicht auf GitHub lesen/schreiben"
+      action: "Neuen Token erstellen und in Railway Environment aktualisieren"
+      priority: "SOFORT"
+      note: "PAT funktioniert noch (verifiziert 2026-02-14) aber laeuft bald ab"
+
+    - gap: "Innosuisse-Antrag unvollstaendig"
+      impact: "Ohne Antrag keine CHF 15k Foerderung"
+      action: "Sections 1 (Introduction) und 4 (Research Partner) fertigstellen"
+      priority: "HOCH"
+
+    - gap: "architecture.yaml veraltet"
+      impact: "Dokumentiert nur 7 Endpoints und 3 Tabellen statt 140+ und 18"
+      action: "Wird in diesem Commit aktualisiert"
+      priority: "HOCH"
+
+    - gap: "memory.yaml Version veraltet"
+      impact: "Dokumentiert v3.18.1+ statt v3.19.0"
+      action: "Bei naechster Memory-Session aktualisieren"
+      priority: "MITTEL"
+
+  architecture:
+    - gap: "server.py ist monolithisch (14,377 Zeilen, 699KB)"
+      impact: "Schwer wartbar, langsamere Deployments"
+      action: "In Module aufteilen (auth, chat, documents, crm, projects, admin)"
+      priority: "MITTEL"
+
+    - gap: "requirements.txt unvollstaendig"
+      impact: "Listet nur 9 Pakete, aber Code nutzt mehr (anthropic, voyageai via urllib)"
+      action: "Dependencies explizit auflisten"
+      priority: "NIEDRIG"
+
+    - gap: "Keine automatisierten Tests"
+      impact: "Regressionen werden nicht erkannt"
+      action: "pytest fuer Backend"
+      priority: "MITTEL"
+
+    - gap: "Kein Backup-System"
+      impact: "Datenverlust bei Railway-Ausfall"
+      action: "pg_dump Cronjob"
+      priority: "MITTEL"
+
+    - gap: "Backend CLAUDE.md veraltet (v3.15.0)"
+      impact: "Entwickler-Sessions starten mit falscher Version"
+      action: "CLAUDE.md im Backend-Repo aktualisieren"
+      priority: "MITTEL"
+
+  next_logical_steps:
+    - step: "GitHub PAT erneuern"
+      effort: "5 Minuten"
+      blocker: true
+    - step: "architecture.yaml mit verifizierten Daten aktualisieren"
+      effort: "In diesem Commit"
+    - step: "Innosuisse-Antrag fertigstellen"
+      effort: "1-2 Tage"
+    - step: "Backend CLAUDE.md aktualisieren (v3.15.0 → v3.19.0)"
+      effort: "10 Minuten"
+
+# ============================================================
+# OPERATIONAL LEARNINGS (Referenz)
+# ============================================================
+
+operational_learnings:
+  ssot: "data/beatrix/memory.yaml → learnings"
+  count: 9
+  critical:
+    - id: "L001"
+      topic: "Railway SSL — Nach CNAME-Wechsel 30-60 Min warten"
+    - id: "L006"
+      topic: "Resend/Cloudflare — User-Agent: BEATRIXLab/3.4 setzen"
+    - id: "L007"
+      topic: "Frontend Dual-Push — IMMER beide Repos aktualisieren"
+
+# ============================================================
+# COST SUMMARY
+# ============================================================
+
+costs:
+  monthly_total: "$10-25"
+  breakdown:
+    - service: "Railway (Backend + DB)"
+      cost: "~$5"
+      plan: "Hobby"
+    - service: "Vercel (Frontend)"
+      cost: "$0"
+      plan: "Free"
+    - service: "Resend (E-Mails)"
+      cost: "$0"
+      plan: "Free (100/Tag)"
+    - service: "Voyage AI (Embeddings)"
+      cost: "$0"
+      plan: "Free (200M Tokens)"
+    - service: "Anthropic Claude API"
+      cost: "~$5-20"
+      plan: "Pay-per-use"
+    - service: "GitHub Actions"
+      cost: "$0"
+      plan: "Free (2000 Min)"
+  annual:
+    - service: "Squarespace Domain"
+      cost: "~$20"

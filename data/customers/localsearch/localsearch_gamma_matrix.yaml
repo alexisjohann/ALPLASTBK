@@ -1,0 +1,361 @@
+---
+# ==============================================================================
+# Localsearch Segment-Specific Complementarity Matrix (γ)
+# ==============================================================================
+#
+# EXC-1 Compliance: γ = 0 is default. Each non-zero value has justification.
+# Reference: localsearch_utility_model.yaml for dimension definitions.
+#
+# CRITICAL WARNING (from PAR-COMP-002):
+#   γ(Social × Financial) = -0.68 across 128 studies!
+#   NEVER combine social proof + financial incentives in same funnel stage.
+#
+# Created: 2026-02-25
+# Version: 1.0.0
+# Model-ID: MOD-LOC-001
+# Estimation: LLMMC (Layer 3), informed by PAR-COMP-001 to PAR-COMP-008
+# ==============================================================================
+
+metadata:
+  model_id: "MOD-LOC-001"
+  matrix_type: "segment_specific_complementarity"
+  dimensions: ["u_F", "u_S", "u_X", "u_T", "u_C", "u_D"]
+  segments: ["BUS-01", "BUS-02", "BUS-03", "BUS-04"]
+  estimation_method: "LLMMC"
+  evidence_tier: 2
+  created: "2026-02-25"
+  version: "1.0.0"
+
+# ==============================================================================
+# FULL 6x6 MATRIX (upper triangular, symmetric)
+# ==============================================================================
+#
+# Only 5 interactions are non-zero (justified). All others = 0 (EXC-1 default).
+#
+#          u_F    u_S    u_X    u_T    u_C    u_D
+#   u_F    ---   γ_FS=0  0    γ_FT   γ_FC    0
+#   u_S          ---    γ_SX    0      0    γ_SD
+#   u_X                 ---     0    γ_XC    0
+#   u_T                        ---     0      0
+#   u_C                               ---     0
+#   u_D                                      ---
+#
+# Non-zero: γ_SD, γ_FC, γ_SX, γ_FT, γ_XC (5 total)
+# Zero by EXC-1: γ_FS, γ_FX, γ_FD, γ_ST, γ_SC, γ_XT, γ_XD, γ_TD, γ_TC, γ_CD
+
+# ==============================================================================
+# γ_SD: Social × Default (+)
+# ==============================================================================
+# Peers using the product makes the default feel legitimate.
+# "Everyone has this, the default subscription makes sense."
+#
+# Anchor: PAR-COMP-001 (Identity × Social = +0.35)
+# Adjustment: Default is less personal than identity → slightly lower base
+
+gamma_SD:
+  name: "Social × Default"
+  sign: "positive"
+  mechanism: "Peer adoption validates default acceptance"
+  exc_code: "V1"  # Without social proof, default alone is weaker
+  theory_refs: ["MS-SP-008", "MS-NU-002"]
+  anchor_par: "PAR-COMP-001"
+
+  segment_values:
+    BUS-01:
+      gamma: 0.25
+      ci_68: [0.18, 0.32]
+      reasoning: |
+        Digital-native SMEs make deliberate ROI-based decisions.
+        Social proof matters less — they evaluate independently.
+        Default effect is moderate (they actively choose).
+
+    BUS-02:
+      gamma: 0.45
+      ci_68: [0.35, 0.55]
+      reasoning: |
+        STRONGEST interaction. Traditional SMEs need BOTH social
+        validation AND low-friction defaults. When a sales rep says
+        "80% of restaurants in your area use this" AND the trial
+        auto-activates, the combined effect is much stronger than
+        either alone. Social proof makes the default feel safe.
+
+    BUS-03:
+      gamma: 0.30
+      ci_68: [0.22, 0.38]
+      reasoning: |
+        Franchise decisions are HQ-driven. Social proof from
+        other chains matters for HQ decision-makers. Default
+        rollout to all locations leverages this.
+
+    BUS-04:
+      gamma: 0.35
+      ci_68: [0.25, 0.45]
+      reasoning: |
+        Tradespeople are influenced by peer recommendations.
+        "Other electricians use renovero premium" + easy upgrade
+        path creates moderate synergy.
+
+# ==============================================================================
+# γ_FC: Financial × Complexity (-)
+# ==============================================================================
+# Complexity undermines perceived ROI.
+# "Even if the ROI is there, it looks too complicated to be worth it."
+#
+# Anchor: No direct PAR-COMP equivalent for this interaction
+# Informed by MS-NE-001 (cognitive load) × MS-RD-001 (loss aversion)
+
+gamma_FC:
+  name: "Financial × Complexity"
+  sign: "negative"
+  mechanism: "Complexity undermines perceived financial return"
+  exc_code: "V2"  # High complexity flips ROI perception negative
+  theory_refs: ["MS-RD-001", "MS-NE-001"]
+
+  segment_values:
+    BUS-01:
+      gamma: -0.15
+      ci_68: [-0.22, -0.08]
+      reasoning: |
+        Digital-native SMEs handle complexity. They can parse
+        feature-rich products and still see the ROI. Mild
+        dampening effect only.
+
+    BUS-02:
+      gamma: -0.50
+      ci_68: [-0.60, -0.40]
+      reasoning: |
+        STRONGEST negative interaction. For Traditional SMEs,
+        complexity DESTROYS perceived ROI. "Maybe it works, but
+        I don't understand how to use it, so the money is wasted."
+        This is the #1 reason why simplification is critical for BUS-02.
+
+    BUS-03:
+      gamma: -0.20
+      ci_68: [-0.28, -0.12]
+      reasoning: |
+        Franchise locations have structured processes and
+        sometimes dedicated digital staff. Complexity is
+        manageable but still reduces perceived ROI somewhat.
+
+    BUS-04:
+      gamma: -0.35
+      ci_68: [-0.45, -0.25]
+      reasoning: |
+        Tradespeople are practical but time-constrained.
+        Complex tools feel like they steal billable hours.
+        Moderate negative interaction.
+
+# ==============================================================================
+# γ_SX: Social × Identity (+)
+# ==============================================================================
+# Peer adoption validates the "modern business" identity.
+# "My competitors are digital, I should be too — it's who I want to be."
+#
+# Anchor: PAR-COMP-001 (Identity × Social = +0.35) — DIRECT MATCH
+
+gamma_SX:
+  name: "Social × Identity"
+  sign: "positive"
+  mechanism: "Peer adoption validates modern business identity aspiration"
+  exc_code: "S1"  # Both factors are [0,1], product is reinforcement
+  theory_refs: ["MS-IB-001", "MS-SP-007"]
+  anchor_par: "PAR-COMP-001"
+
+  segment_values:
+    BUS-01:
+      gamma: 0.15
+      ci_68: [0.08, 0.22]
+      reasoning: |
+        Already see themselves as modern. Less identity gap to
+        close. Peer adoption is expected, not aspirational.
+
+    BUS-02:
+      gamma: 0.40
+      ci_68: [0.30, 0.50]
+      reasoning: |
+        Strong interaction. Traditional SMEs who see competitors
+        going digital experience identity motivation: "I don't
+        want to be the last one without a website." Social proof
+        activates identity aspiration synergistically.
+
+    BUS-03:
+      gamma: 0.20
+      ci_68: [0.12, 0.28]
+      reasoning: |
+        Franchise identity is corporate, not personal.
+        Moderate synergy — HQ wants modern brand image.
+
+    BUS-04:
+      gamma: 0.30
+      ci_68: [0.20, 0.40]
+      reasoning: |
+        Professional pride matters for tradespeople. Seeing
+        competitors with professional online profiles activates
+        "I'm a serious professional" identity.
+
+# ==============================================================================
+# γ_FT: Financial × Time (-)
+# ==============================================================================
+# Time cost erodes financial benefit.
+# "Even if it pays off eventually, I don't have time for this."
+#
+# Anchor: Informed by time allocation theory (MS-TA-003)
+
+gamma_FT:
+  name: "Financial × Time"
+  sign: "negative"
+  mechanism: "Time investment erodes perceived net financial benefit"
+  exc_code: "P1"  # Net benefit = revenue * time available (physical product)
+  theory_refs: ["MS-TP-001", "MS-TA-003"]
+
+  segment_values:
+    BUS-01:
+      gamma: -0.10
+      ci_68: [-0.18, -0.05]
+      reasoning: |
+        Digital-native SMEs budget time for digital marketing.
+        Time cost is planned and acceptable. Mild erosion only.
+
+    BUS-02:
+      gamma: -0.40
+      ci_68: [-0.50, -0.30]
+      reasoning: |
+        Strong negative interaction. Traditional SMEs run on
+        tight time budgets (owner = everything). Every hour on
+        digital tools is an hour not serving customers. Even
+        if ROI is positive, time scarcity makes it feel not
+        worth it. "I know it helps but I have no time."
+
+    BUS-03:
+      gamma: -0.15
+      ci_68: [-0.22, -0.08]
+      reasoning: |
+        Franchise locations may have dedicated staff. HQ often
+        provides support. Time cost is distributed.
+
+    BUS-04:
+      gamma: -0.45
+      ci_68: [-0.55, -0.35]
+      reasoning: |
+        HIGHEST for trades: every hour is directly billable.
+        A plumber spending 2h on their online profile "loses"
+        CHF 200-300 in direct revenue. Time-money tradeoff
+        is extremely salient.
+
+# ==============================================================================
+# γ_XC: Identity × Complexity (-)
+# ==============================================================================
+# Complexity threatens modern self-image (backfire risk).
+# "I tried to be modern but the tool made me feel stupid."
+#
+# Anchor: Informed by MS-IB-001 (identity threat from failure)
+
+gamma_XC:
+  name: "Identity × Complexity"
+  sign: "negative"
+  mechanism: "Complexity threatens modern identity aspiration (backfire)"
+  exc_code: "V2"  # Complexity can flip identity utility negative
+  theory_refs: ["MS-IB-001", "MS-NE-001"]
+
+  segment_values:
+    BUS-01:
+      gamma: -0.10
+      ci_68: [-0.18, -0.05]
+      reasoning: |
+        Complexity doesn't threaten their self-image as tech-savvy.
+        They expect tools to be complex and handle it.
+
+    BUS-02:
+      gamma: -0.45
+      ci_68: [-0.55, -0.35]
+      reasoning: |
+        CRITICAL backfire risk. If a Traditional SME owner tries
+        digitalONE and finds it confusing, the experience
+        REINFORCES their belief "I'm not a tech person" instead
+        of the intended "I'm modernizing." This is worse than
+        not trying at all — it's active identity damage.
+        → This is why simplified onboarding is ESSENTIAL.
+
+    BUS-03:
+      gamma: -0.15
+      ci_68: [-0.22, -0.08]
+      reasoning: |
+        Corporate context buffers personal identity threat.
+        "It's the tool that's bad, not me."
+
+    BUS-04:
+      gamma: -0.30
+      ci_68: [-0.40, -0.22]
+      reasoning: |
+        Moderate identity threat. Tradespeople pride themselves
+        on competence. Struggling with a digital tool can feel
+        like professional inadequacy.
+
+# ==============================================================================
+# ZERO INTERACTIONS (EXC-1: No justification needed)
+# ==============================================================================
+
+zero_interactions:
+  gamma_FS:
+    interaction: "u_F × u_S"
+    value: 0
+    reason: |
+      Financial ROI and social proof are additive. Knowing peers use it
+      does not change the financial return, and vice versa. No veto
+      relationship (u_F=0 does not kill u_S). EXC-1 default holds.
+    note: |
+      CRITICAL: Do NOT confuse with PAR-COMP-002 (Social × Financial
+      INCENTIVES = -0.68). That applies when mixing social norm messaging
+      WITH financial discounts/incentives. Here u_F is perceived ROI,
+      not a financial incentive offered TO the SME.
+
+  gamma_FX: {interaction: "u_F × u_X", value: 0, reason: "ROI and identity are independent dimensions"}
+  gamma_FD: {interaction: "u_F × u_D", value: 0, reason: "Financial return and defaults are independent"}
+  gamma_ST: {interaction: "u_S × u_T", value: 0, reason: "Peer behavior doesn't affect time cost"}
+  gamma_SC: {interaction: "u_S × u_C", value: 0, reason: "Peer behavior doesn't change product complexity"}
+  gamma_XT: {interaction: "u_X × u_T", value: 0, reason: "Identity aspiration and time cost are additive"}
+  gamma_XD: {interaction: "u_X × u_D", value: 0, reason: "Identity and defaults are independent channels"}
+  gamma_TD: {interaction: "u_T × u_D", value: 0, reason: "Time cost and default are independent"}
+  gamma_TC: {interaction: "u_T × u_C", value: 0, reason: "Time and complexity are both costs, additive (no veto)"}
+  gamma_CD: {interaction: "u_C × u_D", value: 0, reason: "Complexity and default are independent"}
+
+# ==============================================================================
+# SEGMENT SUMMARY (Quick Reference)
+# ==============================================================================
+#
+#              BUS-01    BUS-02    BUS-03    BUS-04
+#              Digi-Nat  Tradit.   Franch.   Trades
+# γ_SD (+)     +0.25     +0.45     +0.30     +0.35
+# γ_FC (-)     -0.15     -0.50     -0.20     -0.35
+# γ_SX (+)     +0.15     +0.40     +0.20     +0.30
+# γ_FT (-)     -0.10     -0.40     -0.15     -0.45
+# γ_XC (-)     -0.10     -0.45     -0.15     -0.30
+# ────────────────────────────────────────────────────
+# Net γ         +0.05     -0.50     +0.00     -0.45
+#
+# KEY INSIGHT:
+# BUS-02 and BUS-04 have strongly negative net complementarity.
+# → Interventions MUST address negative interactions first.
+# → Simplification (reduce u_C) has TRIPLE impact:
+#    1. Direct: reduces complexity cost
+#    2. γ_FC: unlocks perceived ROI
+#    3. γ_XC: protects identity aspiration
+
+# ==============================================================================
+# CROWDING-OUT WARNING (PAR-COMP-002)
+# ==============================================================================
+
+crowding_out_warning:
+  applies_to: "Intervention design (Block 2)"
+  par_ref: "PAR-COMP-002"
+  gamma_social_financial: -0.68
+  evidence_base: "128 studies"
+  rule: |
+    NEVER combine in the same funnel stage:
+    - Social proof messaging ("your peers use this")
+    - Financial incentives/discounts ("50% off first month")
+
+    Instead: Use SEQUENTIALLY.
+    Stage 1: Social proof to create interest (F1)
+    Stage 2: Financial incentive to convert (F4)
+    Never both in the same touchpoint.

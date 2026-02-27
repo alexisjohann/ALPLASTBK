@@ -1,0 +1,576 @@
+# =============================================================================
+# NQR-AT — Nationaler Qualifikationsrahmen (Oesterreich)
+# =============================================================================
+# Version: 1.0.0
+# Quellen: qualifikationsregister.at, bmbwf.gv.at, wko.at
+# Erstellt: 2026-02-22
+# Zweck: Oesterreichische Qualifikations-Niveaus + Retail-Mapping + EQF-Bridge
+# =============================================================================
+#
+# WARUM NQR-AT?
+#
+# Oesterreich hat ein besonderes Bildungssystem mit Elementen, die weder
+# in Deutschland noch in der Schweiz existieren:
+#
+#   1. BHS (Berufsbildende Hoehere Schulen) = 5-jaehrige Schulform
+#      → HAK (Handelsakademie), HLW, HTL
+#      → Schliessen mit MATURA + Berufsqualifikation ab
+#      → Kein Aequivalent in DE oder CH!
+#      → NQR 5 (NICHT NQR 4 wie Gymnasium!)
+#
+#   2. BMS (Berufsbildende Mittlere Schulen) = 3-4 Jahre ohne Matura
+#      → Handelsschule (HAS), Fachschule
+#      → NQR 4
+#
+#   3. Lehre (duale Ausbildung) = aehnlich wie DE/CH
+#      → Aber: Berufsreifeprufung (BRP) als "Lehre mit Matura"
+#
+#   4. Meisterpruefung = eigenes System (nicht IHK wie DE)
+#      → Gewerbeordnung-basiert
+#      → NQR 6 (wie in DE)
+#
+# OESTERREICHISCHE BERUFSBILDUNG IN ZAHLEN:
+#   - ~40% eines Jahrgangs in Lehre
+#   - ~30% in BHS (HAK, HLW, HTL, etc.)
+#   - ~20% in BMS
+#   - ~200 Lehrberufe
+#   - Duale Ausbildung in 3-4 Jahren
+#
+# =============================================================================
+
+metadata:
+  version: "1.1.0"
+  nqr_basis: "NQR-Gesetz (BGBl. I Nr. 14/2016)"
+  bmbwf_basis: "Bundesministerium fuer Bildung, Wissenschaft und Forschung"
+  eqf_referenzierung: "Referenzierungsbericht Oesterreich (2012, aktualisiert 2020)"
+  cross_references:
+    dqr_eqf_ref: "data/skill-levels/dqr-eqf-levels.yaml"
+    nqr_ch_ref: "data/skill-levels/nqr-ch-levels.yaml"
+    dach_transferability_ref: "data/skill-levels/dach-transferability.yaml"
+    kaufland_roles_ref: "data/skill-levels/kaufland-role-profiles.yaml"
+  note: |
+    Der NQR-AT ordnet ALLE oesterreichischen Qualifikationen den 8 NQR-Niveaus zu
+    (im Gegensatz zum NQR-CH, der nur Berufsbildung abdeckt).
+    Seit 2019 werden Qualifikationen schrittweise im NQR-Register erfasst.
+    Zuordnung erfolgt durch NQR-Koordinierungsstelle (OeAD).
+
+# =============================================================================
+# OESTERREICHISCHES BILDUNGSSYSTEM — ARCHITEKTUR
+# =============================================================================
+#
+#                       TERTIARSTUFE
+#                           |
+#          +----------------+----------------+
+#          |                |                |
+#    UNIVERSITAETEN    FH (Fach-        KOLLEG
+#    (Uni Wien, etc.)  hochschule)      (4-6 Sem.)
+#          |                |                |
+#    +-----+------+    +---+---+       +----+----+
+#    | ALLGEMEIN-  |    | BHS   |       |  BMS    |
+#    | BILDENDE    |    | (5 J.)|       | (3-4 J.)|
+#    | HOeHERE     |    | +Matura|       |         |
+#    | SCHULE (AHS)|    +---+---+       +----+----+
+#    |  (8 J.)     |        |                |
+#    +-----+------+    +---+---+            |
+#          |           | LEHRE  |            |
+#          |           | (dual) |            |
+#          |           +---+---+            |
+#          |               |                |
+#    +-----+---------------+----------------+
+#    |           SEKUNDARSTUFE I             |
+#    |     (Neue Mittelschule / AHS-U)      |
+#    +--------------------------------------+
+#                       |
+#                 VOLKSSCHULE (4 J.)
+#
+# =============================================================================
+
+bildungssystem:
+  volksschule:
+    dauer: "4 Jahre (6-10 Jahre)"
+  sekundarstufe_i:
+    mittelschule: "Mittelschule (ex-Neue Mittelschule), 4 Jahre"
+    ahs_unterstufe: "AHS-Unterstufe (Gymnasium), 4 Jahre"
+  sekundarstufe_ii:
+    allgemeinbildend:
+      ahs_oberstufe: "AHS-Oberstufe (Gymnasium, 4 Jahre, Matura)"
+    berufsbildend:
+      lehre: "Duale Ausbildung (Lehre, 2-4 Jahre, Lehrabschlusspruefung)"
+      bms: "Berufsbildende Mittlere Schule (3-4 Jahre, ohne Matura)"
+      bhs: "Berufsbildende Hoehere Schule (5 Jahre, MIT Matura)"
+    besonderheit_lehre_mit_matura:
+      brp: "Berufsreifeprufung (BRP) = Lehre + Matura parallel"
+      note: |
+        Seit 2008 koennen Lehrlinge parallel zur Lehre die
+        Berufsreifeprufung ablegen. 4 Teilpruefungen:
+        Deutsch, Mathematik, Lebende Fremdsprache, Fachbereich.
+        Eroeffnet vollen Hochschulzugang.
+  tertiaerstufe:
+    kolleg: "Kolleg (4-6 Semester, nach Matura, praxisorientiert)"
+    fh: "Fachhochschule (Bachelor 6 Sem., Master 4 Sem.)"
+    uni: "Universitaet (Bachelor, Master, Doktorat)"
+    meisterpruefung: "Meisterpruefung (Gewerbeordnung)"
+    werkmeisterschule: "Werkmeisterschule (2 Jahre berufsbegleitend)"
+
+# =============================================================================
+# 8 NQR-AT / EQF NIVEAUS
+# =============================================================================
+
+levels:
+
+  # ---------------------------------------------------------------------------
+  # NIVEAU 1 — Einfache Kenntnisse und Fertigkeiten
+  # ---------------------------------------------------------------------------
+  level_1:
+    nqr_at: 1
+    eqf: 1
+    niveauindikator: |
+      Grundlegende allgemeine Kenntnisse. Einfache Aufgaben unter
+      direkter Anleitung in einem strukturierten Kontext ausfuehren.
+
+    typische_qualifikationen:
+      - "Pflichtschulabschluss (9. Schulstufe, extern nachgeholt)"
+      - "Basisbildungsangebote"
+
+    retail_rollen:
+      - rolle: "Regalbetreuer/in (geringfuegig)"
+        status: "informell"
+        note: "Keine formale Qualifikation erforderlich"
+
+    onet_level_mapping:
+      typical_range: [1, 2]
+
+  # ---------------------------------------------------------------------------
+  # NIVEAU 2 — Grundlegende Kenntnisse, begrenzte Aufgaben
+  # ---------------------------------------------------------------------------
+  level_2:
+    nqr_at: 2
+    eqf: 2
+    niveauindikator: |
+      Grundlegendes Faktenwissen in einem Arbeitsbereich. Routineaufgaben
+      ausfuehren und einfache Regeln anwenden. Arbeiten unter Anleitung
+      mit einem gewissen Mass an Selbstaendigkeit.
+
+    typische_qualifikationen:
+      - "Pflichtschulabschluss (regulaer, 9. Schulstufe)"
+      - "Integrative Berufsausbildung (IBA) — Teilqualifizierung"
+
+    retail_rollen:
+      - rolle: "Lehrling im 1. Lehrjahr (Einzelhandel)"
+        status: "in_ausbildung"
+        note: "Lernt unter Anleitung: Kassieren, Waren verraeuemen, Kundenservice"
+
+    onet_level_mapping:
+      typical_range: [2, 3]
+
+  # ---------------------------------------------------------------------------
+  # NIVEAU 3 — Lehrabschluss (Einzelhandel, 3 Jahre)
+  # ---------------------------------------------------------------------------
+  level_3:
+    nqr_at: 3
+    eqf: 3
+    isced: "3"
+    niveauindikator: |
+      Kenntnisse von Fakten, Grundsaetzen, Verfahren und allgemeinen
+      Begriffen in einem Arbeitsbereich. Aufgaben ausfuehren und
+      Routineprobleme unter Verwendung einfacher Regeln und Werkzeuge loesen.
+
+    typische_qualifikationen:
+      - qualifikation: "Lehrabschluss Einzelhandel"
+        dauer: "3 Jahre"
+        abschluss: "Lehrabschlusspruefung (LAP)"
+        schwerpunkte:
+          - "Allgemeiner Einzelhandel"
+          - "Lebensmittelhandel"
+          - "Textilhandel"
+          - "Einrichtungsberatung"
+          - "Sportartikel"
+          - "13 weitere Schwerpunkte"
+        note: |
+          Oesterreich hat EINEN Lehrberuf "Einzelhandel" mit
+          15 waehlbaren Schwerpunkten (DE/CH haben getrennte Berufe).
+          Seit 2018: Neuer Schwerpunkt "Digitaler Verkauf".
+      - qualifikation: "Lehrabschluss Betriebslogistikkaufmann/-frau"
+        dauer: "3 Jahre"
+
+    retail_rollen:
+      - rolle: "Verkaeuferin / Einzelhandelskaufmann/-frau (ausgelernt)"
+        status: "offiziell_nqr_zugeordnet"
+        aufgaben:
+          - "Waren annehmen und kontrollieren"
+          - "Waren lagern und praesentieren"
+          - "Kunden beraten und Verkaeufe abschliessen"
+          - "Kassieren und Zahlungsverkehr"
+          - "Reklamationen bearbeiten"
+        aufstieg_zu: "Handelsschule (extern), BRP, oder Berufserfahrung"
+        lohn_einstieg: "ca. EUR 1'800-2'000 brutto/Monat (KV Handel)"
+
+    onet_level_mapping:
+      typical_range: [2, 4]
+
+    vergleich_de:
+      aequivalent: "Verkaeufer/in (DQR 3) — aber AT Lehre ist 3 Jahre, DE nur 2"
+    vergleich_ch:
+      aequivalent: "EBA Detailhandelsassistent/in (NQR-CH 3) — aehnliches Niveau"
+
+  # ---------------------------------------------------------------------------
+  # NIVEAU 4 — BMS (Handelsschule) oder Lehrabschluss + Zusatzqualifikation
+  # ---------------------------------------------------------------------------
+  level_4:
+    nqr_at: 4
+    eqf: 4
+    isced: "3-4"
+    niveauindikator: |
+      Breites Spektrum an Fakten- und Theoriewissen. Kognitive und
+      praktische Fertigkeiten zur Loesung spezifischer Probleme.
+      Selbstaendige Aufgabenbearbeitung innerhalb von Leitlinien.
+
+    typische_qualifikationen:
+      - qualifikation: "Handelsschule (HAS)"
+        typ: "BMS (Berufsbildende Mittlere Schule)"
+        dauer: "3 Jahre"
+        abschluss: "Abschlusspruefung (KEINE Matura)"
+        note: |
+          Die Handelsschule vermittelt kaufmaennische Grundkenntnisse
+          ohne Matura-Abschluss. Absolventen koennen direkt arbeiten
+          oder via BRP die Matura nachholen.
+      - qualifikation: "Lehrabschluss mit Zusatzqualifikation"
+        note: "z.B. Lehre + Buchhaltungskurs, Lehre + WIFI-Kurs"
+      - qualifikation: "AHS-Matura (allgemeinbildend)"
+        note: |
+          Gymnasium-Matura ist NQR 4 (NICHT NQR 5!).
+          AHS-Matura = allgemeinbildend, ohne Berufsqualifikation.
+          BHS-Matura = berufsbildend = NQR 5 (eine Stufe hoeher!).
+
+    retail_rollen:
+      - rolle: "Fachkraft Einzelhandel (mit Zusatzqualifikation)"
+        status: "typisch"
+        note: "Handelsschulabsolvent/in im Verkauf"
+      - rolle: "Buerokraft Einzelhandel (Administration)"
+        status: "typisch"
+        note: "HAS-Abschluss fuer Backoffice, Buchhaltung, Personalwesen"
+
+    onet_level_mapping:
+      typical_range: [3, 5]
+
+    vergleich_de:
+      aequivalent: "Kaufmann/Kauffrau im Einzelhandel (DQR 4)"
+    vergleich_ch:
+      aequivalent: "EFZ Detailhandelsfachmann/-frau (NQR-CH 4)"
+
+  # ---------------------------------------------------------------------------
+  # NIVEAU 5 — BHS-Matura (HAK, HLW) oder Meisterpruefung
+  # → OESTERREICHISCHE BESONDERHEIT!
+  # ---------------------------------------------------------------------------
+  level_5:
+    nqr_at: 5
+    eqf: 5
+    isced: "4-5"
+    niveauindikator: |
+      Umfassendes, spezialisiertes Fakten- und Theoriewissen sowie
+      Bewusstsein fuer Grenzen dieses Wissens. Umfassende kognitive
+      und praktische Fertigkeiten. Management und Aufsicht in Kontexten,
+      in denen nicht vorhersehbare Aenderungen auftreten.
+
+    typische_qualifikationen:
+      - qualifikation: "HAK-Matura (Handelsakademie)"
+        typ: "BHS (Berufsbildende Hoehere Schule)"
+        dauer: "5 Jahre (ab 14. Lebensjahr)"
+        abschluss: "Reife- und Diplomprufung"
+        note: |
+          DIE Besonderheit Oesterreichs! 5-jaehrige kaufmaennische
+          Ausbildung MIT Matura. Absolventen haben:
+          - Volle Hochschulberechtigung (wie Gymnasium)
+          - PLUS kaufmaennische Berufsqualifikation
+          - Gewerbeberechtigungen (Unternehmerprufung entfaellt!)
+          In DE und CH gibt es NICHTS Vergleichbares.
+        schwerpunkte:
+          - "Management, Controlling und Accounting"
+          - "Finanz- und Risikomanagement"
+          - "Entrepreneurship und Management"
+          - "International Business"
+          - "Informations- und Kommunikationstechnologie"
+          - "Digital Business (NEU)"
+      - qualifikation: "HLW-Matura (Hoehere Lehranstalt fuer wirtschaftliche Berufe)"
+        typ: "BHS"
+        dauer: "5 Jahre"
+        note: "Schwerpunkt Dienstleistung, Ernaehrung, Tourismus"
+      - qualifikation: "Meisterpruefung (Handel)"
+        typ: "Gewerbliche Meisterpruefung"
+        note: |
+          Die oesterreichische Meisterpruefung berechtigt zur
+          selbstaendigen Gewerbausuebung (Gewerbeordnung).
+          NQR 6 zugeordnet (wie in DE), aber Prozess noch
+          nicht fuer alle Gewerbe abgeschlossen.
+      - qualifikation: "Kolleg (nach Matura)"
+        dauer: "4-6 Semester"
+        note: "Praxisorientierte Spezialisierung nach AHS-Matura"
+      - qualifikation: "Werkmeisterschule"
+        dauer: "2 Jahre berufsbegleitend"
+
+    bhs_besonderheit: |
+      WARUM IST BHS-MATURA NQR 5 (und AHS-Matura nur NQR 4)?
+
+      Die BHS-Matura umfasst:
+      1. Allgemeinbildende Faecher (wie AHS): Deutsch, Englisch, Mathe
+      2. PLUS berufliche Faecher: Rechnungswesen, BWL, Recht, IT
+      3. PLUS Praxiskomponente: Praktikum, Uebungsfirma, Projekte
+      4. PLUS Diplomarbeit: Wissenschaftspropedeutische Arbeit
+
+      → BHS-Absolventen haben MEHR Kompetenzen als AHS-Absolventen
+      → Deshalb: BHS = NQR 5, AHS = NQR 4
+      → Dies ist international EINZIGARTIG
+
+    retail_rollen:
+      - rolle: "Junior Manager / Management Trainee"
+        status: "typisch"
+        note: |
+          HAK-Absolventen steigen haeufig direkt als Trainees ein.
+          Sie bringen bereits kaufmaennisches Wissen mit, das in
+          DE/CH erst die Fachwirt-Pruefung vermittelt.
+      - rolle: "Abteilungsleiter/in (nach 2-3 Jahren Praxis)"
+        status: "typisch"
+      - rolle: "Controller/in Filiale"
+        status: "typisch"
+        note: "HAK-Schwerpunkt Controlling direkt anwendbar"
+
+    onet_level_mapping:
+      typical_range: [4, 5]
+
+    vergleich_de:
+      aequivalent: "Fachwirt/in (DQR 5) — aber HAK-Absolventen sind erst 19!"
+      unterschied: |
+        HAK-Absolventen erreichen NQR/EQF 5 mit 19 Jahren.
+        Deutsche Fachwirte erreichen DQR 5 typisch mit 25-30.
+        Inhaltlich: HAK breiter (Allgemeinbildung + BWL),
+        Fachwirt tiefer (Branchenspezialisierung).
+    vergleich_ch:
+      aequivalent: "Berufspruefung/BP (NQR-CH 5)"
+      unterschied: |
+        In CH erreicht man NQR 5 via BP (nach EFZ + 2 Jahre Praxis).
+        In AT erreicht man NQR 5 via BHS (direkt nach 5 Jahren Schule).
+        Unterschiedliche Wege, aehnliches Kompetenzniveau.
+
+  # ---------------------------------------------------------------------------
+  # NIVEAU 6 — Bachelor / Meisterpruefung / Ingenieurdiplom
+  # ---------------------------------------------------------------------------
+  level_6:
+    nqr_at: 6
+    eqf: 6
+    isced: "6"
+    niveauindikator: |
+      Fortgeschrittene Kenntnisse, kritisches Verstaendnis von Theorien
+      und Grundsaetzen. Fortgeschrittene Fertigkeiten zur Loesung
+      komplexer und nicht vorhersehbarer Probleme. Leitung komplexer
+      Projekte. Entscheidungsverantwortung.
+
+    typische_qualifikationen:
+      - qualifikation: "Bachelor (FH oder Uni)"
+        dauer: "6 Semester (3 Jahre)"
+      - qualifikation: "Ingenieur-Diplom (nach Ingenieurgesetz 2017)"
+        note: |
+          Neu seit 2017: HTL-Absolventen (NQR 5) koennen nach
+          3 Jahren Praxis den Titel "Ingenieur/in" erwerben = NQR 6.
+          Aehnlich wie die deutschen Meister-Regelung.
+      - qualifikation: "Meisterpruefung (zugeordnete Gewerbe)"
+        note: "Schrittweise NQR-Zuordnung seit 2019"
+
+    retail_rollen:
+      - rolle: "Filialleiter/in (Marktleiter)"
+        status: "typisch"
+        aufgaben:
+          - "Gesamtverantwortung fuer Filiale"
+          - "Fuehrung von 20-150 Mitarbeitenden"
+          - "P&L-Verantwortung"
+          - "Personalentwicklung"
+          - "Lokales Marketing"
+        lohn: "ca. EUR 3'500-5'000 brutto/Monat (KV Handel + Zulagen)"
+      - rolle: "Category Manager"
+        status: "typisch"
+        note: "Zentralfunktion: Sortimentssteuerung, Einkauf"
+
+    onet_level_mapping:
+      typical_range: [5, 6]
+
+    vergleich_de:
+      aequivalent: "Bachelor / Handelsfachwirt (DQR 6)"
+    vergleich_ch:
+      aequivalent: "HFP / HF-Diplom / Bachelor FH (NQR-CH 6)"
+
+  # ---------------------------------------------------------------------------
+  # NIVEAU 7 — Master
+  # ---------------------------------------------------------------------------
+  level_7:
+    nqr_at: 7
+    eqf: 7
+    isced: "7"
+    niveauindikator: |
+      Hoch spezialisiertes Wissen und kritisches Bewusstsein fuer
+      Wissensfragen. Spezialisierte Problemloesungsfertigkeiten fuer
+      Forschung und Innovation. Komplexe und unvorhersehbare Arbeits-
+      kontexte managen und veraendern.
+
+    typische_qualifikationen:
+      - "Master (FH oder Uni)"
+      - "Diplomstudium (auslaufend, alt)"
+      - "MBA / EMBA"
+
+    retail_rollen:
+      - rolle: "Regionalleiter/in (Gebietsleiter)"
+        status: "typisch"
+        aufgaben:
+          - "Strategische Steuerung von 5-15 Filialen"
+          - "Budgetverantwortung EUR 50-200 Mio."
+          - "Fuehrungskraefteentwicklung"
+          - "Markt- und Standortanalyse"
+      - rolle: "Geschaeftsfuehrung / Vorstand"
+        status: "typisch"
+
+    onet_level_mapping:
+      typical_range: [5, 7]
+
+  # ---------------------------------------------------------------------------
+  # NIVEAU 8 — Doktorat
+  # ---------------------------------------------------------------------------
+  level_8:
+    nqr_at: 8
+    eqf: 8
+    isced: "8"
+    niveauindikator: |
+      Spitzenkenntnisse. Fortgeschrittenste und spezialisierteste
+      Fertigkeiten. Forschungsintegrietaet und Autonomie.
+
+    typische_qualifikationen:
+      - "Doktorat / PhD"
+      - "Dr. rer. soc. oec. (Wirtschaftswissenschaften)"
+
+    retail_rollen:
+      - rolle: "(Nicht typisch im operativen Retail)"
+        status: "selten"
+        note: "Moeglich: Chief Strategy Officer, Research Lead"
+
+    onet_level_mapping:
+      typical_range: [6, 7]
+
+# =============================================================================
+# OESTERREICHISCHE RETAIL-KARRIERELEITER
+# =============================================================================
+
+oesterreichische_retail_karriereleiter:
+
+  - position: "Aushilfe / geringfuegig Beschaeftigte/r"
+    nqr: "1-2 (informell)"
+    qualifikation: "Keine formale Qualifikation"
+    onet_typical: [1, 3]
+    lohn: "Geringfuegigkeitsgrenze ca. EUR 518/Monat (2025)"
+    typische_arbeitgeber: ["Billa/REWE", "Spar", "Hofer (Aldi Sued)", "Lidl AT", "Penny"]
+
+  - position: "Einzelhandelskaufmann/-frau (Lehrabschluss)"
+    nqr: 3
+    qualifikation: "3-jaehrige Lehre mit LAP"
+    onet_typical: [2, 4]
+    aufstieg_zu: "Handelsschule extern, BRP, oder Praxiserfahrung"
+    lohn: "ca. EUR 1'800-2'000 brutto/Monat (KV Handel)"
+
+  - position: "Fachkraft mit HAS oder Zusatzqualifikation"
+    nqr: 4
+    qualifikation: "Handelsschule (BMS) oder Lehre + Weiterbildung"
+    onet_typical: [3, 5]
+    lohn: "ca. EUR 2'000-2'400 brutto/Monat"
+
+  - position: "HAK-Absolvent/in / Management Trainee"
+    nqr: 5
+    qualifikation: "BHS-Matura (HAK, HLW) oder Meisterpruefung"
+    onet_typical: [4, 5]
+    aufstieg_zu: "Filialleiter/in oder Spezialistenfunktion"
+    lohn: "ca. EUR 2'400-3'000 brutto/Monat"
+    note: "Direkteinstieg mit 19 Jahren und NQR 5 moeglich!"
+
+  - position: "Filialleiter/in"
+    nqr: 6
+    qualifikation: "Bachelor FH, Meisterpruefung, oder HAK + Praxis"
+    onet_typical: [5, 6]
+    aufstieg_zu: "Regionalleiter/in"
+    lohn: "ca. EUR 3'500-5'000 brutto/Monat (inkl. Zulagen)"
+
+  - position: "Regionalleiter/in"
+    nqr: 7
+    qualifikation: "Master, MBA, oder langjaerige Fuehrungserfahrung"
+    onet_typical: [5, 7]
+    lohn: "ca. EUR 5'000-8'000 brutto/Monat"
+
+# =============================================================================
+# OESTERREICHISCHE BESONDERHEITEN
+# =============================================================================
+
+oesterreichische_besonderheiten:
+
+  bhs_system:
+    description: |
+      Die Berufsbildenden Hoeheren Schulen (BHS) sind Oesterreichs
+      einzigartigstes Bildungselement. 5 Jahre, Matura + Berufsqualifikation.
+    typen:
+      hak: "Handelsakademie — kaufmaennisch (relevant fuer Retail)"
+      hlw: "Hoehere Lehranstalt wirtschaftliche Berufe — Dienstleistung"
+      htl: "Hoehere Technische Lehranstalt — technisch"
+      hla: "Hoehere Lehranstalt — diverse Fachrichtungen"
+    vorteil: |
+      BHS-Absolventen haben mit 19 Jahren sowohl Hochschulzugang
+      als auch berufliche Qualifikation. In DE/CH muss man sich
+      zwischen Gymnasium und Berufslehre ENTSCHEIDEN.
+    statistik: "Ca. 30% eines Jahrgangs besuchen BHS"
+
+  berufsreifepruefung:
+    description: |
+      Die Berufsreifepruefung (BRP) ermoeglicht es Lehrlingen und
+      BMS-Absolventen, die Matura nachzuholen — sogar WAEHREND der Lehre.
+    alias: "Lehre mit Matura"
+    seit: 2008
+    teilpruefungen:
+      - "Deutsch (schriftlich + muendlich)"
+      - "Mathematik (schriftlich)"
+      - "Lebende Fremdsprache (schriftlich + muendlich)"
+      - "Fachbereich (schriftlich, projektbasiert)"
+    vorteil: "Voller Hochschulzugang nach Lehrabschluss"
+    statistik: "Ca. 5'000 BRP-Absolventen pro Jahr"
+
+  kollektivvertrag_handel:
+    description: |
+      Der Kollektivvertrag (KV) Handel regelt Mindestloehne und
+      Arbeitsbedingungen fuer den oesterreichischen Einzelhandel.
+    geltungsbereich: "~400'000 Beschaeftigte im Handel"
+    besonderheiten:
+      - "14 Monatsgehaelter (inkl. Urlaubs- und Weihnachtsgeld)"
+      - "Mindestgehalt nach Beschaeftigungsgruppen (BG 1-7)"
+      - "Automatische Vorrackungen nach Dienstjahren"
+    mindestgehaelter_2025:
+      bg_1_hilfsarbeiter: "EUR 1'860/Monat (14x)"
+      bg_2_angelernt: "EUR 1'910/Monat (14x)"
+      bg_3_fachkraft: "EUR 2'015/Monat (14x)"
+      bg_4_spezialfachkraft: "EUR 2'195/Monat (14x)"
+      bg_5_erste_fachkraft: "EUR 2'575/Monat (14x)"
+
+  ingenieurgesetz_2017:
+    description: |
+      Seit 2017 koennen HTL-Absolventen (NQR 5) nach 3 Jahren
+      einschlaegiger Praxis den Titel "Ingenieur/in" erwerben.
+      Dies hebt sie auf NQR 6 (= Bachelor-Niveau).
+    relevanz_retail: |
+      Wenig direkt relevant, aber zeigt das oesterreichische Prinzip:
+      Berufserfahrung kann formale Qualifikation erhoehen.
+      Aehnliches Modell koennte fuer Handel eingefuehrt werden.
+
+# =============================================================================
+# NQR-AT → O*NET LEVEL CROSS-REFERENZ
+# =============================================================================
+
+nqr_to_onet_crossref:
+  summary_table:
+    nqr_1: { onet_min: 1, onet_typical: 1.5, onet_max: 2 }
+    nqr_2: { onet_min: 1, onet_typical: 2.5, onet_max: 3 }
+    nqr_3: { onet_min: 2, onet_typical: 3.0, onet_max: 4 }
+    nqr_4: { onet_min: 3, onet_typical: 4.0, onet_max: 5 }
+    nqr_5: { onet_min: 3, onet_typical: 4.5, onet_max: 5 }
+    nqr_6: { onet_min: 4, onet_typical: 5.5, onet_max: 6 }
+    nqr_7: { onet_min: 5, onet_typical: 6.0, onet_max: 7 }
+    nqr_8: { onet_min: 5, onet_typical: 6.5, onet_max: 7 }

@@ -1,0 +1,366 @@
+% =============================================================================
+% EIT-EMP-2: INTERVENTION EMERGENCE ALGORITHM
+% =============================================================================
+%
+% Erweiterung zu EIT-EMP-1 (Gamma Emergence)
+% Spezifiziert den Algorithmus zur Berechnung optimaler Interventionsprofile
+%
+% Version: 1.0 (Januar 2026)
+% =============================================================================
+
+\section{EIT-EMP-2: Intervention Emergence Algorithm}
+\label{sec:ie-emp2-algorithm}
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black,
+    title=\textbf{Empirical Extension EIT-EMP-2: Intervention Emergence Algorithm}]
+
+\textbf{Extends:} EIT-EMP-1 (Gamma Emergence Specification)
+
+\textbf{Purpose:} EIT-EMP-1 specifies how $\gamma(\Psi)$ is computed.
+EIT-EMP-2 specifies how the \textit{optimal intervention vector} $\vec{I}^*$ emerges from $\gamma(\Psi)$.
+
+\textbf{Core Insight:} Interventions are not selected from a menu of types, but \textit{emerge} as optimal profiles in continuous space given the context-dependent complementarity structure.
+
+\textbf{Status:} Empirical extension (algorithmic)
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+\subsection{The Optimization Problem}
+\label{subsec:emp2-optimization}
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=\textbf{Definition EIT-EMP-2-D1: Intervention Effectiveness Function}]
+
+The total effectiveness of an intervention profile $\vec{I} \in [0,1]^{80}$ in context $\Psi$ is:
+
+\begin{equation}
+\boxed{E(\vec{I} \;|\; \Psi) = \underbrace{\sum_{i=1}^{80} w_i \cdot I_i}_{\text{Direct Effects}} + \underbrace{\sum_{i<j} \gamma_{ij}(\Psi) \cdot I_i \cdot I_j}_{\text{Interaction Effects}}}
+\label{eq:effectiveness}
+\end{equation}
+
+where:
+\begin{itemize}[nosep]
+    \item $w_i$ = baseline effectiveness weight of dimension $i$ (from literature)
+    \item $\gamma_{ij}(\Psi)$ = context-dependent complementarity (from EIT-EMP-1)
+    \item $I_i \in [0,1]$ = intensity of intervention on dimension $i$
+\end{itemize}
+
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=\textbf{Definition EIT-EMP-2-D2: Constrained Optimization Problem}]
+
+The optimal intervention profile $\vec{I}^*$ solves:
+
+\begin{align}
+\vec{I}^* &= \arg\max_{\vec{I}} \; E(\vec{I} \;|\; \Psi) \label{eq:objective}\\
+\text{subject to:} \quad & I_i \in [0,1] \quad \forall i \in \{1, \ldots, 80\} \label{eq:bounds}\\
+& \sum_{i=1}^{80} c_i \cdot I_i \leq B \quad \text{(Budget Constraint)} \label{eq:budget}\\
+& \|\vec{I}\|_0 \leq K \quad \text{(Complexity Constraint)} \label{eq:sparsity}
+\end{align}
+
+where:
+\begin{itemize}[nosep]
+    \item $c_i$ = cost of activating dimension $i$
+    \item $B$ = total budget available
+    \item $K$ = maximum number of active dimensions (sparsity)
+\end{itemize}
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+\subsection{Matrix Formulation}
+\label{subsec:emp2-matrix}
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=\textbf{EIT-EMP-2-D3: Quadratic Form}]
+
+The effectiveness function can be written in matrix form:
+
+\begin{equation}
+E(\vec{I} \;|\; \Psi) = \vec{w}^\top \vec{I} + \frac{1}{2} \vec{I}^\top \Gamma(\Psi) \vec{I}
+\label{eq:quadratic}
+\end{equation}
+
+where $\Gamma(\Psi)$ is the symmetric $80 \times 80$ complementarity matrix:
+
+\begin{equation}
+\Gamma(\Psi)_{ij} = \begin{cases}
+0 & \text{if } i = j \\
+\gamma_{ij}(\Psi) & \text{if } i \neq j
+\end{cases}
+\end{equation}
+
+\textbf{Properties of $\Gamma(\Psi)$:}
+\begin{itemize}[nosep]
+    \item Symmetric: $\Gamma_{ij} = \Gamma_{ji}$
+    \item Sparse: Most off-diagonal entries are 0 (no interaction)
+    \item Context-dependent: Changes with $\Psi$
+    \item Sign-constrained: $\Gamma_{FS}(\Psi) < 0$ always (EIT-T9)
+\end{itemize}
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+\subsection{The EMERGE Algorithm}
+\label{subsec:emp2-emerge}
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=\textbf{Algorithm EIT-EMP-2-A1: EMERGE (Emergent Intervention Selection)}]
+
+\textbf{Input:}
+\begin{itemize}[nosep]
+    \item Context vector $\Psi \in [0,1]^8$
+    \item Budget $B$, Complexity limit $K$
+    \item Target outcome (which AWARE components to improve)
+\end{itemize}
+
+\textbf{Phase 1: Compute Complementarity Matrix}
+\begin{enumerate}[nosep]
+    \item Load $\gamma_0$ baseline values (48 parameters)
+    \item Load $\beta$ sensitivities (current estimates)
+    \item Compute $\gamma_{ij}(\Psi) = \gamma_{0,ij} + \sum_k \beta_{ijk} \cdot \Psi_k$
+    \item Construct $\Gamma(\Psi)$ matrix
+\end{enumerate}
+
+\textbf{Phase 2: Identify Candidate Dimensions}
+\begin{enumerate}[nosep]
+    \item Filter dimensions relevant to target outcome
+    \item Rank by $w_i$ (baseline effectiveness)
+    \item Select top $2K$ candidates
+\end{enumerate}
+
+\textbf{Phase 3: Greedy Synergy Selection}
+\begin{enumerate}[nosep]
+    \item Initialize $\vec{I} = \vec{0}$, Active $= \emptyset$
+    \item \textbf{while} $|$Active$| < K$ and budget remains:
+    \begin{enumerate}[nosep]
+        \item For each candidate $i \notin$ Active:
+        \item \quad Compute marginal gain: $\Delta E_i = w_i + \sum_{j \in \text{Active}} \gamma_{ij}(\Psi) \cdot I_j$
+        \item \quad Compute marginal cost: $\Delta c_i = c_i$
+        \item \quad Compute efficiency: $\eta_i = \Delta E_i / \Delta c_i$
+        \item Select $i^* = \arg\max_i \eta_i$
+        \item \textbf{if} $\gamma_{i^*j}(\Psi) < -\theta$ for any $j \in$ Active: \textbf{skip} (crowding-out risk)
+        \item Add $i^*$ to Active, set $I_{i^*} = 1$
+    \end{enumerate}
+\end{enumerate}
+
+\textbf{Phase 4: Intensity Optimization}
+\begin{enumerate}[nosep]
+    \item For active dimensions, solve continuous optimization:
+    \item $\vec{I}^*_{\text{Active}} = \arg\max E(\vec{I})$ s.t. budget
+    \item Use quadratic programming (QP) solver
+\end{enumerate}
+
+\textbf{Output:} Optimal intervention profile $\vec{I}^* \in [0,1]^{80}$
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+\subsection{Crowding-Out Avoidance}
+\label{subsec:emp2-crowding}
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black,
+    title=\textbf{Constraint EIT-EMP-2-C1: Crowding-Out Avoidance Rule}]
+
+\textbf{Hard Constraint (from EIT-T9):}
+
+If dimension $i$ involves Financial (F) and dimension $j$ involves Social (S):
+\begin{equation}
+I_i \cdot I_j > 0 \implies \text{Explicit justification required}
+\end{equation}
+
+\textbf{Soft Constraint (Threshold $\theta$):}
+
+For any pair with $\gamma_{ij}(\Psi) < -\theta$ (default $\theta = 0.15$):
+\begin{equation}
+\min(I_i, I_j) \leq \epsilon \quad \text{(at most one can be strongly active)}
+\end{equation}
+
+\textbf{Interpretation:} The algorithm actively avoids combining dimensions that crowd each other out, unless the context $\Psi$ sufficiently weakens the negative interaction.
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+\subsection{Worked Example}
+\label{subsec:emp2-example}
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black,
+    title=\textbf{Example: Retirement Savings Intervention}]
+
+\textbf{Context:}
+\begin{itemize}[nosep]
+    \item $\Psi = (0.3, 0.7, 0.5, 0.4, 0.6, 0.8, 0.3, 0.5)$
+    \item Target: Increase AWARE for long-term financial decisions
+    \item Budget: $B = 100$, Complexity: $K = 4$
+\end{itemize}
+
+\textbf{Phase 1: Compute $\gamma(\Psi)$}
+
+Selected relevant pairs:
+\begin{align*}
+\gamma(\text{Self\_KNU\_F\_pos}, \text{Self\_KNU\_F\_neg}) &= -0.50 + 0.05 \cdot 0.7 = -0.465 \\
+\gamma(\text{Self\_KNU\_F\_pos}, \text{Comm\_INU\_S\_pos}) &= \frac{1}{4}[-0.30 + 0.25 + (-0.25) + 0] + \beta \cdot \Psi \\
+&= -0.075 + 0.02 = -0.055 \\
+\gamma(\text{Self\_KNU\_E\_pos}, \text{Self\_KNU\_Ex\_pos}) &= +0.45 + 0.03 \cdot 0.8 = +0.474
+\end{align*}
+
+\textbf{Phase 2-3: Selection}
+
+Candidates ranked by $w_i$:
+\begin{enumerate}[nosep]
+    \item Self\_KNU\_F\_pos ($w = 0.8$) — core target
+    \item Self\_KNU\_E\_pos ($w = 0.6$) — emotional resonance
+    \item Self\_KNU\_Ex\_pos ($w = 0.5$) — experience/simulation
+    \item Comm\_INU\_S\_pos ($w = 0.4$) — social proof
+\end{enumerate}
+
+Check crowding-out:
+\begin{itemize}[nosep]
+    \item (1) + (4): $\gamma = -0.055 > -0.15$ ✓ OK (weak negative)
+    \item (2) + (3): $\gamma = +0.474$ ✓ Strong synergy!
+\end{itemize}
+
+\textbf{Phase 4: Optimal Intensities}
+
+QP solution: $\vec{I}^* = (0.85, 0.70, 0.65, 0.25, 0, 0, \ldots)$
+
+\textbf{Emergent Intervention Design:}
+\begin{itemize}[nosep]
+    \item \textbf{Primary:} Future self visualization (Self\_KNU\_F\_pos, $I = 0.85$)
+    \item \textbf{Secondary:} Emotional framing of consequences (Self\_KNU\_E\_pos, $I = 0.70$)
+    \item \textbf{Tertiary:} Retirement simulation experience (Self\_KNU\_Ex\_pos, $I = 0.65$)
+    \item \textbf{Light touch:} Peer comparison (Comm\_INU\_S\_pos, $I = 0.25$)
+\end{itemize}
+
+$\Rightarrow$ This profile \textit{emerged} from the context—it was not pre-selected from a typology!
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+\subsection{LLMMC Integration}
+\label{subsec:emp2-llmmc}
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=\textbf{Protocol EIT-EMP-2-P1: LLMMC for Algorithm Parameters}]
+
+\textbf{What LLMMC Estimates:}
+\begin{enumerate}[nosep]
+    \item Baseline weights $w_i$ for dimensions without experimental data
+    \item Cost estimates $c_i$ for novel intervention mechanisms
+    \item Threshold $\theta$ calibration for crowding-out avoidance
+\end{enumerate}
+
+\textbf{LLMMC Query Template:}
+\begin{quote}
+\textit{``Given an intervention targeting [AWARE component] in context [describe $\Psi$]:}
+\begin{enumerate}[nosep]
+    \item \textit{Rate the standalone effectiveness of dimension $D_i$ (0-1)}
+    \item \textit{Estimate implementation cost relative to baseline (0.5-2.0)}
+    \item \textit{At what negative $\gamma$ threshold would you avoid combining $D_i$ with $D_j$?''}
+\end{enumerate}
+\end{quote}
+
+\textbf{Calibration:} LLMMC estimates are validated against known intervention outcomes and updated via Bayesian learning (same as $\beta$ in EIT-EMP-1).
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+\subsection{Computational Complexity}
+\label{subsec:emp2-complexity}
+%------------------------------------------------------------------------------
+
+\begin{table}[htbp]
+\centering
+\caption{EMERGE Algorithm Complexity}
+\label{tab:complexity}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Phase} & \textbf{Complexity} & \textbf{Typical Time} \\
+\midrule
+1. Compute $\Gamma(\Psi)$ & $O(80^2 \cdot 8) = O(51,200)$ & $< 1$ ms \\
+2. Filter candidates & $O(80 \cdot \log 80)$ & $< 1$ ms \\
+3. Greedy selection & $O(K \cdot 2K) = O(K^2)$ & $< 1$ ms \\
+4. QP optimization & $O(K^3)$ & $< 10$ ms \\
+\midrule
+\textbf{Total} & $O(80^2 + K^3)$ & $< 15$ ms \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Implication:} Real-time intervention design is feasible. The algorithm can be run interactively as context $\Psi$ changes.
+
+%------------------------------------------------------------------------------
+\subsection{Integration with EIT Framework}
+\label{subsec:emp2-integration}
+%------------------------------------------------------------------------------
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black,
+    title=\textbf{How EIT-EMP-2 Completes the Emergence Chain}]
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.5cm, auto]
+    \node[draw, rounded corners, fill=gray!20] (context) {Context $\Psi$};
+    \node[draw, rounded corners, fill=blue!20, right=of context] (gamma) {$\gamma(\Psi)$};
+    \node[draw, rounded corners, fill=green!20, right=of gamma] (emerge) {EMERGE};
+    \node[draw, rounded corners, fill=yellow!20, right=of emerge] (intervention) {$\vec{I}^*$};
+
+    \draw[->, thick] (context) -- node[above] {\tiny EIT-EMP-1} (gamma);
+    \draw[->, thick] (gamma) -- node[above] {\tiny EIT-EMP-2} (emerge);
+    \draw[->, thick] (emerge) -- (intervention);
+\end{tikzpicture}
+\end{center}
+
+\textbf{EIT-3 (Cluster Emergence):} The algorithm doesn't use fixed types. However, if many contexts $\Psi$ produce similar $\vec{I}^*$, these form \textit{emergent clusters} in intervention space—recoverable post-hoc, not assumed a priori.
+
+\textbf{EIT-10 (Data-Mode):} When $\beta$ estimates are uncertain, EMERGE can:
+\begin{itemize}[nosep]
+    \item E-Full: Use QP with estimated $\Gamma(\Psi)$
+    \item E-Partial: Use greedy with robust subset of $\gamma_0$
+    \item E-None: Use only $w_i$ rankings (no interaction terms)
+\end{itemize}
+
+\end{tcolorbox}
+
+%------------------------------------------------------------------------------
+\subsection{Summary: The Complete Emergence Pipeline}
+\label{subsec:emp2-summary}
+%------------------------------------------------------------------------------
+
+\begin{table}[htbp]
+\centering
+\caption{From Context to Intervention: The Emergence Pipeline}
+\label{tab:pipeline}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}clll@{}}
+\toprule
+\textbf{Step} & \textbf{Input} & \textbf{Process} & \textbf{Output} \\
+\midrule
+1 & Situation & Encode as $\Psi \in [0,1]^8$ & Context vector \\
+2 & $\Psi$ & $\gamma(\Psi) = \gamma_0 + \sum \beta \cdot \Psi$ & Complementarity matrix \\
+3 & $\Gamma(\Psi)$, constraints & EMERGE algorithm & Optimal $\vec{I}^*$ \\
+4 & $\vec{I}^*$ & Map to concrete mechanisms & Intervention design \\
+5 & Observed outcome & Update $\beta$ via LLMMC & Improved estimates \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key Properties:}
+\begin{itemize}[nosep]
+    \item \textbf{No type selection:} $\vec{I}^*$ is computed, not chosen from a list
+    \item \textbf{Context-sensitive:} Different $\Psi$ → different $\vec{I}^*$
+    \item \textbf{Self-improving:} Each observation refines $\beta$
+    \item \textbf{Constraint-respecting:} Crowding-out automatically avoided
+\end{itemize}
+
+%------------------------------------------------------------------------------
+% END OF EIT-EMP-2
+%------------------------------------------------------------------------------

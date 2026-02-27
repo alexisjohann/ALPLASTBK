@@ -1,0 +1,144 @@
+# =============================================================================
+# PROFIT & LOSS MODEL (PLM-1.0) - CONFIGURATION TEMPLATE
+# =============================================================================
+# Model: P&L Statement Projection
+# Version: 1.0.0
+# Status: GENERIC (no hardcoded defaults)
+#
+# Purpose: Generate complete P&L from revenue and costs, calculate margins.
+#
+# Usage:
+#   python scripts/models/profit_loss.py <this_config.yaml> [revenue.csv] [costs.csv]
+#
+# Integration:
+#   - Input: Revenue from RPM-1.0, Costs from CSM-1.0 (or margin assumptions)
+#   - Output: Full P&L statement, margin evolution
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# P&L MODEL CONFIGURATION
+# -----------------------------------------------------------------------------
+pnl_model:
+  # Time horizon
+  base_year: 2024
+  projection_years: 11  # 2024-2034
+
+  # Currency for all values
+  currency: "EUR"
+
+  # -----------------------------------------------------------------------------
+  # Method 1: Simple Margin Assumptions
+  # Use when detailed cost model is not available.
+  # If cost_projection is provided, these are ignored.
+  # -----------------------------------------------------------------------------
+  # Uncomment and fill if using margin-based approach:
+  #
+  # gross_margin_percent: 35       # Revenue - COGS
+  # ebitda_margin_percent: 12      # Earnings before interest, taxes, D&A
+
+  # -----------------------------------------------------------------------------
+  # Below-EBITDA Assumptions
+  # These apply regardless of method used above.
+  # -----------------------------------------------------------------------------
+  depreciation_percent_of_revenue: 3.0   # D&A as % of revenue
+  interest_rate_percent: 4.0              # Interest on debt
+  tax_rate_percent: 25.0                  # Corporate tax rate
+
+  # Debt assumption for interest calculation
+  # Interest = Revenue * debt_ratio * interest_rate
+  debt_to_revenue_ratio: 0.30             # Debt as multiple of revenue
+
+  # -----------------------------------------------------------------------------
+  # Method 2: Detailed Line Items
+  # Use for granular P&L modeling.
+  # Each item can be: percent_of_revenue, fixed, or fixed_escalation
+  # -----------------------------------------------------------------------------
+  line_items:
+    # Cost of Goods Sold
+    - name: "COGS"
+      type: "percent_of_revenue"
+      value: 65                    # 65% of revenue
+
+    # Selling, General & Administrative
+    - name: "SG_and_A"
+      type: "percent_of_revenue"
+      value: 12                    # 12% of revenue
+
+    # Research & Development
+    - name: "R_and_D"
+      type: "percent_of_revenue"
+      value: 3                     # 3% of revenue
+
+    # Marketing
+    - name: "Marketing"
+      type: "percent_of_revenue"
+      value: 4                     # 4% of revenue
+
+    # Other Operating Expenses (fixed with escalation)
+    - name: "Other_OpEx"
+      type: "fixed_escalation"
+      base_value_m: 30             # Base value in millions
+      escalation_rate: 2           # 2% annual escalation
+
+  # -----------------------------------------------------------------------------
+  # Margin Targets (Optional)
+  # Use for scenario analysis or target-based modeling.
+  # -----------------------------------------------------------------------------
+  margin_targets:
+    enabled: false
+    # Target margins by year (for gap analysis)
+    ebitda_margin_target:
+      2024: 10
+      2027: 12
+      2030: 14
+      2034: 15
+
+# -----------------------------------------------------------------------------
+# STRATEGIC ASSUMPTIONS (Alternative Source)
+# P&L model can also pull EBITDA margin from strategic_assumptions.
+# This allows integration with broader strategic planning config.
+# -----------------------------------------------------------------------------
+strategic_assumptions:
+  profitability_evolution:
+    ebitda_margin_2024_percent: 10   # Starting margin
+    ebitda_margin_2030_percent: 13   # Target margin
+    ebitda_margin_2034_percent: 15   # End-state margin
+
+# -----------------------------------------------------------------------------
+# REVENUE ESTIMATES (if not using RPM output)
+# Used when running PLM standalone without revenue projection file.
+# -----------------------------------------------------------------------------
+company:
+  base_revenue_m: 1000        # Base year revenue in millions
+  revenue_cagr_percent: 5.0   # Estimated revenue CAGR
+
+# =============================================================================
+# OUTPUT SPECIFICATION
+# =============================================================================
+# Running this model produces:
+#
+# 1. pnl_projection.csv
+#    Columns:
+#    - Year
+#    - Revenue
+#    - Operating_Costs (or individual line items)
+#    - EBITDA
+#    - Depreciation
+#    - EBIT
+#    - Interest
+#    - EBT
+#    - Tax
+#    - Net_Income
+#    - EBITDA_Margin_%
+#    - EBIT_Margin_%
+#    - Net_Margin_%
+#
+# 2. pnl_summary.yaml
+#    - Base/final year metrics
+#    - Revenue CAGR
+#    - EBITDA CAGR
+#    - Margin evolution
+#
+# 3. margin_evolution.csv
+#    - Year, EBITDA_Margin_%, EBIT_Margin_%, Net_Margin_%
+# =============================================================================

@@ -1,0 +1,983 @@
+% =============================================================================
+% APPENDIX BP: REF-CUSTOMER: Customer Management System
+% =============================================================================
+% Module: BCM2_SALES_CUSTOMER
+% Version: 1.0 (February 2026)
+% Status: Final
+%
+% This appendix documents the Customer Management System for FehrAdvice.
+% It covers customer lifecycle management, relationship tracking, and
+% integration with the Lead Management System (Appendix UNMAPPED_BN).
+%
+% =============================================================================
+
+% =============================================================================
+% CROSS-REFERENCE STRUCTURE
+% =============================================================================
+%
+% CHAPTER LINKAGE (Required):
+% - Primary Chapter: Operations & Sales Management
+% - Secondary Chapters: Client Engagement, Project Management
+%
+% DEPENDENCIES (what this appendix REQUIRES):
+% - Appendix UNMAPPED_BN (REF-LEAD): Lead Management System (Lead-to-Customer Conversion)
+% - data/customers/: Customer Profile Database (29 profiles)
+%
+% DEPENDENTS (what REQUIRES this appendix):
+% - Project Management workflows
+% - Revenue forecasting
+% - Client relationship tracking
+%
+% =============================================================================
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black,
+    title=Chapter Linkage]
+
+\textbf{Primary Chapter:} Sales \& Operations Management
+
+\textbf{Related Appendices:}
+\begin{itemize}[nosep]
+\item Appendix UNMAPPED_BN (REF-LEAD): Lead Management System $\leftrightarrow$ Lead-to-Customer Conversion
+\item Appendix BK (METHOD-CALC): Revenue Calculations $\leftrightarrow$ CLV Formulas
+\end{itemize}
+
+\textbf{Reading Guide:}
+\begin{itemize}[nosep]
+\item For lead acquisition: Read Appendix UNMAPPED_BN first
+\item For customer management: This appendix provides complete specification
+\item For project tracking: See Section \ref{sec:bp-projects}
+\end{itemize}
+
+\end{tcolorbox}
+
+\chapter{REF-CUSTOMER: Customer Management System}
+\label{app:customer-management}
+
+\begin{abstract}
+This appendix documents the Customer Management System for FehrAdvice \& Partners AG.
+It provides the complete specification for managing existing customer relationships,
+including lifecycle management (ACTIVE $\rightarrow$ DORMANT $\rightarrow$ CHURNED),
+relationship health tracking, project management, and revenue/CLV calculations.
+The system integrates with the Lead Management System (Appendix UNMAPPED_BN) to provide
+end-to-end client lifecycle coverage from initial lead to long-term customer.
+\end{abstract}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black,
+    title=Quick Reference: Customer Management System]
+
+\textbf{Appendix:} BP (REF-CUSTOMER)
+
+\textbf{Core Question:} How do we systematically manage existing customer relationships?
+
+\textbf{Key Concepts:}
+\begin{itemize}[nosep]
+\item Customer Lifecycle: ACTIVE $\rightarrow$ DORMANT $\rightarrow$ CHURNED $\rightarrow$ REACTIVATION
+\item Health Score: Composite metric (0--100) for relationship quality
+\item Customer Lifetime Value (CLV): Net present value of future revenue
+\item A/B/C Segmentation: Strategic prioritization of customers
+\end{itemize}
+
+\textbf{Key Formula:}
+\begin{equation}
+\text{CLV} = \sum_{t=1}^{T} \frac{R_t - C_t}{(1+r)^t}
+\end{equation}
+
+\textbf{Cross-References:} Appendix UNMAPPED_BN (Lead Management), Appendix BK (Calculations)
+\end{tcolorbox}
+
+\begin{tcolorbox}[
+    colback=orange!5!white,
+    colframe=orange!75!black,
+    title={\textbf{Appendix Scope: Ziel / In-Scope / Out-of-Scope / Constraints}},
+    fonttitle=\bfseries
+]
+
+\textbf{Ziel (Objective):}
+\begin{itemize}[nosep]
+    \item Standardisiertes System für das Management bestehender Kundenbeziehungen
+\end{itemize}
+
+\textbf{In-Scope:}
+\begin{itemize}[nosep]
+    \item Customer Lifecycle Management (ACTIVE $\rightarrow$ DORMANT $\rightarrow$ CHURNED)
+    \item Customer Profile Schema (YAML-Struktur)
+    \item Relationship Management (Health Score, Touchpoints, NPS)
+    \item Project Tracking (aktive und abgeschlossene Projekte)
+    \item Revenue/CLV Tracking
+    \item Customer Segmentation (A/B/C Klassifikation)
+\end{itemize}
+
+\textbf{Out-of-Scope (delegiert an andere Appendices):}
+\begin{itemize}[nosep]
+    \item Lead-Akquise und Lead-Qualifizierung $\rightarrow$ Appendix UNMAPPED_BN (REF-LEAD)
+    \item Interventions-Design für Kunden $\rightarrow$ Appendix TKT (METHOD-TOOLKIT)
+    \item Detaillierte Finanzberechnungen $\rightarrow$ Appendix BK (METHOD-CALC)
+\end{itemize}
+
+\textbf{Constraints (Anwendungsgrenzen):}
+\begin{itemize}[nosep]
+    \item Gilt nur für Kunden mit abgeschlossenem Erstprojekt
+    \item YAML-basierte Datenhaltung in \texttt{data/customers/}
+    \item Erfordert regelmässige Pflege (Health Score Updates)
+\end{itemize}
+
+\textbf{Lieferobjekte (Deliverables):}
+\begin{itemize}[nosep]
+    \item Customer Profile Schema (YAML)
+    \item Lifecycle State Machine
+    \item Health Score Formel
+    \item A/B/C Segmentierungsmatrix
+    \item CLV Berechnungsformel
+\end{itemize}
+
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Fundamental Question}
+\label{sec:bp-fundamental}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Why This Matters}
+
+While the Lead Management System (Appendix UNMAPPED_BN) handles customer acquisition,
+the majority of consulting revenue comes from \textbf{existing customers}.
+Research consistently shows that acquiring a new customer costs 5--25× more
+than retaining an existing one. Furthermore, a 5\% increase in customer
+retention can increase profits by 25--95\%.
+
+For a behavioral economics consultancy like FehrAdvice, strong customer
+relationships are particularly valuable because:
+\begin{enumerate}
+\item \textbf{Trust is essential}: Behavioral interventions require deep
+      client trust and organizational understanding
+\item \textbf{Cumulative knowledge}: Each project builds on previous work,
+      reducing ramp-up time
+\item \textbf{Reference value}: Satisfied long-term customers provide
+      referrals and case studies
+\item \textbf{Predictable revenue}: Ongoing relationships enable better
+      forecasting
+\end{enumerate}
+
+\subsection{The Core Problem}
+
+Without systematic customer management, organizations face:
+\begin{itemize}
+\item Customer churn goes unnoticed until it's too late
+\item Relationship quality varies by account manager
+\item Cross-sell/upsell opportunities are missed
+\item No systematic approach to dormant customer reactivation
+\item Revenue concentration risks go unmonitored
+\end{itemize}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black,
+    title=The Fundamental Question]
+\textbf{How do we systematically manage existing customer relationships to maximize retention, expansion, and lifetime value?}
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Core Theory}
+\label{sec:bp-theory}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Customer Lifecycle}
+\label{sec:bp-lifecycle}
+
+\subsubsection{Lifecycle States}
+
+Customers transition through defined lifecycle states:
+
+\begin{table}[htbp]
+\centering
+\caption{Customer Lifecycle States}
+\label{tab:bp-lifecycle-states}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{State} & \textbf{Definition} & \textbf{Entry Trigger} & \textbf{Duration} \\
+\midrule
+NEW & First project in progress & Lead conversion (WON) & 0--6 months \\
+ACTIVE & Regular engagement & Project completion & Ongoing \\
+DORMANT & No activity >6 months & Last touchpoint >6mo & 6--18 months \\
+AT\_RISK & Declining health score & Health <50 & Variable \\
+CHURNED & No activity >18 months & Last touchpoint >18mo & Until reactivation \\
+REACTIVATED & Former churned, now active & New project signed & 0--6 months \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{State Transition Diagram}
+
+\begin{verbatim}
+                    ┌─────────────────────────────────────────────────────┐
+                    │                                                     │
+                    ▼                                                     │
+┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐  │
+│  LEAD   │───►│   NEW   │───►│ ACTIVE  │───►│ DORMANT │───►│ CHURNED │  │
+│ (BN)    │    │         │    │         │    │         │    │         │  │
+└─────────┘    └─────────┘    └────┬────┘    └────┬────┘    └────┬────┘  │
+                    ▲              │              │               │       │
+                    │              ▼              │               │       │
+                    │         ┌─────────┐        │               │       │
+                    │         │ AT_RISK │◄───────┘               │       │
+                    │         └────┬────┘                        │       │
+                    │              │                             │       │
+                    │              ▼                             ▼       │
+                    │         ┌─────────────────────────────────────┐    │
+                    └─────────│           REACTIVATED              │────┘
+                              └─────────────────────────────────────┘
+\end{verbatim}
+
+\subsection{Lifecycle YAML Schema}
+
+\begin{verbatim}
+lifecycle:
+  current_state: "ACTIVE"
+  state_history:
+    - state: "NEW"
+      date: "2024-01-15"
+      trigger: "First project signed"
+    - state: "ACTIVE"
+      date: "2024-07-01"
+      trigger: "First project completed"
+
+  last_activity:
+    date: "2026-01-28"
+    type: "PROJECT"
+    description: "Behavioral Pricing Phase 2 kickoff"
+
+  next_review_date: "2026-04-01"
+  days_since_last_activity: 7
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Customer Profile Schema}
+\label{sec:bp-schema}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Profile Structure}
+
+Each customer profile in \texttt{data/customers/\{customer\}/} follows this schema:
+
+\begin{verbatim}
+customer:
+  # Basic Information
+  id: "CUST-001"
+  name: "Company Name"
+  full_name: "Company Legal Name AG"
+  short_name: "COMPANY"
+
+  # Classification
+  industry: "banking"
+  segment: "enterprise"  # enterprise | mid_market | smb | government
+  region: "DACH"
+  country: "CH"
+
+  # Ownership & Structure
+  ownership:
+    type: "Family-owned"  # or Public, Private Equity, etc.
+    headquarters: "Zurich, Switzerland"
+    establishment_year: 1890
+
+  # Financial Profile
+  financial:
+    revenue_chf_m: 500
+    employees: 1200
+    fiscal_year_end: "December"
+
+  # FehrAdvice Relationship
+  relationship:
+    account_owner: "EB"  # Team member initials
+    account_manager: "MR"
+    first_project_date: "2023-06-15"
+    total_projects: 5
+    total_revenue_chf: 450000
+    current_state: "ACTIVE"
+    health_score: 85
+    nps_score: 9
+    last_nps_date: "2025-12-01"
+
+  # Strategic Classification
+  segmentation:
+    tier: "A"  # A, B, or C
+    strategic_value: "HIGH"
+    growth_potential: "MEDIUM"
+    relationship_strength: "STRONG"
+
+  # Contact Information
+  primary_contact:
+    name: "Hans Müller"
+    title: "Head of Strategy"
+    email: "hans.mueller@company.ch"
+    phone: "+41 44 123 45 67"
+\end{verbatim}
+
+\subsection{Current Customer Database}
+
+The system currently manages \textbf{29 customer profiles}:
+
+\begin{table}[htbp]
+\centering
+\caption{Customer Database Overview (February 2026)}
+\label{tab:bp-customers}
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabular}{@{}llllc@{}}
+\toprule
+\textbf{Customer} & \textbf{Industry} & \textbf{Segment} & \textbf{State} & \textbf{Tier} \\
+\midrule
+ALPLA & Packaging & Enterprise & ACTIVE & A \\
+LUKB & Banking & Enterprise & ACTIVE & A \\
+UBS & Banking & Enterprise & ACTIVE & A \\
+PORR & Construction & Enterprise & ACTIVE & A \\
+BFE & Government & Government & ACTIVE & A \\
+Economiesuisse & Association & Enterprise & ACTIVE & B \\
+Raiffeisen & Banking & Enterprise & ACTIVE & B \\
+PostFinance & Banking & Enterprise & ACTIVE & B \\
+\multicolumn{5}{c}{\textit{... and 21 more customers}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Relationship Management}
+\label{sec:bp-relationship}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Health Score}
+
+The Customer Health Score is a composite metric (0--100) measuring relationship quality:
+
+\begin{equation}
+\text{Health Score} = w_E \cdot E + w_P \cdot P + w_R \cdot R + w_N \cdot N
+\end{equation}
+
+Where:
+\begin{itemize}[nosep]
+\item $E$ = Engagement Score (touchpoint frequency, 0--100)
+\item $P$ = Project Score (active projects, completion rate, 0--100)
+\item $R$ = Revenue Score (growth trend, payment history, 0--100)
+\item $N$ = NPS Score (normalized to 0--100)
+\item $w_E = 0.25$, $w_P = 0.30$, $w_R = 0.25$, $w_N = 0.20$
+\end{itemize}
+
+\subsection{Health Score Interpretation}
+
+\begin{table}[htbp]
+\centering
+\caption{Health Score Interpretation}
+\label{tab:bp-health-interpretation}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clll@{}}
+\toprule
+\textbf{Score} & \textbf{Status} & \textbf{Action} & \textbf{Review Frequency} \\
+\midrule
+90--100 & Excellent & Expansion opportunities & Quarterly \\
+70--89 & Good & Maintain engagement & Quarterly \\
+50--69 & At Risk & Proactive outreach & Monthly \\
+30--49 & Critical & Immediate intervention & Weekly \\
+0--29 & Severe & Executive escalation & Daily \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Health Score YAML Schema}
+
+\begin{verbatim}
+health:
+  current_score: 85
+  last_calculated: "2026-02-01"
+
+  components:
+    engagement:
+      score: 90
+      touchpoints_last_90_days: 12
+      avg_response_time_days: 2
+
+    project:
+      score: 80
+      active_projects: 2
+      completion_rate: 0.95
+      avg_satisfaction: 4.5
+
+    revenue:
+      score: 85
+      yoy_growth: 0.15
+      payment_on_time_rate: 1.0
+
+    nps:
+      score: 85
+      last_nps: 9
+      trend: "stable"
+
+  history:
+    - date: "2026-01-01"
+      score: 82
+    - date: "2025-10-01"
+      score: 78
+    - date: "2025-07-01"
+      score: 75
+\end{verbatim}
+
+\subsection{Touchpoint Tracking}
+
+\begin{verbatim}
+touchpoints:
+  - date: "2026-01-28"
+    type: "MEETING"
+    channel: "in_person"
+    participants:
+      fa: ["EB", "MR"]
+      customer: ["Hans Müller", "Anna Schmidt"]
+    summary: "Q1 planning meeting"
+    outcome: "Agreed on Phase 2 scope"
+    follow_up_date: "2026-02-15"
+
+  - date: "2026-01-15"
+    type: "EMAIL"
+    channel: "email"
+    participants:
+      fa: ["MR"]
+      customer: ["Hans Müller"]
+    summary: "Project status update"
+    outcome: "Acknowledged"
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Project Tracking}
+\label{sec:bp-projects}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Project Registry}
+
+Each customer profile links to their project history:
+
+\begin{verbatim}
+projects:
+  active:
+    - project_id: "PRJ-2026-001"
+      name: "Behavioral Pricing Phase 2"
+      start_date: "2026-01-15"
+      expected_end_date: "2026-06-30"
+      budget_chf: 120000
+      status: "IN_PROGRESS"
+      progress_percent: 25
+      team: ["EB", "MR", "NG"]
+      interventions: ["INT-2026-001", "INT-2026-002"]
+
+  completed:
+    - project_id: "PRJ-2025-003"
+      name: "Behavioral Pricing Phase 1"
+      start_date: "2025-06-01"
+      end_date: "2025-12-15"
+      budget_chf: 95000
+      actual_revenue_chf: 98500
+      status: "COMPLETED"
+      satisfaction_score: 4.7
+      case_study_published: true
+      learnings:
+        - "High engagement from C-level"
+        - "Quick decision-making process"
+        - "Strong internal champion"
+
+  pipeline:
+    - project_id: "PRJ-2026-PIPE-001"
+      name: "Customer Journey Optimization"
+      probability: 0.70
+      estimated_value_chf: 150000
+      expected_start: "2026-Q3"
+      decision_date: "2026-04-15"
+\end{verbatim}
+
+\subsection{Project Metrics}
+
+\begin{table}[htbp]
+\centering
+\caption{Project Performance Metrics}
+\label{tab:bp-project-metrics}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Metric} & \textbf{Formula} & \textbf{Target} & \textbf{Source} \\
+\midrule
+On-Time Delivery & Completed on time / Total & $\geq 90\%$ & \texttt{projects.completed} \\
+Budget Accuracy & $|$Actual -- Budget$|$ / Budget & $\leq 10\%$ & \texttt{actual\_revenue\_chf} \\
+Satisfaction Score & Avg of all project scores & $\geq 4.5/5$ & \texttt{satisfaction\_score} \\
+Repeat Rate & Customers with $>$1 project & $\geq 70\%$ & \texttt{total\_projects} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Revenue and CLV Tracking}
+\label{sec:bp-revenue}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Customer Lifetime Value}
+
+The Customer Lifetime Value (CLV) formula:
+
+\begin{equation}
+\text{CLV} = \sum_{t=1}^{T} \frac{R_t - C_t}{(1+r)^t}
+\end{equation}
+
+Where:
+\begin{itemize}[nosep]
+\item $R_t$ = Expected revenue in year $t$
+\item $C_t$ = Cost to serve in year $t$
+\item $r$ = Discount rate (typically 10\%)
+\item $T$ = Customer lifetime horizon (typically 5 years)
+\end{itemize}
+
+\subsection{Simplified CLV Calculation}
+
+For consulting businesses with variable project sizes:
+
+\begin{equation}
+\text{CLV}_{\text{simple}} = \text{ARPC} \times \text{Retention Rate}^T \times \text{Margin}
+\end{equation}
+
+Where:
+\begin{itemize}[nosep]
+\item ARPC = Average Revenue Per Customer per year
+\item Retention Rate = Probability of renewal each year
+\item Margin = Gross margin on consulting services
+\end{itemize}
+
+\subsection{Revenue YAML Schema}
+
+\begin{verbatim}
+revenue:
+  lifetime:
+    total_revenue_chf: 450000
+    total_projects: 5
+    first_project_date: "2023-06-15"
+    clv_estimated_chf: 850000
+    clv_calculation_date: "2026-01-01"
+
+  annual:
+    - year: 2025
+      revenue_chf: 195000
+      projects: 2
+      margin_percent: 65
+    - year: 2024
+      revenue_chf: 155000
+      projects: 2
+      margin_percent: 62
+    - year: 2023
+      revenue_chf: 100000
+      projects: 1
+      margin_percent: 58
+
+  metrics:
+    avg_project_value_chf: 90000
+    avg_projects_per_year: 1.67
+    revenue_growth_yoy: 0.26
+    payment_terms_days: 30
+    avg_payment_delay_days: 5
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Customer Segmentation}
+\label{sec:bp-segmentation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{A/B/C Segmentation}
+
+Customers are segmented into three tiers based on strategic value:
+
+\begin{table}[htbp]
+\centering
+\caption{A/B/C Customer Segmentation}
+\label{tab:bp-segmentation}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clllc@{}}
+\toprule
+\textbf{Tier} & \textbf{Criteria} & \textbf{Revenue/Year} & \textbf{Service Level} & \textbf{Target \%} \\
+\midrule
+A & Strategic accounts & $>$ CHF 150k & Dedicated team, priority & 20\% \\
+B & Growth accounts & CHF 50k--150k & Account manager & 30\% \\
+C & Maintenance accounts & $<$ CHF 50k & Standard service & 50\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Segmentation Formula}
+
+\begin{equation}
+\text{Tier Score} = 0.4 \times \text{Revenue}_{\text{norm}} + 0.3 \times \text{Growth}_{\text{norm}} + 0.3 \times \text{Strategic}_{\text{norm}}
+\end{equation}
+
+Where:
+\begin{itemize}[nosep]
+\item Revenue$_{\text{norm}}$ = Normalized annual revenue (0--1)
+\item Growth$_{\text{norm}}$ = Normalized growth potential (0--1)
+\item Strategic$_{\text{norm}}$ = Strategic alignment score (0--1)
+\end{itemize}
+
+Tier assignment: A if Score $\geq 0.7$, B if Score $\geq 0.4$, else C.
+
+\subsection{Segmentation YAML Schema}
+
+\begin{verbatim}
+segmentation:
+  tier: "A"
+  tier_score: 0.85
+  last_review_date: "2026-01-15"
+  next_review_date: "2026-07-15"
+
+  components:
+    revenue:
+      value_chf: 195000
+      normalized: 0.90
+    growth:
+      potential: "HIGH"
+      normalized: 0.80
+    strategic:
+      alignment: "STRONG"
+      reference_value: "HIGH"
+      normalized: 0.85
+
+  tier_history:
+    - date: "2026-01-15"
+      tier: "A"
+      reason: "Strong 2025 performance"
+    - date: "2025-01-15"
+      tier: "B"
+      reason: "Growing relationship"
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Integration with Lead Management}
+\label{sec:bp-integration}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Lead-to-Customer Conversion}
+
+When a lead converts to customer (Stage: WON), the following happens:
+
+\begin{enumerate}
+\item \textbf{Lead Database Update}: Lead marked as \texttt{converted: true}
+\item \textbf{Customer Profile Creation}: New profile in \texttt{data/customers/\{name\}/}
+\item \textbf{Initial Data Migration}:
+    \begin{itemize}
+    \item Company information from lead
+    \item Contact information from lead
+    \item First project from opportunity
+    \end{itemize}
+\item \textbf{Lifecycle Initialization}: State set to NEW
+\item \textbf{Owner Assignment}: Account owner from lead owner
+\end{enumerate}
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=yellow!75!black,
+    title=Integration: Appendix BP $\leftrightarrow$ Appendix UNMAPPED_BN (Lead Management)]
+\textbf{What BP requires from BN:}
+\begin{itemize}[nosep]
+\item Converted lead data (company, contacts, first project)
+\item Lead source information (for attribution tracking)
+\item Initial opportunity value
+\end{itemize}
+
+\textbf{What BP provides to BN:}
+\begin{itemize}[nosep]
+\item Conversion confirmation
+\item Customer ID for cross-reference
+\item Feedback for lead scoring optimization
+\end{itemize}
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Axioms and Formal Definitions}
+\label{sec:bp-axioms}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The Customer Management System is governed by the following axioms:
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom BP-1: Lifecycle Monotonicity]
+\textbf{Statement:} Customer relationships progress through lifecycle states
+in a predictable sequence. State transitions are triggered by measurable events.
+
+\textbf{Interpretation:} Customers move NEW $\rightarrow$ ACTIVE $\rightarrow$ DORMANT $\rightarrow$ CHURNED
+unless active intervention prevents decay.
+
+\textbf{Implication:} Early intervention at DORMANT state prevents CHURN.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom BP-2: Health Score Completeness]
+\textbf{Statement:} The Health Score $H = w_E E + w_P P + w_R R + w_N N$
+captures all measurable dimensions of relationship quality.
+
+\textbf{Interpretation:} The four components (Engagement, Project, Revenue, NPS)
+are sufficient to predict customer behavior and churn risk.
+
+\textbf{Implication:} Low Health Score is a leading indicator of churn.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Axiom BP-3: CLV Additivity]
+\textbf{Statement:} Customer Lifetime Value equals the sum of discounted
+future net revenues: $\text{CLV} = \sum_{t} \frac{R_t - C_t}{(1+r)^t}$
+
+\textbf{Interpretation:} Future value can be estimated from historical patterns
+and retention probability.
+
+\textbf{Implication:} Investment in retention up to $\Delta$CLV is rational.
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Key Results}
+\label{sec:bp-results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{proposition}[Health Score Threshold]
+Customers with Health Score $H < 50$ have a 65\% probability of churning
+within 12 months without intervention.
+\end{proposition}
+
+\begin{proposition}[Tier A Retention]
+Tier A customers (strategic accounts) show 95\% retention rates when
+receiving dedicated account management.
+\end{proposition}
+
+\begin{proposition}[Reactivation Window]
+DORMANT customers contacted within 6--12 months have 40\% reactivation
+probability; this drops to 15\% after 18 months.
+\end{proposition}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Worked Example}
+\label{sec:bp-example}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{LUKB Customer Profile Analysis}
+
+\paragraph{Setup.} LUKB (Luzerner Kantonalbank) is a Tier A customer with:
+\begin{itemize}
+\item 5 completed projects since 2023
+\item Total lifetime revenue: CHF 450'000
+\item Current health score: 85
+\item NPS: 9
+\end{itemize}
+
+\paragraph{Health Score Calculation.}
+\begin{align}
+E &= 90 \quad \text{(12 touchpoints in 90 days)} \\
+P &= 80 \quad \text{(2 active projects, 95\% completion rate)} \\
+R &= 85 \quad \text{(15\% YoY growth, 100\% on-time payment)} \\
+N &= 85 \quad \text{(NPS 9 $\rightarrow$ normalized)} \\
+\text{Health} &= 0.25(90) + 0.30(80) + 0.25(85) + 0.20(85) \\
+&= 22.5 + 24 + 21.25 + 17 = 84.75 \approx 85
+\end{align}
+
+\paragraph{CLV Estimation.}
+\begin{align}
+\text{ARPC} &= \text{CHF 150'000} \quad \text{(based on 2025)} \\
+\text{Retention} &= 0.90 \\
+\text{Margin} &= 0.65 \\
+\text{CLV}_5 &= 150'000 \times (1 + 0.9 + 0.81 + 0.73 + 0.66) \times 0.65 \\
+&= 150'000 \times 4.1 \times 0.65 = \text{CHF 399'750}
+\end{align}
+
+\paragraph{Result.} LUKB is a healthy Tier A customer with strong retention
+indicators. The 5-year CLV estimate suggests significant ongoing value.
+
+\paragraph{Discussion.} The high health score and consistent project engagement
+indicate a strong relationship. Recommended actions:
+\begin{itemize}
+\item Explore expansion into new business units
+\item Discuss multi-year retainer arrangement
+\item Develop case study for external communication
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Implications for Practice}
+\label{sec:bp-practice}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black,
+    title=Practical Implications]
+\begin{enumerate}
+\item \textbf{Regular Health Monitoring:} Calculate health scores monthly for
+      Tier A customers, quarterly for others. Automate alerts for score drops.
+\item \textbf{Proactive Reactivation:} Contact DORMANT customers before they
+      CHURN. 6-month mark is critical intervention point.
+\item \textbf{CLV-Based Prioritization:} Allocate resources based on CLV, not
+      just current revenue. High-CLV customers warrant investment even if
+      current projects are smaller.
+\item \textbf{Systematic Touchpoints:} Ensure minimum touchpoint frequency
+      based on tier: A=monthly, B=quarterly, C=semi-annually.
+\end{enumerate}
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Summary}
+\label{sec:bp-summary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!75!black,
+    title=Appendix BP Summary: Customer Management System]
+
+\textbf{Core Contribution:}
+Complete specification for managing existing customer relationships, from
+lifecycle tracking to revenue optimization.
+
+\textbf{Key Formula:}
+\begin{equation}
+\text{Health Score} = 0.25E + 0.30P + 0.25R + 0.20N
+\end{equation}
+
+\textbf{Key Insights:}
+\begin{itemize}[nosep]
+\item Customer lifecycle follows: NEW $\rightarrow$ ACTIVE $\rightarrow$ DORMANT $\rightarrow$ CHURNED
+\item Health Score (0--100) enables proactive intervention
+\item A/B/C segmentation guides resource allocation
+\item CLV provides long-term value perspective
+\end{itemize}
+
+\textbf{Next Steps:} See Appendix UNMAPPED_BN for lead management, Appendix TKT for
+intervention design for customers.
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Glossary of Symbols}
+\label{sec:bp-glossary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{Central Reference:} For complete symbol definitions, see
+\textbf{Appendix G} (\textit{Glossary and Notation}).
+
+This section lists only symbols introduced in this appendix.
+\end{tcolorbox}
+
+\begin{table}[htbp]
+\centering
+\caption{Symbols Introduced in Appendix BP}
+\label{tab:bp-symbols}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clp{6cm}c@{}}
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Definition} & \textbf{Also in G?} \\
+\midrule
+$E$ & Engagement Score & Touchpoint frequency metric (0--100) & NEW \\
+$P$ & Project Score & Project performance metric (0--100) & NEW \\
+$R$ & Revenue Score & Revenue trend metric (0--100) & NEW \\
+$N$ & NPS Score & Net Promoter Score normalized (0--100) & NEW \\
+CLV & Customer Lifetime Value & NPV of future customer revenue & NEW \\
+ARPC & Avg Revenue Per Customer & Annual revenue per customer & NEW \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Critical Foundations and Objections}
+\label{sec:bp-foundations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Objection 1: Health Score Oversimplification}
+
+\textbf{Objection:} A single composite score cannot capture the complexity
+of customer relationships.
+
+\textbf{Response:} The Health Score is not intended to replace judgment but
+to provide an early warning system. The four components (E, P, R, N) cover
+distinct relationship dimensions. When scores diverge (e.g., high Revenue
+but low Engagement), this signals specific intervention needs.
+
+\subsection{Objection 2: CLV Uncertainty}
+
+\textbf{Objection:} Future revenue predictions are inherently uncertain,
+making CLV calculations unreliable.
+
+\textbf{Response:} We acknowledge uncertainty by using conservative retention
+rates and providing CLV ranges rather than point estimates. CLV is used for
+relative prioritization (Tier A vs. B vs. C), not absolute investment decisions.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Open Issues and Research Agenda}
+\label{sec:bp-open}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[htbp]
+\centering
+\caption{Research Roadmap for Customer Management}
+\label{tab:bp-roadmap}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}clcl@{}}
+\toprule
+\textbf{\#} & \textbf{Issue} & \textbf{Priority} & \textbf{Status} \\
+\midrule
+1 & Predictive churn model & HIGH & PLANNED \\
+2 & Automated health score calculation & HIGH & PLANNED \\
+3 & NPS survey automation & MEDIUM & PLANNED \\
+4 & CLV refinement with project data & MEDIUM & PENDING \\
+5 & Cross-sell recommendation engine & LOW & FUTURE \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{References}
+\label{sec:bp-references}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black]
+\textbf{Master Bibliography:} For complete reference details, see
+\texttt{bcm\_master.bib} in the repository.
+
+This section lists appendix-specific references.
+\end{tcolorbox}
+
+\subsection{Key References}
+
+\begin{itemize}[nosep]
+\item \textbf{Customer Lifetime Value:} Gupta \& Lehmann (2005), Fader et al. (2005)
+\item \textbf{Customer Retention:} Reichheld \& Sasser (1990), Reinartz \& Kumar (2000)
+\item \textbf{NPS Methodology:} Reichheld (2003)
+\end{itemize}
+
+\subsection{Data Sources}
+
+\begin{itemize}[nosep]
+\item \textbf{Customer Profiles:} \texttt{data/customers/} (29 profiles)
+\item \textbf{Project Registry:} \texttt{data/intervention-registry.yaml}
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CROSS-REFERENCE FOOTER
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\vspace{1em}
+\hrule
+\vspace{0.5em}
+
+\noindent\textit{Cross-references:}
+Appendix G (Central Glossary),
+Appendix UNMAPPED_BN (Lead Management),
+Appendix BK (Calculations),
+Appendix TKT (Intervention Toolkit).
+
+\noindent\textit{Master Bibliography:} \texttt{bcm\_master.bib}
+
+% =============================================================================
+% END OF APPENDIX BP
+% =============================================================================

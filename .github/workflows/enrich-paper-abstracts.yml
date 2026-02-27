@@ -1,0 +1,141 @@
+name: Enrich Papers with Abstracts
+
+on:
+  workflow_dispatch:
+    inputs:
+      input_file:
+        description: 'BibTeX file to enrich'
+        required: true
+        default: 'new_papers_bibtex.bib'
+      batch_size:
+        description: 'Number of entries to process (0 = all)'
+        required: false
+        default: '0'
+      update_master:
+        description: 'Also update bcm_master.bib'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      mode:
+        description: 'Run mode'
+        required: false
+        default: 'traditional'
+        type: choice
+        options:
+          - 'traditional'
+          - 'experimental'
+      stages:
+        description: 'Custom stages for experimental mode (comma-separated, 0=all)'
+        required: false
+        default: '1,10,100,0'
+      dry_run:
+        description: 'Dry run (report only, no changes)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  contents: write
+
+jobs:
+  enrich-abstracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Enrich papers with abstracts
+        run: |
+          ARGS="--input ${{ github.event.inputs.input_file }}"
+
+          if [ "${{ github.event.inputs.update_master }}" = "true" ]; then
+            ARGS="$ARGS --update-master"
+          fi
+
+          if [ "${{ github.event.inputs.batch_size }}" != "0" ]; then
+            ARGS="$ARGS --batch ${{ github.event.inputs.batch_size }}"
+          fi
+
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+
+          if [ "${{ github.event.inputs.mode }}" = "experimental" ]; then
+            ARGS="$ARGS --experimental --stages ${{ github.event.inputs.stages }}"
+          fi
+
+          # OpenAlex polite pool: slightly slower to avoid rate limits
+          ARGS="$ARGS --delay 0.15"
+
+          echo "Running: python scripts/enrich_papers_abstracts.py $ARGS"
+          python scripts/enrich_papers_abstracts.py $ARGS
+
+      - name: Show summary
+        if: always()
+        run: |
+          echo "=== ENRICHMENT SUMMARY ==="
+          if [ -f enrichment_summary.json ]; then
+            cat enrichment_summary.json
+          else
+            echo "No summary file generated"
+          fi
+
+      - name: Commit enriched papers
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+          # Check if there are changes
+          if git diff --quiet ${{ github.event.inputs.input_file }} bibliography/bcm_master.bib 2>/dev/null; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          # Get stats from summary
+          ABSTRACTS="unknown"
+          if [ -f enrichment_summary.json ]; then
+            ABSTRACTS=$(python3 -c "import json; d=json.load(open('enrichment_summary.json')); print(d.get('abstracts_found', 'unknown'))")
+          fi
+
+          git add ${{ github.event.inputs.input_file }}
+          if [ "${{ github.event.inputs.update_master }}" = "true" ]; then
+            git add bibliography/bcm_master.bib
+          fi
+
+          git status
+
+          git commit -m "feat(papers): Enrich ${ABSTRACTS} papers with OpenAlex abstracts
+
+          Source: api.openalex.org
+          Input: ${{ github.event.inputs.input_file }}
+          Master updated: ${{ github.event.inputs.update_master }}"
+
+          # Push to the trigger branch
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          echo "Pushing to branch: ${BRANCH}"
+          git push origin HEAD:${BRANCH}
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: enrichment-results
+          path: |
+            enrichment_summary.json

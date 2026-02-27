@@ -1,0 +1,899 @@
+# ============================================================================
+# FA-SM-1.1: FehrAdvice Strategy Model
+# ============================================================================
+# Meta-model for value-creation-driven strategy design
+# Integrates behavioral economics with strategic management
+#
+# CAUSAL CHAIN (corrected 2026-02-24):
+#   WERTSTEIGERUNG (Ziel) ← VERHALTEN (Hebel) ← KONTEXT-DESIGN (Instrument)
+#   V(t)                  ← B(t)              ← Ψ(t)
+#
+# SUB-MODELS:
+#   - SDM-1.0: Strategy Design Model (process layer)
+#   - SOCM-1.0: Strategy Option Comparison Model (option comparison layer)
+#
+# KEY THEORETICAL FOUNDATIONS:
+#   - Van den Steen (2017): A Formal Theory of Strategy [steen2017formal]
+#   - Brynjolfsson & Milgrom (2010): Complementarities in Organizations
+#   - Ichniowski et al. (1997): Effects of HRM Practices [ichniowski1997effects]
+#   - Bloom, Sadun & Van Reenen (2012): Management Practices [bloom2012management]
+#   - Oberholzer-Gee (2021): Better, Simpler Strategy [oberholzergee2021better]
+#   - Bandiera et al. (2020): CEO Behavior and Firm Performance [bandiera2020ceo]
+#
+# CHANGELOG v1.0 → v1.1 (2026-02-24):
+#   K1: Ψ-dimensions mapped to EBF canonical Ψ via composition functions
+#   K2: γ-parameters with literature sources and evidence tiers
+#   K3: Value dimensions grounded in WTP-WTS + FEPSDE
+#   K4: Actor groups with behavioral heterogeneity (Bandiera/Lazear)
+#   K5: dV/dt dynamics model added (learning, depreciation, complementarity)
+#   K6: Sub-model integration formalized
+#   K7: Context-dependent weights w_k(Ψ)
+#
+# Created: 2026-02-24
+# Version: 1.1
+# ============================================================================
+
+model:
+  id: "FA-SM-1.1"
+  name: "FehrAdvice Strategy Model"
+  category: "META-STRATEGY"
+  status: "EXPERIMENTAL"
+  version: "1.1"
+  created: "2026-02-24"
+  last_updated: "2026-02-24"
+  maintainer: "EBF Strategy Team"
+
+  # ==========================================================================
+  # PHILOSOPHICAL FOUNDATION
+  # ==========================================================================
+  foundation:
+    paradigm: |
+      Strategy without behavior integration is not implementable.
+      Strategy oriented only at behavioral goals is purposeless.
+      The ultimate goal is VALUE CREATION (Wertsteigerung).
+      Behavior is the LEVER (Hebel), Context Design is the INSTRUMENT.
+
+    # Van den Steen (2017) formal strategy definition
+    strategy_definition:
+      source: "steen2017formal"
+      definition: |
+        Strategy is "the smallest set of (core) choices to optimally guide
+        the other choices" (Van den Steen, Management Science 2017).
+      implication: |
+        A decision is strategic if and only if it has sufficient interactions
+        (γ_kl) with other decisions. Without interactions, there is no strategy
+        (Proposition 7). More interactions make a decision more strategic
+        (Proposition 8). This formally justifies FA-SM's focus on
+        complementarity parameters γ as the backbone of strategic architecture.
+      key_propositions:
+        - "P7: A decision with no interactions is never strategic"
+        - "P8: More interactions → more strategic"
+        - "P1a: Persistence makes decisions more strategic"
+        - "P4: Uncertainty makes strategy more valuable"
+        - "P12: Choice-specific capabilities make decisions more strategic"
+
+    causal_chain:
+      direction: "bidirectional"
+      top_down:
+        description: "What value do we need? → What behaviors enable it? → What context produces those behaviors?"
+        formula: "V*(t) → B*(t) → Ψ*(t)"
+        purpose: "Strategic goal-setting and requirement derivation"
+      bottom_up:
+        description: "Given this context → what behavior will emerge? → what value will result?"
+        formula: "Ψ(t) → B(t) → V(t)"
+        purpose: "Realistic prediction and feasibility assessment"
+
+    three_layers:
+      - layer: 0
+        name: "Wertschöpfungsziel (Value Creation Target)"
+        symbol: "V(t)"
+        question: "What value must be created over what time horizon?"
+        role: "NORTH STAR — all other layers serve this"
+      - layer: 1
+        name: "Verhaltensübersetzung (Behavior Translation)"
+        symbol: "B(t)"
+        question: "Which behaviors of which actors must change to produce V(t)?"
+        role: "LEVER — the mechanism through which strategy becomes real"
+      - layer: 2
+        name: "Kontext-Design (Context Architecture)"
+        symbol: "Ψ(t)"
+        question: "What context conditions must be created to produce B(t)?"
+        role: "INSTRUMENT — the actionable design space"
+
+  # ==========================================================================
+  # CORE FORMULAS
+  # ==========================================================================
+  core_formulas:
+
+    # Layer 0: Value Creation (improved with WTP-WTS grounding)
+    value_creation: |
+      V(t) = Σ_k w_k(Ψ) · V_k(t)
+
+      where:
+        V_k(t)  = value dimension k at time t
+        w_k(Ψ)  = context-dependent weight of dimension k (Σw_k = 1)
+                   [K7: weights depend on organizational and market context]
+        k ∈ {WTP, WTS, OC, IC}
+          WTP = Willingness-to-Pay created (customer-facing value)
+          WTS = Willingness-to-Sell reduced (talent & supplier value)
+          OC  = Organizational Capital built (capability & culture)
+          IC  = Innovation Capital generated (future optionality)
+
+    # Layer 1: Behavior → Value Translation (from Van den Steen 2017)
+    behavior_to_value: |
+      V_k(t) = α_k · B_k(t) + Σ_{j≠k} γ_kj · B_k(t) · B_j(t)
+
+      This mirrors Van den Steen's project revenue function:
+        Π = Σ_k α_k I_k + Σ_{k,l} γ_kl I_kl
+      where α_k = standalone importance, γ_kl = interaction strength.
+
+      In FA-SM, we extend to behavioral adoption:
+        B_k(t)  = Σ_j λ_j(Ψ) · B_jk(t)
+        B_jk(t) = adoption of behavior k by actor group j
+        λ_j(Ψ)  = context-dependent value-leverage of actor group j
+
+    # Layer 2: Context → Behavior Translation (from SDM-1.0 ODE)
+    context_to_behavior: |
+      dB_jk/dt = β_jk · U_jk(Ψ) · B_jk · (1 - B_jk) · (1 - R_jk) · (1 + M_jk)
+
+      where:
+        U_jk(Ψ) = utility of behavior k for actor group j given context Ψ
+        R_jk(t)  = resistance of actor group j to behavior k
+        M_jk(t)  = organizational momentum (social contagion + leadership)
+        β_jk     = adoption speed parameter
+
+    # Layer 0 Dynamics: Value Evolution (NEW — K5)
+    value_dynamics: |
+      dV_k/dt = η_k · B_k(t) · [1 + Σ_j γ_kj · B_j(t)]  — Learning effect
+              - δ_k · V_k(t)                                — Depreciation
+              + ε_k(t)                                       — Market shocks
+
+      where:
+        η_k    = learning rate for value dimension k
+                 [Thompson (2012): η ∈ [0.05, 0.25] for organizational learning]
+        δ_k    = depreciation rate of value dimension k
+                 [OC: δ_OC ≈ 0.05-0.15/year (culture erodes without reinforcement)]
+                 [IC: δ_IC ≈ 0.15-0.30/year (innovation depreciates fast)]
+        γ_kj   = dynamic complementarity (Heckman: "skills beget skills")
+                 [Positive γ: value in k accelerates when j is also high]
+        ε_k(t) = exogenous market shock to value dimension k
+
+      Steady state: V_k* = (η_k / δ_k) · B_k* · [1 + Σ_j γ_kj · B_j*]
+      Implication: Higher complementarity → higher steady-state value
+
+    # Master equation (updated)
+    master_equation: |
+      V(t) = Σ_k w_k(Ψ) · V_k(t)
+
+      Subject to:
+        dV_k/dt  = η_k · B_k · [1 + Σ_j γ_kj · B_j] - δ_k · V_k + ε_k
+        dB_jk/dt = β_jk · U_jk(Ψ, I) · B_jk · (1 - B_jk) · (1 - R_jk) · (1 + M_jk)
+        I(t) ∈ [0,1]^9    (EBF intervention vector)
+
+      This is a coupled ODE system: Ψ → B → V with feedback V → Ψ
+      (success changes context, e.g., momentum, legitimacy, resources).
+
+  # ==========================================================================
+  # VALUE DIMENSIONS (Layer 0) — K3: Grounded in WTP-WTS + FEPSDE
+  # ==========================================================================
+  # Theoretical basis: Oberholzer-Gee (2021) "Better, Simpler Strategy"
+  # Value = WTP - WTS, where WTP = willingness-to-pay, WTS = willingness-to-sell
+  # Extended with organizational and innovation capital for dynamic strategy.
+  # FEPSDE mapping connects to EBF utility framework.
+  value_dimensions:
+    - symbol: "V_WTP"
+      name: "Customer Value Created (WTP)"
+      description: |
+        Increase in willingness-to-pay through product, service, and experience
+        improvement. Oberholzer-Gee (2021): "The most fundamental driver of
+        competitive advantage is creating value for customers."
+      measurement: "ΔWTP (CHF), NPS, CLV, conversion rates"
+      default_weight: 0.30
+      weight_drivers: "Ψ_E (market competition), Ψ_T (growth phase)"
+      typical_horizon: "1-5 years"
+      fepsde_mapping: "F (financial returns from WTP), S (social trust)"
+      literature:
+        - "oberholzergee2021better"
+        - "bloom2012management"
+
+    - symbol: "V_WTS"
+      name: "Talent & Supply Value (WTS reduction)"
+      description: |
+        Reduction in willingness-to-sell through better working conditions,
+        purpose, culture, and supplier relationships. Lower WTS = wider
+        value wedge = competitive advantage in talent and supply markets.
+      measurement: "Employee NPS, turnover %, supplier reliability index"
+      default_weight: 0.25
+      weight_drivers: "Ψ_S (labor market tightness), Ψ_K (cultural expectations)"
+      typical_horizon: "2-7 years"
+      fepsde_mapping: "E (employee wellbeing), S (organizational belonging)"
+      literature:
+        - "oberholzergee2021better"
+        - "lazear2018personnel"
+
+    - symbol: "V_OC"
+      name: "Organizational Capital"
+      description: |
+        Accumulated capability, culture, routines, and tacit knowledge.
+        Bloom/Sadun/Van Reenen (2012): "Management practices explain ~30% of
+        cross-country productivity differences." Depreciates without
+        reinforcement (δ_OC ≈ 0.05-0.15/year).
+      measurement: "Management practice scores (WMS), capability index"
+      default_weight: 0.25
+      weight_drivers: "Ψ_T (organizational maturity), Ψ_I (regulatory stability)"
+      typical_horizon: "3-10 years"
+      fepsde_mapping: "P (practical capabilities), D (deliberative routines)"
+      literature:
+        - "bloom2012management"
+        - "sadun2017are"
+        - "gibbons2015corporate"
+      depreciation_rate: "δ_OC ∈ [0.05, 0.15] per year"
+
+    - symbol: "V_IC"
+      name: "Innovation Capital"
+      description: |
+        Future optionality from R&D, experimentation, new business models.
+        Depreciates fastest (δ_IC ≈ 0.15-0.30/year) because competitive
+        environment erodes innovation advantage.
+      measurement: "Revenue from new products %, patent citations, option value"
+      default_weight: 0.20
+      weight_drivers: "Ψ_E (disruption intensity), Ψ_M (technology maturity)"
+      typical_horizon: "3-10 years"
+      fepsde_mapping: "F (financial optionality), D (deliberative exploration)"
+      literature:
+        - "acemoglu2018innovation"
+        - "cassiman2006search"
+      depreciation_rate: "δ_IC ∈ [0.15, 0.30] per year"
+
+  # ==========================================================================
+  # ACTOR GROUPS (Layer 1) — K4: Behavioral heterogeneity
+  # ==========================================================================
+  # Improved with Bandiera et al. (2020), Lazear (2018), Lee (2022)
+  # Key insight: within-group heterogeneity matters as much as between-group
+  actor_groups:
+    - symbol: "B_L"
+      name: "Leadership"
+      description: "C-suite, board, senior management"
+      default_leverage: 0.35
+      leverage_drivers: "Ψ_I (governance structure), Ψ_S (leadership legitimacy)"
+      behavioral_heterogeneity:
+        source: "bandiera2020ceo"
+        insight: |
+          Bandiera et al. (2020, JPE) show CEO behavior clusters into
+          distinct types with measurable impact on firm performance.
+          Leaders differ in time allocation (meetings vs. solo work),
+          span of control, and strategic vs. operational orientation.
+        types:
+          - "Strategic-Allocator (high meetings, broad span, +3.5% revenue)"
+          - "Operational-Manager (task-focused, narrow span, neutral)"
+          - "Political-Navigator (relationship-focused, context-dependent)"
+      typical_behaviors:
+        - "Strategic decision quality (Van den Steen P10: αₖ × pₖ)"
+        - "Resource allocation discipline"
+        - "Culture role-modeling (Ψ_K shaping)"
+
+    - symbol: "B_M"
+      name: "Middle Management"
+      description: "Department heads, team leads, project managers"
+      default_leverage: 0.30
+      leverage_drivers: "Ψ_I (delegation vs. centralization), Ψ_C (information quality)"
+      behavioral_heterogeneity:
+        source: "bloom2012management"
+        insight: |
+          Bloom/Van Reenen (2007, 2012): Management practice quality
+          varies enormously within and between firms. The gap between
+          best and worst management practice within a firm predicts
+          productivity more than between-firm differences.
+        types:
+          - "Translator (strategy → operations, high cross-functional)"
+          - "Optimizer (process improvement, efficiency-focused)"
+          - "Bottleneck (information filter, can block or enable)"
+      typical_behaviors:
+        - "Strategy translation to operations"
+        - "Team motivation and coaching"
+        - "Cross-functional collaboration (Van den Steen P8: interaction enabler)"
+
+    - symbol: "B_O"
+      name: "Operations"
+      description: "Frontline employees, specialists, craftspeople"
+      default_leverage: 0.20
+      leverage_drivers: "Ψ_M (technology/tools), Ψ_E (resource availability)"
+      behavioral_heterogeneity:
+        source: "lazear2018personnel"
+        insight: |
+          Lazear (2018): Personnel economics shows frontline workers
+          respond to incentive design, but intrinsic motivation and
+          peer effects often dominate monetary incentives. Ichniowski
+          et al. (1997) show HRM practices are complementary — changing
+          one practice without others has near-zero effect.
+        types:
+          - "Engaged-Adopter (intrinsically motivated, early mover)"
+          - "Conditional-Cooperator (follows social norms, majority)"
+          - "Resistant-Skeptic (requires evidence, slow but thorough)"
+      typical_behaviors:
+        - "Process adoption (β depends on Ψ_I defaults)"
+        - "Quality commitment (linked to Ψ_K culture)"
+        - "Continuous improvement (requires Ψ_INF feedback loops)"
+
+    - symbol: "B_E"
+      name: "External Stakeholders"
+      description: "Customers, suppliers, partners, regulators"
+      default_leverage: 0.15
+      leverage_drivers: "Ψ_S (market norms), Ψ_I (contractual frameworks)"
+      behavioral_heterogeneity:
+        source: "fehr2007economics"
+        insight: |
+          Fehr et al. (2007): Contract enforcement depends on social
+          preferences (fairness, reciprocity). External stakeholders
+          respond to relationship quality, not just price signals.
+        types:
+          - "Value-Aligned (shared purpose, long-term orientation)"
+          - "Transactional (price-sensitive, switching-ready)"
+          - "Regulatory (compliance-driven, rule-following)"
+      typical_behaviors:
+        - "Adoption of new offerings"
+        - "Partnership commitment (relational contracts)"
+        - "Regulatory compliance and beyond-compliance"
+
+  # ==========================================================================
+  # CONTEXT DIMENSIONS (Layer 2) — K1: Mapped to EBF Canonical Ψ
+  # ==========================================================================
+  # CRITICAL FIX: FA-SM organizational dimensions are COMPOSITIONS of
+  # the 8 canonical EBF Ψ-dimensions (Ψ_I, Ψ_S, Ψ_C, Ψ_K, Ψ_E, Ψ_T, Ψ_M, Ψ_F).
+  #
+  # This means:
+  # 1. Every FA-SM dimension is REDUCIBLE to EBF Ψ → enables PCT
+  # 2. The mapping is many-to-one: multiple Ψ contribute to each org dimension
+  # 3. Market dimensions are exogenous projections of the same Ψ space
+  #
+  # Composition function: Ψ_ORG_i = Σ_j w_ij · Ψ_j  (weighted linear combination)
+  # This allows Parameter Context Transformation (PCT) to work across all levels.
+  context_dimensions:
+
+    # ---- EBF Canonical Ψ (foundation, immutable) ----
+    canonical_psi:
+      description: |
+        The 8 EBF canonical Ψ-dimensions. FA-SM organizational dimensions
+        are derived from these via composition functions. This ensures
+        compatibility with EBF PCT (Parameter Context Transformation).
+      dimensions:
+        - {symbol: "Ψ_I", name: "Institutional", question: "Which rules, defaults, regulations apply?"}
+        - {symbol: "Ψ_S", name: "Social", question: "Who is present? What social norms?"}
+        - {symbol: "Ψ_C", name: "Cognitive", question: "Cognitive load, attention, motivation?"}
+        - {symbol: "Ψ_K", name: "Cultural", question: "What values, traditions, identity?"}
+        - {symbol: "Ψ_E", name: "Economic", question: "Budget, resources, market conditions?"}
+        - {symbol: "Ψ_T", name: "Temporal", question: "Time pressure, lifecycle phase, horizon?"}
+        - {symbol: "Ψ_M", name: "Material/Technology", question: "Tools, infrastructure, digital?"}
+        - {symbol: "Ψ_F", name: "Physical/Spatial", question: "Location, physical environment?"}
+
+    # ---- Organizational Context (derived, designable) ----
+    organizational:
+      - symbol: "Ψ^org_GOV"
+        name: "Governance & Decision Architecture"
+        description: "How decisions are made, authority distribution, accountability"
+        designable: true
+        scale: [0.0, 1.0]
+        ebf_composition:
+          primary: "Ψ_I"
+          secondary: "Ψ_S"
+          formula: "Ψ^org_GOV = w₁·Ψ_I(rules, authority) + w₂·Ψ_S(hierarchy, legitimacy)"
+          weights: {Ψ_I: 0.65, Ψ_S: 0.35}
+          rationale: |
+            Governance is primarily institutional (formal rules, authority structures)
+            plus social (legitimacy, accountability norms).
+            Source: North (1990), Acemoglu/Robinson (2012)
+
+      - symbol: "Ψ^org_INC"
+        name: "Incentive Architecture"
+        description: "Compensation, recognition, career paths, non-monetary rewards"
+        designable: true
+        scale: [0.0, 1.0]
+        ebf_composition:
+          primary: "Ψ_I"
+          secondary: "Ψ_E"
+          formula: "Ψ^org_INC = w₁·Ψ_I(compensation rules) + w₂·Ψ_E(resources) + w₃·Ψ_S(recognition)"
+          weights: {Ψ_I: 0.45, Ψ_E: 0.35, Ψ_S: 0.20}
+          rationale: |
+            Incentives combine formal rules (pay structure, Ψ_I),
+            economic resources (bonus pool, Ψ_E), and social recognition (Ψ_S).
+            CROWDING-OUT WARNING: Monetary Ψ_E can crowd out social Ψ_S
+            (PAR-COMP-002: γ_social_financial = -0.68).
+            Source: Lazear (2018), Frey (1997), Gneezy/Rustichini (2000)
+        crowding_out_risk:
+          parameter_ref: "PAR-COMP-002"
+          condition: "When Ψ_E(monetary) dominates Ψ_S(intrinsic)"
+          gamma: -0.68
+          source: "frey1997cost, gneezy2000pay"
+
+      - symbol: "Ψ^org_INF"
+        name: "Information Architecture"
+        description: "Transparency, feedback loops, KPI visibility, communication"
+        designable: true
+        scale: [0.0, 1.0]
+        ebf_composition:
+          primary: "Ψ_M"
+          secondary: "Ψ_C"
+          formula: "Ψ^org_INF = w₁·Ψ_M(technology, dashboards) + w₂·Ψ_C(cognitive capacity) + w₃·Ψ_I(reporting rules)"
+          weights: {Ψ_M: 0.45, Ψ_C: 0.30, Ψ_I: 0.25}
+          rationale: |
+            Information architecture depends on technology/tools (Ψ_M),
+            cognitive capacity to process information (Ψ_C), and
+            formal reporting/transparency rules (Ψ_I).
+            Source: Bloom/Sadun/Van Reenen (2012)
+
+      - symbol: "Ψ^org_CUL"
+        name: "Cultural Architecture"
+        description: "Values, norms, rituals, symbols, stories, identity"
+        designable: "partially (slow, 2-5 years per Van den Steen 2024)"
+        scale: [0.0, 1.0]
+        ebf_composition:
+          primary: "Ψ_K"
+          secondary: "Ψ_S"
+          formula: "Ψ^org_CUL = w₁·Ψ_K(values, traditions) + w₂·Ψ_S(social norms, peer effects)"
+          weights: {Ψ_K: 0.60, Ψ_S: 0.40}
+          rationale: |
+            Culture = shared values (Ψ_K) + social enforcement (Ψ_S).
+            Van den Steen (2024): Culture changes slowly because it
+            requires coordination on new shared beliefs.
+            Gibbons/Van den Steen (2015): Culture = what is "normal" + what is "valued."
+            Source: steen2024dynamics, gibbons2015corporate
+
+      - symbol: "Ψ^org_CAP"
+        name: "Capability Architecture"
+        description: "Skills, tools, processes, technology, know-how"
+        designable: true
+        scale: [0.0, 1.0]
+        ebf_composition:
+          primary: "Ψ_M"
+          secondary: "Ψ_C"
+          tertiary: "Ψ_E"
+          formula: "Ψ^org_CAP = w₁·Ψ_M(tools, tech) + w₂·Ψ_C(skills, learning) + w₃·Ψ_E(investment)"
+          weights: {Ψ_M: 0.40, Ψ_C: 0.35, Ψ_E: 0.25}
+          rationale: |
+            Capabilities require tools/technology (Ψ_M), human skills and
+            learning capacity (Ψ_C), and resource investment (Ψ_E).
+            Van den Steen P12: Choice-specific capabilities make decisions
+            more strategic.
+            Source: bloom2012management, steen2017formal (Prop. 12)
+
+    # ---- Market Context (derived, exogenous) ----
+    market:
+      - symbol: "Ψ^ext_MKT"
+        name: "Market Dynamics"
+        description: "Competition, disruption, demand shifts"
+        designable: false
+        scale: [0.0, 1.0]
+        ebf_composition:
+          formula: "Ψ^ext_MKT = projection of Ψ_E(market), Ψ_T(cycle phase)"
+          rationale: "Market dynamics are external economic conditions over time"
+
+      - symbol: "Ψ^ext_REG"
+        name: "Regulatory Environment"
+        description: "Laws, standards, compliance requirements"
+        designable: false
+        scale: [0.0, 1.0]
+        ebf_composition:
+          formula: "Ψ^ext_REG = projection of Ψ_I(external regulations)"
+          rationale: "Regulatory = external institutional rules (pure Ψ_I projection)"
+
+      - symbol: "Ψ^ext_MAC"
+        name: "Macro Environment"
+        description: "Economy, geopolitics, technology trends"
+        designable: false
+        scale: [0.0, 1.0]
+        ebf_composition:
+          formula: "Ψ^ext_MAC = projection of Ψ_E(macro), Ψ_K(societal), Ψ_T(secular trends)"
+          rationale: "Macro environment spans economic, cultural, and temporal dimensions"
+
+  # ==========================================================================
+  # COMPLEMENTARITY PARAMETERS (γ) — K2: With literature sources
+  # ==========================================================================
+  # Theoretical basis: Van den Steen (2017) Proposition 7-8:
+  #   "A decision with no interactions is never strategic."
+  #   "More interactions → more strategic."
+  #
+  # EXC-1 applies: γ = 0 is DEFAULT, γ ≠ 0 requires justification.
+  # Each γ below has a literature source or is marked as "to_calibrate."
+  #
+  # Brynjolfsson & Milgrom (2010): Organizational practices are
+  # SUPERMODULAR — changing one practice without complementary others
+  # can reduce performance.
+  #
+  # Ichniowski et al. (1997): "The productivity effects of innovative
+  # HRM practices are linked to clusters of complementary practices.
+  # Changing individual practices has little effect."
+  complementarity_parameters:
+    theoretical_basis:
+      supermodularity: |
+        Topkis (1978), Milgrom/Roberts (1990): A function f is
+        supermodular if f(x∨y) + f(x∧y) ≥ f(x) + f(y).
+        Implication: complementary practices should change TOGETHER.
+      empirical_anchor: |
+        Ichniowski et al. (1997, AER): Steel finishing lines with
+        CLUSTERS of innovative HRM practices had 6.7% higher
+        productivity. Individual practice changes had near-zero effect.
+        This is the strongest empirical evidence for organizational
+        complementarity.
+
+    # ---- Context-Context Complementarities (Ψ × Ψ) ----
+    context_context:
+      - pair: "Ψ^org_INC × Ψ^org_CUL"
+        symbol: "γ_INC_CUL"
+        value: -0.35
+        evidence_tier: 1
+        source: "frey1997cost, gneezy2000pay"
+        parameter_ref: "Derived from PAR-COMP-002 (γ_social_financial = -0.68)"
+        interpretation: |
+          CROWDING-OUT: Monetary incentives (Ψ^org_INC high on Ψ_E)
+          can undermine intrinsic cultural motivation (Ψ^org_CUL high on Ψ_K).
+          Organizational level estimate: -0.35 (attenuated from individual -0.68
+          because organizational incentives are mixed monetary + non-monetary).
+        design_rule: "Never increase Ψ^org_INC without checking Ψ^org_CUL impact"
+
+      - pair: "Ψ^org_GOV × Ψ^org_INF"
+        symbol: "γ_GOV_INF"
+        value: 0.25
+        evidence_tier: 2
+        source: "bloom2012management"
+        interpretation: |
+          COMPLEMENTARY: Good governance (clear authority) + good information
+          (transparent KPIs) reinforce each other. Bloom et al. (2012) show
+          structured management practices are complementary clusters.
+        design_rule: "Improve governance and information systems together"
+
+      - pair: "Ψ^org_INF × Ψ^org_CAP"
+        symbol: "γ_INF_CAP"
+        value: 0.30
+        evidence_tier: 1
+        source: "ichniowski1997effects"
+        interpretation: |
+          COMPLEMENTARY: Information + capability form the strongest
+          organizational complementarity. Ichniowski's HRM clusters:
+          information sharing + training + flexible job design = +6.7%.
+          Each alone ≈ 0%.
+
+      - pair: "Ψ^org_CAP × Ψ^org_CUL"
+        symbol: "γ_CAP_CUL"
+        value: 0.20
+        evidence_tier: 2
+        source: "gibbons2015corporate, steen2024dynamics"
+        interpretation: |
+          COMPLEMENTARY: Capabilities embedded in supportive culture
+          persist longer (lower δ). Van den Steen (2024): culture
+          provides the coordination framework for capability deployment.
+
+    # ---- Behavior-Context Complementarities (B × Ψ) ----
+    behavior_context:
+      - pair: "B_L × Ψ^org_GOV"
+        symbol: "γ_BL_GOV"
+        value: 0.25
+        evidence_tier: 2
+        source: "bandiera2020ceo, steen2018strategy"
+        interpretation: |
+          Leadership effectiveness depends on governance structure.
+          Bandiera et al. (2020): CEO behavior explains firm performance
+          variation, but governance mediates the channel.
+          Van den Steen (2018): WHO develops strategy matters.
+
+      - pair: "B_M × Ψ^org_INF"
+        symbol: "γ_BM_INF"
+        value: 0.20
+        evidence_tier: 2
+        source: "bloom2012management"
+        interpretation: |
+          Middle management effectiveness scales with information quality.
+          Bloom et al.: managers with structured targets and monitoring
+          outperform those without, but ONLY when information systems support it.
+
+      - pair: "B_O × Ψ^org_INC"
+        symbol: "γ_BO_INC"
+        value: 0.15
+        evidence_tier: 1
+        source: "lazear2018personnel, ichniowski1997effects"
+        interpretation: |
+          Operational behavior responds to incentive design, but
+          the effect is moderated by culture (crowding-out risk).
+          Effective only when Ψ^org_CUL is not undermined.
+        warning: "Check γ_INC_CUL before increasing Ψ^org_INC"
+
+      - pair: "B_L × Ψ^org_CUL"
+        symbol: "γ_BL_CUL"
+        value: 0.15
+        evidence_tier: 2
+        source: "steen2024dynamics, gibbons2015corporate"
+        interpretation: |
+          Leadership shapes culture slowly. The complementarity is
+          POSITIVE but SLOW — culture change requires persistent
+          leadership commitment over 2-5 years.
+        temporal_note: "Effect materializes over 2-5 year horizon"
+
+    # ---- Value-Value Complementarities (V × V) ----
+    value_value:
+      - pair: "V_OC × V_IC"
+        symbol: "γ_OC_IC"
+        value: 0.20
+        evidence_tier: 2
+        source: "cassiman2006search, acemoglu2018innovation"
+        interpretation: |
+          Organizational capital and innovation capital reinforce:
+          strong processes enable systematic innovation.
+          Cassiman/Veugelers (2006): internal R&D and external
+          knowledge sourcing are complementary.
+
+      - pair: "V_WTP × V_OC"
+        symbol: "γ_WTP_OC"
+        value: 0.15
+        evidence_tier: 3
+        source: "bloom2012management"
+        interpretation: |
+          Customer value creation benefits from organizational
+          capability. Better-managed firms create more customer value.
+        calibration_needed: true
+
+      - pair: "V_WTP × V_WTS"
+        symbol: "γ_WTP_WTS"
+        value: -0.10
+        evidence_tier: 3
+        source: "oberholzergee2021better"
+        interpretation: |
+          TENSION: Resources allocated to customer value (WTP) may
+          compete with resources for talent value (WTS) in the short run.
+          Oberholzer-Gee: trade-off is managed through sequencing.
+        calibration_needed: true
+
+  # ==========================================================================
+  # SUB-MODEL INTEGRATION — K6: Formalized mapping
+  # ==========================================================================
+  sub_models:
+    - model_id: "SDM-1.0"
+      role: "Process Layer (Layer 2 → Layer 1 translation)"
+      formal_interface:
+        input_from_FASM: "ΔΨ (context gap from top-down Step 3)"
+        output_to_FASM: "B(t) trajectories via 4-phase BCJ"
+        shared_state: "Ψ(t) — same context vector"
+      integration: |
+        SDM-1.0 provides the 4-phase BCJ (Awareness→Readiness→Action→Embedding)
+        for implementing context changes. FA-SM defines WHAT context to change
+        (ΔΨ), SDM-1.0 defines HOW to change it (intervention sequencing).
+      fepsde_to_fasm_mapping:
+        F: "V_WTP (Financial → Customer Value)"
+        E: "V_WTS (Emotional/Environmental → Talent Value)"
+        P: "Ψ^org_CAP (Practical → Capability)"
+        S: "Ψ^org_CUL (Social → Culture)"
+        D: "Ψ^org_INF (Deliberative → Information)"
+        E2: "V_OC (Ecological → Organizational Capital)"
+
+    - model_id: "SOCM-1.0"
+      role: "Option Comparison Layer (within Layer 0)"
+      formal_interface:
+        input_from_FASM: "V_k target configuration, γ_kj matrix"
+        output_to_FASM: "Optimal portfolio weights, sequencing"
+        shared_state: "γ_kj — same complementarity parameters"
+      integration: |
+        SOCM-1.0 operates within Layer 0 to compare and optimize strategic
+        options. It takes the γ_kj matrix from FA-SM to compute portfolio
+        utilities that account for complementarities between options.
+        Van den Steen (2017) Prop. 7: options without interactions can be
+        evaluated independently; options WITH interactions require joint
+        optimization (= SOCM's raison d'être).
+
+  # ==========================================================================
+  # BIDIRECTIONAL WORKFLOW
+  # ==========================================================================
+  workflow:
+    top_down:
+      name: "Auslegeordnung → Zielableitung"
+      steps:
+        - step: 1
+          name: "Wertschöpfungsziel definieren"
+          question: "What value must be created? For whom? By when?"
+          output: "V*(t) = target value vector [V_WTP, V_WTS, V_OC, V_IC] with w_k(Ψ) and timeline"
+          layer: 0
+          van_den_steen: "This defines the 'project revenue' Π from the strategy game"
+
+        - step: 2
+          name: "Verhaltensübersetzung"
+          question: "Which actors must change which behaviors to produce V*(t)?"
+          output: "B*(t) = required behavioral adoption by actor group, behavior, and phase"
+          layer: 1
+          van_den_steen: "Identifies the K choices that interact most (P8: strategic choices)"
+
+        - step: 3
+          name: "Kontext-Diagnostik"
+          question: "What is the current context Ψ(t₀)? What gap to Ψ*(t)?"
+          output: "ΔΨ = Ψ*(t) - Ψ(t₀) mapped to EBF canonical Ψ via composition"
+          layer: 2
+
+        - step: 4
+          name: "Strategische Architektur"
+          question: "Which strategic options best close ΔΨ? (via SOCM-1.0)"
+          output: "Portfolio of strategic options with weights and sequencing"
+          sub_model: "SOCM-1.0"
+          van_den_steen: "Selects the 'smallest set of core choices to guide others' (Def. 2)"
+
+        - step: 5
+          name: "Implementierungsdesign"
+          question: "How to implement over BCJ phases? (via SDM-1.0)"
+          output: "4-phase implementation roadmap with milestones"
+          sub_model: "SDM-1.0"
+
+        - step: 6
+          name: "Dynamisches Modell"
+          question: "What does the coupled ODE system predict for this configuration?"
+          output: "V(t), B(t), R(t) trajectories with scenarios"
+          tool: "scripts/ode_simulator.py"
+          equations: "dV_k/dt and dB_jk/dt from core_formulas"
+
+    bottom_up:
+      name: "Realitätscheck → Machbarkeitsanalyse"
+      steps:
+        - step: 1
+          name: "Kontext-Ist-Analyse"
+          question: "What is the actual current context Ψ(t₀)?"
+          output: "Ψ(t₀) in EBF canonical form; 983+ factors if CVA VERTIEFT"
+
+        - step: 2
+          name: "Verhaltensvorhersage"
+          question: "Given Ψ(t₀), what behavior will actually emerge?"
+          output: "B_predicted(t) from ODE simulation (dB_jk/dt)"
+
+        - step: 3
+          name: "Wertschöpfungs-Prognose"
+          question: "Given B_predicted(t), what value will be created?"
+          output: "V_predicted(t) from dV_k/dt — reality check against V*(t)"
+
+        - step: 4
+          name: "Gap-Analyse"
+          question: "V*(t) - V_predicted(t) = how far from target?"
+          output: "Gap analysis driving iteration back to top-down Step 1"
+
+  # ==========================================================================
+  # 10C MAPPING
+  # ==========================================================================
+  ten_c_mapping:
+    WHO: "Actor groups (B_L, B_M, B_O, B_E) with behavioral heterogeneity — whose behavior creates value"
+    WHAT: "Value dimensions (V_WTP, V_WTS, V_OC, V_IC) grounded in WTP-WTS — what utility"
+    HOW: "Complementarity parameters (γ) from Brynjolfsson/Milgrom supermodularity — interaction effects"
+    WHEN: "BCJ phases from SDM-1.0 + Van den Steen persistence (P1a) — timing of behavioral change"
+    WHERE: "Context dimensions (Ψ^org, Ψ^ext) as compositions of EBF canonical Ψ — organizational and market parameters"
+    AWARE: "Information architecture (Ψ^org_INF) mapped to Ψ_M + Ψ_C — strategic awareness"
+    READY: "Capability architecture (Ψ^org_CAP) mapped to Ψ_M + Ψ_C + Ψ_E — readiness to execute"
+    STAGE: "4-phase BCJ from SDM-1.0 — where in the behavioral change journey"
+    HIERARCHY: "Van den Steen endogenous hierarchy: strategy creates decision levels"
+    EIT: "Intervention vector I(t) ∈ [0,1]^9 — emergent design"
+
+  # ==========================================================================
+  # LITERATURE REFERENCES
+  # ==========================================================================
+  references:
+    core_theory:
+      - key: "steen2017formal"
+        contribution: "Formal definition of strategy, interaction-based strategic importance"
+      - key: "steen2018strategy"
+        contribution: "Who develops strategy matters for outcome"
+      - key: "brynjolfsson2010complementarities"
+        contribution: "Supermodularity of organizational practices (theoretical foundation for γ)"
+      - key: "milgrom1990economics"
+        contribution: "Modern manufacturing as supermodular system"
+
+    empirical_complementarity:
+      - key: "ichniowski1997effects"
+        contribution: "STRONGEST empirical evidence: HRM practice clusters, γ ≈ 6.7% productivity"
+      - key: "bloom2012management"
+        contribution: "Management practice quality explains 30% productivity variation"
+      - key: "sadun2017are"
+        contribution: "Good management ≈ good technology as productivity driver"
+
+    value_creation:
+      - key: "oberholzergee2021better"
+        contribution: "WTP-WTS framework: value = willingness-to-pay minus willingness-to-sell"
+      - key: "kaplan2004strategy"
+        contribution: "Strategy maps, but FA-SM goes beyond BSC with behavioral grounding"
+
+    behavioral_foundations:
+      - key: "bandiera2020ceo"
+        contribution: "CEO behavior types and firm performance (γ = +3.5% for strategic-allocator)"
+      - key: "lazear2018personnel"
+        contribution: "Personnel economics: incentive design and worker heterogeneity"
+      - key: "frey1997cost"
+        contribution: "Crowding-out of intrinsic motivation by extrinsic incentives"
+      - key: "gneezy2000pay"
+        contribution: "Pay enough or don't pay at all — nonlinear incentive effects"
+      - key: "fehr2007economics"
+        contribution: "Social preferences in contract enforcement"
+
+    organizational_culture:
+      - key: "steen2024dynamics"
+        contribution: "Dynamics of corporate culture: slow change, persistent effects"
+      - key: "gibbons2015corporate"
+        contribution: "What is corporate culture? Formal definition with Van den Steen"
+      - key: "steen2019role"
+        contribution: "Role of vision in leadership and strategy"
+
+    dynamic_models:
+      - key: "thompson2012learning"
+        contribution: "Learning curves: η ∈ [0.05, 0.25] for organizational learning rate"
+      - key: "heckman2007economics"
+        contribution: "Dynamic complementarity: skills beget skills (γ increases over time)"
+      - key: "acemoglu2018innovation"
+        contribution: "Innovation dynamics and competitive depreciation"
+
+    institutional_foundations:
+      - key: "north1990institutions"
+        contribution: "Institutions as rules of the game (maps to Ψ_I)"
+      - key: "acemoglu2012nations"
+        contribution: "Institutional quality determines economic outcomes"
+      - key: "rustagi2024institutions"
+        contribution: "Institutional design and cooperative behavior"
+
+  # ==========================================================================
+  # VALIDATION
+  # ==========================================================================
+  validation:
+    status: "EXPERIMENTAL"
+    methodology: "First instantiation: Zindel United (ZIN005)"
+    accuracy: 0.00
+    data_points: 0
+    confidence: "LOW (framework-level; requires client projects for calibration)"
+    improvements_v1_1:
+      K1: "Ψ-dimensions now mapped to EBF canonical Ψ (enables PCT)"
+      K2: "γ-parameters grounded in literature (Ichniowski, Bloom, Frey/Gneezy)"
+      K3: "Value dimensions grounded in WTP-WTS (Oberholzer-Gee) + FEPSDE"
+      K4: "Actor groups with behavioral heterogeneity (Bandiera, Lazear)"
+      K5: "V(t) dynamics added (learning, depreciation, complementarity)"
+      K6: "Sub-model interfaces formalized"
+      K7: "Weights w_k(Ψ) are context-dependent"
+    remaining_gaps:
+      - "Empirical calibration of organizational γ (Ichniowski provides anchors but sector-specific)"
+      - "Dynamic weights w_k(Ψ) need functional form specification"
+      - "Feedback loop V→Ψ (success changes context) not yet formalized"
+      - "Cross-client validation needed (3-5 projects)"
+    notes: |
+      FA-SM-1.1 addresses the 7 critical weaknesses identified in review.
+      The model is now EBF-compatible (canonical Ψ, PAR-COMP references)
+      and grounded in peer-reviewed literature (Tier 1: AER, JPE, MS).
+      First validation via Zindel United organizational design project (ZIN005).
+
+  # ==========================================================================
+  # ROADMAP
+  # ==========================================================================
+  roadmap:
+    v1_0:
+      status: "SUPERSEDED by v1.1"
+      date: "2026-02-24"
+      deliverables:
+        - "Three-layer architecture (Value → Behavior → Context)"
+        - "Bidirectional workflow (top-down + bottom-up)"
+        - "Sub-model integration (SDM-1.0, SOCM-1.0)"
+
+    v1_1:
+      status: "EXPERIMENTAL"
+      date: "2026-02-24"
+      deliverables:
+        - "K1: EBF canonical Ψ mapping via composition functions"
+        - "K2: Literature-grounded γ parameters (Ichniowski, Bloom, Frey)"
+        - "K3: WTP-WTS value dimensions with FEPSDE mapping"
+        - "K4: Actor groups with behavioral heterogeneity"
+        - "K5: V(t) dynamics (learning, depreciation, dynamic complementarity)"
+        - "K6: Formalized sub-model interfaces"
+        - "K7: Context-dependent weights w_k(Ψ)"
+        - "Van den Steen formal strategy definition integrated"
+        - "~25 literature references with evidence tiers"
+
+    v1_2_planned:
+      status: "PLANNED"
+      date: "2026-Q2"
+      deliverables:
+        - "Empirical calibration of γ from Zindel ZIN005 outcomes"
+        - "Integration with ODE simulator for V(t) trajectories"
+        - "Feedback loop V→Ψ formalization"
+        - "Context-dependent weight functions w_k(Ψ) specification"
+
+    v2_0_planned:
+      status: "PLANNED"
+      date: "2027-Q1"
+      deliverables:
+        - "Cross-client validation (3-5 projects)"
+        - "Dynamic context adaptation (real-time Ψ updates)"
+        - "Multi-stakeholder value aggregation"
+        - "Bayesian γ calibration from project outcomes"
