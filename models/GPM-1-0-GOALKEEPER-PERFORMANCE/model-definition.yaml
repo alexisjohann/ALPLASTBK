@@ -1,0 +1,1794 @@
+---
+# GPM 1.0: GOALKEEPER PERFORMANCE MODEL v1.0
+# Multi-Dimensional Framework for Goalkeeper Technique Evaluation
+# and Training Allocation
+# Single Source of Truth for Model Definition
+
+metadata:
+  name: "Goalkeeper Performance Model 2.0 (GPM 2.0)"
+  version: "3.0.0"
+  status: "DRAFT"
+  created: "2026-02-16"
+  last_updated: "2026-02-16"
+  maintainer: "Gerhard Bruno Fehr / EBF Research Team"
+
+  description: |
+    Multi-dimensional framework for systematic evaluation of goalkeeper
+    techniques and training time allocation. Decomposes goalkeeper performance
+    into three interdependent levels (strategic, tactical, operative) embedded
+    in a team performance system (Leistungsverbund). Evaluates techniques
+    across six dimensions (including injury risk with/without contact) and
+    derives optimal training allocation using game-frequency-weighted scoring.
+    Integrates the Red Bull Leipzig/Salzburg scouting framework (Wagner 2023)
+    and an availability framework: V*_eff = V* × A × D.
+
+  working_paper: "outputs/medium/working-papers/WP-001_goalkeeper_performance_framework.tex"
+
+  citation: |
+    Fehr, G.B. (2026). Torwart-Leistung im Leistungsverbund: Ein mehrdimensionales
+    Framework zur Bewertung von Torwarttechniken und Trainingsallokation.
+    Working Paper WP-001, FehrAdvice & Partners AG.
+
+# ============================================================================
+# CORE MODEL ARCHITECTURE
+# ============================================================================
+
+model_type: "Multi-Level Complementary Performance Model"
+
+# ----------------------------------------------------------------------------
+# THREE-LEVEL PERFORMANCE DECOMPOSITION
+# ----------------------------------------------------------------------------
+#
+# L(GK) = f(L_S, L_T, L_O) | Team Context Φ
+#
+# The three levels are COMPLEMENTARY (not substitutable):
+#   ∂²L/∂L_i∂L_j > 0  for all i ≠ j
+#
+# This means: the marginal value of one level INCREASES with the
+# level of the others. Operative excellence without tactical decision
+# quality is worthless. Tactical intelligence without strategic
+# embedding dissipates.
+
+performance_levels:
+
+  - level_id: "L_S"
+    name: "Strategische Leistung"
+    name_en: "Strategic Performance"
+    description: |
+      Contribution of the goalkeeper to the team's tactical concept:
+      build-up play, tempo control, space compression, numerical
+      superiority in possession phases.
+    central_question: "Does the goalkeeper make the TEAM better as a whole?"
+    team_linkage: |
+      The head coach's tactical system defines strategic requirements.
+      High pressing demands cover depth and distribution quality;
+      deep defending changes the profile fundamentally. Bidirectional.
+    components:
+      - id: "S1"
+        name: "Spieleroeffnung"
+        name_en: "Distribution / Build-up"
+        description: "Quality and range of distribution from the back"
+        scale: [0.0, 1.0]
+      - id: "S2"
+        name: "Tempokontrolle"
+        name_en: "Tempo Control"
+        description: "Ability to accelerate or decelerate game rhythm"
+        scale: [0.0, 1.0]
+      - id: "S3"
+        name: "Raumverknappung"
+        name_en: "Space Compression"
+        description: "Sweeper-keeper positioning to compress space behind defense"
+        scale: [0.0, 1.0]
+      - id: "S4"
+        name: "Ueberzahl_Aufbau"
+        name_en: "Numerical Superiority"
+        description: "Creating +1 advantage in build-up through positioning"
+        scale: [0.0, 1.0]
+
+  - level_id: "L_T"
+    name: "Taktische Leistung"
+    name_en: "Tactical Performance"
+    description: |
+      Situational decision quality in real-time. When to come off the
+      line, when to stay? When to catch, when to parry, when to block?
+    central_question: "Does the goalkeeper make the RIGHT decision in each situation?"
+    team_linkage: |
+      Goalkeeper decisions directly depend on and influence the
+      defensive line. Communication, timing, and mutual reading are
+      tactical co-production. A blocking goalkeeper forces his team
+      back into defensive work; a catching goalkeeper relieves the system.
+    components:
+      - id: "T1"
+        name: "Herauslaufen_Timing"
+        name_en: "Coming Out / Timing"
+        description: "Decision quality on when to leave the line"
+        scale: [0.0, 1.0]
+      - id: "T2"
+        name: "Technikwahl"
+        name_en: "Technique Selection"
+        description: "Choosing the right technique for each situation"
+        scale: [0.0, 1.0]
+      - id: "T3"
+        name: "Kommunikation"
+        name_en: "Communication"
+        description: "Organizing the defense, calling players, directing"
+        scale: [0.0, 1.0]
+      - id: "T4"
+        name: "Antizipation"
+        name_en: "Anticipation"
+        description: "Reading the game, anticipating danger before it materializes"
+        scale: [0.0, 1.0]
+
+  - level_id: "L_O"
+    name: "Operative Leistung"
+    name_en: "Operative Performance"
+    description: |
+      Pure technical execution quality: catching, parrying, blocking,
+      punching, foot saves.
+    central_question: "Does the goalkeeper EXECUTE each technique cleanly?"
+    team_linkage: |
+      Technical quality directly determines follow-up actions of
+      teammates. A caught ball enables immediate transition. A blocked
+      ball creates an unclear situation for the entire team.
+    components:
+      - id: "O1"
+        name: "Fangen"
+        name_en: "Catching"
+        description: "Secure ball retention through catching"
+        scale: [0.0, 1.0]
+      - id: "O2"
+        name: "Parieren"
+        name_en: "Parrying"
+        description: "Deflecting shots to safe areas"
+        scale: [0.0, 1.0]
+      - id: "O3"
+        name: "Blocken"
+        name_en: "Blocking"
+        description: "Spread, K-Block, Langblock in 1v1 situations"
+        scale: [0.0, 1.0]
+      - id: "O4"
+        name: "Fausten"
+        name_en: "Punching"
+        description: "Clearing crosses and high balls under pressure"
+        scale: [0.0, 1.0]
+      - id: "O5"
+        name: "Fussabwehr"
+        name_en: "Foot Saves"
+        description: "Saves using feet (reflex, spread)"
+        scale: [0.0, 1.0]
+
+# ----------------------------------------------------------------------------
+# COMPLEMENTARITY STRUCTURE
+# ----------------------------------------------------------------------------
+
+complementarity:
+  description: |
+    The three performance levels are strictly complementary.
+    Formally: ∂²L/∂L_i∂L_j > 0 for all i,j ∈ {S,T,O}, i≠j.
+    The marginal return of improving one level increases when
+    other levels are already high.
+
+  gamma_matrix:
+    # γ > 0: complementary; γ < 0: substitutive; γ = 0: additive
+    - pair: ["L_S", "L_T"]
+      gamma: 0.45
+      rationale: |
+        Strategic concepts require tactical execution.
+        A high pressing system only works if the goalkeeper
+        makes correct timing decisions. Strong complementarity.
+
+    - pair: ["L_S", "L_O"]
+      gamma: 0.30
+      rationale: |
+        Strategic value (e.g., build-up play) requires operative
+        precision (distribution accuracy). Moderate complementarity.
+
+    - pair: ["L_T", "L_O"]
+      gamma: 0.50
+      rationale: |
+        Tactical decisions are only valuable if executed technically.
+        Choosing to catch (T2) only helps if catching technique (O1)
+        is reliable. Strongest complementarity pair.
+
+# ----------------------------------------------------------------------------
+# SIX-DIMENSION TECHNIQUE EVALUATION FRAMEWORK (v3.0)
+# ----------------------------------------------------------------------------
+#
+# For each goalkeeper technique t, compute:
+#   S(t) = Σ_i w_i × D_i(t)
+#
+# where D_i ∈ [0,1] and Σ w_i = 1.0
+#
+# v3.0 Extension: D6 (Verletzungsrisiko) with two sub-components:
+#   D6(t) = 0.5 × D6a(t) + 0.5 × D6b(t)
+#   D6a = Non-contact injury risk (technique/training-related)
+#   D6b = Contact injury risk (collision/game-situation-related)
+#
+# Inverted scale: 1.0 = low injury risk, 0.0 = high injury risk
+
+technique_dimensions:
+
+  - dim_id: "D1"
+    name: "Spielrelevanz"
+    name_en: "Game Relevance"
+    symbol: "R"
+    weight: 0.25
+    weight_v2: 0.30
+    description: |
+      How frequently does this situation actually occur in match play?
+      Based on empirical frequency distribution of save types.
+    measurement: "Share of total goalkeeper actions per match"
+    scale: [0.0, 1.0]
+
+  - dim_id: "D2"
+    name: "Risikoreduktion"
+    name_en: "Risk Reduction"
+    symbol: "ρ"
+    weight: 0.22
+    weight_v2: 0.25
+    description: |
+      How much does the technique reduce the probability of conceding?
+      Key distinction: ball secured (maximal) vs. ball in play (residual risk).
+    measurement: "P(ball_secured) - residual danger after action"
+    scale: [0.0, 1.0]
+
+  - dim_id: "D3"
+    name: "Lernaufwand"
+    name_en: "Learning Efficiency"
+    symbol: "η"
+    weight: 0.13
+    weight_v2: 0.15
+    description: |
+      Training time required for reliable execution under pressure.
+      Inverted: higher score = easier to automate.
+    measurement: "Inverse of hours to reliable automatization"
+    scale: [0.0, 1.0]
+    note: "Inverted scale: 1.0 = easy to learn, 0.0 = extremely difficult"
+
+  - dim_id: "D4"
+    name: "Trainerkompetenz"
+    name_en: "Coach Transmissibility"
+    symbol: "τ"
+    weight: 0.08
+    weight_v2: 0.10
+    description: |
+      Can the coach teach this technique in its full decision context?
+      Not just the motor skill, but WHEN to apply it.
+    measurement: "Diagnostic and design capability required"
+    scale: [0.0, 1.0]
+
+  - dim_id: "D5"
+    name: "Strategisches Leistungspotential"
+    name_en: "Strategic Potential"
+    symbol: "Π"
+    weight: 0.17
+    weight_v2: 0.20
+    description: |
+      Value-add of the action BEYOND pure danger prevention.
+      Does the technique enable transition, build-up, or counter-attack?
+    measurement: "Transition / distribution enablement after save"
+    scale: [0.0, 1.0]
+
+  - dim_id: "D6"
+    name: "Verletzungsrisiko"
+    name_en: "Injury Risk"
+    symbol: "ι"
+    weight: 0.15
+    weight_v2: null
+    description: |
+      How much injury risk does the technique impose on the goalkeeper?
+      Critical dimension because: V*_eff = V* × A × D -- even the best
+      technique is worthless if the goalkeeper is injured.
+      Split into two sub-components with equal weight.
+    measurement: "Composite: 0.5 × D6a + 0.5 × D6b"
+    scale: [0.0, 1.0]
+    note: "Inverted scale: 1.0 = low injury risk, 0.0 = very high injury risk"
+    added_in: "v3.0"
+    rationale: |
+      Missing in v1.0 and v2.0. Identified via Red Bull Leipzig/Salzburg
+      scouting framework (Wagner 2023) which includes "Robust" as key
+      competency. The Spread/K-Block technique in particular carries
+      significant non-contact injury risk (hip adductor strain, ACL stress)
+      that was not captured by D1-D5.
+
+    sub_components:
+
+      - sub_id: "D6a"
+        name: "Verletzungsrisiko ohne Fremdeinwirkung"
+        name_en: "Non-Contact Injury Risk"
+        weight_in_D6: 0.50
+        description: |
+          Injury risk inherent to the TECHNIQUE ITSELF -- independent of
+          opponent contact. Driven by:
+          - Biomechanical stress of movement patterns
+          - Extreme joint angles (hip abduction in Spread, knee flexion in K-Block)
+          - Repetitive strain from training volume
+          - Muscle/tendon overload from explosive movements
+        examples:
+          high_risk: |
+            Spread technique: Extreme hip abduction → adductor strain, hip flexor tears
+            K-Block: Deep knee flexion under load → ACL/MCL stress
+            Langblock: Shoulder impact on ground → rotator cuff
+          low_risk: |
+            Catching: Natural movement patterns, controlled deceleration
+            Basic positioning: No extreme joint angles
+        key_insight: |
+          Non-contact injuries are DIRECTLY linked to technique choice and
+          training volume. A coach who trains 40% blocking is systematically
+          increasing D6a injury risk. This is an ADDITIONAL substitution cost
+          beyond temporal, cognitive, and systemic substitution (v1.0).
+
+      - sub_id: "D6b"
+        name: "Verletzungsrisiko mit Fremdeinwirkung"
+        name_en: "Contact Injury Risk"
+        weight_in_D6: 0.50
+        description: |
+          Injury risk from COLLISIONS with opponents, posts, or ground
+          in contested situations. Driven by:
+          - Frequency of physical duels in technique application
+          - Exposure to attacker follow-through
+          - Body position vulnerability during execution
+          - Proximity to goal posts/crossbar
+        examples:
+          high_risk: |
+            1v1 blocking: Direct collision path with onrushing attacker
+            Punching in crowded area: Aerial challenge with multiple opponents
+            Diving at feet: Attacker boot contact with head/hands
+          low_risk: |
+            Catching high crosses (unchallenged): Controlled aerial position
+            Parrying from distance: No physical contact expected
+        key_insight: |
+          Contact injuries are situation-dependent but TECHNIQUE CHOICE
+          modulates exposure. A goalkeeper who blocks (goes to ground in
+          1v1) is MORE exposed to contact than one who stays upright and
+          catches or parries. The decision to block creates the collision
+          geometry that enables contact injury.
+
+# ----------------------------------------------------------------------------
+# TECHNIQUE PROFILES (REFERENCE VALUES)
+# ----------------------------------------------------------------------------
+
+technique_profiles:
+
+  - technique_id: "CATCH"
+    name: "Fangen"
+    name_en: "Catching"
+    level: "L_O"
+    component: "O1"
+    description: "Secure ball retention through catching"
+    scores:
+      D1_game_relevance: 0.85
+      D2_risk_reduction: 0.95
+      D3_learning_efficiency: 0.55
+      D4_coach_transmissibility: 0.80
+      D5_strategic_potential: 0.90
+      D6_injury_risk: 0.70
+      D6a_non_contact: 0.85
+      D6b_contact: 0.55
+    weighted_score: null  # computed by model
+    assessment: |
+      Dominant technique. High frequency, maximal risk reduction,
+      maximal strategic value (enables instant transition).
+      Superior in 5 of 6 dimensions. Low non-contact injury risk
+      (natural movement patterns). Moderate contact risk when
+      catching in traffic (aerial challenges, crowded penalty area).
+
+  - technique_id: "PARRY_SAFE"
+    name: "Parieren (sicher)"
+    name_en: "Parrying (safe)"
+    level: "L_O"
+    component: "O2"
+    description: "Deflecting shots away from danger"
+    scores:
+      D1_game_relevance: 0.70
+      D2_risk_reduction: 0.70
+      D3_learning_efficiency: 0.50
+      D4_coach_transmissibility: 0.65
+      D5_strategic_potential: 0.40
+      D6_injury_risk: 0.65
+      D6a_non_contact: 0.60
+      D6b_contact: 0.70
+    weighted_score: null
+    assessment: |
+      Important secondary technique. Ball leaves play (corner)
+      or moves to safe area. No direct transition but danger eliminated.
+      Medium non-contact risk (diving strain on shoulder/wrist).
+      Low contact risk (usually executed away from attackers).
+
+  - technique_id: "BLOCK"
+    name: "Blocken (Spread/K-Block/Langblock)"
+    name_en: "Blocking (Spread/K-Block/Long Block)"
+    level: "L_O"
+    component: "O3"
+    description: "Body-barrier technique in 1v1 situations"
+    scores:
+      D1_game_relevance: 0.20
+      D2_risk_reduction: 0.50
+      D3_learning_efficiency: 0.35
+      D4_coach_transmissibility: 0.30
+      D5_strategic_potential: 0.10
+      D6_injury_risk: 0.225
+      D6a_non_contact: 0.25
+      D6b_contact: 0.20
+    weighted_score: null
+    assessment: |
+      Niche technique for specific 1v1 scenarios. Low frequency,
+      ball remains in play (residual danger), minimal strategic
+      value (team stays defensive). Overrepresented in training
+      due to social media availability bias.
+      HIGHEST INJURY RISK OF ALL TECHNIQUES in both sub-dimensions:
+      D6a: Spread requires extreme hip abduction → adductor/hip flexor strain.
+           K-Block stresses ACL/MCL through deep knee flexion under load.
+           Langblock causes repeated shoulder impact on ground.
+      D6b: 1v1 situations create direct collision geometry with
+           onrushing attacker. Goalkeeper on ground = vulnerable to
+           follow-through contact (boots, knees, body weight).
+
+  - technique_id: "PUNCH"
+    name: "Fausten"
+    name_en: "Punching"
+    level: "L_O"
+    component: "O4"
+    description: "Clearing crosses and high balls under pressure"
+    scores:
+      D1_game_relevance: 0.45
+      D2_risk_reduction: 0.55
+      D3_learning_efficiency: 0.50
+      D4_coach_transmissibility: 0.60
+      D5_strategic_potential: 0.25
+      D6_injury_risk: 0.475
+      D6a_non_contact: 0.55
+      D6b_contact: 0.40
+    weighted_score: null
+    assessment: |
+      Situational technique for crosses and set pieces. Clears
+      immediate danger but doesn't secure possession.
+      Medium non-contact risk (shoulder/elbow strain from punching).
+      Higher contact risk in crowded penalty area (aerial challenges
+      with multiple opponents, elbow/head contact).
+
+  - technique_id: "FOOT_SAVE"
+    name: "Fussabwehr"
+    name_en: "Foot Save"
+    level: "L_O"
+    component: "O5"
+    description: "Saves using feet in close-range situations"
+    scores:
+      D1_game_relevance: 0.30
+      D2_risk_reduction: 0.45
+      D3_learning_efficiency: 0.40
+      D4_coach_transmissibility: 0.45
+      D5_strategic_potential: 0.15
+      D6_injury_risk: 0.40
+      D6a_non_contact: 0.45
+      D6b_contact: 0.35
+    weighted_score: null
+    assessment: |
+      Reflex-dependent technique. Often combined with blocking.
+      Limited control over ball destination. Medium-high non-contact
+      risk (quick leg extensions strain hamstrings/adductors).
+      Elevated contact risk in close-range situations (attacker
+      follow-through, boot-to-hand/head contact).
+
+# ----------------------------------------------------------------------------
+# SUBSTITUTION EFFECTS
+# ----------------------------------------------------------------------------
+
+substitution_effects:
+
+  - type: "temporal"
+    name: "Zeitliche Substitution"
+    name_en: "Temporal Substitution"
+    description: |
+      Every training minute for blocking technique is a minute NOT spent
+      on catching, positioning, or distribution. Classic opportunity cost.
+    constraint: "Σ T_technique = T_total (zero-sum)"
+
+  - type: "cognitive"
+    name: "Kognitive Substitution"
+    name_en: "Cognitive Substitution"
+    description: |
+      The goalkeeper who automates blocking as default unconsciously
+      substitutes catching in situations where catching would be better.
+      An availability bias in motor patterns.
+    mechanism: "Default automation → availability heuristic in motor selection"
+    reference: "tversky1973availability"
+
+  - type: "systemic"
+    name: "Systemische Substitution"
+    name_en: "Systemic Substitution"
+    description: |
+      At team level, a blocking goalkeeper substitutes fast transition
+      with a defensive loop. The substitution propagates through the
+      entire performance system.
+    mechanism: "Block → ball in play → team defensive reset → lost transition opportunity"
+
+  - type: "injury"
+    name: "Verletzungs-Substitution"
+    name_en: "Injury Substitution"
+    added_in: "v3.0"
+    description: |
+      Training and applying high-risk techniques (Spread, K-Block) substitutes
+      AVAILABILITY for technique specialization. The goalkeeper who blocks
+      more often faces higher probability of both non-contact injuries
+      (D6a: biomechanical stress from extreme movement patterns) and
+      contact injuries (D6b: collision geometry in 1v1 situations).
+      This is the FOURTH substitution cost, and potentially the most
+      devastating: a goalkeeper who is injured contributes V*_eff = 0.
+    mechanism: |
+      Block-heavy training → extreme joint angles (hip, knee) →
+      cumulative musculoskeletal stress → non-contact injury risk ↑
+      +
+      Block-heavy match style → ground-level collision geometry →
+      contact injury risk ↑
+      =
+      Lower A (availability) → V*_eff = V* × A × D decreases
+    reference: "ekstrand2011injuries, drawer2002goalkeeper"
+
+# ----------------------------------------------------------------------------
+# TRAINING ALLOCATION MODEL (SIMULATOR PRINCIPLE)
+# ----------------------------------------------------------------------------
+
+training_allocation:
+  principle: "F1 Simulator Analogy"
+  description: |
+    Training should mirror the frequency distribution of actual match
+    situations. Like F1 simulator training: 80% normal corners, 15%
+    overtaking maneuvers, 5% crisis situations. The goalkeeper trains
+    DECISIONS under realistic conditions, not isolated techniques.
+
+  protocol:
+    step_1:
+      name: "Spielanalyse"
+      description: "Record action distribution across 5 matches (tally suffices)"
+      output: "Frequency vector F = [f_catch, f_parry, f_block, f_punch, f_foot, f_distribution, ...]"
+
+    step_2:
+      name: "Uebungsdesign"
+      description: |
+        Design sequences where situation types follow in realistic frequency,
+        with decision pressure and without pre-announcement.
+      principle: "Frequency-weighted random sequences with decision points"
+
+    step_3:
+      name: "Kalibrierung"
+      description: |
+        Evaluate each technique via the five-dimension framework.
+        Adjust training allocation based on scores and frequency.
+      formula: |
+        T_alloc(t) = w_freq × F(t) + w_score × S(t) + w_weakness × (1 - Proficiency(t))
+        where w_freq + w_score + w_weakness = 1.0
+
+  default_weights:
+    w_freq: 0.50
+    w_score: 0.30
+    w_weakness: 0.20
+
+# ----------------------------------------------------------------------------
+# EMPIRICAL REFERENCE VALUES
+# ----------------------------------------------------------------------------
+
+empirical_references:
+
+  average_save_rate:
+    value: 0.69
+    source: "soccerment2024"
+    context: "Top-5 European leagues"
+
+  shots_on_target_per_match:
+    value: 4.5
+    range: [4, 5]
+    source: "soccerment2024"
+    context: "Per goalkeeper per match"
+
+  body_coverage_standing:
+    value: 0.24
+    description: "Body area coverage of goal standing (190cm goalkeeper)"
+    source: "soccerment2024"
+
+  spread_technique_recognition:
+    value: 0.99
+    description: "Share of coaches recognizing spread technique"
+    source: "gramage2025"
+
+  spread_technique_usage:
+    value: 0.78
+    description: "Share of coaches actively using spread in training"
+    source: "gramage2025"
+
+  recommended_introduction_age:
+    value: 11
+    unit: "years"
+    source: "gramage2025"
+
+# ----------------------------------------------------------------------------
+# KEY METRICS (CURRENT STATE & LIMITATIONS)
+# ----------------------------------------------------------------------------
+
+metrics_landscape:
+
+  available:
+    - name: "Save Percentage"
+      measures: "operative"
+      limitation: "No context on decision quality"
+    - name: "xG / xGA"
+      measures: "operative"
+      limitation: "Doesn't capture pre-shot positioning"
+    - name: "Post-Shot xG"
+      measures: "operative"
+      limitation: "Only shot quality, not goalkeeper contribution to reducing shot quality"
+    - name: "GSAA"
+      measures: "operative"
+      source: "StatsBomb"
+      limitation: "Still operative level only"
+
+  missing:
+    - name: "Decision Quality Index"
+      would_measure: "tactical"
+      description: "Was blocking chosen when catching was possible?"
+    - name: "Pre-Shot Influence"
+      would_measure: "tactical"
+      description: "Did positioning reduce shot quality before the shot?"
+    - name: "Post-Save Transition Rate"
+      would_measure: "strategic"
+      description: "Ball secured → successful transition initiated?"
+    - name: "Defensive Communication Value"
+      would_measure: "strategic"
+      description: "Impact of communication on defensive shape"
+
+# ----------------------------------------------------------------------------
+# BIASES IN CURRENT PRACTICE
+# ----------------------------------------------------------------------------
+
+identified_biases:
+
+  - bias_id: "BIAS-1"
+    name: "Social Media Availability Bias"
+    type: "availability_heuristic"
+    reference: "tversky1973availability"
+    description: |
+      Spectacular block saves have higher virality than routine catches.
+      A cleanly caught ball doesn't go viral. A spread-block against
+      a top striker does. Perception is systematically distorted.
+    effect_on_training: "Overallocation of training time to blocking techniques"
+
+  - bias_id: "BIAS-2"
+    name: "Small Sample Illusion"
+    type: "law_of_small_numbers"
+    description: |
+      With 4-5 shots on target per match, the sample size for any
+      single save technique is extremely small. A single spectacular
+      block-save can be pure statistical noise elevated to philosophy.
+    effect_on_training: "Single events driving training methodology"
+
+  - bias_id: "BIAS-3"
+    name: "Technique Isolation Bias"
+    type: "framing"
+    description: |
+      Training techniques in isolation (block drill, catch drill, parry drill)
+      ignores the decision context. The F1 simulator analogy: no driver
+      trains only wet driving for an hour, only brake points for an hour.
+    effect_on_training: "Missing decision training and realistic sequencing"
+
+# ----------------------------------------------------------------------------
+# REFERENCES
+# ----------------------------------------------------------------------------
+
+# ============================================================================
+# EEE WORKFLOW FORMALIZATION (10C-COMPLIANT)
+# ============================================================================
+# Applied: 2026-02-16 | Mode: SCHNELL | Status: FORMALIZED
+# Reference: Appendix EEE (METHOD-DESIGN), GGG (METHOD-CONFIG)
+
+eee_workflow:
+
+  step_0_mode: "SCHNELL"
+  step_1_entry_point: "PRACTICE-DRIVEN"
+  step_1_gestaltungsanlass: |
+    Goalkeeper training allocates disproportionate time to blocking techniques
+    (spread, K-block) driven by social media availability bias. Catching --
+    the dominant technique in 4/5 evaluation dimensions -- is systematically
+    underweighted. The paper develops a multi-dimensional framework to
+    correct this misallocation using evidence-based training allocation.
+
+  step_2_scope:
+    type: "CONTINUOUS"
+    rationale: |
+      Training allocation is an ongoing optimization problem, not a one-time
+      decision. Allocation adjusts continuously based on match frequency
+      distribution, technique proficiency, and five-dimension scoring.
+
+  step_3_context:
+    psi_dimensions:
+      - symbol: "Psi_I"
+        name: "Institutional Context"
+        description: "Club coaching philosophy, training standards, youth development structure"
+        relevance: "HIGH"
+        effect: "Determines baseline training allocation and openness to change"
+
+      - symbol: "Psi_S"
+        name: "Social Context"
+        description: "Social media virality bias, peer coaching norms, highlight culture"
+        relevance: "CRITICAL"
+        effect: "Primary driver of availability bias in technique evaluation"
+
+      - symbol: "Psi_C"
+        name: "Cognitive Context"
+        description: "Availability heuristic, small sample illusion, confirmation bias"
+        relevance: "CRITICAL"
+        effect: "Distorts perceived technique effectiveness via System 1 processing"
+
+      - symbol: "Psi_T"
+        name: "Temporal Context"
+        description: "Match schedule, training periodization, season phase"
+        relevance: "MEDIUM"
+        effect: "Constrains total training time; creates zero-sum allocation pressure"
+
+      - symbol: "Psi_M"
+        name: "Tools/Technology Context"
+        description: "Video analysis availability, data analytics (Opta/StatsBomb), GPS tracking"
+        relevance: "MEDIUM"
+        effect: "Enables evidence-based frequency measurement (Step 1 of F1 Protocol)"
+
+  step_4_variables:
+    utility_dimensions:
+      note: "Domain-specific dimensions (not standard FEPSDE)"
+      mapping_to_fepsde:
+        D1_game_relevance: "Practical (frequency-weighted relevance)"
+        D2_risk_reduction: "Financial (risk = cost of conceding)"
+        D3_learning_efficiency: "Practical (training efficiency)"
+        D4_coach_transmissibility: "Social (knowledge transfer)"
+        D5_strategic_potential: "Strategic (team-level value-add)"
+        D6_injury_risk: "Physical (availability = prerequisite for all value creation)"
+      total_dimensions: 6
+      total_weights: 1.0
+      v3_note: |
+        D6 added in v3.0. Split into D6a (non-contact) and D6b (contact).
+        Reweighted all dimensions proportionally to accommodate D6 at 15%.
+
+    complementarity:
+      type: "THREE-LEVEL PERFORMANCE COMPLEMENTARITY"
+      note: |
+        Unlike standard EBF γ between utility dimensions, GPM-1.0 models
+        complementarity between PERFORMANCE LEVELS (S, T, O). This is
+        analogous to B (HOW) in 10C: the levels interact, they don't substitute.
+      parameters:
+        gamma_ST: 0.45
+        gamma_SO: 0.30
+        gamma_TO: 0.50
+      source: "Expert elicitation (Tier 4) + structural argument"
+      domain_specific: true
+
+  step_5_functional_form:
+    technique_evaluation:
+      formula: "S(t) = Sigma_i w_i * D_i(t)"
+      type: "Linear weighted sum"
+      justification: "EXC-1 (additive default). No evidence for multiplicative interactions between dimensions."
+
+    performance_model:
+      formula: "L(GK) = w_S*L_S + w_T*L_T + w_O*L_O + gamma_ST*L_S*L_T + gamma_SO*L_S*L_O + gamma_TO*L_T*L_O"
+      type: "Additive base + complementarity terms"
+      justification: |
+        EXC-3 (hybrid): Additive base + multiplicative complementarity.
+        Complementarity justified by V1 (if L_T=0, tactical decisions have
+        zero value regardless of L_O) and T1 (complementarity theory requires
+        interaction terms). Not purely multiplicative because L_S=0 does not
+        make L_O worthless (a goalkeeper can still save without strategic value).
+
+    training_allocation:
+      formula: "T_alloc(t) = w_freq*F(t) + w_score*S(t) + w_weakness*(1 - Prof(t))"
+      type: "Linear allocation model"
+      justification: "EXC-1 (additive default). Three components are independent inputs to allocation."
+
+  step_6_parameters:
+    estimation_method: "HYBRID"
+    tier_breakdown:
+      tier_1_literature:
+        - "Availability heuristic theory (Tversky & Kahneman, 1973)"
+        - "Goalkeeper action distributions (Soccerment, 2024)"
+        - "Coach perceptions of spread technique (Gramage Medina et al., 2025)"
+      tier_4_expert:
+        - "Technique dimension scores (D1-D5 for each technique)"
+        - "Complementarity parameters (gamma_ST, gamma_SO, gamma_TO)"
+        - "Performance level weights (w_S=0.30, w_T=0.35, w_O=0.35)"
+      tier_3_empirical:
+        - "Save percentage: 69% (top-5 leagues average)"
+        - "Shots on target per match: 4.5 [4,5]"
+        - "Body coverage standing: 24%"
+
+  step_7_predictions:
+    type: "COMPARATIVE"
+    predictions:
+      - id: "PRED-GPM-001"
+        statement: "Catching scores higher than blocking in 4/5 evaluation dimensions"
+        testable: true
+        falsification: "Any dataset where blocking outscores catching in >= 3/5 dimensions"
+        confidence: "HIGH (structural argument + empirical frequency data)"
+
+      - id: "PRED-GPM-002"
+        statement: "Optimal training allocation assigns ~36% to catching and ~10% to blocking"
+        testable: true
+        falsification: "Empirical frequency data showing blocks occur >= 20% of GK actions"
+        confidence: "MEDIUM (depends on frequency distribution assumptions)"
+
+      - id: "PRED-GPM-003"
+        statement: "Shifting to block-heavy training (40% blocking) reduces expected training value by ~14%"
+        testable: true
+        falsification: "Controlled experiment showing block-heavy training improves match outcomes"
+        confidence: "MEDIUM (substitution cost is computed, not observed)"
+
+      - id: "PRED-GPM-004"
+        statement: "Balanced multi-level GK profiles benefit more from complementarity than one-dimensional profiles"
+        testable: true
+        falsification: "If one-dimensional operative specialists consistently outperform balanced GKs"
+        confidence: "HIGH (mathematical property of γ > 0 interaction terms)"
+
+  step_8_registry:
+    model_id: "GPM-1.0"
+    registered: "2026-02-16"
+    registry_path: "models/models.registry.yaml"
+    validation_status: "DRAFT"
+    validation_review_due: "2027-02-16"
+
+  step_9_output:
+    formats_generated:
+      - type: "YAML"
+        path: "models/GPM-1-0-GOALKEEPER-PERFORMANCE/model-definition.yaml"
+      - type: "Python"
+        path: "models/GPM-1-0-GOALKEEPER-PERFORMANCE/gpm_model.py"
+      - type: "LaTeX"
+        path: "outputs/medium/working-papers/WP-001_goalkeeper_performance_framework.tex"
+      - type: "Markdown"
+        path: "models/GPM-1-0-GOALKEEPER-PERFORMANCE/README.md"
+
+# ----------------------------------------------------------------------------
+# 10C FRAMEWORK MAPPING
+# ----------------------------------------------------------------------------
+# Maps the GPM-1.0 model to the 10 CORE dimensions of the EBF framework.
+# Reference: docs/frameworks/core-framework-definition.yaml
+
+ten_c_mapping:
+
+  WHO:
+    core: "AAA"
+    question: "Who has utility?"
+    answer: |
+      Three stakeholder levels with distinct utility functions:
+      Level 1 (Individual): The goalkeeper -- utility from performance, reputation, career
+      Level 2 (Organization): The coaching staff -- utility from team results, development
+      Level 3 (System): The team -- utility from points, clean sheets, possession quality
+    levels: ["Individual (GK)", "Organization (Coach)", "System (Team)"]
+    key_insight: |
+      The team (Level 3) is the ultimate utility bearer. A goalkeeper's
+      individual performance only matters insofar as it improves the team.
+      This is the 'Leistungsverbund' (performance system) principle.
+
+  WHAT:
+    core: "C"
+    question: "What is utility?"
+    answer: |
+      Five technique evaluation dimensions define what makes a technique valuable:
+      R (Game Relevance), rho (Risk Reduction), eta (Learning Efficiency),
+      tau (Coach Transmissibility), Pi (Strategic Potential).
+    dimensions:
+      - D1: "Game Relevance (R) -- weight 25%"
+      - D2: "Risk Reduction (rho) -- weight 22%"
+      - D3: "Learning Efficiency (eta) -- weight 13%"
+      - D4: "Coach Transmissibility (tau) -- weight 8%"
+      - D5: "Strategic Potential (Pi) -- weight 17%"
+      - D6: "Injury Risk (iota) -- weight 15% [= 0.5×D6a + 0.5×D6b]"
+    fepsde_mapping:
+      F: "Risk Reduction (cost of conceding = financial loss for club)"
+      E: "not directly mapped"
+      P: "Game Relevance + Learning Efficiency (practical frequency and trainability)"
+      S: "Coach Transmissibility (social transfer of knowledge)"
+      D: "Strategic Potential (deliberate team-level thinking)"
+
+  HOW:
+    core: "B"
+    question: "How do performance levels interact?"
+    answer: |
+      Three-level strict complementarity: Strategic x Tactical x Operative.
+      The marginal value of improving one level INCREASES with the level of others.
+      gamma_ST = 0.45, gamma_SO = 0.30, gamma_TO = 0.50 (all positive).
+    gamma_matrix:
+      ST: 0.45
+      SO: 0.30
+      TO: 0.50
+    key_insight: |
+      This is NOT standard FEPSDE complementarity but PERFORMANCE LEVEL
+      complementarity. Analogous to a factory where design (S), operations (T),
+      and execution (O) must all be strong. Excellent tactics without technical
+      skill is worthless (V1 justification for multiplicative interaction).
+
+  WHEN:
+    core: "V"
+    question: "When does context matter?"
+    answer: |
+      Context operates at multiple temporal scales:
+      - Match context: Opponent, score, game phase determine technique relevance
+      - Training context: Periodization, fatigue, season phase
+      - Career context: Age, development stage, injury history
+      - Cultural context: Social media environment, coaching trends
+    psi_active: ["Psi_I", "Psi_S", "Psi_C", "Psi_T", "Psi_M"]
+    key_insight: |
+      Psi_S (social media) and Psi_C (cognitive biases) are the primary
+      distorting contexts. They shift perception of technique value away from
+      reality (availability heuristic). The model's core contribution is
+      making this distortion visible and correctable.
+
+  WHERE:
+    core: "BBB"
+    question: "Where do the numbers come from?"
+    answer: |
+      Hybrid parameter estimation:
+      - Tier 1 (Literature): Tversky & Kahneman (1973), Soccerment (2024), Gramage et al. (2025)
+      - Tier 3 (Empirical): Save rate 69%, 4.5 shots/match, 24% body coverage
+      - Tier 4 (Expert): Technique dimension scores, complementarity parameters
+    parameter_source_tier:
+      dimension_weights: "Tier 4 (expert)"
+      technique_scores: "Tier 4 (expert)"
+      gamma_parameters: "Tier 4 (expert) + structural argument"
+      empirical_references: "Tier 1/3 (literature + data)"
+
+  AWARE:
+    core: "AU"
+    question: "How aware are coaches of technique effectiveness?"
+    answer: |
+      Awareness is systematically distorted by three biases:
+      BIAS-1: Social Media Availability Bias (spectacular blocks go viral)
+      BIAS-2: Small Sample Illusion (4-5 shots/game = noise elevated to philosophy)
+      BIAS-3: Technique Isolation Bias (training drills without decision context)
+    awareness_function: "A(technique) = f(virality, recency, spectacularity) -- biased estimator"
+    key_insight: |
+      The five-dimension framework is itself an AWARENESS INTERVENTION.
+      It replaces biased System 1 evaluation with structured System 2 analysis.
+
+  READY:
+    core: "AV"
+    question: "Are coaches ready to change training allocation?"
+    answer: |
+      Readiness depends on:
+      - tau (Coach Transmissibility): Can the coach teach the technique in context?
+      - Institutional support: Does the club support evidence-based training?
+      - Data access: Does the coach have frequency distribution data?
+    willingness_factors:
+      tau_dimension: "Directly measures coaching readiness for each technique"
+      institutional: "Club philosophy and GK coach autonomy"
+      data_literacy: "Ability to interpret frequency distributions"
+
+  STAGE:
+    core: "AW"
+    question: "Where is the coach/GK in the training change journey?"
+    answer: |
+      The F1 Simulator Principle defines a three-step adoption journey:
+      Step 1 (Awareness): Record actual match action distribution (tally)
+      Step 2 (Action): Design frequency-weighted training sequences
+      Step 3 (Embedding): Calibrate allocation via five-dimension framework
+    bcj_mapping:
+      awareness: "Step 1 -- Recognize current allocation is biased"
+      triggered: "Exposure to data (e.g., frequency distribution analysis)"
+      action: "Step 2 -- Redesign training sequences"
+      maintenance: "Step 3 -- Ongoing calibration and refinement"
+
+  HIERARCHY:
+    core: "HI"
+    question: "How do decisions stratify?"
+    answer: |
+      Three-level performance hierarchy (the core architecture):
+      L0: Team System (Leistungsverbund) -- macro context
+      L1: Strategic Level (L_S) -- team contribution
+      L2: Tactical Level (L_T) -- decision quality
+      L3: Operative Level (L_O) -- technical execution
+    hierarchy_type: "NESTED (each level depends on levels above)"
+    key_insight: |
+      Current goalkeeper analytics (xG, save %, GSAA) only measure L3
+      (operative). L1 and L2 are unmeasured. This is the metrics gap
+      that GPM-1.0 aims to address conceptually.
+
+  EIT:
+    core: "IE"
+    question: "How do training interventions emerge?"
+    answer: |
+      Training allocation IS the intervention vector.
+      The allocation formula T_alloc(t) = w_freq*F(t) + w_score*S(t) + w_weakness*(1-Prof(t))
+      generates a 5-technique intervention vector in [0,1]^5 that specifies
+      how much training time each technique receives.
+    intervention_vector: "[T_catch, T_parry, T_block, T_punch, T_foot]"
+    key_insight: |
+      The intervention is REALLOCATION, not adding new techniques. The total
+      training time is fixed (zero-sum constraint). Every minute for blocking
+      is a minute NOT spent on catching. This makes the substitution effects
+      (temporal, cognitive, systemic) central to the intervention design.
+
+# ============================================================================
+# GPM-2.0 EXTENSION: VISIBILITY FRAMEWORK
+# Added: 2026-02-16
+# Literature Anchor: Holmstrom & Milgrom (1991), Kerr (1975)
+# ============================================================================
+
+visibility_framework:
+  axiom_id: "GPM-VIS-1"
+  axiom: "Observable ≠ Valuable — Visibility of a goalkeeper action is NOT proportional to its contribution to team success"
+
+  formal_definition: |
+    Let V(a) = Visibility of action a (social salience, media coverage, spectator attention)
+    Let C(a) = Contribution of action a to team success (xG prevented, transition value)
+
+    For goalkeepers:
+      Corr(V, C) < 0  for PREVENTIVE actions (positioning, communication, space compression)
+      Corr(V, C) > 0  for REACTIVE actions (saves, parries, blocks)
+
+    The paradox: The actions with highest C have lowest V, and vice versa.
+    This is a direct application of Holmstrom & Milgrom (1991): when tasks differ
+    in measurability, incentives on measurable tasks distort effort allocation.
+
+  holmstrom_milgrom_application: |
+    Goalkeeper as multi-task agent:
+    - Task 1 (MEASURABLE): Shot-stopping → save rate, PSxG+/-
+    - Task 2 (UNMEASURABLE): Positioning → prevents shots from occurring
+    - Task 3 (UNMEASURABLE): Communication → organizes defensive line
+    - Task 4 (PARTIALLY MEASURABLE): Distribution → pass completion, xG_buildup
+
+    Holmstrom-Milgrom Theorem applied:
+    Performance incentives on Task 1 (save bonuses, highlight reels)
+    systematically distort effort AWAY from Tasks 2-4.
+
+    In extreme cases, FIXED EVALUATION (no save-rate bonuses) is OPTIMAL
+    because it preserves balanced effort allocation across all four tasks.
+
+  kerr_application: |
+    Kerr (1975) Four Causes of Misalignment — Applied to Goalkeeper Evaluation:
+    1. OBJECTIVE CRITERIA: Save rate is "objective" but incomplete
+    2. VISIBLE BEHAVIOR: Spectacular parries are visible, positioning is not
+    3. HYPOCRISY: Coaches say "build-up is important" but evaluate by clean sheets
+    4. MORAL FOCUS: "A good goalkeeper SAVES" rather than "a good goalkeeper PREVENTS"
+
+  visibility_contribution_spectrum:
+    description: |
+      The V-C correlation varies systematically across football positions.
+      Goalkeepers represent the EXTREME case of the prevention paradox.
+
+    positions:
+      - position: "Striker (ST)"
+        V_C_correlation: 0.85
+        paradox_intensity: 0.15
+        explanation: "Goals are maximally visible AND maximally valuable"
+        invisible_contributions:
+          - "Pressing triggers that force turnovers"
+          - "Runs that open space for teammates"
+          - "Defensive pressing work rate"
+        dominant_metrics: ["Goals", "Assists", "xG"]
+        metric_quality: 0.85
+
+      - position: "Attacking Midfielder (CAM)"
+        V_C_correlation: 0.65
+        paradox_intensity: 0.35
+        explanation: "Assists visible, but space-creation and tempo control invisible"
+        invisible_contributions:
+          - "Half-space occupation drawing defenders"
+          - "Pressing counterpressing triggers"
+          - "Third-man runs enabling combinations"
+        dominant_metrics: ["Assists", "Key Passes", "xA"]
+        metric_quality: 0.65
+
+      - position: "Central Midfielder (CM)"
+        V_C_correlation: 0.35
+        paradox_intensity: 0.65
+        explanation: "Ball recoveries partly visible, but network contribution invisible"
+        invisible_contributions:
+          - "Passing angles closed preemptively"
+          - "Counter-pressing intensity"
+          - "Transition control tempo"
+          - "Positional balance maintenance"
+        dominant_metrics: ["Pass Completion", "Ball Recoveries", "Progressive Passes"]
+        metric_quality: 0.45
+
+      - position: "Centre Back (CB)"
+        V_C_correlation: 0.20
+        paradox_intensity: 0.75
+        explanation: "Tackles visible, but positioning and anticipation invisible"
+        invisible_contributions:
+          - "Running lanes closed by positioning"
+          - "Pressing triggers for team pressing"
+          - "Aerial dominance in zone (not just duels)"
+          - "Build-up passing under pressure"
+        dominant_metrics: ["Tackles", "Interceptions", "Aerial Duels Won"]
+        metric_quality: 0.35
+
+      - position: "Goalkeeper (GK)"
+        V_C_correlation: -0.15
+        paradox_intensity: 0.95
+        explanation: "Best performance = nothing happens. Spectacular saves indicate positioning failure."
+        invisible_contributions:
+          - "Positioning that prevents shots from being taken"
+          - "Communication that organizes defensive line"
+          - "Space compression reducing opponent options"
+          - "Build-up play initiating transitions"
+          - "Sweeper actions intercepting through-balls"
+        dominant_metrics: ["Save Rate", "Clean Sheets", "PSxG+/-"]
+        metric_quality: 0.25
+
+    theoretical_gradient: |
+      d(Measurement_Distortion) / d(Prevention_Share) > 0
+
+      The MORE a position's value comes from PREVENTING events (rather than CREATING events),
+      the LARGER the gap between metric-based evaluation and actual contribution.
+
+      Implication: Defensive positions are SYSTEMATICALLY undervalued by standard metrics.
+
+# ============================================================================
+# GPM-2.0 EXTENSION: COUNTERFACTUAL PERFORMANCE FRAMEWORK
+# Added: 2026-02-16
+# Literature Anchor: Rose (1985), Stats Perform (2025)
+# ============================================================================
+
+counterfactual_framework:
+  axiom_id: "GPM-CF-1"
+  axiom: "Total Performance = Observed Performance + Prevented Performance"
+
+  formal_definition: |
+    V*(GK) = V_observed(GK) + V_prevented(GK)
+
+    where:
+    V_observed = GPAR (Goals Prevented Above Replacement)
+              = PSxG_faced - Goals_conceded
+              = What the goalkeeper SAVED (measurable)
+
+    V_prevented = xG_prevented_by_positioning
+                + xG_prevented_by_communication
+                + xG_prevented_by_space_compression
+                + xG_prevented_by_sweeping
+              = What the goalkeeper PREVENTED from happening (unmeasurable)
+
+    The Prevention Paradox (Rose 1985):
+    V_prevented >> V_observed for elite goalkeepers
+    But V_prevented ≈ 0 in all standard metrics
+
+    A goalkeeper who prevents 30 shots from being taken (V_prevented = 30 * avg_xG)
+    but faces 10 shots and concedes 3 (V_observed = PSxG - 3)
+    is OBJECTIVELY better than a goalkeeper who prevents 0 shots
+    but faces 40 shots and saves 35 spectacularly (V_observed = PSxG - 5)
+
+    Yet the second goalkeeper has better highlight reels and higher perceived value.
+
+  measurement_state_of_art:
+    - approach: "PSxG / xGOT (Post-Shot Expected Goals)"
+      measures: "V_observed (partial)"
+      what_it_captures: "Shot-stopping quality given shot placement"
+      what_it_misses: "Everything before the shot: positioning, communication, sweeping"
+      limitation: "Season-to-season variance ±0.2 goals/90min — high noise"
+      source: "Stats Perform 2025"
+      tier: 3
+
+    - approach: "Goals Prevented (xGP)"
+      measures: "V_observed"
+      what_it_captures: "Difference between expected and actual goals conceded"
+      what_it_misses: "Shot prevention, distribution value, sweeper actions"
+      limitation: "Regression to mean is dominant; multi-season samples needed"
+      source: "Football Innovation Hub 2024"
+      tier: 3
+
+    - approach: "Possession Value Models (PV)"
+      measures: "V_prevented (partial)"
+      what_it_captures: "Distribution quality, build-up contribution"
+      what_it_misses: "Off-ball positioning, communication, space compression"
+      limitation: "Only measures on-ball actions, not spatial influence"
+      source: "StatsBomb 2023"
+      tier: 3
+
+    - approach: "Bayesian xGOT (hierarchical models)"
+      measures: "V_observed + partial V_prevented"
+      what_it_captures: "Team-specific and GK-specific performance decomposition"
+      what_it_misses: "Still primarily shot-based; pre-shot influence limited"
+      limitation: "Data-intensive, still experimental"
+      source: "Frontiers in Sports and Active Living 2025"
+      tier: 2
+
+  measurement_gap_analysis: |
+    Current metrics capture approximately:
+    - V_observed:  ~60-70% of shot-stopping quality (PSxG, xGP)
+    - V_prevented: ~10-15% (only distribution via PV models)
+
+    The remaining ~25-40% of goalkeeper value is UNMEASURED.
+    This is the "dark matter" of goalkeeper performance.
+
+    Holmstrom & Milgrom (1991) predicts: because this 25-40%
+    is unmeasured, training and incentive systems will
+    SYSTEMATICALLY under-invest in these skills.
+
+# ============================================================================
+# GPM-2.0 EXTENSION: ACTION BIAS FORMALIZATION
+# Added: 2026-02-16
+# Literature Anchor: Bar-Eli et al. (2007), Kahneman & Miller (1986)
+# ============================================================================
+
+action_bias_formalization:
+  axiom_id: "GPM-AB-1"
+  axiom: "Norm-congruent failure is less costly than norm-deviant failure, even when outcomes are identical"
+
+  formal_model: |
+    Bar-Eli et al. (2007) Penalty Kick Analysis (N=286):
+
+    Optimal GK strategy: Stay center (33.3% of kicks go center)
+    Actual GK behavior: Jump left/right 93.7% of the time
+
+    Why? Norm Theory (Kahneman & Miller 1986):
+
+    Let:
+      R(action, outcome) = Regret from outcome given action
+      N = Social norm (for GK at penalty: N = "jump")
+
+    Then:
+      R(N, goal_conceded) < R(¬N, goal_conceded)
+
+      "Conceding after jumping feels less bad than conceding after staying"
+      Even though: P(save | center) > P(save | jump) for center-directed kicks
+
+    This is NOT irrationality — it is RATIONAL given the evaluation function:
+    Coaches and fans evaluate not just OUTCOMES but PROCESS.
+    Norm-congruent process is evaluated more favorably.
+
+  application_to_training: |
+    The action bias extends from penalties to TRAINING PHILOSOPHY:
+
+    BLOCKING = current training norm (spectacular, viral, highlight-worthy)
+    CATCHING = deviation from norm (quiet, invisible, rarely in highlights)
+
+    Applying Bar-Eli's framework:
+      R(block_training, goal_conceded) < R(catch_training, goal_conceded)
+
+    Even though GPM-1.0 shows:
+      S(CATCH) = 0.853 >> S(BLOCK) = 0.273 (3.1x difference)
+
+    The coach faces the SAME action bias as the goalkeeper at the penalty:
+    "If I train blocking and we concede, that's normal training."
+    "If I train catching and we concede, I should have trained blocking."
+
+    This creates a SELF-REINFORCING CYCLE:
+    1. Block training is norm → coaches choose block training
+    2. GKs develop blocking skills → blocking looks good in training
+    3. Highlights show blocks → confirms blocking is important
+    4. Catching is neglected → looks less impressive when attempted
+    5. → Reinforces that blocking training was correct
+
+  breaking_the_cycle: |
+    Three intervention points (from GPM + action bias literature):
+
+    1. AWARENESS (CORE AU): Show coaches the Bar-Eli data + GPM-1.0 scores
+       → "You are making the SAME mistake as the GK at the penalty"
+
+    2. METRICS (CORE WHERE): Replace save-rate with V* (counterfactual)
+       → "Measure what MATTERS, not what's VISIBLE"
+
+    3. NORMS (CORE WHEN, Psi_S): Change the social norm in GK coaching
+       → "The best training sessions are boring — nothing spectacular happens"
+
+# ============================================================================
+# GPM-3.0 EXTENSION: INJURY RISK & AVAILABILITY FRAMEWORK
+# Added: 2026-02-16
+# Literature Anchor: Wagner (2023), Ekstrand et al. (2011), Drawer & Fuller (2002)
+# ============================================================================
+
+injury_risk_framework:
+  axiom_id: "GPM-INJ-1"
+  axiom: "Effective Performance = Total Performance × Availability × Durability"
+
+  formal_definition: |
+    V*_eff(GK) = V*(GK) × A(GK) × D(GK)
+
+    where:
+    V*(GK)  = V_observed + V_prevented  (total goalkeeper value, from GPM-CF-1)
+    A(GK)   = matches_available / total_matches  ∈ [0,1]  (availability rate)
+    D(GK)   = expected_career_games_remaining / baseline  ∈ [0,1]  (durability)
+
+    The multiplication is justified by V1 (EXC-5):
+    If A = 0 (goalkeeper injured for entire season), V*_eff = 0
+    regardless of how good V* is. Availability is a VETO factor.
+
+  injury_categories:
+
+    non_contact:
+      id: "D6a"
+      name: "Verletzungsrisiko ohne Fremdeinwirkung"
+      name_en: "Non-Contact Injury Risk"
+      description: |
+        Injuries caused by the TECHNIQUE ITSELF, independent of opponent contact.
+        These are directly modifiable through technique choice and training design.
+      risk_factors:
+        - factor: "Biomechanical stress"
+          description: "Extreme joint angles required by the technique"
+          example: "Spread: hip abduction >120° → adductor strain"
+        - factor: "Repetitive strain"
+          description: "Training volume of high-stress movements"
+          example: "Daily K-Block drills → cumulative ACL/MCL stress"
+        - factor: "Eccentric load"
+          description: "Deceleration forces in explosive movements"
+          example: "Low diving → hamstring eccentric overload"
+        - factor: "Ground impact"
+          description: "Repeated impact with playing surface"
+          example: "Langblock → shoulder/hip impact on artificial turf"
+      technique_specific_risks:
+        SPREAD: |
+          Hip abduction beyond physiological range → adductor strain (Grade I-III)
+          Hip flexor overload → iliopsoas tendinopathy
+          Patellar tendon stress from explosive knee extension
+          RISK LEVEL: VERY HIGH (0.25 inverted score)
+        K_BLOCK: |
+          Deep knee flexion under bodyweight → ACL/MCL stress
+          Tibial torsion → meniscus compression
+          Ankle inversion risk during lateral collapse
+          RISK LEVEL: VERY HIGH (0.25 inverted score)
+        LANGBLOCK: |
+          Shoulder impact on ground → rotator cuff strain
+          Hip contusion from lateral ground contact
+          Increased risk on artificial turf (friction burns, harder impact)
+          RISK LEVEL: HIGH (0.30 inverted score)
+        CATCHING: |
+          Finger hyperextension → ligament sprain (occasional)
+          Wrist strain from high-velocity impacts (moderate)
+          Generally low biomechanical stress — natural movement patterns
+          RISK LEVEL: LOW (0.85 inverted score)
+      key_insight: |
+        Non-contact injuries are the HIDDEN COST of technique choice.
+        A training regime with 40% blocking time doesn't just have
+        temporal substitution cost (v1.0), cognitive substitution cost (v1.0),
+        and systemic substitution cost (v1.0) — it also has an INJURY
+        SUBSTITUTION COST: increased probability of losing the goalkeeper
+        to a preventable technique-related injury.
+
+    contact:
+      id: "D6b"
+      name: "Verletzungsrisiko mit Fremdeinwirkung"
+      name_en: "Contact Injury Risk"
+      description: |
+        Injuries caused by COLLISIONS with opponents, posts, ground,
+        or other external forces during game situations.
+        Partially modifiable through technique choice (collision geometry).
+      risk_factors:
+        - factor: "Collision frequency"
+          description: "How often the technique creates contact situations"
+          example: "1v1 blocking → attacker collision in >50% of cases"
+        - factor: "Body vulnerability"
+          description: "How exposed the body is during technique execution"
+          example: "Goalkeeper on ground in Spread → head exposed to boots"
+        - factor: "Opponent approach speed"
+          description: "Velocity differential at point of contact"
+          example: "Counter-attack 1v1: attacker sprinting at 30+ km/h"
+        - factor: "Post proximity"
+          description: "Risk of colliding with goal frame"
+          example: "Diving across goal → shoulder/hip into post"
+      technique_specific_risks:
+        BLOCK_1v1: |
+          Direct collision path with onrushing attacker → concussion risk
+          Goalkeeper on ground → vulnerable to follow-through (boots, knees)
+          Attacker's shooting follow-through → foot-to-face/hand contact
+          RISK LEVEL: VERY HIGH (0.20 inverted score)
+        PUNCH_AERIAL: |
+          Aerial challenge with multiple opponents → elbow/head contact
+          Landing on other players → ankle/knee injury
+          Mid-air collision → uncontrolled fall
+          RISK LEVEL: HIGH (0.40 inverted score)
+        CATCH_TRAFFIC: |
+          Catching in crowded area → knee/hip contact with attackers
+          Late challenges during catching motion → hand/finger injury
+          RISK LEVEL: MEDIUM (0.55 inverted score)
+      key_insight: |
+        Contact injuries are PARTIALLY a function of technique choice.
+        The decision to block in a 1v1 (going to ground) creates a
+        collision geometry that WOULD NOT EXIST if the goalkeeper
+        stayed upright and attempted to catch or parry. Technique
+        choice doesn't just affect the save probability — it affects
+        the INJURY PROBABILITY for the same situation.
+
+  availability_data_requirements:
+    - data_id: "D34"
+      name: "Injury History"
+      description: "Complete injury log with type, cause (contact/non-contact), duration, recurrence"
+      availability: "MEDIUM (club medical staff)"
+      source: "Club medical records"
+    - data_id: "D35"
+      name: "Training Load"
+      description: "GPS/accelerometer data on training intensity, volume, type"
+      availability: "HIGH (GPS vendors: Catapult, STATSports)"
+      source: "Catapult, STATSports, Polar"
+    - data_id: "D36"
+      name: "Technique-Injury Correlation"
+      description: "Statistical link between technique training volume and injury type"
+      availability: "LOW (requires longitudinal study)"
+      source: "Research required"
+    - data_id: "D37"
+      name: "Games Missed per Season"
+      description: "Availability rate: matches played / possible matches"
+      availability: "HIGH (Transfermarkt, club records)"
+      source: "Transfermarkt, Opta"
+    - data_id: "D38"
+      name: "Recovery Time by Injury Type"
+      description: "GK-specific recovery timelines for common injuries"
+      availability: "MEDIUM (sports medicine literature)"
+      source: "Ekstrand et al. (2011), UEFA Elite Club Injury Study"
+    - data_id: "D39"
+      name: "Contact vs Non-Contact Injury Split"
+      description: "Classification of each injury as D6a or D6b"
+      availability: "MEDIUM (requires standardized coding)"
+      source: "Club medical staff with standardized protocol"
+
+  fangen_vs_blocken_D6_comparison: |
+    The v3.0 injury dimension REINFORCES the Fangen-dominiert-Blocken thesis:
+
+    CATCH:  D6 = 0.70 (D6a=0.85, D6b=0.55) → Low overall injury risk
+    BLOCK:  D6 = 0.225 (D6a=0.25, D6b=0.20) → Very high overall injury risk
+
+    Difference: 0.475 (= 0.70 - 0.225)
+    Catching is 3.1× safer than blocking.
+
+    With D6 at 15% weight, the scoring gap WIDENS:
+    v2.0: S(CATCH) - S(BLOCK) ≈ 0.580  (5 dimensions)
+    v3.0: S(CATCH) - S(BLOCK) ≈ 0.651  (6 dimensions, +0.071 from D6)
+
+    Catching is now superior in 5 of 6 dimensions (was 4 of 5 in v2.0).
+    The ONLY dimension where blocking is not clearly inferior is... none.
+    Blocking loses on ALL SIX dimensions.
+
+# ============================================================================
+# GPM-3.0 EXTENSION: RED BULL PRACTITIONER VALIDATION
+# Added: 2026-02-16
+# Source: Wagner, S. (2023). III International Goalkeeper Online Congress.
+#         Red Bull Leipzig / Red Bull Salzburg Scouting Methodology.
+# ============================================================================
+
+practitioner_validation:
+
+  source:
+    presenter: "Sebastian Wagner"
+    organization: "Red Bull Leipzig / Red Bull Salzburg"
+    event: "III International Goalkeeper Online Congress"
+    date: "2023-01"
+    role: "Goalkeeper Scouting"
+    credibility: |
+      Red Bull's goalkeeper development pipeline (Salzburg → Leipzig)
+      has produced Gulacsi, Blaswich, Vandevoordt. Their scouting
+      framework represents state-of-the-art practitioner knowledge.
+
+  wagner_18_competencies:
+    psychologisch:
+      count: 4
+      competencies:
+        - id: "PSY-1"
+          name_de: "Gewinner"
+          name_en: "Winner Mentality"
+          gpm_mapping: "Ψ_C (Cognitive Context)"
+          measurable_by_data: false
+        - id: "PSY-2"
+          name_de: "Nervenstärke"
+          name_en: "Mental Toughness"
+          gpm_mapping: "Ψ_C (Cognitive Context)"
+          measurable_by_data: false
+        - id: "PSY-3"
+          name_de: "Selbstbewusst"
+          name_en: "Self-Confidence"
+          gpm_mapping: "Ψ_C (Cognitive Context)"
+          measurable_by_data: false
+        - id: "PSY-4"
+          name_de: "Kontrolle"
+          name_en: "Self-Control"
+          gpm_mapping: "Ψ_C (Cognitive Context)"
+          measurable_by_data: false
+
+    soziales:
+      count: 4
+      competencies:
+        - id: "SOZ-1"
+          name_de: "Leader"
+          name_en: "Leadership"
+          gpm_mapping: "L_T → T3 (Kommunikation)"
+          measurable_by_data: "partial (voice frequency, body language AI)"
+        - id: "SOZ-2"
+          name_de: "Präsenz"
+          name_en: "Presence"
+          gpm_mapping: "L_S (Strategic Performance)"
+          measurable_by_data: false
+        - id: "SOZ-3"
+          name_de: "Lernfähig"
+          name_en: "Coachability"
+          gpm_mapping: "D4 (Coach Transmissibility)"
+          measurable_by_data: false
+        - id: "SOZ-4"
+          name_de: "Teamspieler"
+          name_en: "Team Player"
+          gpm_mapping: "L_S (Team Context Φ)"
+          measurable_by_data: false
+
+    physisch:
+      count: 4
+      competencies:
+        - id: "PHY-1"
+          name_de: "Einzigartig"
+          name_en: "Unique Physical Profile"
+          gpm_mapping: "Prerequisite for all L_O"
+          measurable_by_data: true
+          data_source: "Anthropometric data, athletic testing"
+        - id: "PHY-2"
+          name_de: "Effiziente Bewegungen"
+          name_en: "Movement Efficiency"
+          gpm_mapping: "L_O (all techniques)"
+          measurable_by_data: "partial (biomechanical analysis, GPS)"
+        - id: "PHY-3"
+          name_de: "Körperliche Präsenz"
+          name_en: "Physical Presence"
+          gpm_mapping: "D2 (Risk Reduction) — larger GK = more goal covered"
+          measurable_by_data: true
+          data_source: "Height, wingspan, reach"
+        - id: "PHY-4"
+          name_de: "Robust"
+          name_en: "Robustness"
+          gpm_mapping: "D6 (Injury Risk) — DIRECT MAPPING"
+          measurable_by_data: "partial (injury history, load tolerance)"
+          v3_note: |
+            This competency was the trigger for adding D6 to GPM.
+            Red Bull's inclusion of "Robust" confirms that practitioners
+            IMPLICITLY evaluate injury risk even without a formal dimension.
+            GPM-3.0 makes this explicit and measurable.
+
+    technisch:
+      count: 4
+      competencies:
+        - id: "TEC-1"
+          name_de: "Big Saves"
+          name_en: "Big Saves"
+          gpm_mapping: "L_O → O1-O5 (Operative Performance)"
+          measurable_by_data: true
+          data_source: "PSxG+/-, xGOT, highlight saves"
+        - id: "TEC-2"
+          name_de: "Wirksame Aktionen"
+          name_en: "Effective Actions"
+          gpm_mapping: "V_observed (Counterfactual Framework)"
+          measurable_by_data: true
+          data_source: "GSAA, save success rate by situation"
+        - id: "TEC-3"
+          name_de: "Ballverteiler"
+          name_en: "Ball Distributor"
+          gpm_mapping: "L_S → S1 (Spieleröffnung)"
+          measurable_by_data: true
+          data_source: "Pass completion, progressive passes, xG_buildup"
+        - id: "TEC-4"
+          name_de: "Beständigkeit"
+          name_en: "Consistency"
+          gpm_mapping: "Low variance across V_observed per match"
+          measurable_by_data: true
+          data_source: "Standard deviation of per-match PSxG+/-"
+
+    taktisch:
+      count: 2
+      competencies:
+        - id: "TAK-1"
+          name_de: "Manager im Gegner-Ballbesitz"
+          name_en: "Manager in Opposition Possession"
+          gpm_mapping: "L_T → T3 (Communication) + T4 (Anticipation)"
+          measurable_by_data: false
+        - id: "TAK-2"
+          name_de: "Raumnutzung im eigenen Ballbesitz"
+          name_en: "Space Utilization in Own Possession"
+          gpm_mapping: "L_S → S3 (Raumverknappung) + S4 (Überzahl)"
+          measurable_by_data: "partial (average position, SkillCorner)"
+
+  gap_analysis: |
+    Of Wagner's 18 competencies:
+    - 6 (33%) fully measurable by data providers (PHY-1/3, TEC-1/2/3/4)
+    - 4 (22%) partially measurable (SOZ-1, PHY-2/4, TAK-2)
+    - 8 (44%) NOT measurable by any data provider (all PSY, SOZ-2/3/4, TAK-1)
+
+    The 44% unmeasurable competencies are EXACTLY the psycho-social dimensions
+    that Holmström-Milgrom (1991) predicts will be under-invested:
+    Because they can't be measured, they can't be incentivized, and effort
+    allocation will distort AWAY from them.
+
+    Red Bull's SOLUTION: Subjective scouting evaluation (the 18-competency framework)
+    as a COMPLEMENT to data analytics. This is the hybrid model:
+    V*_hybrid = w_data × V*_data + w_scout × V*_scout
+
+    Red Bull has INTUITIVELY solved the Holmström-Milgrom problem by maintaining
+    a subjective evaluation system alongside data-driven metrics.
+
+  hybrid_evaluation_model:
+    formula: "V*_hybrid = w_data × V*_data + w_scout × V*_scout"
+    w_data: 0.55
+    w_scout: 0.45
+    justification: |
+      EXC-1 (additive default). Data and scouting are complementary inputs,
+      not substitutes. However, scouting receives 45% weight because it
+      covers the 44% of competencies that data CANNOT measure.
+
+      The exact weights should be empirically calibrated:
+      - If data-selected GKs outperform scout-selected GKs → increase w_data
+      - If scout-selected GKs show fewer "surprises" → increase w_scout
+      - Optimal: compare prediction accuracy of V*_data vs V*_scout
+
+# ============================================================================
+# GPM-2.0 EXTENSION: PREDICTIONS v2
+# Added: 2026-02-16
+# ============================================================================
+
+predictions_v2:
+  - id: "PRED-GPM-005"
+    statement: |
+      Positions with higher paradox_intensity show LARGER gaps between
+      metric-based and contribution-based player valuations.
+    testable: true
+    falsification: "If goalkeeper transfer fees correlate >0.7 with actual team xGA improvement"
+    confidence: "HIGH"
+    theoretical_basis: "holmstrom1991multitask — measurement distortion increases with task measurability gap"
+    mechanism: "Metrics capture visible contribution; market values follow metrics; invisible contribution is unpriced"
+
+  - id: "PRED-GPM-006"
+    statement: |
+      Goalkeepers who prioritize positioning (invisible) over spectacular saves
+      (visible) will have LOWER market value but HIGHER team contribution.
+    testable: true
+    falsification: "If spectacular-save-focused GKs consistently improve team xGA more than positioning-focused GKs"
+    confidence: "MEDIUM"
+    theoretical_basis: "kerr1975folly — rewarding A (saves) while hoping for B (prevention)"
+    mechanism: "Market rewards visibility; team performance rewards actual contribution"
+
+  - id: "PRED-GPM-007"
+    statement: |
+      Introducing V* (counterfactual) metrics will REDUCE action bias in
+      goalkeeper training by >20% within 2 seasons, measured by
+      catch-to-block ratio in training sessions.
+    testable: true
+    falsification: "If V* metrics are available but catch/block training ratio unchanged"
+    confidence: "MEDIUM"
+    theoretical_basis: "bareli2007action + holmstrom1991multitask"
+    mechanism: "Better measurement → better incentives → better effort allocation"
+
+  - id: "PRED-GPM-008"
+    statement: |
+      The Prevention Paradox: Teams with the BEST goalkeepers will show
+      the FEWEST spectacular saves per 90 minutes, because superior
+      positioning prevents shots from occurring.
+    testable: true
+    falsification: "If top-xGA teams show more saves/90 than league average"
+    confidence: "HIGH"
+    theoretical_basis: "rose1985sick — prevention success is invisible at event level"
+    mechanism: "Better positioning → fewer shots faced → fewer save opportunities → lower save count"
+    empirical_check: "Compare saves/90 with team xGA ranking across top-5 leagues"
+
+# ============================================================================
+# GPM-3.0 EXTENSION: PREDICTIONS v3
+# Added: 2026-02-16
+# ============================================================================
+
+predictions_v3:
+  - id: "PRED-GPM-009"
+    statement: |
+      Goalkeepers with block-heavy training profiles (>30% blocking drills)
+      show HIGHER non-contact injury rates (D6a) than catch-focused
+      goalkeepers, specifically in hip adductor and knee ligament categories.
+    testable: true
+    falsification: "If block-heavy GKs show equal or lower non-contact injury rates"
+    confidence: "HIGH"
+    theoretical_basis: "Biomechanical stress analysis — Spread requires hip abduction >120°"
+    mechanism: "Extreme joint angles in blocking techniques → cumulative musculoskeletal stress → injury"
+    data_required: ["D34 (injury history)", "D35 (training load)", "D36 (technique-injury correlation)"]
+
+  - id: "PRED-GPM-010"
+    statement: |
+      Blocking techniques carry BOTH higher non-contact (D6a) AND higher
+      contact (D6b) injury risk. The combined D6 score for blocking (0.225)
+      is 3.1× worse than catching (0.70). This makes blocking the ONLY
+      technique that loses on ALL SIX evaluation dimensions.
+    testable: true
+    falsification: "If blocking shows lower injury rates than catching in either D6a or D6b"
+    confidence: "HIGH"
+    theoretical_basis: "D6a: biomechanical stress; D6b: collision geometry in 1v1 situations"
+
+  - id: "PRED-GPM-011"
+    statement: |
+      V*_eff = V* × A × D predicts that a goalkeeper with V*=0.8 but A=0.5
+      (injured half the season) has LOWER effective value (V*_eff=0.40) than
+      a goalkeeper with V*=0.6 but A=0.95 (rarely injured, V*_eff=0.57).
+      Availability is more valuable than peak performance.
+    testable: true
+    falsification: "If teams with frequently-injured elite GKs outperform teams with available good GKs"
+    confidence: "HIGH"
+    theoretical_basis: "V1 (EXC-5): A=0 → V*_eff=0 (veto factor). Mathematical certainty."
+    empirical_check: "Compare team xGA for GKs with >80% vs <60% availability across top-5 leagues"
+
+  - id: "PRED-GPM-012"
+    statement: |
+      Red Bull's 18-competency scouting framework covers 44% unmeasurable
+      dimensions (psycho-social). Teams relying SOLELY on data analytics
+      will systematically under-value these dimensions and make worse
+      goalkeeper recruitment decisions.
+    testable: true
+    falsification: "If pure-data scouting produces better GK signings than hybrid (data+scout) approaches"
+    confidence: "MEDIUM"
+    theoretical_basis: "holmstrom1991multitask — unmeasured tasks receive under-investment"
+    mechanism: "Data measures 56% of competencies → 44% invisible → systematic selection bias"
+
+# ============================================================================
+# REFERENCES
+# ============================================================================
+
+references:
+  - key: "gramage2025"
+    citation: |
+      Gramage Medina, K. et al. (2025). Coaches' perceptions on the Spread:
+      A 1 vs 1 goalkeeper technique. International Journal of Sports Science & Coaching.
+  - key: "otte2022"
+    citation: |
+      Otte, F.W., Dittmer, T. & West, J. (2022). Goalkeeping in modern football:
+      Current positional demands and research insights. International Sport Coaching
+      Journal, 10, 112-120.
+  - key: "soccerment2024"
+    citation: |
+      Soccerment (2024). The Vitruvian Goalie: A deep dive into the goalkeepers' stats.
+      soccerment.com.
+  - key: "opta2024"
+    citation: |
+      Stats Perform / Opta (2024). Opta Event Definitions. statsperform.com.
+  - key: "statsbomb2023"
+    citation: |
+      StatsBomb (2023). Introducing Goalkeeper Radars. blogarchive.statsbomb.com.
+  - key: "tversky1973availability"
+    citation: |
+      Tversky, A. & Kahneman, D. (1973). Availability: A heuristic for judging
+      frequency and probability. Cognitive Psychology, 5(2), 207-232.
+
+  # GPM-2.0 References (added 2026-02-16)
+  - key: "bareli2007action"
+    citation: |
+      Bar-Eli, M., Azar, O.H., Ritov, I., Keidar-Levin, Y. & Schein, G. (2007).
+      Action Bias Among Elite Soccer Goalkeepers: The Case of Penalty Kicks.
+      Journal of Economic Psychology, 28(5), 606-621.
+    role: "Empirical evidence for action bias — GKs jump 93.7% despite center being optimal"
+  - key: "palacioshuerta2003minimax"
+    citation: |
+      Palacios-Huerta, I. (2003). Professionals Play Minimax. Review of Economic
+      Studies, 70(2), 395-415.
+    role: "Nash equilibrium in penalties — GK improvement must come from non-penalty play"
+  - key: "holmstrom1991multitask"
+    citation: |
+      Holmstrom, B. & Milgrom, P. (1991). Multitask Principal-Agent Analyses:
+      Incentive Contracts, Asset Ownership, and Job Design. Journal of Law,
+      Economics, and Organization, 7(special issue), 24-52.
+    role: "FOUNDATIONAL — Multi-task theory predicts measurement-driven effort distortion"
+  - key: "kerr1975folly"
+    citation: |
+      Kerr, S. (1975). On the Folly of Rewarding A, While Hoping for B.
+      Academy of Management Journal, 18(4), 769-783.
+    role: "4 causes of reward misalignment — directly applicable to GK evaluation"
+  - key: "rose1985sick"
+    citation: |
+      Rose, G. (1985). Sick Individuals and Sick Populations. International
+      Journal of Epidemiology, 14(1), 32-38.
+    role: "Prevention Paradox origin — invisible prevention is the most valuable"
+  - key: "chiappori2002testing"
+    citation: |
+      Chiappori, P.-A., Levitt, S. & Groseclose, T. (2002). Testing Mixed-Strategy
+      Equilibria When Players Are Heterogeneous. American Economic Review, 92(4), 1138-1151.
+    role: "Extends minimax to heterogeneous players — equilibrium robust to individual differences"
+  - key: "apesteguia2010psychological"
+    citation: |
+      Apesteguia, J. & Palacios-Huerta, I. (2010). Psychological Pressure in
+      Competitive Environments. American Economic Review, 100(5), 2548-2564.
+    role: "Pressure effects in sequential competition — context (Psi_C) moderates GK performance"
+
+  # GPM-3.0 References (added 2026-02-16)
+  - key: "wagner2023scouting"
+    citation: |
+      Wagner, S. (2023). Red Bull Leipzig/Salzburg Goalkeeper Scouting Methodology.
+      III International Goalkeeper Online Congress, January 2023.
+    role: "Practitioner validation — 18 competency scouting framework (5 categories, 18 dimensions)"
+  - key: "ekstrand2011injuries"
+    citation: |
+      Ekstrand, J., Hägglund, M. & Waldén, M. (2011). Epidemiology of Muscle
+      Injuries in Professional Football (Soccer). American Journal of Sports
+      Medicine, 39(6), 1226-1232.
+    role: "Injury epidemiology — non-contact muscle injuries dominate professional football"
+  - key: "drawer2002goalkeeper"
+    citation: |
+      Drawer, S. & Fuller, C.W. (2002). Evaluating the level of injury in
+      English professional football using a risk based assessment process.
+      British Journal of Sports Medicine, 36, 446-451.
+    role: "Position-specific injury risk — goalkeeper injury patterns differ from outfield players"

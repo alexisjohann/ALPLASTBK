@@ -1,0 +1,340 @@
+# =============================================================================
+# LIFESPAN PARAMETERS (Chapter 24 Integration)
+# =============================================================================
+#
+# Source: Chapter 24, Appendix RRR, OOO, BI, BJ
+# Purpose: Domain-specific parameters for P_eff calculation and intervention design
+# Version: 1.0 (January 2026)
+#
+# Usage in EBF:
+#   - /design-model Step 3b (Lifespan Context)
+#   - /design-intervention Phase 2 (Decade Roadmap)
+#   - P_eff calculation (domain-specific α, β)
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# DOMAIN-SPECIFIC LEARNING PARAMETERS (from RRR Table 1)
+# -----------------------------------------------------------------------------
+# α = learning rate (how fast new information is incorporated)
+# β = decay rate (how fast without reinforcement)
+# λ = loss aversion coefficient
+# ρ = reference point adjustment speed
+
+domain_parameters:
+  health:
+    alpha: 0.05          # Fast learning from feedback
+    beta: 0.02           # Slow decay (habits persist)
+    lambda: 0.30         # Moderate loss aversion
+    rho: 0.04            # Moderate reference adjustment
+    decision_frequency: "weekly"
+    convergence_95_weeks: 43    # ~10 months
+    convergence_99_weeks: 65    # ~15 months
+    characteristics: "Smooth exponential decay, habit formation"
+
+  money:
+    alpha: 0.005         # VERY slow learning
+    beta: 0.01           # Slow decay
+    lambda: 0.10         # Low explicit loss aversion (but hyperbolic discounting)
+    rho: 0.01            # Very slow reference adjustment
+    decision_frequency: "quarterly"
+    convergence_95_weeks: 200   # ~4 years
+    convergence_99_weeks: 338   # ~6.5 years
+    characteristics: "Slow power-law, structural discounting"
+
+  career:
+    alpha: "episodic"    # Jumps at transitions
+    alpha_within_role: 0.10   # Fast learning within role
+    beta: 0.001          # Almost no decay
+    lambda: 0.40         # High loss aversion (job security)
+    rho: 0.08            # Fast reference adjustment at transitions
+    decision_frequency: "episodic (3-7 years)"
+    convergence_95_weeks: 52    # ~1 year per role
+    convergence_99_weeks: 182   # 3-7 years per role
+    characteristics: "Episodic; resets at career transitions"
+
+  relationships:
+    alpha: 0.02          # Moderate learning
+    beta: 0.03           # Moderate decay
+    lambda: 0.50         # High loss aversion (attachment)
+    rho: 0.03            # Slow reference adjustment
+    decision_frequency: "monthly"
+    convergence_95_weeks: 78    # ~1.5 years
+    convergence_99_weeks: 130   # ~2.5 years
+    characteristics: "Bifurcating; saddle point dynamics"
+
+  self_governance:
+    alpha: 0.10          # VERY fast learning
+    beta: 0.02           # Slow decay
+    lambda: 0.60         # High loss aversion
+    rho: 0.10            # Fast reference adjustment
+    decision_frequency: "weekly"
+    convergence_95_weeks: 10    # ~2-3 months
+    convergence_99_weeks: 17    # ~4 months
+    characteristics: "Very fast; executive function modeling"
+
+  living_space:
+    alpha: 0.01          # Slow learning
+    beta: 0.02           # Slow decay
+    lambda: 0.20         # Moderate loss aversion
+    rho: 0.02            # Slow reference adjustment
+    decision_frequency: "annual"
+    convergence_95_weeks: 104   # ~2 years
+    convergence_99_weeks: 182   # ~3.5 years
+    characteristics: "Slow; geometric/discrete choices"
+
+  meaning:
+    alpha: 0.002         # EXTREMELY slow learning
+    beta: 0.001          # Almost no decay
+    lambda: 0.80         # Very high loss aversion (existential)
+    rho: 0.005           # Very slow reference adjustment
+    decision_frequency: "annual"
+    convergence_95_weeks: 260   # ~5 years
+    convergence_99_weeks: 416   # ~8 years
+    characteristics: "Very slow; high uncertainty; existential"
+
+# -----------------------------------------------------------------------------
+# DECADE-SPECIFIC ROADMAPS (from Chapter 24 §11)
+# -----------------------------------------------------------------------------
+# Optimal intervention phases by age decade
+
+decade_roadmaps:
+  health:
+    "20s": { phase: "awareness", optimal_types: ["T1", "T6"], intensity: "medium" }
+    "30s": { phase: "action", optimal_types: ["T2", "T3", "T6"], intensity: "high" }
+    "40s": { phase: "maintenance", optimal_types: ["T2", "T5"], intensity: "medium" }
+    "50s": { phase: "maintenance", optimal_types: ["T2", "T5", "T6"], intensity: "medium" }
+    "60s+": { phase: "stable", optimal_types: ["T2", "T6"], intensity: "low" }
+
+  money:
+    "20s": { phase: "awareness", optimal_types: ["T1", "T3"], intensity: "high" }
+    "30s": { phase: "awareness", optimal_types: ["T1", "T3", "T8"], intensity: "high" }
+    "40s": { phase: "triggered", optimal_types: ["T3", "T4", "T7"], intensity: "high" }
+    "50s": { phase: "action", optimal_types: ["T3", "T4", "T7"], intensity: "very_high" }
+    "60s+": { phase: "maintenance", optimal_types: ["T2", "T3"], intensity: "medium" }
+
+  career:
+    "20s": { phase: "action", optimal_types: ["T1", "T5", "T6"], intensity: "very_high" }
+    "30s": { phase: "action", optimal_types: ["T5", "T6", "T8"], intensity: "high" }
+    "40s": { phase: "maintenance", optimal_types: ["T5", "T6"], intensity: "medium" }
+    "50s": { phase: "maintenance", optimal_types: ["T5", "T6"], intensity: "medium" }
+    "60s+": { phase: "stable", optimal_types: ["T5"], intensity: "low" }
+
+  self_governance:
+    "20s": { phase: "action", optimal_types: ["T2", "T3", "T8"], intensity: "very_high" }
+    "30s": { phase: "maintenance", optimal_types: ["T2", "T5"], intensity: "medium" }
+    "40s": { phase: "stable", optimal_types: ["T2", "T5"], intensity: "low" }
+    "50s": { phase: "stable", optimal_types: ["T2"], intensity: "low" }
+    "60s+": { phase: "stable", optimal_types: ["T2"], intensity: "low" }
+
+  meaning:
+    "20s": { phase: "pre_aware", optimal_types: ["T1"], intensity: "low" }
+    "30s": { phase: "pre_aware", optimal_types: ["T1", "T5"], intensity: "low" }
+    "40s": { phase: "awareness", optimal_types: ["T1", "T5", "T6"], intensity: "medium" }
+    "50s": { phase: "triggered", optimal_types: ["T5", "T6", "T8"], intensity: "high" }
+    "60s+": { phase: "action", optimal_types: ["T5", "T6", "T8"], intensity: "very_high" }
+
+# -----------------------------------------------------------------------------
+# DOMAIN-TYPE AFFINITY MATRIX (from Chapter 24 §11)
+# -----------------------------------------------------------------------------
+# α_eff multiplier when combining domain with intervention type
+# > 1.0 = enhancement, < 1.0 = reduction, < 0 = backfire risk
+
+domain_type_affinity:
+  health:
+    T1: 1.0    # Information works normally
+    T2: 1.3    # Feedback very effective
+    T3: 1.2    # Defaults work well
+    T4: 0.9    # Timing less critical
+    T5: 1.1    # Identity moderate
+    T6: 1.4    # Social very effective (peer exercise)
+    T7: 0.7    # Financial can crowd out intrinsic motivation
+    T8: 1.2    # Commitment effective
+
+  money:
+    T1: 0.8    # Information alone weak
+    T2: 1.1    # Feedback helpful
+    T3: 1.5    # Defaults VERY effective (auto-enrollment)
+    T4: 1.3    # Timing effective (deadlines)
+    T5: 0.9    # Identity less relevant
+    T6: 0.8    # Social can backfire (status anxiety)
+    T7: 1.2    # Financial aligns naturally
+    T8: 1.3    # Commitment effective
+
+  career:
+    T1: 1.0    # Information normal
+    T2: 1.1    # Feedback helpful
+    T3: 0.9    # Defaults less relevant (individual choice)
+    T4: 1.4    # Timing VERY critical (transitions)
+    T5: 1.8    # Identity KEY mechanism
+    T6: 1.3    # Social important (networking)
+    T7: 1.0    # Financial normal
+    T8: 1.5    # Commitment very effective
+
+  self_governance:
+    T1: 1.2    # Awareness helps
+    T2: 1.6    # Feedback CRITICAL
+    T3: 1.3    # Defaults effective
+    T4: 1.2    # Timing helps
+    T5: 1.4    # Identity important
+    T6: 1.0    # Social moderate
+    T7: 0.6    # Financial can undermine autonomy
+    T8: 1.5    # Commitment very effective
+
+  meaning:
+    T1: 1.3    # Awareness important
+    T2: 0.8    # Feedback less relevant (subjective)
+    T3: 0.6    # Defaults don't work (highly personal)
+    T4: 1.0    # Timing normal
+    T5: 1.7    # Identity CRITICAL
+    T6: 1.5    # Social important (community, legacy)
+    T7: 0.3    # Financial can BACKFIRE (commodification)
+    T8: 1.4    # Commitment effective
+
+# -----------------------------------------------------------------------------
+# INTERGENERATIONAL SPILLOVER MATRIX (from BI Table 2)
+# -----------------------------------------------------------------------------
+# γ^inter[parent_domain, child_domain] = spillover coefficient
+# Reading: Parent's domain X affects child's initialization in domain Y
+
+intergenerational_spillover:
+  # Parent domain → Child domain coefficients
+  health_to:
+    health: 0.45
+    money: 0.10
+    career: 0.08
+    relationships: 0.15
+    self_governance: 0.20
+    living_space: 0.05
+    meaning: 0.03
+
+  money_to:
+    health: 0.08
+    money: 0.50
+    career: 0.25
+    relationships: 0.05
+    self_governance: 0.18
+    living_space: 0.12
+    meaning: 0.02
+
+  career_to:
+    health: 0.05
+    money: 0.20
+    career: 0.55
+    relationships: 0.10
+    self_governance: 0.15
+    living_space: 0.08
+    meaning: 0.08
+
+  self_governance_to:
+    health: 0.18
+    money: 0.12
+    career: 0.10
+    relationships: 0.12
+    self_governance: 0.60
+    living_space: 0.05
+    meaning: 0.12
+
+  meaning_to:
+    health: 0.10
+    money: 0.05
+    career: 0.15
+    relationships: 0.20
+    self_governance: 0.25
+    living_space: 0.08
+    meaning: 0.40
+
+# -----------------------------------------------------------------------------
+# CRITICAL TRANSMISSION WINDOWS (from BI Table 3)
+# -----------------------------------------------------------------------------
+# Age ranges when parental influence is strongest per domain
+
+critical_transmission_windows:
+  health:
+    primary: { start: 0, end: 6, mechanism: "Food habits, activity patterns" }
+    secondary: null
+
+  self_governance:
+    primary: { start: 3, end: 12, mechanism: "Executive function modeling, routines" }
+    secondary: null
+
+  relationships:
+    primary: { start: 0, end: 5, mechanism: "Attachment formation" }
+    secondary: { start: 12, end: 18, mechanism: "Dating models" }
+
+  money:
+    primary: { start: 12, end: 22, mechanism: "Financial socialization, first earnings" }
+    secondary: null
+
+  career:
+    primary: { start: 14, end: 22, mechanism: "Aspiration formation, network access" }
+    secondary: null
+
+  living_space:
+    primary: { start: 0, end: 18, mechanism: "Housing quality effects, neighborhood" }
+    secondary: null
+
+  meaning:
+    primary: { start: 15, end: 25, mechanism: "Value transmission, identity formation" }
+    secondary: null
+
+# -----------------------------------------------------------------------------
+# ROI MULTIPLIERS (from BI Propositions)
+# -----------------------------------------------------------------------------
+
+roi_multipliers:
+  individual: 1.0
+  family_level: 1.7       # ROI_family = 1.7 × ROI_individual
+  three_generation: 2.4   # Estimated for 3-gen planning
+
+  # Explanation: Family intervention affects parent (partial lifespan)
+  # PLUS child (full lifespan). γ^inter ≈ 0.4 combined with
+  # child's longer remaining life (~60y vs parent's ~35y) = 70% boost
+
+# -----------------------------------------------------------------------------
+# N_eff SPECTRUM (from BJ §6)
+# -----------------------------------------------------------------------------
+# Effective number of independent domains by society type
+
+n_eff_spectrum:
+  subsistence:
+    range: [2, 3]
+    examples: ["Fore", "!Kung"]
+    structure: "Kinship + Survival"
+
+  traditional_agrarian:
+    range: [4, 5]
+    examples: ["Medieval Europe", "Traditional Japan"]
+    structure: "Estate + Household + Church/Temple"
+
+  transitional:
+    range: [5, 6]
+    examples: ["Rural India", "Brazil favelas"]
+    structure: "Mixed individual/collective"
+
+  full_weird:
+    range: [7, 7]
+    examples: ["USA", "Germany", "Switzerland"]
+    structure: "Individual optimization across all 7 domains"
+
+# Formula: N_eff = 7 - Σ 𝟙[ρ_{d,d'} > 0.7]
+# where ρ_{d,d'} is inter-domain correlation
+
+# -----------------------------------------------------------------------------
+# EIGENVALUE TABLE (from OOO Stability Analysis)
+# -----------------------------------------------------------------------------
+# Eigenvalues of the Jacobian at equilibrium (T=1 for all domains)
+# All negative = globally asymptotically stable
+
+eigenvalues:
+  lambda_1: { value: -0.003, domain: "Meaning", interpretation: "Slowest mode" }
+  lambda_2: { value: -0.015, domain: "Money", interpretation: "Second slowest" }
+  lambda_3: { value: -0.030, domain: "Living Space", interpretation: "Slow" }
+  lambda_4: { value: -0.050, domain: "Relationships", interpretation: "Moderate" }
+  lambda_5: { value: -0.070, domain: "Health", interpretation: "Moderate-fast" }
+  lambda_6: { value: -0.081, domain: "Career", interpretation: "Fast" }
+  lambda_7: { value: -0.120, domain: "Self-Governance", interpretation: "Fastest mode" }
+
+# =============================================================================
+# END OF LIFESPAN PARAMETERS
+# =============================================================================

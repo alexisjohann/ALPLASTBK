@@ -1,0 +1,252 @@
+# A-Train Stockholm - Strategic Assumptions
+# For use with /apply-models
+# Created: 2026-02-05
+
+strategic_assumptions:
+  industry: "transport_rail"
+  template_version: "1.0.0-custom"
+  data_quality: "ESTIMATED"
+
+  # ==========================================================================
+  # FINANCIAL BENCHMARKS
+  # ==========================================================================
+  financial_benchmarks:
+    revenue_2024_eur_m: 80
+    revenue_growth_rate: 0.03  # 3% CAGR (mature market, post-COVID recovery)
+
+    # Margins (typical for rail concessions)
+    ebitda_margin: 0.18       # 18% - high fixed costs but premium pricing
+    gross_margin: 0.55        # 55% - ticketing revenue vs operating costs
+    net_margin: 0.08          # 8% - after depreciation and interest
+
+    # Capital intensity
+    capex_to_revenue: 0.08    # 8% - rolling stock maintenance, upgrades
+    depreciation_rate: 0.05   # 5% - long asset life (trains, infrastructure)
+
+    # Working capital
+    working_capital_days: -15  # Negative (tickets paid in advance)
+
+  # ==========================================================================
+  # REGIONAL GROWTH RATES
+  # ==========================================================================
+  regional_growth_rates:
+    Nordics:
+      cagr: 0.03              # 3% - stable mature market
+      revenue_share: 1.00     # 100% - single market operation
+      revenue_2024_eur_m: 80
+      rationale: |
+        Swedish air travel recovering post-COVID. Arlanda passenger numbers
+        expected to grow 2-4% annually. Premium positioning limits price
+        elasticity but maintains market share vs buses.
+      key_drivers:
+        positive:
+          - "Arlanda passenger growth (2-4% p.a.)"
+          - "Business travel recovery"
+          - "Tourism growth to Stockholm"
+          - "Environmental preference for rail"
+        negative:
+          - "Competition from Flygbussarna (price)"
+          - "SL Pendeltåg expansion"
+          - "Remote work reducing business travel"
+          - "High ticket prices limiting leisure market"
+
+  # ==========================================================================
+  # PASSENGER & REVENUE MODEL
+  # ==========================================================================
+  passenger_model:
+    annual_passengers_2024: 6500000
+    passenger_growth_rate: 0.025  # 2.5% p.a.
+
+    segments:
+      - segment: "Business"
+        share: 0.45
+        avg_ticket_sek: 180   # Full price, flexibility
+        price_sensitivity: "Low"
+      - segment: "Leisure/Tourist"
+        share: 0.35
+        avg_ticket_sek: 120   # Online discount
+        price_sensitivity: "Medium"
+      - segment: "Commuter"
+        share: 0.20
+        avg_ticket_sek: 100   # Monthly passes
+        price_sensitivity: "High"
+
+    yield_management:
+      dynamic_pricing: true
+      advance_purchase_discount: 0.15  # 15% for early booking
+      peak_surcharge: 0.10             # 10% for rush hour
+
+  # ==========================================================================
+  # ORGANIZATIONAL ASSUMPTIONS
+  # ==========================================================================
+  organizational:
+    total_employees_2024: 250
+    revenue_per_employee_eur: 320000   # €320k - high for rail
+
+    headcount_growth_rate: 0.01        # 1% - mostly stable
+
+    payroll_cost_per_fte_eur: 55000    # Swedish wage levels
+    payroll_cost_total_eur_m: 13.75    # 250 × €55k
+
+    headcount_distribution:
+      train_crew: 0.40        # Drivers, conductors
+      station_staff: 0.25     # Customer service, ticketing
+      maintenance: 0.15       # Technical, rolling stock
+      administration: 0.12    # Finance, HR, legal
+      management: 0.08        # Leadership, strategy
+
+    productivity_improvement: 0.02  # 2% p.a. (digitalization)
+
+  # ==========================================================================
+  # CAPEX FRAMEWORK
+  # ==========================================================================
+  capex_framework:
+    capex_2024_eur_m: 6.4     # 8% of revenue
+
+    categories:
+      - category: "Rolling Stock"
+        share: 0.50
+        description: "Train overhauls, component replacement"
+      - category: "Stations"
+        share: 0.20
+        description: "Platform upgrades, customer facilities"
+      - category: "Technology"
+        share: 0.20
+        description: "Ticketing systems, passenger info, WiFi"
+      - category: "Safety & Compliance"
+        share: 0.10
+        description: "Regulatory requirements, security"
+
+    major_investments_planned:
+      - year: 2026
+        description: "Digital ticketing platform upgrade"
+        amount_eur_m: 2.0
+      - year: 2027
+        description: "Train interior refurbishment"
+        amount_eur_m: 5.0
+
+  # ==========================================================================
+  # MODEL PARAMETERS
+  # ==========================================================================
+  model_parameters:
+    # Customer Lifetime Value
+    clv:
+      avg_customer_lifetime_years: 5    # Repeat travelers
+      retention_rate: 0.70              # Many one-time tourists
+      acquisition_cost_eur: 8           # Marketing per new customer
+      annual_value_per_customer_eur: 45 # ~3-4 trips × €12
+
+    # Monte Carlo Simulation
+    monte_carlo:
+      revenue_volatility: 0.12          # Higher - travel demand sensitive
+      cost_volatility: 0.05             # Lower - mostly fixed costs
+      passenger_volatility: 0.15        # Seasonal, event-driven
+      simulations: 10000
+
+    # Valuation
+    valuation:
+      wacc: 0.07                        # 7% - infrastructure asset
+      terminal_growth: 0.02             # 2% - mature market
+      ev_ebitda_multiple: 10.0          # Premium for infrastructure
+      comparable_transactions:
+        - "Heathrow Express (UK)"
+        - "Flytoget (Norway)"
+        - "CAF Airport Links (Spain)"
+
+  # ==========================================================================
+  # BEHAVIORAL ECONOMICS PARAMETERS (EBF)
+  # ==========================================================================
+  ebf_parameters:
+    # Loss Aversion in Travel Decisions
+    lambda_travel: 2.8                  # High - missed flights are costly
+
+    # Default Effects
+    psi_default:
+      online_booking: "train"           # Default shown first
+      corporate_travel: "Arlanda Express"  # Preferred supplier
+
+    # Social Norms
+    psi_social:
+      business_norm: "Take the train"   # Professional image
+      environmental: "Rail is green"    # Sustainability messaging
+
+    # Time Preferences
+    beta_time:
+      value_of_time_business: 80        # €80/hour
+      value_of_time_leisure: 25         # €25/hour
+      reliability_premium: 1.3          # 30% premium for punctuality
+
+    # Key Behavioral Interventions
+    intervention_opportunities:
+      - dimension: "AWARE"
+        target: "Price perception"
+        intervention: "Anchor vs taxi cost (€70 saved)"
+      - dimension: "WHEN"
+        target: "Booking timing"
+        intervention: "Early bird discount framing"
+      - dimension: "WHAT"
+        target: "Value perception"
+        intervention: "Time = Money calculator"
+
+  # ==========================================================================
+  # RISK FACTORS
+  # ==========================================================================
+  risk_factors:
+    operational:
+      - risk: "Service disruption"
+        probability: "Medium"
+        impact: "High"
+        mitigation: "Backup bus service agreement"
+      - risk: "Rolling stock failure"
+        probability: "Low"
+        impact: "High"
+        mitigation: "Preventive maintenance program"
+
+    market:
+      - risk: "Arlanda passenger decline"
+        probability: "Low"
+        impact: "High"
+        mitigation: "Yield management, new segments"
+      - risk: "SL Pendeltåg competition"
+        probability: "Medium"
+        impact: "Medium"
+        mitigation: "Premium positioning, speed advantage"
+
+    regulatory:
+      - risk: "Concession terms change"
+        probability: "Low"
+        impact: "High"
+        mitigation: "Stakeholder engagement"
+
+  # ==========================================================================
+  # ESG PROFILE
+  # ==========================================================================
+  esg:
+    environmental:
+      carbon_footprint: "Low"
+      energy_source: "100% renewable electricity"
+      co2_per_passenger_km: 0.005  # kg CO2 - very low
+      positioning: "Climate-friendly airport access"
+
+    social:
+      accessibility: "Full wheelchair access"
+      employment: "250 local jobs"
+      community: "Reduces road congestion"
+
+    governance:
+      ownership: "Private (infrastructure fund)"
+      transparency: "Annual sustainability report"
+
+metadata:
+  assumptions_version: "1.0.0"
+  created_date: "2026-02-05"
+  last_updated: "2026-02-05"
+  validated_by: "TBD"
+  data_sources:
+    - "Estimated based on industry benchmarks"
+    - "Comparable: Flytoget (Norway), Heathrow Express (UK)"
+  notes: |
+    Initial assumptions based on estimates. Should be validated against:
+    - A-Train AB annual report
+    - Arlanda Airport passenger statistics (Swedavia)
+    - Swedish Transport Agency data

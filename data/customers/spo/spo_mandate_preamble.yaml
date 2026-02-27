@@ -1,0 +1,1065 @@
+# =============================================================================
+# SPÖ MANDAT-PRÄAMBEL
+# =============================================================================
+# Dieses Dokument wird automatisch geladen bei: SPÖ, Babler, Vizekanzler,
+# österreichische Sozialdemokratie, Migration Österreich
+#
+# Version: 2.7.0
+# Erstellt: 2026-02-01
+# Letzte Aktualisierung: 2026-02-03
+# Status: AKTIV
+#
+# ARCHITEKTUR: 3-SSOT-PRINZIP + PRÄAMBEL LOADING PROTOCOL (PLP)
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │  Diese Präambel ist SSOT für: AKTUELLE LAGE                             │
+# │  Strategiebriefing ist SSOT für: STRATEGIE                              │
+# │  CVA-Profil ist SSOT für: KONTEXTFAKTOREN                               │
+# │                                                                         │
+# │  PLP: Bei jedem Laden → Auto-Research für top_5_themen (letzte 7 Tage) │
+# └─────────────────────────────────────────────────────────────────────────┘
+# =============================================================================
+
+# =============================================================================
+# TEIL 0: SUPERKEY & FRESHNESS (Präambel Loading Protocol)
+# =============================================================================
+# Der Superkey identifiziert diese Präambel eindeutig.
+# Bei jedem Laden wird Auto-Research für die top_5_themen durchgeführt.
+# =============================================================================
+
+superkey: "PRE-SPO-2026-02-01-001"
+# Format: PRE-{KUNDE}-{ERSTELLT}-{SEQ}
+
+freshness:
+  erstellt: "2026-02-01"
+  letzte_aktualisierung: "2026-02-01"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # AUTO-RESEARCH PROTOKOLL
+  # Bei jedem Laden der Präambel werden diese 5 Queries ausgeführt
+  # ─────────────────────────────────────────────────────────────────────────
+
+  auto_research:
+    enabled: true
+    trigger: "bei_jedem_laden"  # Alternativen: "wenn_aelter_als_7_tage"
+    zeitraum: "letzte 7 Tage"
+    max_results_per_query: 3
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # QUELLEN-PFLICHT (NEU v2.3)
+    # Bei jedem Auto-Research werden Quellen IMMER angefügt
+    # ─────────────────────────────────────────────────────────────────────────
+    quellen_pflicht: true  # IMMER Quellen anfügen
+    quellen_format: "markdown_table"  # Alternativen: "bullet_list", "inline"
+
+    top_5_themen:
+      - id: "T1_PERSON"
+        name: "Vizekanzler Babler"
+        query: "Babler Vizekanzler"
+        domains: ["orf.at", "derstandard.at", "diepresse.com", "kurier.at"]
+
+      - id: "T2_KERNTHEMA"
+        name: "SPÖ Migration"
+        query: "SPÖ Migration Asyl Österreich"
+        domains: ["orf.at", "derstandard.at", "diepresse.com"]
+
+      - id: "T3_REGIERUNG"
+        name: "Regierung Stocker"
+        query: "Regierung Stocker ÖVP SPÖ NEOS"
+        domains: ["orf.at", "derstandard.at", "wienerzeitung.at"]
+
+      - id: "T4_OPPOSITION"
+        name: "FPÖ Kickl"
+        query: "FPÖ Kickl Umfrage"
+        domains: ["orf.at", "derstandard.at", "profil.at"]
+
+      - id: "T5_GEOPOLITIK"
+        name: "Europa Menschenrechte"
+        query: "Österreich EU Menschenrechte Trump"
+        domains: ["orf.at", "derstandard.at", "euronews.com"]
+
+    output_format: |
+      ┌─────────────────────────────────────────────────────────────────┐
+      │  🔄 AUTO-RESEARCH ({datum})                                     │
+      │  Präambel: {superkey}                                          │
+      ├─────────────────────────────────────────────────────────────────┤
+      │  T1 PERSON:     {t1_summary}                                   │
+      │  T2 KERNTHEMA:  {t2_summary}                                   │
+      │  T3 REGIERUNG:  {t3_summary}                                   │
+      │  T4 OPPOSITION: {t4_summary}                                   │
+      │  T5 GEOPOLITIK: {t5_summary}                                   │
+      └─────────────────────────────────────────────────────────────────┘
+
+      **Quellen:**
+      | Thema | Aussage | Quelle | Datum |
+      |-------|---------|--------|-------|
+      | T1 | {t1_key_claim} | [{t1_source_name}]({t1_source_url}) | {t1_pub_date} |
+      | T2 | {t2_key_claim} | [{t2_source_name}]({t2_source_url}) | {t2_pub_date} |
+      | T3 | {t3_key_claim} | [{t3_source_name}]({t3_source_url}) | {t3_pub_date} |
+      | T4 | {t4_key_claim} | [{t4_source_name}]({t4_source_url}) | {t4_pub_date} |
+      | T5 | {t5_key_claim} | [{t5_source_name}]({t5_source_url}) | {t5_pub_date} |
+
+# =============================================================================
+# AUTO-RESEARCH DATENBANKEN (mit Freshness-Check)
+# =============================================================================
+# Diese Datenbanken werden automatisch aktualisiert wenn:
+# 1. Trigger-Wörter erkannt werden UND
+# 2. Freshness-Check fehlschlägt (last_fetched + threshold < heute)
+# =============================================================================
+
+auto_research_databases:
+
+  beliebtheit_politiker:
+    ssot: "data/customers/spo/database/BELIEBTHEIT_POLITIKER_AT.yaml"
+    beschreibung: "OGM Vertrauensindex - Historische Popularitätsdaten österreichischer Politiker"
+    trigger_words:
+      - "SPÖ"
+      - "Babler"
+      - "Vizekanzler"
+      - "österreichische Sozialdemokratie"
+    freshness_check:
+      enabled: true
+      threshold_days: 2
+      # Wenn last_fetched + 2 Tage < heute → Auto-Research
+    update_queries:
+      - query: "OGM Vertrauensindex Österreich {MONTH} {YEAR}"
+        priority: 1
+      - query: "Politiker Beliebtheit Umfrage Österreich {MONTH} {YEAR}"
+        priority: 2
+      - query: "Babler Kickl Vertrauen Umfrage aktuell"
+        priority: 3
+    output_format: |
+      ┌─────────────────────────────────────────────────────────────────┐
+      │  🔄 AUTO-RESEARCH: Politiker-Beliebtheit ({DATE})               │
+      │  Quelle: {SOURCE}                                               │
+      ├─────────────────────────────────────────────────────────────────┤
+      │                                                                 │
+      │  AKTUELLER STAND:                                               │
+      │  ├── Babler:  {BABLER_SALDO} (Rang {BABLER_RANK})  {BABLER_Δ}  │
+      │  ├── Kickl:   {KICKL_SALDO} (Rang {KICKL_RANK})   {KICKL_Δ}   │
+      │  └── Abstand: {GAP} Punkte                                      │
+      │                                                                 │
+      │  TREND (15 Monate):                                             │
+      │  ├── Babler: {BABLER_TREND}                                     │
+      │  └── Gap:    {GAP_TREND}                                        │
+      │                                                                 │
+      └─────────────────────────────────────────────────────────────────┘
+
+  sonntagsfrage_parteien:
+    ssot: "data/customers/spo/database/SONNTAGSFRAGE_PARTEIEN_AT.yaml"
+    beschreibung: "Sonntagsfrage - Parteien-Umfragen 24 Monate (alle österreichischen Parteien)"
+    trigger_words:
+      - "SPÖ"
+      - "Sonntagsfrage"
+      - "Wahlumfrage"
+      - "Parteien Österreich"
+    freshness_check:
+      enabled: true
+      threshold_days: 2
+    update_queries:
+      - query: "Sonntagsfrage Österreich {MONTH} {YEAR}"
+        priority: 1
+      - query: "Austria polls FPÖ SPÖ ÖVP {MONTH} {YEAR}"
+        priority: 2
+      - query: "PolitPro Wahltrend Österreich aktuell"
+        priority: 3
+    output_format: |
+      ┌─────────────────────────────────────────────────────────────────┐
+      │  🔄 AUTO-RESEARCH: Sonntagsfrage ({DATE})                       │
+      │  Quelle: {SOURCE}                                               │
+      ├─────────────────────────────────────────────────────────────────┤
+      │                                                                 │
+      │  AKTUELLER STAND:                                               │
+      │  ├── FPÖ:   {FPOE}% (Δ {FPOE_Δ})                               │
+      │  ├── ÖVP:   {OEVP}% (Δ {OEVP_Δ})                               │
+      │  ├── SPÖ:   {SPOE}% (Δ {SPOE_Δ})                               │
+      │  ├── GRÜNE: {GRUENE}%                                          │
+      │  └── NEOS:  {NEOS}%                                            │
+      │                                                                 │
+      │  REGIERUNG (Ampel): {AMPEL}%                                    │
+      │  SPÖ-TREND (24M): {SPOE_TREND}                                  │
+      │                                                                 │
+      └─────────────────────────────────────────────────────────────────┘
+
+# =============================================================================
+# TEIL 1: DER AUFTRAG
+# =============================================================================
+
+auftrag:
+  mandatgeber: "FehrAdvice & Partners AG"
+  mandatnehmer: "SPÖ - Sozialdemokratische Partei Österreichs"
+
+  kernauftrag: |
+    Strategische Kommunikationsberatung für die SPÖ unter Vizekanzler
+    Andreas Babler. Entwicklung und Umsetzung des "Ordnen statt Spalten"-
+    Frames als zentrale Positionierung der österreichischen Sozialdemokratie.
+
+  ziele:
+    - Differenzierung von FPÖ (nicht kopieren, nicht ignorieren)
+    - Themenhoheit bei Migration zurückgewinnen (nicht vermeiden, sondern ordnen)
+    - Regierungskommunikation als Vizekanzlerpartei
+    - Verteidigung europäischer Grundwerte gegen Trump-Erosion
+
+  laufzeit:
+    beginn: "2026-01-01"
+    # Ende offen - laufendes Mandat
+
+# =============================================================================
+# TEIL 2: AKTUELLE LAGE (SSOT - hier aktualisieren!)
+# =============================================================================
+# Update-Frequenz: TÄGLICH bis WÖCHENTLICH
+# Verantwortlich: Berater-Team
+# =============================================================================
+
+aktuelle_lage:
+  datum: "2026-02-01"  # ← BEI JEDER AKTUALISIERUNG ÄNDERN!
+
+  regierung:
+    name: "Regierung Stocker"
+    seit: "2025-03-03"
+    typ: "Dreierkoalition ÖVP-SPÖ-NEOS"
+
+    positionen:
+      bundeskanzler:
+        name: "Christian Stocker"
+        partei: "ÖVP"
+      vizekanzler:
+        name: "Andreas Babler"
+        partei: "SPÖ"
+        zusatz: "Bundesparteivorsitzender SPÖ seit 2023-06-03"
+      aussenministerin:
+        name: "Beate Meinl-Reisinger"
+        partei: "NEOS"
+
+    sitzverteilung:
+      oevp: 6  # Ministerien
+      spoe: 6  # Ministerien
+      neos: 2  # Ministerien
+
+  umfragen:
+    stand: "2026-01"
+    fpoe: 0.35  # ~35% - stärker als ÖVP+SPÖ zusammen
+    oevp: 0.21  # ~21%
+    spoe: 0.20  # ~20%
+    neos: 0.09  # ~9%
+    gruene: 0.08  # ~8%
+
+    bewertung: |
+      KRITISCH: FPÖ ist in Umfragen stärker als die beiden großen
+      Regierungsparteien zusammen. Vertrauensverlust in die Politik.
+      Teuerung belastet. Regierung unter massivem Druck.
+
+  hauptthemen:
+    - Budgetkonsolidierung (Regierungsprogramm)
+    - Teuerung / Inflation
+    - Migration (Dauerthema, FPÖ-Domäne)
+    - Wirtschaftslage (schwaches Wachstum)
+    - Trump / Geopolitik (neue Unsicherheit)
+
+# =============================================================================
+# TEIL 3: GEOPOLITISCHER KONTEXT (SSOT für aktuelle Weltlage)
+# =============================================================================
+# Update-Frequenz: WÖCHENTLICH
+# =============================================================================
+
+geopolitik:
+  datum: "2026-02-01"  # ← BEI JEDER AKTUALISIERUNG ÄNDERN!
+
+  usa_trump:
+    status: "Systematischer Abbau von Grundrechten"
+    amnesty_bewertung: "Gezielter Angriff auf Menschenrechte"
+    massnahmen:
+      - "Hausdurchsuchungen ohne richterlichen Beschluss"
+      - "Abschiebungen in Drittstaaten ohne Bezug"
+      - "Ausbau Überwachungstechnologie"
+      - "Supreme Court auf Regierungslinie"
+    experteneinschaetzung: "Weg in die Autokratie"
+
+    aussenpolitik:
+      ukraine: "Druck zur Kapitulation, Putin-freundlich"
+      venezuela: "Völkerrechtswidrige Entführung Maduros"
+      groenland: "Drohung mit Militärgewalt gegen Dänemark"
+      iran: "Eskalationskurs"
+      nato: "Infragestellung der Bündnistreue"
+
+    trump_zitat: |
+      "Das Völkerrecht hat für mich einen ziemlich geringen Stellenwert."
+      (New York Times, Januar 2026)
+
+  daenemark_initiative:
+    datum: "2026-01-30"
+    inhalt: "Automatische Abschiebung bei 1+ Jahr Haft für Ausländer"
+    kontrovers: "Forderung nach Änderung der Menschenrechtskonvention"
+    regierung: "Sozialdemokratin Mette Frederiksen"
+    statistik: "70% werden abgeschoben, 30% nicht"
+
+  europa:
+    eu_asylpaket: "Tritt Juni 2026 in Kraft"
+    sichere_herkunftslaender: "EU-Liste vorgeschlagen (Marokko, Tunesien, etc.)"
+    rueckkehrsystem: "Gemeinsames EU-System in Vorbereitung"
+
+    bewertung: |
+      Europa als "letzter Leuchtturm" der Rechtsstaatlichkeit in einer
+      Welt, in der Trump Grundrechte abbaut und Putin Grenzen verschiebt.
+
+# =============================================================================
+# TEIL 4: STRATEGIE (REFERENZ - SSOT ist Strategiebriefing!)
+# =============================================================================
+# NICHT HIER BEARBEITEN! Änderungen im Strategiebriefing vornehmen.
+# =============================================================================
+
+strategie:
+  _ssot: "data/customers/spo/spo_strategiebriefing_parteitag_2026.md"
+  _version: "3.3"
+  _hinweis: "Details im Strategiebriefing. Hier nur Kurzreferenz."
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # KURZREFERENZ (für Auto-Load) - Details → Strategiebriefing
+  # ─────────────────────────────────────────────────────────────────────────
+
+  kern_frame: "ORDNEN STATT SPALTEN"
+
+  migration_position:
+    kurzform: "Thema ORDNEN, nicht vermeiden"
+    kernaussage: "Wir ordnen das Thema Migration neu, damit wir es gemeinsam lösen können."
+    details: "→ Strategiebriefing Teil IV, Kapitel 12-16"
+
+  menschenrechte:
+    kurzform: "Keine Aufweichung der EMRK"
+    argumentation: "Vollzug stärken, nicht Grundrechte schwächen"
+    details: "→ Strategiebriefing Teil IV, Kapitel 13"
+
+  abgrenzungen:
+    fpoe: "Ihr schreit, wir handeln"
+    daenemark: "Regeln durchsetzen, nicht aufgeben"
+    trump: "Europa als Gegenmodell"
+    details: "→ Strategiebriefing Teil III + IV"
+
+# =============================================================================
+# TEIL 5: KOMMUNIKATION (REFERENZ - SSOT ist Strategiebriefing!)
+# =============================================================================
+# NICHT HIER BEARBEITEN! Änderungen im Strategiebriefing vornehmen.
+# =============================================================================
+
+kommunikation:
+  _ssot: "data/customers/spo/spo_strategiebriefing_parteitag_2026.md"
+  _version: "3.3"
+  _hinweis: "Details im Strategiebriefing. Hier nur Kurzreferenz."
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # KURZREFERENZ (für Auto-Load) - Details → Strategiebriefing
+  # ─────────────────────────────────────────────────────────────────────────
+
+  ton_vizekanzler:
+    kurzform: "Staatstragend, aber mit klarer Handschrift"
+    details: "→ Strategiebriefing Teil IV, Kapitel 15"
+
+  verboten:
+    - "Das ist falsch/gelogen"
+    - "Bereicherung"
+    - "Vielfalt ist Stärke"
+    - "FPÖ-Hetze"
+    hinweis: "Vollständige Liste → Strategiebriefing Teil II, Kapitel 8"
+
+  pflicht:
+    bei_migration: "Wir ordnen..."
+    bei_fpoe: "Unter ihrer Regierungsbeteiligung..."
+    bei_daenemark: "Vollzug stärken, nicht Grundrechte schwächen"
+    bei_trump: "Europa als letzter Leuchtturm der Rechtsstaatlichkeit"
+    hinweis: "Vollständige Formulierungen → Strategiebriefing Teil II"
+
+  strategien:
+    s1: "Ordnungs-Pivot (Default)"
+    s2: "Spalter-Entlarvung (SPÖ-affin)"
+    s3: "Agenda-Disruption (Policy-Substanz)"
+    details: "→ Strategiebriefing Teil II, Kapitel 6"
+
+# =============================================================================
+# TEIL 6: CVA-PROFIL (REFERENZ - SSOT sind CVA-Dateien!)
+# =============================================================================
+# NICHT HIER BEARBEITEN! Änderungen in den CVA-Dateien vornehmen.
+# =============================================================================
+
+cva_profil:
+  _ssot: "data/customers/spo/"
+  _hinweis: "400 Kontextfaktoren in 8 YAML-Dateien"
+
+  uebersicht:
+    pfad: "spo_context_master_overview.yaml"
+    faktoren: 400
+
+  dateien:
+    - "spo_context_demographic.yaml"
+    - "spo_context_economic.yaml"
+    - "spo_context_institutional.yaml"
+    - "spo_context_sociocultural.yaml"
+    - "spo_context_tech_ecological.yaml"
+    - "spo_context_individual.yaml"
+    - "spo_context_meta.yaml"
+
+# =============================================================================
+# TEIL 7: TRIGGER-WÖRTER FÜR AUTO-LADEN (SSOT)
+# =============================================================================
+
+trigger:
+  primaer:
+    - "SPÖ"
+    - "Babler"
+    - "Vizekanzler"
+    - "österreichische Sozialdemokratie"
+    - "Sozialdemokraten Österreich"
+
+  sekundaer:
+    - "Ordnen statt Spalten"
+    - "FPÖ"  # wenn im Kontext von SPÖ-Strategie
+    - "Migration Österreich"
+    - "Dänemark Initiative"  # wenn Österreich-Bezug
+    - "Regierung Stocker"
+
+  laden_bei: |
+    Wenn eines dieser Wörter fällt UND es um strategische/politische
+    Fragen geht, soll diese Präambel als Kontext geladen werden.
+
+# =============================================================================
+# TEIL 8: AKTUELLE EREIGNISSE (SSOT für Event-Log)
+# =============================================================================
+# Update-Frequenz: Bei jedem relevanten Ereignis
+# Format: Neueste zuerst
+# =============================================================================
+
+aktuelle_ereignisse:
+  # ─────────────────────────────────────────────────────────────────────────
+  # EMRK-CHRONOLOGIE (vollständig mit Quellen)
+  # Letzte Aktualisierung: 2026-02-03
+  # ─────────────────────────────────────────────────────────────────────────
+
+  - datum: "2026-05"
+    ereignis: "Geplant: EMRK-Resolution in Chișinău (Moldau)"
+    relevanz: "KRITISCH"
+    spoe_reaktion: "Beobachten, Position verteidigen"
+    quelle: "ORF: Europarat startet EMRK-Debatte"
+    quelle_url: "https://orf.at/stories/3413978/"
+
+  - datum: "2026-01-30"
+    ereignis: "Dänemark kündigt Abschiebereform an (1+ Jahr Haft = Ausweisung)"
+    relevanz: "HOCH"
+    spoe_reaktion: "Gegen Aufweichung, für Vollzug"
+    quelle: "Euronews: Denmark expulsion reform"
+    quelle_url: "https://www.euronews.com/2026/01/30/denmark-to-expel-non-danish-citizens-if-jailed-for-at-least-one-year-for-serious-crimes"
+
+  - datum: "2026-01-20"
+    ereignis: "Amnesty-Bericht zu Trump/USA: Systematischer Abbau von Grundrechten"
+    relevanz: "MITTEL"
+    spoe_reaktion: "Europa als Gegenmodell positionieren"
+
+  - datum: "2025-12-11"
+    ereignis: "Kaiser (SPÖ-Kärnten) fordert 'Weiterentwicklung' der EMRK"
+    relevanz: "HOCH"
+    spoe_reaktion: "Babler: 'Das ist seine Meinung' - Bundespartei dagegen"
+    quelle: "Der Standard"
+    quelle_url: "https://www.derstandard.at/story/3000000272697/kaerntens-landeshauptmann-kaiser-will-weiterentwicklung-bei-emrk"
+
+  - datum: "2025-12-10"
+    ereignis: "Europarat-Ministerkonferenz Straßburg: 27/46 Staaten unterzeichnen Resolution"
+    relevanz: "KRITISCH"
+    spoe_reaktion: "Österreich unterzeichnet (Stocker), SPÖ nicht eingebunden"
+    details: "Resolution fordert Aufweichung bei Migration; DE und FR nicht dabei"
+    quelle: "ORF: Europarat startet EMRK-Debatte"
+    quelle_url: "https://orf.at/stories/3413978/"
+
+  - datum: "2025-11"
+    ereignis: "Deutschland-Somalia Rücknahmeabkommen"
+    relevanz: "HOCH"
+    spoe_reaktion: "Als Beispiel für 'Vollzug statt Verfassungsänderung'"
+
+  - datum: "2025-06"
+    ereignis: "ÖVP rudert bei EMRK-Initiative zurück"
+    relevanz: "MITTEL"
+    spoe_reaktion: "Keine Reaktion nötig"
+    quelle: "FPÖ: ÖVP will nichts mehr wissen"
+    quelle_url: "https://www.fpoe.at/aktuell/artikel-detailansicht/neuinterpretation-der-emrk-oevp-will-nichts-mehr-davon-wissen"
+
+  - datum: "2025-05-31"
+    ereignis: "Kohlenberger kritisiert Stocker als 'geschichtsvergessen'"
+    relevanz: "MITTEL"
+    spoe_reaktion: "Petra Bayr (SPÖ): 'Vorstoß sehr problematisch'"
+    quelle: "ORF Wien"
+    quelle_url: "https://wien.orf.at/stories/3307574/"
+
+  - datum: "2025-05-23"
+    ereignis: "Stocker unterzeichnet 9-Länder-Brief (Meloni/Frederiksen-Initiative)"
+    relevanz: "KRITISCH"
+    spoe_reaktion: "Babler: 'Keine akkordierte Aktion der Regierung'"
+    details: "Unterzeichner: AT, DK, IT, BE, CZ, EE, LV, LT, PL"
+    quelle: "OTS: FPÖ-Schnedlitz zu EMRK"
+    quelle_url: "https://www.ots.at/presseaussendung/OTS_20250523_OTS0122/"
+
+  - datum: "2024-06"
+    ereignis: "SPÖ-Masterplan Asyl/Migration 'Nachschärfung'"
+    relevanz: "MITTEL"
+    spoe_reaktion: "Positionierung: Integration vor Zuzug + EMRK-Bekenntnis"
+    quelle: "ORF: SPÖ legt Offensivpapier vor"
+    quelle_url: "https://orf.at/stories/3361441/"
+
+  - datum: "2019-01-23"
+    ereignis: "Kickl stellt EMRK infrage ('Recht folgt der Politik')"
+    relevanz: "HISTORISCH"
+    spoe_reaktion: "Van der Bellen: 'Aufkündigung des Grundkonsenses der 2. Republik'"
+    quelle: "Der Standard"
+    quelle_url: "https://www.derstandard.at/story/2000096888042/kickl-stellt-menschenrechtskonvention-in-frage"
+
+# =============================================================================
+# TEIL 9: SSOT-ARCHITEKTUR (Dokumentation)
+# =============================================================================
+
+ssot_architektur:
+  beschreibung: |
+    Das SPÖ-Mandat folgt dem 3-SSOT-Prinzip:
+    Jeder Informationstyp hat GENAU EINE autoritative Quelle.
+
+  quellen:
+    aktuelle_lage:
+      ssot: "DIESE DATEI (spo_mandate_preamble.yaml)"
+      inhalt:
+        - "Regierungszusammensetzung"
+        - "Aktuelle Umfragen"
+        - "Geopolitische Lage"
+        - "Ereignis-Log"
+        - "Trigger-Wörter"
+      update_frequenz: "täglich bis wöchentlich"
+
+    strategie:
+      ssot: "spo_strategiebriefing_parteitag_2026.md"
+      inhalt:
+        - "Ordnen statt Spalten Frame"
+        - "Die 3 Strategien (S1, S2, S3)"
+        - "Kommunikationsregeln"
+        - "Verbotene/Pflicht-Formulierungen"
+        - "Policy-Positionen"
+      update_frequenz: "monatlich bis quartalsweise"
+
+    kontextfaktoren:
+      ssot: "data/customers/spo/*.yaml (CVA-Dateien)"
+      inhalt:
+        - "400 verhaltensökonomische Parameter"
+        - "Wähler-Segmente"
+        - "Institutionelle Faktoren"
+        - "Kulturelle Faktoren"
+      update_frequenz: "jährlich"
+
+  regeln:
+    - "Bei Widerspruch gilt IMMER die SSOT-Quelle"
+    - "Änderungen NUR an der SSOT vornehmen"
+    - "Präambel enthält REFERENZEN, keine Duplikate"
+    - "Kurzreferenzen dienen nur dem Auto-Load"
+
+# =============================================================================
+# TEIL 10: STAKEHOLDER-LANDSCHAFT (SSOT für alle relevanten Akteure)
+# =============================================================================
+# Update-Frequenz: Bei Änderungen (Wahlen, Personalwechsel, etc.)
+# =============================================================================
+
+stakeholder:
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # REGIERUNG (Dreierkoalition ÖVP-SPÖ-NEOS)
+  # ─────────────────────────────────────────────────────────────────────────
+
+  regierungsparteien:
+
+    oevp:
+      name: "Österreichische Volkspartei"
+      rolle: "Kanzlerpartei"
+      vorsitz: "Christian Stocker (Bundeskanzler)"
+      ministerien: 6
+      umfrage: 0.21  # ~21%
+      verhaeltnis_spoe: "Koalitionspartner, Spannungsfelder bei Migration/Budget"
+      schluesselthemen:
+        - "Wirtschaft & Standort"
+        - "Sicherheit (Law & Order)"
+        - "EU-Politik"
+      bei_migration: "Hardliner-Flügel (Karner-Linie) vs. Pragmatiker"
+
+    spoe:
+      name: "Sozialdemokratische Partei Österreichs"
+      rolle: "Vizekanzlerpartei"
+      vorsitz: "Andreas Babler (Vizekanzler, Bundesparteivorsitzender)"
+      ministerien: 6
+      umfrage: 0.20  # ~20%
+      schluesselthemen:
+        - "Soziale Gerechtigkeit"
+        - "Arbeit & Löhne"
+        - "Ordnung statt Spaltung"
+
+    neos:
+      name: "NEOS – Das Neue Österreich"
+      rolle: "Juniorpartner"
+      vorsitz: "Beate Meinl-Reisinger (Aussenministerin)"
+      ministerien: 2
+      umfrage: 0.09  # ~9%
+      verhaeltnis_spoe: "Koalitionspartner, liberal-bürgerlich"
+      schluesselthemen:
+        - "Bildung"
+        - "Transparenz"
+        - "Europafreundlich"
+      bei_migration: "Pro EMRK, liberal, gegen Aufweichung"
+      bei_narrativ: "Natürlicher Verbündeter bei EMRK-Verteidigung"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # OPPOSITION
+  # ─────────────────────────────────────────────────────────────────────────
+
+  opposition:
+
+    fpoe:
+      name: "Freiheitliche Partei Österreichs"
+      rolle: "Stärkste Partei (Opposition)"
+      vorsitz: "Herbert Kickl"
+      umfrage: 0.35  # ~35%
+      verhaeltnis_spoe: "Hauptgegner"
+      strategie_gegen: "Chaos-Achse, Scheinlösungen entlarven"
+      schluesselthemen:
+        - "Migration (Anti-EMRK)"
+        - "Anti-EU"
+        - "Anti-Establishment"
+      chaos_achse:
+        putin: "Öffentliche Bewunderung"
+        trump: "Öffentliche Bewunderung"
+        polling: "73% Österreicher sehen Trump als Bedrohung"
+
+    gruene:
+      name: "Die Grünen"
+      rolle: "Opposition (ehemalige Regierungspartei)"
+      vorsitz: "Werner Kogler"
+      umfrage: 0.08  # ~8%
+      verhaeltnis_spoe: "Potentiell progressiver Verbündeter"
+      bei_migration: "Pro EMRK, Menschenrechte, kritisch gegenüber Abschiebungen"
+      bei_narrativ: "Teils Verbündeter, aber andere Tonalität"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # SPÖ LANDESORGANISATIONEN
+  # ─────────────────────────────────────────────────────────────────────────
+
+  spoe_landesorganisationen:
+
+    wien:
+      landeshauptmann: "Michael Ludwig (Bürgermeister)"
+      koalition: "SPÖ-NEOS"
+      umfrage_spoe: 0.28  # ~28% (stärker als Bund)
+      verhaeltnis_babler: "Loyal, aber eigenständig"
+      migration_position: "Pragmatisch, weniger ideologisch als Bund"
+      besonderheiten:
+        - "Grösste SPÖ-Landesorganisation"
+        - "Urbaner, progressiver Wählerschaft"
+        - "Integrationserfahrung (hoher Migrationsanteil)"
+      bei_narrativ: "Sollte mitgetragen werden, aber Wien-spezifische Anpassung möglich"
+
+    kaernten:
+      landeshauptmann: "Peter Kaiser"
+      koalition: "SPÖ-ÖVP"
+      umfrage_spoe: 0.35  # ~35% (stärkste Partei)
+      verhaeltnis_babler: "Loyal, traditionelle Sozialdemokratie"
+      migration_position: "Moderat, lokale Integrationsthemen"
+      besonderheiten:
+        - "Historisch SPÖ-dominiert"
+        - "Slowenische Minderheit"
+        - "Grenznähe zu Slowenien/Italien"
+      bei_narrativ: "Gute Basis, kann als Erfolgsmodell dienen"
+
+    burgenland:
+      landeshauptmann: "Hans Peter Doskozil"
+      koalition: "SPÖ-Alleinregierung"
+      umfrage_spoe: 0.45  # ~45% (absolute Mehrheit verloren, aber stärkste)
+      verhaeltnis_babler: "KRITISCH - innerparteiliche Spannung"
+      migration_position: "Restriktiv, eigene Linie ('Sicherungshaft')"
+      besonderheiten:
+        - "Doskozil als innerparteilicher Gegenspieler"
+        - "Restriktive Migrationspolitik (grenzt sich ab)"
+        - "Grenzregion zu Ungarn"
+      bei_narrativ:
+        risiko: "Doskozil könnte Narrativ untergraben"
+        strategie: "Nicht direkt konfrontieren, Unterschiede akzeptieren"
+        zitat_vermeiden: "Keine Babler-Doskozil Konfrontation provozieren"
+
+    niederoesterreich:
+      landeshauptfrau: "Johanna Mikl-Leitner (ÖVP)"
+      spoe_chef: "Franz Schnabl"
+      umfrage_spoe: 0.18  # ~18% (schwach)
+      bei_narrativ: "Schwieriges Terrain, konservative Wählerschaft"
+
+    oberoesterreich:
+      landeshauptmann: "Thomas Stelzer (ÖVP)"
+      spoe_chefin: "Birgit Gerstorfer"
+      umfrage_spoe: 0.15  # ~15% (schwach)
+      bei_narrativ: "Industrieregion, Arbeiterthemen betonen"
+
+    steiermark:
+      landeshauptmann: "Christopher Drexler (ÖVP)"
+      spoe_chef: "Anton Lang"
+      umfrage_spoe: 0.22  # ~22%
+      bei_narrativ: "Gemischt, urbane Zentren (Graz) vs. ländlich"
+
+    salzburg:
+      landeshauptmann: "Wilfried Haslauer (ÖVP)"
+      spoe_chef: "David Egger"
+      umfrage_spoe: 0.17  # ~17% (schwach)
+      bei_narrativ: "Tourismusregion, schwieriges Terrain"
+
+    tirol:
+      landeshauptmann: "Anton Mattle (ÖVP)"
+      spoe_chef: "Georg Dornauer"
+      umfrage_spoe: 0.16  # ~16% (schwach)
+      migration_position: "Brenner-Route relevant"
+      bei_narrativ: "Grenzthematik kann genutzt werden"
+
+    vorarlberg:
+      landeshauptmann: "Markus Wallner (ÖVP)"
+      spoe_chefin: "Gabriele Sprickler-Falschlunger"
+      umfrage_spoe: 0.12  # ~12% (sehr schwach)
+      bei_narrativ: "Schwächste SPÖ-Organisation, konservative Region"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # SOZIALPARTNER
+  # ─────────────────────────────────────────────────────────────────────────
+
+  sozialpartner:
+
+    arbeitnehmer:
+
+      oegb:
+        name: "Österreichischer Gewerkschaftsbund"
+        praesident: "Wolfgang Katzian"
+        mitglieder: 1200000  # ~1.2 Mio
+        verhaeltnis_spoe: "Traditionell eng verbunden, FSG-dominiert"
+        schluesselthemen:
+          - "Löhne & Kollektivverträge"
+          - "Arbeitszeit"
+          - "Pensionen"
+        bei_migration: "Arbeitnehmerrechte für alle, gegen Lohndumping"
+        bei_narrativ: "Natürlicher Verbündeter, sollte Narrativ mittragen"
+
+      ak:
+        name: "Arbeiterkammer"
+        praesidentin: "Renate Anderl"
+        mitglieder: 3900000  # ~3.9 Mio (Pflichtmitgliedschaft)
+        verhaeltnis_spoe: "Eng, FSG-dominiert"
+        schluesselthemen:
+          - "Konsumentenschutz"
+          - "Arbeitsrecht"
+          - "Soziale Absicherung"
+        bei_narrativ: "Kann Faktenbasis liefern, wissenschaftliche Expertise"
+
+    arbeitgeber:
+
+      wko:
+        name: "Wirtschaftskammer Österreich"
+        praesident: "Harald Mahrer"
+        mitglieder: 560000  # ~560.000 Unternehmen
+        verhaeltnis_spoe: "Distanziert, traditionell ÖVP-nah"
+        schluesselthemen:
+          - "Standort & Wettbewerbsfähigkeit"
+          - "Fachkräftemangel"
+          - "Bürokratieabbau"
+        bei_migration: "Pro Arbeitsmigration, gegen irreguläre Migration"
+        bei_narrativ:
+          chance: "Ordnung & Regeln sind auch WKO-Interesse"
+          risiko: "Zu weiche Position wird kritisiert"
+
+      iv:
+        name: "Industriellenvereinigung"
+        praesident: "Georg Knill"
+        verhaeltnis_spoe: "Distanziert bis kritisch"
+        schluesselthemen:
+          - "Industriestandort"
+          - "Energie & Klima"
+          - "Qualifizierte Zuwanderung"
+        bei_migration: "Pro qualifizierte Migration, Fachkräftemangel"
+        bei_narrativ: "Schwieriger Partner, aber 'Ordnung' könnte anschlussfähig sein"
+
+      lko:
+        name: "Landwirtschaftskammer Österreich"
+        praesident: "Josef Moosbrugger"
+        verhaeltnis_spoe: "Distanziert, ÖVP-nah"
+        bei_migration: "Saisonarbeitskräfte wichtig"
+        bei_narrativ: "Randrelevanz, ländlicher Raum beachten"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # WAHLSEGMENTE (für Narrativ-Targeting)
+  # ─────────────────────────────────────────────────────────────────────────
+
+  wahlsegmente:
+
+    spoe_kernwaehler:
+      anteil: 0.12  # ~12% der Wahlberechtigten
+      profil: "Gewerkschaftsnah, urban, über 45"
+      migration_haltung: "Pro Menschenrechte, aber nicht naiv"
+      narrativ_gewichtung:
+        betonen: ["H_Grenze", "G_Menschlichkeit", "I_Closer"]
+        kuerzen: ["A_Zahlen", "C_Konsequenz"]
+      risiko: "Enttäuschung wenn zu 'rechts'"
+
+    progressive_mitte:
+      anteil: 0.15  # ~15%
+      profil: "Urban, gebildet, 25-45, Grün/NEOS-affin"
+      migration_haltung: "Pro EMRK, pro EU, liberal"
+      narrativ_gewichtung:
+        betonen: ["B_EU", "E_Entkopplung", "H_Grenze"]
+        kuerzen: ["A_Zahlen", "D_Traiskirchen"]
+      chance: "EMRK-Verteidigung resoniert"
+
+    konservative_mitte:
+      anteil: 0.18  # ~18%
+      profil: "Suburban/ländlich, Familie, 35-55, ÖVP-nah"
+      migration_haltung: "Ordnung ja, aber fair"
+      narrativ_gewichtung:
+        betonen: ["A_Zahlen", "C_Konsequenz", "I_Closer"]
+        kuerzen: ["H_Grenze", "B_EU"]
+      risiko: "Zu weich wirken"
+
+    verunsicherte:
+      anteil: 0.20  # ~20%
+      profil: "Ängstlich, mediengesteuert, wechselwähler"
+      migration_haltung: "Unsicher, reagiert auf Stimmung"
+      narrativ_gewichtung:
+        betonen: ["F_Dimension", "D_Authentizitaet", "I_Closer"]
+        kuerzen: ["Abstrakte Werte", "B_EU"]
+      schluessel: "Dimensionierung (10-50, nicht tausende)"
+
+    laendlicher_raum:
+      anteil: 0.22  # ~22%
+      profil: "Dörflich, traditionell, über 50"
+      migration_haltung: "Skeptisch, aber nicht radikal"
+      narrativ_gewichtung:
+        betonen: ["D_Beamten", "C_Konsequenz", "I_Closer"]
+        kuerzen: ["B_EU", "E_EMRK"]
+      chance: "Lokale Beispiele, konkrete Sprache"
+
+    ehemalige_fpoe:
+      anteil: 0.08  # ~8% (potentiell zurückholbar)
+      profil: "Enttäuscht von FPÖ, aber nicht links"
+      migration_haltung: "Restriktiv, misstrauisch"
+      narrativ_gewichtung:
+        betonen: ["A_Zahlen", "F_Dimension", "I_Scheinloesungen"]
+        kuerzen: ["H_Grenze", "Moralische Appelle"]
+      goldene_regel: "Fakten, keine Moral. Fragen, nicht belehren."
+
+# =============================================================================
+# TEIL 11: STRATEGISCHE FRAGESTELLUNGEN (REFERENZ - SSOT ist ANFRAGEN_REGISTER!)
+# =============================================================================
+# NICHT HIER BEARBEITEN! Änderungen im ANFRAGEN_REGISTER vornehmen.
+# =============================================================================
+
+strategische_fragestellungen:
+  _ssot: "data/customers/spo/database/ANFRAGEN_REGISTER.yaml"
+  _hinweis: "Alle Fragestellungen mit Outputs und Kernaussagen"
+  _letzte_aktualisierung: "2026-02-03"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ÜBERSICHT (für schnellen Zugriff bei Auto-Load)
+  # ─────────────────────────────────────────────────────────────────────────
+
+  statistik:
+    gesamt: 5
+    abgeschlossen: 5
+    in_bearbeitung: 0
+
+  uebersicht:
+    - id: "ANF-2026-01-27-001"
+      thema: "Spitalstouristen / Gesundheitssystem"
+      typ: "Akut-Reaktion"
+      status: "abgeschlossen"
+
+    - id: "ANF-2026-01-30-001"
+      thema: "Social Media Ordnungs-Gesetz (SOG)"
+      typ: "Strategische Positionierung"
+      status: "abgeschlossen"
+
+    - id: "ANF-2026-02-02-001"
+      thema: "EMRK / Migration / Abschiebungen / Dänemark-Modell"
+      typ: "Strategische Positionierung"
+      status: "abgeschlossen"
+
+    - id: "ANF-2026-02-03-002"
+      thema: "Basis-Gesundheitsversorgung Asylwerber"
+      typ: "Akut-Reaktion"
+      status: "abgeschlossen"
+
+    - id: "ANF-2026-02-04-001"
+      thema: "Inflation / Teuerung / Preispolitik"
+      typ: "Strategische Positionierung"
+      status: "abgeschlossen"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # KERNAUSSAGEN PRO FRAGESTELLUNG (für schnellen Zugriff)
+  # ─────────────────────────────────────────────────────────────────────────
+
+  kernaussagen:
+
+    spitalstouristen:
+      id: "ANF-2026-01-27-001"
+      killer_fakt_1: "4,8% der Bevölkerung, aber nur 2,75% der Gesundheitsleistungen"
+      killer_fakt_2: "1,8 Mio. Behandlungen wurden PRIVAT bezahlt"
+      killer_fakt_3: "Plastische Chirurgie = Wiederherstellung, nicht Kosmetik"
+      closer: "Wer Ordnung im Gesundheitssystem will, investiert in Kassenärzte und Pflege. Wer Chaos will, sucht Sündenböcke."
+
+    social_media_sog:
+      id: "ANF-2026-01-30-001"
+      ueberschrift: "Diese Regierung schafft Ordnung im digitalen Raum."
+      saeule_1: "Kinder schützen. So wie bei Filmen, so bei Social Media."
+      saeule_2: "Wer Reichweite hat, trägt Verantwortung."
+      saeule_3: "Medienpolitik ist Demokratiepolitik."
+      saeule_4: "Gleiche Spielregeln für alle Medien."
+      fpoe_konter: "Unter FPÖ-Regierungsbeteiligung ist in Sachen Plattformregulierung nichts passiert. Null."
+      closer: "Das ist keine Zensur – das ist Ordnung."
+
+    emrk_migration:
+      id: "ANF-2026-02-02-001"
+      level_1: "14.156 Abschiebungen. Höchststand. 50 Prozent davon Straftäter. Das funktioniert."
+      level_2: "Das ist keine Frage von links oder rechts. Das ist Anstand."
+      level_3: "Das ist die Lehre aus unserer Geschichte."
+      closer: "Sicherheit für alle. Regeln für alle. Das ist der österreichische Weg."
+      cross_party_konsens:
+        - "Straffällige abschieben – will jeder"
+        - "Keine Folter – will niemand"
+      chronologie_ssot: "Teil 8: aktuelle_ereignisse (11 EMRK-Ereignisse)"
+
+    basis_gesundheit:
+      id: "ANF-2026-02-03-002"
+      headline: "Wer bei der Prävention spart, zahlt bei der Notaufnahme."
+      level_1: "§ 9 ASVG sieht keine Differenzierung vor. Notfallversorgung kann nicht verweigert werden."
+      level_2: "Das ist Symbolpolitik, kein Sparpaket. Es kostet am Ende mehr."
+      level_3: "Zwei-Klassen-Medizin ist der Anfang vom Ende der Solidargemeinschaft."
+      closer: "Wer Ordnung im Gesundheitssystem will, investiert in Prävention. Wer Chaos will, erfindet Zwei-Klassen-Medizin."
+      killer_fakten:
+        - "§ 9 ASVG: Keine Differenzierung vorgesehen"
+        - "Unbehandelt → chronisch → teurer"
+        - "Übertragbare Krankheiten gefährden ALLE"
+
+    inflation_teuerung:
+      id: "ANF-2026-02-04-001"
+      headline: "Unsere Maßnahmen wirken. Die Teuerung ist halbiert."
+      level_1: "2 Prozent Inflation – niedrigster Stand seit 14 Monaten. Energie minus 4,9 Prozent."
+      level_2: "Für Familien, die einen Großteil für Miete, Strom und Lebensmittel ausgeben."
+      level_3: "Politik kann Preise ordnen. MwSt-Senkung, Mietbremse, Günstiger-Strom-Gesetz beweisen es."
+      closer: "Ordnung in der Wirtschaft heißt: Preise, die sich Menschen leisten können. Daran arbeiten wir. Nicht mit Schlagzeilen, sondern mit Gesetzen."
+      killer_fakten:
+        - "2% Inflation (Jänner 2026)"
+        - "Halbiert in 1 Monat (4% → 2%)"
+        - "Energie -4,9% (spart 1,2 PP)"
+        - "1,4 Mrd. € Entlastung bis Jahresende"
+      spoe_handschrift:
+        - "MwSt-Halbierung auf Grundnahrungsmittel (Juli 2026)"
+        - "Mietpreisbremsen (umgesetzt)"
+        - "Günstiger-Strom-Gesetz (wirkt)"
+        - "Österreichtarif Verbund (ab März)"
+      fpoe_konter: "Die FPÖ redet über Teuerung. Wir bekämpfen sie. Unter FPÖ-Regierungsbeteiligung 2017-2019: Null Maßnahmen."
+
+# =============================================================================
+# VALIDIERUNG
+# =============================================================================
+
+validierung:
+  erstellt_von: "FehrAdvice EBF Framework"
+  geprueft: true
+  naechste_aktualisierung: "2026-02-15"
+
+  aenderungsprotokoll:
+    - datum: "2026-02-03"
+      version: "2.7.0"
+      aenderung: "Sonntagsfrage Parteien-Datenbank (24 Monate) hinzugefügt"
+      autor: "Session EBF-S-2026-02-03-POL"
+      details:
+        - "Neue Datenbank: SONNTAGSFRAGE_PARTEIEN_AT.yaml"
+        - "24 Monate historische Daten (Februar 2024 - Januar 2026)"
+        - "Alle österreichischen Parteien: FPÖ, ÖVP, SPÖ, GRÜNE, NEOS, KPÖ+"
+        - "Koalitions-Szenarien und Regierung vs. Opposition"
+        - "ASCII-Visualisierungen für Trend-Analyse"
+        - "Quellen: PolitPro, APA-Wahltrend, Unique Research, Market, OGM, IFES"
+
+    - datum: "2026-02-03"
+      version: "2.6.0"
+      aenderung: "Auto-Research Datenbanken mit Freshness-Check hinzugefügt"
+      autor: "Session EBF-S-2026-02-03-POL"
+      details:
+        - "Neuer Abschnitt: AUTO-RESEARCH DATENBANKEN"
+        - "BELIEBTHEIT_POLITIKER_AT.yaml als erste Auto-Research-DB"
+        - "Freshness-Check: last_fetched + 2 Tage < heute → Auto-Update"
+        - "15 Monate historische Daten (OGM Vertrauensindex)"
+        - "Trigger-Wörter identisch mit Präambel-Triggern"
+
+    - datum: "2026-02-03"
+      version: "2.5.0"
+      aenderung: "Strategische Fragestellungen in Präambel integriert"
+      autor: "Session EBF-S-2026-02-03-POL"
+      details:
+        - "Teil 11: STRATEGISCHE FRAGESTELLUNGEN neu hinzugefügt"
+        - "Referenz auf SSOT: ANFRAGEN_REGISTER.yaml"
+        - "Übersicht aller 3 Fragestellungen (Spitalstouristen, SOG, EMRK)"
+        - "Kernaussagen pro Fragestellung für schnellen Zugriff"
+        - "Querverweis zu EMRK-Chronologie (Teil 8)"
+
+    - datum: "2026-02-03"
+      version: "2.4.0"
+      aenderung: "EMRK-Chronologie mit vollständigen Quellen hinzugefügt"
+      autor: "Session EBF-S-2026-02-03-POL"
+      details:
+        - "aktuelle_ereignisse komplett überarbeitet (11 Einträge)"
+        - "Jedes Ereignis mit quelle + quelle_url"
+        - "Chronologie: 2019-01-23 bis 2026-05 (geplant)"
+        - "Schlüsseldaten: 2025-05-23 (9-Länder-Brief), 2025-12-10 (27-Staaten-Resolution)"
+        - "SPÖ-Reaktionen und Relevanz-Bewertung pro Ereignis"
+
+    - datum: "2026-02-03"
+      version: "2.3.1"
+      aenderung: "Publikationsdatum zu Quellen-Tabelle hinzugefügt"
+      autor: "Session EBF-S-2026-02-03-POL"
+      details:
+        - "Neue Spalte 'Datum' in Quellen-Tabelle"
+        - "{tX_pub_date} Platzhalter für jedes Thema T1-T5"
+
+    - datum: "2026-02-03"
+      version: "2.3.0"
+      aenderung: "Quellen-Pflicht bei Auto-Research hinzugefügt"
+      autor: "Session EBF-S-2026-02-03-POL"
+      details:
+        - "quellen_pflicht: true als neue Default-Einstellung"
+        - "quellen_format: markdown_table für strukturierte Ausgabe"
+        - "output_format erweitert mit Quellen-Tabelle"
+        - "Jeder T1-T5 Eintrag erhält automatisch Source-Link"
+
+    - datum: "2026-02-02"
+      version: "2.2.0"
+      aenderung: "Vollständige Stakeholder-Landschaft hinzugefügt (SSOT)"
+      autor: "Session EBF-S-2026-02-02-POL"
+      details:
+        - "Teil 10: Stakeholder-Landschaft neu hinzugefügt"
+        - "Regierungsparteien: ÖVP, SPÖ, NEOS (komplett)"
+        - "Opposition: FPÖ, Grüne"
+        - "SPÖ Landesorganisationen: Alle 9 Bundesländer"
+        - "Sozialpartner: ÖGB, AK, WKO, IV, LKO"
+        - "Wahlsegmente: 6 Segmente mit Narrativ-Gewichtung"
+        - "Doskozil-Risiko explizit dokumentiert"
+
+    - datum: "2026-02-01"
+      version: "2.1.0"
+      aenderung: "Präambel Loading Protocol (PLP) implementiert"
+      autor: "Session EBF-S-2026-02-01-POL"
+      details:
+        - "Teil 0: Superkey + Freshness hinzugefügt"
+        - "Auto-Research für top_5_themen (bei jedem Laden)"
+        - "5 Queries: PERSON, KERNTHEMA, REGIERUNG, OPPOSITION, GEOPOLITIK"
+        - "Output-Format für Research-Summary definiert"
+
+    - datum: "2026-02-01"
+      version: "2.0.0"
+      aenderung: "Refactoring nach 3-SSOT-Prinzip"
+      autor: "Session EBF-S-2026-02-01-POL"
+      details:
+        - "Teil 4+5: Von Duplikat zu Referenz umgestellt"
+        - "Teil 6: CVA-Referenz hinzugefügt"
+        - "Teil 9: SSOT-Architektur dokumentiert"
+        - "_ssot und _hinweis Felder für Klarheit"
+
+    - datum: "2026-02-01"
+      version: "1.0.0"
+      aenderung: "Initiale Erstellung"
+      autor: "Session EBF-S-2026-02-01-POL"

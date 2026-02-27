@@ -1,0 +1,185 @@
+name: ISBN Lookup - Batch System
+
+on:
+  workflow_dispatch:
+    inputs:
+      batch_size:
+        description: 'Number of books to process'
+        required: false
+        default: '50'
+      dry_run:
+        description: 'Dry run (no commits)'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  isbn-lookup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pyyaml
+
+      - name: Run ISBN lookup
+        id: lookup
+        run: |
+          python3 << 'PYEOF'
+          import re
+          import time
+          import random
+          import requests
+          import yaml
+          import json
+          from pathlib import Path
+
+          YAML_DIR = Path("data/paper-references")
+          OPEN_LIBRARY_SEARCH = "https://openlibrary.org/search.json"
+          GOOGLE_BOOKS_API = "https://www.googleapis.com/books/v1/volumes"
+          BATCH_SIZE = int("${{ inputs.batch_size }}")
+          DRY_RUN = str("${{ inputs.dry_run }}").lower() == "true"
+
+          HEADERS = {"User-Agent": "EBF-ISBN-Lookup/1.0"}
+
+          def find_books_without_isbn():
+              books = []
+              for yaml_file in YAML_DIR.glob("PAP-*.yaml"):
+                  try:
+                      with open(yaml_file, 'r') as f:
+                          data = yaml.safe_load(f)
+                      if data and data.get('publication_type') == 'book' and not data.get('isbn'):
+                          books.append({
+                              'file': str(yaml_file),
+                              'key': yaml_file.stem,
+                              'title': data.get('title', ''),
+                              'author': data.get('author', ''),
+                              'year': str(data.get('year', ''))
+                          })
+                  except Exception as e:
+                      print(f"Error: {yaml_file}: {e}")
+              return books
+
+          def search_open_library(title, author, year):
+              clean_title = re.sub(r'[{}\\]', '', title)
+              params = {'title': clean_title, 'limit': 5}
+              if author:
+                  params['author'] = author.split(',')[0].split()[-1]
+              try:
+                  resp = requests.get(OPEN_LIBRARY_SEARCH, params=params, headers=HEADERS, timeout=30)
+                  for doc in resp.json().get('docs', []):
+                      if year:
+                          try:
+                              pub_year = doc.get('first_publish_year') or (doc.get('publish_year', [None]) or [None])[0]
+                              if pub_year and abs(int(pub_year) - int(year)) > 2:
+                                  continue
+                          except (ValueError, TypeError):
+                              pass
+                      for isbn in doc.get('isbn', []):
+                          if len(isbn) == 13 and isbn.startswith('978'):
+                              return isbn
+                      for isbn in doc.get('isbn', []):
+                          if len(isbn) == 10:
+                              return isbn
+              except Exception as e:
+                  print(f"  OpenLibrary error: {e}")
+              return None
+
+          def search_google_books(title, author, year):
+              clean_title = re.sub(r'[{}\\]', '', title)
+              query = f'intitle:{clean_title}'
+              if author:
+                  query += f'+inauthor:{author.split(",")[0].split()[-1]}'
+              try:
+                  resp = requests.get(GOOGLE_BOOKS_API, params={'q': query, 'maxResults': 5}, headers=HEADERS, timeout=30)
+                  for item in resp.json().get('items', []):
+                      for ident in item.get('volumeInfo', {}).get('industryIdentifiers', []):
+                          if ident.get('type') == 'ISBN_13':
+                              return ident.get('identifier')
+              except Exception as e:
+                  print(f"  GoogleBooks error: {e}")
+              return None
+
+          def update_yaml(filepath, isbn):
+              try:
+                  with open(filepath, 'r') as f:
+                      data = yaml.safe_load(f) or {}
+                  if isbn and len(isbn) == 13 and '-' not in isbn:
+                      isbn = f"{isbn[:3]}-{isbn[3:]}"
+                  data['isbn'] = isbn
+                  with open(filepath, 'w') as f:
+                      yaml.dump(data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+                  return True
+              except Exception as e:
+                  print(f"  Error: {e}")
+                  return False
+
+          # Main
+          print(f"Batch size: {BATCH_SIZE}, Dry run: {DRY_RUN}")
+          books = find_books_without_isbn()
+          print(f"Found {len(books)} books without ISBN")
+
+          random.shuffle(books)
+          batch = books[:BATCH_SIZE]
+          found, updated = 0, []
+
+          for i, book in enumerate(batch):
+              print(f"[{i+1}/{len(batch)}] {book['key']}")
+              isbn = search_open_library(book['title'], book['author'], book['year'])
+              if not isbn:
+                  isbn = search_google_books(book['title'], book['author'], book['year'])
+              if isbn:
+                  print(f"  ISBN: {isbn}")
+                  found += 1
+                  if not DRY_RUN and update_yaml(book['file'], isbn):
+                      updated.append(book['key'])
+              else:
+                  print(f"  Not found")
+              time.sleep(0.3)
+
+          print(f"\nFound: {found}/{len(batch)}")
+
+          # Write summary for next step
+          with open('isbn_summary.json', 'w') as f:
+              json.dump({'found': found, 'total': len(batch), 'updated': updated, 'remaining': len(books) - found}, f)
+          PYEOF
+
+      - name: Commit changes
+        if: ${{ inputs.dry_run != true }}
+        run: |
+          if [ -f isbn_summary.json ]; then
+            FOUND=$(python3 -c "import json; print(json.load(open('isbn_summary.json'))['found'])")
+            REMAINING=$(python3 -c "import json; print(json.load(open('isbn_summary.json'))['remaining'])")
+
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add data/paper-references/
+
+            if ! git diff --staged --quiet; then
+              git commit -m "feat(papers): Add ${FOUND} ISBNs via Open Library/Google Books API
+
+          Remaining without ISBN: ${REMAINING}
+
+          https://claude.ai/code/session_018owGuHoers2muZN9fKKg6A"
+              git push
+              echo "Committed ${FOUND} ISBN updates"
+            else
+              echo "No changes to commit"
+            fi
+          fi
+
+      - name: Upload summary
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: isbn-lookup-results
+          path: isbn_summary.json

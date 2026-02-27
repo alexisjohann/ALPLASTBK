@@ -1,0 +1,562 @@
+# ============================================================================
+# EBF MODEL DATABASE SCHEMA
+# ============================================================================
+# Defines the structure for the single source of truth for all models
+# in the Evidence-Based Framework
+#
+# This schema defines:
+# 1. All required fields for models
+# 2. Data types and constraints
+# 3. Relationships between entities
+# 4. Validation rules
+# ============================================================================
+
+version: "1.0"
+created: "2026-01-14"
+description: "Authoritative schema for EBF Model Registry database"
+
+# ============================================================================
+# CORE ENTITIES
+# ============================================================================
+
+entities:
+
+  # =========================================================================
+  # MODEL ENTITY: Master record for each model
+  # =========================================================================
+  Model:
+    description: "A complete model with metadata, parameters, validation"
+    required_fields:
+      model_id:
+        type: string
+        pattern: "^[A-Z]+-[A-Z0-9]+(-[0-9]{4})?$"
+        example: "PSF-2.0"
+        immutable: true
+
+      short_name:
+        type: string
+        min_length: 5
+        max_length: 100
+
+      category:
+        type: enum
+        allowed: ["SUCCESSION", "COMPLIANCE", "BEHAVIORAL", "SOCIAL", "OTHER"]
+
+      status:
+        type: enum
+        allowed: ["STABLE", "BETA", "EXPERIMENTAL", "PLANNED"]
+
+      current_version:
+        type: string
+        pattern: "^[0-9]+\\.[0-9]+(\\.[0-9]+)?$"
+        example: "1.1"
+
+      created:
+        type: date
+        format: "YYYY-MM-DD"
+
+      last_updated:
+        type: date
+        format: "YYYY-MM-DD"
+
+      maintainer:
+        type: string
+        example: "EBF Research Team"
+
+    optional_fields:
+      description:
+        type: string
+        max_length: 1000
+
+      documentation_url:
+        type: url
+
+      github_url:
+        type: url
+
+      related_appendices:
+        type: array
+        items:
+          type: string
+          pattern: "^[A-Z]+"
+
+  # =========================================================================
+  # VERSION ENTITY: Track all versions of a model
+  # =========================================================================
+  ModelVersion:
+    description: "A specific version of a model"
+    required_fields:
+      model_id:
+        type: string
+        foreign_key: "Model.model_id"
+
+      version:
+        type: string
+        pattern: "^[0-9]+\\.[0-9]+(\\.[0-9]+)?$"
+
+      released:
+        type: date
+        format: "YYYY-MM-DD"
+
+      status:
+        type: enum
+        allowed: ["DEVELOPMENT", "RELEASE_CANDIDATE", "RELEASED", "DEPRECATED"]
+
+      changes:
+        type: array
+        items:
+          type: string
+
+    optional_fields:
+      breaking_changes:
+        type: array
+        items:
+          type: string
+
+      backward_compatible:
+        type: boolean
+
+      migration_guide:
+        type: string
+        max_length: 2000
+
+  # =========================================================================
+  # MATHEMATICAL_MODEL ENTITY: The formal mathematical specification
+  # =========================================================================
+  MathematicalModel:
+    description: "Mathematical formulation of a model"
+    required_fields:
+      model_id:
+        type: string
+        foreign_key: "Model.model_id"
+
+      model_type:
+        type: enum
+        allowed: ["LOGISTIC", "LINEAR", "TREE", "NEURAL_NETWORK", "BAYESIAN", "SIMULATION", "OTHER"]
+
+      formula:
+        type: string
+        description: "LaTeX-formatted formula"
+
+      dimensions:
+        type: array
+        items:
+          type: object
+          fields:
+            symbol:
+              type: string
+              pattern: "^[A-Za-z]$|^[A-Za-z][0-9]$"
+            name:
+              type: string
+            weight:
+              type: number
+              min: 0.0
+              max: 1.0
+            beta_coefficient:
+              type: number
+            range:
+              type: array
+              items:
+                type: number
+              length: 2
+
+      parameters:
+        type: array
+        items:
+          type: object
+          fields:
+            name:
+              type: string
+            symbol:
+              type: string
+            value:
+              type: number
+            confidence_interval:
+              type: object
+              fields:
+                lower: number
+                upper: number
+                confidence_level: "0.95"
+
+  # =========================================================================
+  # VALIDATION ENTITY: Historical performance on data
+  # =========================================================================
+  Validation:
+    description: "Model validation against historical/test data"
+    required_fields:
+      model_id:
+        type: string
+        foreign_key: "Model.model_id"
+
+      version:
+        type: string
+        pattern: "^[0-9]+\\.[0-9]+(\\.[0-9]+)?$"
+
+      validation_type:
+        type: enum
+        allowed: ["HISTORICAL", "CROSS_VALIDATION", "OUT_OF_SAMPLE", "EXPERT_ASSESSMENT"]
+
+      data_points:
+        type: integer
+        min: 1
+
+      metrics:
+        type: object
+        required_fields:
+          accuracy:
+            type: number
+            min: 0.0
+            max: 1.0
+
+          confidence:
+            type: enum
+            allowed: ["HIGH", "MEDIUM", "LOW"]
+
+        optional_fields:
+          rmse:
+            type: number
+          precision:
+            type: number
+          recall:
+            type: number
+          f1:
+            type: number
+          calibration_error:
+            type: number
+
+      test_cases:
+        type: array
+        items:
+          type: object
+          fields:
+            case_id: string
+            predicted_value: any
+            actual_value: any
+            error: number
+            status: enum ["CORRECT", "INCORRECT", "WITHIN_MARGIN"]
+
+    optional_fields:
+      notes:
+        type: string
+        max_length: 1000
+
+  # =========================================================================
+  # IMPROVEMENT ENTITY: Track improvement tasks (roadmap)
+  # =========================================================================
+  Improvement:
+    description: "An improvement task to enhance a model"
+    required_fields:
+      improvement_id:
+        type: string
+        pattern: "^PHASE_[1-3]_TASK_[0-9]_[0-9]$"
+        example: "PHASE_2_TASK_2_1"
+
+      model_id:
+        type: string
+        foreign_key: "Model.model_id"
+
+      phase:
+        type: enum
+        allowed: ["PHASE_1", "PHASE_2", "PHASE_3"]
+
+      task_number:
+        type: integer
+
+      name:
+        type: string
+        max_length: 200
+
+      objective:
+        type: string
+        max_length: 1000
+
+      status:
+        type: enum
+        allowed: ["PENDING", "IN_PROGRESS", "COMPLETE", "BLOCKED"]
+
+      timeline:
+        type: string
+        example: "2026 Q1-Q2"
+
+    optional_fields:
+      owner:
+        type: string
+
+      blockers:
+        type: array
+        items:
+          type: string
+
+      success_criteria:
+        type: array
+        items:
+          type: string
+
+      estimated_hours:
+        type: integer
+        min: 0
+
+  # =========================================================================
+  # DIMENSION ENTITY: Defines each model dimension
+  # =========================================================================
+  Dimension:
+    description: "A single dimension in a model"
+    required_fields:
+      model_id:
+        type: string
+        foreign_key: "Model.model_id"
+
+      symbol:
+        type: string
+        pattern: "^[A-Za-z_]+$"
+        unique: true  # Within model
+
+      name:
+        type: string
+
+      description:
+        type: string
+        max_length: 500
+
+      scale:
+        type: object
+        fields:
+          min: number
+          max: number
+          unit: string
+
+      weight:
+        type: number
+        min: 0.0
+        max: 1.0
+        note: "Sum of all weights in model should be ~1.0"
+
+      measurement_method:
+        type: enum
+        allowed: ["QUANTITATIVE", "SUBJECTIVE_EXPERT", "HYBRID"]
+
+      data_sources:
+        type: array
+        items:
+          type: string
+
+  # =========================================================================
+  # DATA_POINT ENTITY: Individual historical data points
+  # =========================================================================
+  DataPoint:
+    description: "A single historical observation (e.g., one conclave)"
+    required_fields:
+      data_point_id:
+        type: string
+        unique: true
+
+      model_id:
+        type: string
+        foreign_key: "Model.model_id"
+
+      observation_id:
+        type: string
+        example: "1922_CONCLAVE"
+
+      date:
+        type: date
+
+      outcome:
+        type: any
+        note: "Winner, vote count, duration, etc."
+
+      dimension_scores:
+        type: object
+        additional_properties:
+          type: number
+
+      predicted_value:
+        type: any
+
+      prediction_error:
+        type: number
+
+    optional_fields:
+      notes:
+        type: string
+
+      context:
+        type: object
+        additional_properties: any
+
+  # =========================================================================
+  # LIMITATION ENTITY: Known model limitations
+  # =========================================================================
+  Limitation:
+    description: "A known limitation or gap in a model"
+    required_fields:
+      limitation_id:
+        type: string
+        pattern: "^[A-Z]+-[A-Z]+-[0-9]+$"
+
+      model_id:
+        type: string
+        foreign_key: "Model.model_id"
+
+      name:
+        type: string
+
+      description:
+        type: string
+        max_length: 500
+
+      severity:
+        type: enum
+        allowed: ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+
+      impact:
+        type: string
+        max_length: 300
+
+    optional_fields:
+      fix_strategy:
+        type: string
+      improvement_id:
+        type: string
+        foreign_key: "Improvement.improvement_id"
+
+# ============================================================================
+# RELATIONSHIPS (Foreign Keys & Constraints)
+# ============================================================================
+
+relationships:
+  Model_Version:
+    from: Model
+    to: ModelVersion
+    cardinality: "1:N"
+    description: "A model has many versions"
+
+  Model_MathematicalModel:
+    from: Model
+    to: MathematicalModel
+    cardinality: "1:1"
+    description: "Each model has one mathematical formulation (per version)"
+
+  Model_Validation:
+    from: Model
+    to: Validation
+    cardinality: "1:N"
+    description: "A model can be validated multiple times/ways"
+
+  Model_DataPoint:
+    from: Model
+    to: DataPoint
+    cardinality: "1:N"
+    description: "A model uses multiple data points"
+
+  Model_Improvement:
+    from: Model
+    to: Improvement
+    cardinality: "1:N"
+    description: "A model has multiple improvement tasks"
+
+  Model_Limitation:
+    from: Model
+    to: Limitation
+    cardinality: "1:N"
+    description: "A model has multiple known limitations"
+
+  Model_Dimension:
+    from: Model
+    to: Dimension
+    cardinality: "1:N"
+    description: "A model has multiple dimensions"
+
+# ============================================================================
+# CONSTRAINTS & VALIDATION RULES
+# ============================================================================
+
+constraints:
+  dimension_weights:
+    rule: "Sum of all dimension weights in a model ≈ 1.0"
+    tolerance: 0.05
+    description: "Allows for rounding, but catches errors"
+
+  validation_data_points:
+    rule: "Each model must have ≥ 1 validation"
+    rationale: "Ensures models are empirically grounded or expert-assessed"
+
+  improvement_timeline:
+    rule: "Improvement tasks must have explicit timeline or 'PENDING'"
+    validation: "No vague '2026' or 'soon'"
+
+  status_transitions:
+    rule: "Model status transitions follow: PLANNED → EXPERIMENTAL → BETA → STABLE"
+    allowed_backwards: false
+    exception: "Can downgrade to BETA if issues found"
+
+  version_format:
+    rule: "Version must follow semantic versioning: MAJOR.MINOR[.PATCH]"
+    examples: "1.0, 1.1, 2.0, 1.0.1"
+
+# ============================================================================
+# DATABASE OPERATIONS
+# ============================================================================
+
+operations:
+  CREATE:
+    required_fields: ["model_id", "short_name", "category", "status", "current_version", "created", "maintainer"]
+    validation: "All required fields must be valid before insert"
+
+  UPDATE:
+    immutable_fields: ["model_id", "created"]
+    mutable_fields: ["status", "current_version", "last_updated", "description"]
+    note: "Updating model parameters requires new version"
+
+  DELETE:
+    rule: "Soft-delete only (mark as DEPRECATED, don't remove)"
+    rationale: "Maintain historical records"
+
+  QUERY:
+    supported_queries:
+      - "SELECT * FROM models WHERE status = 'STABLE'"
+      - "SELECT * FROM models WHERE category = 'SUCCESSION'"
+      - "SELECT * FROM improvements WHERE status = 'IN_PROGRESS'"
+      - "SELECT * FROM validations WHERE accuracy > 0.8"
+
+  VERSIONING:
+    rule: "On model parameter change or significant improvement, increment version"
+    example: "v1.0 → v1.1 (bug fix) or v1.0 → v2.0 (new features)"
+
+# ============================================================================
+# SCHEMA VALIDATION RULES
+# ============================================================================
+
+validation_rules:
+  rule_1:
+    description: "All required fields must be present and non-null"
+    check: "NOT NULL constraint"
+
+  rule_2:
+    description: "Model IDs must be unique"
+    check: "UNIQUE constraint on model_id"
+
+  rule_3:
+    description: "Validation accuracy must be between 0.0 and 1.0"
+    check: "0.0 <= accuracy <= 1.0"
+
+  rule_4:
+    description: "Dates must be in valid format"
+    check: "Date format validation"
+
+  rule_5:
+    description: "Dimension weights must sum to ~1.0"
+    check: "0.95 <= SUM(weights) <= 1.05"
+
+  rule_6:
+    description: "Foreign key constraints"
+    check: "All references to other entities must exist"
+
+---
+
+**SCHEMA DEFINITION COMPLETE**
+
+This schema defines the authoritative structure for the Model Registry database.
+It ensures consistency, completeness, and validity of all model metadata.
+
+Version 1.0 | January 14, 2026

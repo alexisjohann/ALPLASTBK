@@ -1,0 +1,432 @@
+# Patterns in sustainable food choices and policy support: Novel evidence from nine countries
+
+================================================================================
+PAPER METADATA
+================================================================================
+BibTeX Key: PAP-giner2025sustainable
+Title: Patterns in sustainable food choices and policy support: Novel evidence from nine countries
+Authors: Céline Giner, Céline Nauges, Katherine Hassett
+Year: 2025
+Journal: TSE Working Paper No. 1662 / OECD
+DOI: (Working Paper)
+Evidence Tier: 2 (Silver - Peer-reviewed working paper)
+
+================================================================================
+ABSTRACT
+================================================================================
+
+This analysis uses OECD survey data from over 8,000 households in nine countries. The paper
+analyses household profiles via latent class analysis on the basis of both diet composition, as
+well as purchasing habits for products that are generally perceived to be environmentally
+sustainable. Results reveal four main household profiles that are distinguished by different
+broad patterns in these two behaviours. Household profiles are found to differ in terms of their
+socio-demographic characteristics and attitudes towards the environment, as well as with
+respect to their level of support for various food policies. Interestingly, results regarding the
+relationship between environmental attitudes and red meat consumption may suggest the
+existence of another "meat paradox" in the sense that one group of respondents reports high
+levels of environmental concern but also a high frequency of meat consumption.
+
+Keywords: food choices; meat consumption; environment-friendly products; public policies;
+cognitive dissonance; latent-class analysis
+
+================================================================================
+KEY FINDINGS
+================================================================================
+
+1. FOUR CONSUMER PROFILES IDENTIFIED (Latent Class Analysis):
+   - Class 1 (41%): High meat consumption, occasional sustainable purchases
+   - Class 2 (21%): Low meat consumption (affordability-driven), occasional sustainable purchases
+   - Class 3 (26%): High meat consumption DESPITE high environmental concern ("meat paradox")
+   - Class 4 (12%): Low meat consumption, frequent sustainable purchases (most consistent)
+
+2. THE "MEAT PARADOX" (Class 3):
+   - 84% report high environmental concern
+   - 90% consume red meat often or quite often
+   - Demonstrates cognitive dissonance between beliefs and behavior
+   - Higher income, education, older age (55+)
+
+3. POLICY SUPPORT HETEROGENEITY:
+   - Tax on meat/seafood: Only 16-36% support (Class 1: 16%, Class 4: 36%)
+   - Soft policies (education): 64-85% support
+   - Supply-side regulations: 62-85% support
+   - Strong demand-side: 31-56% support
+
+4. CROSS-COUNTRY VARIATION:
+   - Switzerland: 32% in Class 4 (most environmentally consistent)
+   - USA: Only 3% in Class 4, 54% in Class 1 (highest meat consumption)
+   - France: 47% in Class 3 (meat paradox - cultural food habits)
+
+5. KEY DRIVERS OF FOOD CHOICES:
+   - Affordability: Top priority for Class 1 (72%) and Class 2 (70%)
+   - Health: Top priority for Class 4 (59%)
+   - Environmental concern: Necessary but NOT sufficient for behavior change
+
+6. DEMOGRAPHIC PATTERNS:
+   - Males: More likely in high-meat classes (Class 1, 3)
+   - Age 55+: More likely in sustainable classes (Class 3, 4)
+   - Higher income: More sustainable purchases but NOT less meat
+   - Higher education: Increases policy support
+
+================================================================================
+1. INTRODUCTION
+================================================================================
+
+The objective of the current analysis is to inform the design of policy interventions
+seeking to incentivize consumers to increase their purchase of environmentally sustainable
+food products. The analysis uses recent OECD survey data from over 8,000 households in
+nine countries. The originality of the current paper is to identify household profiles focusing on
+both diet composition (frequency of consuming red and white meat) and purchasing habits
+regarding products generally perceived to be environmentally sustainable (locally-produced
+food, products with minimal packaging and in-season products).
+
+Globally, one-third of greenhouse gas emissions are linked to food systems (Crippa et al.,
+2021). Animal products use 83% of agricultural land and contribute to 56-58% of emissions
+from food while providing only 37% of protein and 18% of calories produced globally (Poore
+and Nemecek, 2018).
+
+The climate mitigation potential of a widespread shift to plant-based diets has been estimated
+at 0.7–8 billion tonnes of carbon dioxide equivalent (CO2eq) per year by 2050 and up to 44%
+reduction in emissions from the sector (IPCC, 2019).
+
+This divide in findings—small area-level effects on the one hand versus larger worker-level
+effects on the other—raises basic questions about identification and interpretation.
+
+================================================================================
+2. DESCRIPTION OF THE SURVEY DATA AND DESCRIPTIVE STATISTICS
+================================================================================
+
+The empirical analysis uses data from the third round of the OECD Survey on
+Environmental Policies and Individual Behaviour Change (EPIC). The survey was run in mid-
+2022 and covers representative household samples from nine countries: Belgium (BEL),
+Canada (CAN), France (FRA), Israel (ISR), the Netherlands (NLD), Sweden (SWE),
+Switzerland (CHE), the United Kingdom (GBR) and the United States (USA).
+
+Among the 17,216 households who participated in the survey, more than 8,000 were randomly
+selected to respond to questions about food consumption.
+
+Key observations:
+- USA and Canada: Highest red meat consumption (76% and 73% at least once/week)
+- Netherlands and Switzerland: Lowest red meat consumption (18% and 19% more than once/week)
+- Environmental concern correlates weakly with meat reduction (22% vs 28% frequent consumption)
+- Income correlates POSITIVELY with meat consumption (29% vs 21% for highest vs lowest quintile)
+
+================================================================================
+3. IDENTIFICATION OF HOUSEHOLD PROFILES USING LATENT-CLASS ANALYSIS
+================================================================================
+
+3.1 The selection of indicator variables and covariates
+
+Indicator variables include:
+i) Frequency of red meat and white meat consumption
+ii) Frequency of purchasing locally-grown, seasonal, and minimal-packaging products
+
+The four-class model was found to outperform two- and three-class models based on AIC.
+
+3.2 Latent class analysis results
+
+Table 1. Estimated probability of consuming/purchasing "often or quite often" by class:
+
+                              Class 1   Class 2   Class 3   Class 4
+                               (41%)     (21%)     (26%)     (12%)
+White meat                     0.96      0.50      0.93      0.52
+Red meat                       0.88      0.26      0.90      0.06
+Locally-produced food          0.49      0.25      0.86      0.74
+In-season products             0.32      0.24      0.93      0.90
+Products with min packaging    0.12      0.12      0.67      0.69
+
+Class characteristics:
+- Class 1: High meat, occasional sustainable (affordability-focused)
+- Class 2: Low meat, occasional sustainable (young, low-income)
+- Class 3: High meat, high sustainable (MEAT PARADOX - cognitive dissonance)
+- Class 4: Low meat, high sustainable (most consistent environmentalists)
+
+================================================================================
+4. SUPPORT FOR VARIOUS FOOD POLICIES
+================================================================================
+
+Policy classification:
+- Demand-side soft: Education programs, sustainability labels
+- Demand-side strong: Advertising limits, meat tax
+- Supply-side soft: Incentives for restaurants, farmers
+- Supply-side strong: Pesticide regulations, packaging responsibility
+
+Table 5. Share agreeing/strongly agreeing by class:
+
+                          Class 1   Class 2   Class 3   Class 4
+Demand-side soft           0.64      0.64      0.83      0.85
+Demand-side strong         0.31      0.40      0.48      0.56
+Supply-side soft           0.65      0.65      0.82      0.84
+Supply-side strong         0.62      0.63      0.80      0.85
+Tax on meat/seafood        0.16      0.25      0.26      0.36
+
+Key insight: Even Class 4 (most environmentally consistent) shows only 36% support for meat tax.
+
+================================================================================
+5. DISCUSSION AND POLICY IMPLICATIONS
+================================================================================
+
+Main policy insights:
+
+1. HETEROGENEITY REQUIRES MIXED POLICIES:
+   - Price-sensitive groups (Class 1, 2): More responsive to price-based measures
+   - Environmentally concerned (Class 3, 4): More responsive to information/norms
+
+2. AFFORDABILITY IS KEY:
+   - Top concern for majority of respondents
+   - Price-based measures can be effective but face low public support
+   - Careful policy design and communication required
+
+3. ENVIRONMENTAL CONCERN IS NECESSARY BUT NOT SUFFICIENT:
+   - Class 3 demonstrates this clearly: 84% concerned, 90% eat meat frequently
+   - Culture, habits, preferences dominate over concern
+   - 88% of households prioritize preferences over environmental impacts
+
+4. MESSAGING STRATEGIES:
+   - Emphasize affordability and health co-benefits
+   - Align sustainable choices with household priorities
+   - Target cognitive dissonance in Class 3 with responsibility framing
+
+================================================================================
+6. CONCLUSION
+================================================================================
+
+Given the highly sensitive nature of food policies, public support for such policies is a priority.
+Taxes are likely to face many headwinds despite being efficient. Further research on policy
+design elements that foster greater acceptance would be of high value.
+
+Class 3 demonstrates evidence of cognitive dissonance between beliefs (high environmental
+concern) and behaviors (frequent meat consumption). Research indicates that individuals
+experiencing climate-related cognitive dissonance change behavior more following information
+that simultaneously makes salient feelings of personal responsibility and activates
+pro-environmental social norms.
+
+================================================================================
+REFERENCES (Selected)
+================================================================================
+
+Banerjee, S. (2025). Meat taxes are inevitable, yet we seem to shy away from them. Food Policy, 130.
+Bonnet, C., et al. (2020). Regulating meat consumption. Food Policy, 97.
+Crippa, M., et al. (2021). Food systems are responsible for a third of global GHG emissions. Nature Food.
+Dannenberg, A., et al. (2024). Effects of social norms on food choice. Food Policy, 125.
+Edenbrandt, A., et al. (2021). Cognitive dissonance and carbon labels. Food Policy, 101.
+Gorton, M., et al. (2023). Consumers' willingness to pay for animal welfare labels. Ecological Economics.
+IPCC. (2019). Climate Change and Land: Special Report.
+Klenert, D., et al. (2023). Meat taxes can avoid overburdening low-income consumers. Nature Food.
+Laffan, K. (2024). Situational correlates of meat consumption. Behavioural Public Policy.
+Milford, A., et al. (2019). Drivers of meat consumption. Appetite, 141.
+OECD. (2023). How green is household behaviour? OECD Publishing.
+OECD/FAO. (2024). Agricultural Outlook 2024-2033.
+Poore, J., & Nemecek, T. (2018). Reducing food's environmental impacts. Science.
+Rickerby, A., & Green, R. (2024). Barriers to plant-based diets. Nutrients.
+Siegerink, V., et al. (2024). Public preferences for meat tax attributes. Food Policy.
+Springmann, M., et al. (2016). Health and climate co-benefits of dietary change. PNAS.
+
+================================================================================
+EBF RELEVANCE
+================================================================================
+
+THEORETICAL CONTRIBUTION:
+- Latent Class Analysis reveals heterogeneous consumer segments
+- "Meat Paradox" demonstrates attitude-behavior gap (cognitive dissonance)
+- Policy support varies systematically by consumer profile
+- Cross-country comparison enables context (Ψ) analysis
+
+10C FRAMEWORK MAPPING:
+- WHO (AAA): Four consumer segments with distinct behavioral profiles
+- WHAT (C): Utility from food choices = f(affordability, health, taste, environment)
+- HOW (B): Social norms influence food choices (Dannenberg et al., 2024)
+- WHEN (V): Cultural context (Ψ_K) strongly moderates behavior (France vs. USA)
+- WHERE (BBB): OECD EPIC survey provides cross-country parameters
+- AWARE (AU): Environmental concern ≠ environmental action (Class 3)
+
+PARAMETERS FOR EBF:
+- Class distribution: 41% / 21% / 26% / 12%
+- Meat tax support: 16% (Class 1) to 36% (Class 4)
+- Environmental concern → meat reduction: Weak correlation (22% vs 28%)
+- Income → meat consumption: Positive correlation
+- Cognitive dissonance prevalence: ~26% of population (Class 3)
+
+METHODOLOGICAL VALUE:
+- Latent Class Analysis for behavioral segmentation
+- Cross-country survey design (9 OECD countries)
+- Policy preference elicitation by consumer segment
+- Demonstrates importance of Ψ_K (cultural context)
+
+BCM2 RELEVANCE:
+- Switzerland data: 32% Class 4, 48% Class 3 (highest sustainable purchases)
+- Germany/Austria: Similar to Belgium baseline
+- Policy support patterns applicable to DACH region
+
+BEHAVIORAL ECONOMICS INSIGHTS:
+1. Attitude-behavior gap is segment-specific (strongest in Class 3)
+2. Price sensitivity varies by segment (strongest in Class 1, 2)
+3. Cognitive dissonance can coexist with high environmental concern
+4. Social norms and cultural context (Ψ_K) dominate individual attitudes
+
+================================================================================
+APPENDIX: LATENT CLASS METHODOLOGY
+================================================================================
+
+Latent class analysis (LCA) assumes that observed behaviours are driven by membership in
+unobserved household profiles. The latent variable is considered to be an unordered
+categorical variable.
+
+For each latent class, LCA estimates the likelihood of observing each response option.
+Specifically, it maximises the statistical independence of the observed variables conditional
+on latent class membership.
+
+Formally, the probability of obtaining response pattern y, P(Y = y), is a weighted average of
+the C class-specific probabilities:
+
+P(Y = y) = Σ P(X = x) × P(Y = y | X = x)   for x = 1 to C
+
+Statistical fit indicators: BIC, AIC, likelihood-ratio tests.
+
+================================================================================
+DETAILED METHODOLOGY AND EMPIRICAL RESULTS
+================================================================================
+
+SURVEY DESIGN:
+- OECD Survey on Environmental Policies and Individual Behaviour Change (EPIC)
+- Third round, conducted mid-2022
+- 17,216 total households, 8,261 in food consumption module
+- Nine countries: BEL, CAN, CHE, FRA, GBR, ISR, NLD, SWE, USA
+- Representative samples within each country
+
+INDICATOR VARIABLES FOR LCA:
+1. Diet composition:
+   - Red meat frequency: never / once monthly / once weekly / several times weekly
+   - White meat frequency: same scale
+   - Collapsed to binary: "never or rarely" vs "often or quite often"
+
+2. Sustainable purchasing:
+   - Locally-produced food: same binary collapse
+   - Minimal packaging products: never/rarely/sometimes vs often/always
+   - In-season products: same binary collapse
+
+COVARIATES IN CLASS MEMBERSHIP MODEL:
+- Sex (binary: male)
+- Age category (18-34, 35-54, 55+)
+- Household size (continuous)
+- Location (binary: rural vs urban/suburban)
+- Income quintile (1-5)
+- Education (binary: higher education completed)
+- Environmental concern (binary: important/very important)
+- Sense of personal responsibility (index 1-5)
+
+DETAILED CLASS CHARACTERISTICS:
+
+Class 1 (41% of sample): "Price-Sensitive Meat Eaters"
+- 53% male
+- 29% aged 18-34, 33% aged 35-54, 38% aged 55+
+- Mean income quintile: 3.30
+- 52% high environmental concern
+- Personal responsibility score: 2.98
+- Top priorities: Affordability (72%), Taste (71%), Fresh (64%), Healthy (53%)
+
+Class 2 (21% of sample): "Budget-Conscious Flexitarians"
+- 39% male
+- 36% aged 18-34, 33% aged 35-54, 31% aged 55+
+- Mean income quintile: 2.82 (lowest)
+- 59% high environmental concern
+- Personal responsibility score: 2.98
+- Top priorities: Affordability (70%), Taste (62%), Fresh (54%), Healthy (53%)
+
+Class 3 (26% of sample): "Cognitive Dissonance" (MEAT PARADOX)
+- 56% male
+- 24% aged 18-34, 27% aged 35-54, 48% aged 55+
+- Mean income quintile: 3.67 (highest)
+- 84% high environmental concern (!)
+- Personal responsibility score: 3.14
+- Top priorities: Fresh (64%), Healthy (59%), Taste (53%), Affordable (51%)
+- PARADOX: Despite highest environmental concern, consume meat most frequently
+- Likely explanation: Cultural habits, social norms, taste preferences override concern
+
+Class 4 (12% of sample): "Consistent Environmentalists"
+- 21% male (lowest - predominantly female)
+- 19% aged 18-34, 30% aged 35-54, 51% aged 55+
+- Mean income quintile: 3.15
+- 87% high environmental concern (highest)
+- Personal responsibility score: 3.30 (highest)
+- Top priorities: Healthy (59%), Fresh (58%), Affordable (55%), Taste (45%)
+- Most consistent alignment between attitudes and behavior
+
+CROSS-COUNTRY PROBABILITY OF CLASS MEMBERSHIP:
+
+             Class 1   Class 2   Class 3   Class 4
+Belgium       31%       17%       26%       26%
+Canada        51%       17%       20%       12%
+Switzerland    8%       13%       48%       32%
+France        13%       19%       47%       17%
+UK            51%       21%       12%       16%
+Israel        54%       13%       11%       21%
+Netherlands   38%       24%       19%       19%
+Sweden        54%       17%       21%        8%
+USA           54%        8%       33%        3%
+
+Key cross-country insights:
+- Switzerland has highest Class 4 (32%) - most consistent environmentalists
+- USA has lowest Class 4 (3%) and highest Class 1 (54%) - meat-centric culture
+- France has highest Class 3 (47%) - strong meat paradox, cultural food habits
+- Sweden and UK show similar patterns to USA in Class 1 dominance
+
+POLICY SUPPORT REGRESSION RESULTS (Probit Marginal Effects):
+
+Variable                    Demand   Demand   Supply   Supply   Tax on
+                            Soft     Strong   Soft     Strong   Meat
+High environmental concern  +0.150   +0.216   +0.161   +0.154   +0.117
+Higher education           +0.028   +0.036   +0.035   +0.027   +0.042
+Age 55+ (vs 18-34)         +0.013   -0.103   -0.007   +0.024   -0.209
+Male                       -0.006   +0.004   -0.019   -0.004   +0.058
+Rural area                 -0.004   -0.039   -0.003   -0.001   -0.077
+Class 2 (vs Class 1)       -0.027   +0.053   -0.014   -0.004   +0.079
+Class 3 (vs Class 1)       +0.064   +0.151   +0.069   +0.069   +0.088
+Class 4 (vs Class 1)       +0.073   +0.212   +0.085   +0.100   +0.242
+
+Interpretation:
+- Environmental concern is strongest predictor of policy support (12-22 pp)
+- Age 55+ strongly opposes meat tax (-21 pp) but supports other policies
+- Class 4 membership increases meat tax support by 24 pp vs Class 1
+- Class 3 shows only +9 pp increase despite high environmental concern
+- Netherlands, UK, Sweden show higher support for meat tax
+
+SENSE OF PERSONAL RESPONSIBILITY INDEX:
+
+Constructed from agreement (1-5 scale) with statements:
+(i) Willing to make lifestyle compromises for environment
+(ii) Environmental issues should be dealt with by future generations (reversed)
+(iii) Issues should be resolved mainly through public policies (reversed)
+(iv) Policies should not cost me extra money (reversed)
+(v) Issues will be resolved through voluntary individual behavior change
+
+Index = mean of five scores
+Higher score = greater sense of personal responsibility
+Class 4 mean: 3.30 (highest)
+Class 1/2 mean: 2.98 (lowest)
+
+LIMITATIONS:
+- Stated preference data subject to social desirability bias
+- Self-reported consumption may not reflect actual behavior
+- Cross-sectional design limits causal inference
+- Cultural food habits difficult to measure directly
+
+IMPLICATIONS FOR BEHAVIORAL INTERVENTIONS:
+
+1. Segment-specific messaging:
+   - Class 1/2: Emphasize affordability of plant-based alternatives
+   - Class 3: Activate cognitive dissonance with responsibility framing
+   - Class 4: Reinforce existing behavior, recruit as social norm ambassadors
+
+2. Policy packaging:
+   - Combine meat tax with compensatory measures for low-income
+   - Pair regulations with incentives for industry transition
+   - Earmark tax revenues for visible sustainability programs
+
+3. Cross-country adaptation:
+   - Switzerland: Build on existing Class 4 base for norm diffusion
+   - USA: Focus on health co-benefits messaging (less environmental framing)
+   - France: Acknowledge cultural food heritage while introducing alternatives
+
+================================================================================
+END OF DOCUMENT
+================================================================================

@@ -1,0 +1,397 @@
+# =============================================================================
+# PROJEKT-KONTEXT: KAUFLAND "SAUBERKEIT" (CVA MITTEL-ERWEITERUNG)
+# =============================================================================
+# Version: 1.0.0
+# Basis: kaufland_context_schnell.yaml (CVA SCHNELL, 32 Faktoren)
+# Erweiterung: Projekt-spezifische Psi-Dimensionen, Phase-Affinity,
+#              Segment x Intervention Multiplikatoren, Crowding-Out-Risiken,
+#              SBO-Skill-Mapping, Habit-Formation-Modell
+# Quellen: EBF Paper-DB (hussam2022rational, jones2025habits, jones2025incentives,
+#          webb2006meta, hallsworth2017behavioralist, guentuerkuen2025crowdingout),
+#          SBO-Taxonomie STAX-KAUF-001 (DOM-HS), Kaufland 5-Punkte-Plan
+# =============================================================================
+
+metadata:
+  name: "Kaufland Projekt Sauberkeit — Mittel-Kontext"
+  code: "BCM2_MIKRO_KAUF_SAUB"
+  layer: "projekt"
+  version: "1.0"
+  last_updated: "2026-02-20"
+  cva_stufe: "MITTEL"
+  parent: "BCM2_MIKRO_KAUF"
+  parent_file: "kaufland_context_schnell.yaml"
+
+# =============================================================================
+# 1. PSI-DIMENSIONEN: PROJEKT-SPEZIFISCH KALIBRIERT
+# =============================================================================
+# PCT: theta_B = theta_A x prod_i M(Delta_Psi_i)
+# =============================================================================
+
+psi_projekt_sauberkeit:
+
+  psi_I_institutional:
+    schnell_value: 0.80
+    projekt_value: 0.90
+    delta: +0.10
+    pct_multiplier: 1.12
+    reason: |
+      HACCP nicht optional, TUEV-Zertifizierung als externer Zeitgeber,
+      Lebensmittelueberwachung kann Filialen schliessen. Post-Skandal:
+      verschaerfte Audits.
+    relevant_skills: ["SKL-HS-001", "SKL-HS-002", "SKL-HS-005"]
+
+  psi_S_social:
+    schnell_value: 0.55
+    projekt_value: 0.45
+    delta: -0.10
+    pct_multiplier: 0.88
+    reason: |
+      Reinigung oft allein/nachts, Kuehllager isoliert, Frischetheken-
+      Personal oft allein. Social Proof greift nur in Team-Schichten.
+      Ref: hussam2022rational — Habit Formation gelang TROTZ niedrigem
+      Social Proof durch starke Defaults.
+
+  psi_C_cognitive:
+    schnell_value: 0.70
+    projekt_value: 0.80
+    delta: +0.10
+    pct_multiplier: 1.15
+    reason: |
+      Reinigung konkurriert mit operativem Kerngeschaeft. Routine-
+      Blindheit ist Haupttreiber fuer Hygienemaengel.
+      Ref: webb2006meta — IAG bei kognitiver Last besonders gross.
+
+  psi_K_cultural:
+    schnell_value: 0.45
+    projekt_value: 0.50
+    delta: +0.05
+    pct_multiplier: 1.05
+    reason: "Mehrsprachige Reinigungsplaene relevant, aber institutionelle Standards dominieren."
+
+  psi_E_economic:
+    schnell_value: 0.55
+    projekt_value: 0.50
+    delta: -0.05
+    pct_multiplier: 0.95
+    reason: "Reinigungsmittel stellt Kaufland bereit. Knappheit = Zeit, nicht Geld."
+
+  psi_T_temporal:
+    schnell_value: 0.85
+    projekt_value: 0.90
+    delta: +0.05
+    pct_multiplier: 1.08
+    reason: |
+      Post-Skandal-Fenster JETZT offen, TUEV-Deadline, naechster
+      Team-Wallraff jederzeit moeglich. Urgency-Fenster schliesst
+      sich — Habit Formation muss vorher greifen (~12 Wochen).
+
+  psi_M_material:
+    schnell_value: 0.60
+    projekt_value: 0.70
+    delta: +0.10
+    pct_multiplier: 1.12
+    reason: "Physische Artefakte ZENTRAL: Reinigungsplaene, ATP-Tests, Timer, TUEV-Zertifikat."
+    relevant_skills: ["SKL-HS-010", "SKL-HS-011"]
+
+  psi_F_physical:
+    schnell_value: 0.75
+    projekt_value: 0.85
+    delta: +0.10
+    pct_multiplier: 1.12
+    reason: "Alles physisch. Sichtbarkeits-Gradient: Verkaufsflaeche (hoch) vs. Lager (unsichtbar)."
+
+  aggregate_pct:
+    product_all: 1.50
+    interpretation: "Verhaltensparameter weichen ~50% vom Unternehmens-Durchschnitt ab."
+
+# =============================================================================
+# 2. TRANSFORMIERTE VERHALTENSPARAMETER
+# =============================================================================
+
+transformed_parameters:
+
+  intention_action_gap:
+    symbol: "IAG"
+    schnell_value: 0.26
+    projekt_value: 0.33
+    pct_applied: ["psi_C_cognitive"]
+    interpretation: "33% der Hygiene-Intentionen werden nicht umgesetzt (vs. 26% unternehmensweit)."
+
+  default_compliance:
+    symbol: "kappa_eff"
+    schnell_value: 0.78
+    projekt_value: 0.83
+    pct_applied: ["psi_I_institutional", "psi_M_material"]
+    interpretation: |
+      SCHLUESSELINSIGHT: Hebel liegt nicht in Compliance erhoehen,
+      sondern die richtigen Defaults SETZEN.
+
+  habit_formation_rate:
+    symbol: "h_rate"
+    value: 0.14
+    unit: "pro Woche (adjustiert fuer taegliche Ausfuehrung)"
+    time_to_habit: "10 Wochen"
+    evidence: ["jones2025habits", "hussam2022rational"]
+
+  crowding_out_risk:
+    symbol: "gamma_SF"
+    value: -0.68
+    source: "PAR-COMP-002"
+    applicable_segments: ["SEG-03", "SEG-05"]
+
+# =============================================================================
+# 3. PHASE-TYPE AFFINITY MATRIX (alpha-Werte)
+# =============================================================================
+# alpha > 0.7: Stark empfohlen | 0.5-0.7: Vorsicht | < 0.5: Nicht empfohlen
+# =============================================================================
+
+phase_affinity:
+
+  phase_1_awareness:
+    name: "Bewusstmachung (Woche 1-4)"
+    interventions:
+      salience_tuev_zertifikat: {alpha: 0.85, target: "AWARE"}
+      feedback_dashboard: {alpha: 0.75, target: "AWARE"}
+      information_campaign: {alpha: 0.45, target: "AWARE", warning: "Nur Begleitmassnahme"}
+
+  phase_2_intention:
+    name: "Absichtsbildung (Woche 2-6)"
+    interventions:
+      commitment_device: {alpha: 0.80, target: "HOW", segment: "SEG-01"}
+      identity_framing: {alpha: 0.70, target: "WHAT", ref: "akerlof2000economics"}
+      social_norm_activation: {alpha: 0.60, target: "WHO", warning: "Nur Team-Schichten"}
+
+  phase_3_action:
+    name: "Handlungsausloesung (Woche 4-12)"
+    interventions:
+      defaults_checklisten: {alpha: 0.90, target: "WHEN", priority: "HOECHSTE"}
+      implementation_intentions: {alpha: 0.80, target: "WHEN", ref: "webb2006meta"}
+      environmental_restructuring: {alpha: 0.85, target: "WHEN"}
+
+  phase_4_maintenance:
+    name: "Gewohnheitsbildung (Woche 8-24)"
+    interventions:
+      habit_stacking: {alpha: 0.85, target: "WHEN", ref: "jones2025habits"}
+      intermittent_reinforcement: {alpha: 0.75, target: "AWARE", ref: "hussam2022rational"}
+      peer_recognition: {alpha: 0.70, target: "WHO"}
+
+  phase_5_resilience:
+    name: "Rueckfall-Praevention (ab Monat 6)"
+    interventions:
+      tuev_recertification: {alpha: 0.90, target: "WHEN"}
+      structural_lock_in: {alpha: 0.85, target: "WHEN"}
+      culture_embedding: {alpha: 0.75, target: "WHO"}
+
+# =============================================================================
+# 4. SEGMENT x INTERVENTION MULTIPLIKATOREN (sigma-Werte)
+# =============================================================================
+# sigma > 1.3: Sehr effektiv | 0.7-1.3: Normal | < 0.7: Wenig | < 0: BACKFIRE
+# =============================================================================
+
+segment_multipliers:
+
+  SEG-01_filialleitung:
+    commitment_device: 1.50
+    ranking_benchmarking: 1.40
+    coaching: 1.30
+    defaults_checklisten: 0.90
+    finanzielle_anreize: 0.60
+
+  SEG-02_frischetheken:
+    defaults_checklisten: 1.50
+    salienz_reminder: 1.40
+    fachtrainer_peer: 1.20
+    feedback_loops: 1.10
+    finanzielle_strafen: -0.20  # BACKFIRE
+
+  SEG-03_verkaufspersonal:
+    soziale_normen_team: 1.40
+    defaults_timer: 1.30
+    salienz_checklisten: 1.20
+    micro_incentives: 1.10
+    schulungen: 0.50
+    finanzielle_strafen: -0.10  # BACKFIRE
+
+  SEG-04_logistik:
+    technische_defaults: 1.60
+    automatische_ueberwachung: 1.50
+    checklisten_wareneingang: 1.20
+    soziale_normen: 0.50
+
+  SEG-05_reinigungskraefte:
+    klare_standards_defaults: 1.60
+    sichtbare_ergebnisse: 1.30
+    anerkennung_rolle: 1.20
+    schulungen: 0.40
+    finanzielle_strafen: -0.30  # BACKFIRE (staerkster)
+
+# =============================================================================
+# 5. CROWDING-OUT RISIKEN
+# =============================================================================
+
+crowding_out_risks:
+
+  - combination: "Finanzielle Strafen + Soziale Normen"
+    gamma: -0.68
+    source: "PAR-COMP-002"
+    risk: "HOCH"
+    affected_segments: ["SEG-03", "SEG-05"]
+    mitigation: "Positive Anreize statt Strafen. Anerkennung, TUEV-Stolz."
+
+  - combination: "Uebermaessige Kontrolle + Professionelle Identitaet"
+    gamma: -0.45
+    risk: "MITTEL"
+    affected_segments: ["SEG-02"]
+    mitigation: "Self-Assessment vor Fremd-Audit. Fachkraefte einbeziehen."
+
+  - combination: "Finanzielle Anreize + Defaults"
+    gamma: -0.30
+    source: "guentuerkuen2025crowdingout"
+    risk: "MITTEL"
+    affected_segments: ["SEG-01", "SEG-02"]
+    mitigation: "Keine separaten Hygiene-Boni. Hygiene = Grundstandard framen."
+
+# =============================================================================
+# 6. SBO-SKILL-MAPPING
+# =============================================================================
+
+sbo_skill_mapping:
+
+  cluster_HACCP:
+    skills: ["SKL-HS-001", "SKL-HS-002", "SKL-HS-003", "SKL-HS-004", "SKL-HS-005"]
+    link: "defaults_checklisten"
+    insight: "WISSEN vorhanden (niedrige decay_rates). Problem = AUSFUEHRUNG."
+    implication: "KEINE weiteren Schulungen. Stattdessen: Defaults + Trigger."
+
+  cluster_reinigung:
+    skills: ["SKL-HS-010", "SKL-HS-011", "SKL-HS-012"]
+    link: "habit_stacking"
+    insight: "ATP-Abstrichtest (SKL-HS-010) liefert OBJEKTIVES Feedback."
+    implication: "ATP-Tests als Feedback-Loop nutzen."
+
+  skill_gap: |
+    Fehlend in SBO: Verhaltens-Skills (unter Zeitdruck priorisieren,
+    Routine-Blindheit erkennen, Kolleg:innen ansprechen). Muessen als
+    Interventions-begleitende Trainings ergaenzt werden.
+
+# =============================================================================
+# 7. HABIT-FORMATION-MODELL
+# =============================================================================
+
+habit_formation:
+
+  basis: ["jones2025habits (QJE, Tier 1)", "hussam2022rational (AEJ:AP, Tier 2)"]
+
+  parameters:
+    formation_rate: {value: 0.14, unit: "pro Woche"}
+    time_to_automaticity: "10 Wochen"
+    decay_after_removal: {value: 0.03, unit: "pro Monat", source: "jones2025incentives"}
+
+  critical_timeline:
+    week_01_04: "AWARENESS: Standards setzen, Commitment Devices"
+    week_04_08: "ACTION: Defaults + Implementation Intentions + Habit Stacking"
+    week_08_12: "HABITUATION: Kontrollen reduzieren, intermittent monitoring"
+    week_12_24: "MAINTENANCE: Peer Recognition, unangekuendigte positive Audits"
+    month_06_plus: "RESILIENCE: TUEV-Rezertifizierung, Onboarding, IoT Lock-Ins"
+
+  warning: |
+    Post-Skandal-Urgency (psi_T = 0.90) schliesst sich in ~6 Monaten.
+    Habit Formation MUSS vorher abgeschlossen sein (10 Wochen).
+    Ohne permanenten Zeitgeber (TUEV) → Rebound in 12-18 Monaten.
+
+# =============================================================================
+# 8. TOP-5 INTERVENTIONS-PORTFOLIO (priorisiert)
+# =============================================================================
+
+recommended_portfolio:
+
+  - rank: 1
+    name: "Smart Defaults + Timer"
+    target_10c: "WHEN"
+    alpha: 0.90
+    mechanism: "Digitale Checklisten mit Countdown bei Schichtbeginn"
+    segments: "ALLE"
+    cost: "Mittel"
+    timeline: "Sofort (Papier), 3 Monate (digital)"
+
+  - rank: 2
+    name: "Leadership Commitment + Filial-Ranking"
+    target_10c: "WHO + HOW"
+    alpha: 0.80
+    mechanism: "Marktleiter:in unterschreibt TUEV-Ziel, monatliches Ranking"
+    segments: "SEG-01 (primaer)"
+    cost: "Niedrig"
+    timeline: "Sofort"
+
+  - rank: 3
+    name: "Habit Stacking: Reinigung = Schichtbeginn"
+    target_10c: "WHEN"
+    alpha: 0.85
+    mechanism: "'Wenn Schichtbeginn, dann zuerst 5min Arbeitsbereich reinigen'"
+    segments: "SEG-02, SEG-03, SEG-05"
+    cost: "Sehr niedrig"
+    timeline: "Sofort"
+
+  - rank: 4
+    name: "ATP-Feedback-Loop"
+    target_10c: "AWARE"
+    alpha: 0.75
+    mechanism: "ATP-Abstrichtests → sofort sichtbares Ergebnis"
+    segments: "SEG-02, SEG-05"
+    cost: "Mittel (~500 EUR/Geraet)"
+    timeline: "Pilot 4 Wochen"
+
+  - rank: 5
+    name: "TUEV-Stolz: Zertifikat als Identity Signal"
+    target_10c: "WHAT + AWARE"
+    alpha: 0.70
+    mechanism: "Sichtbares Zertifikat + 'Wir sind zertifiziert'-Framing"
+    segments: "ALLE"
+    cost: "Niedrig (bereits vorhanden)"
+    timeline: "Sofort"
+
+  crowding_check: "KEINE Konflikte im Portfolio. Alle 5 komplementaer (gamma >= 0)."
+
+# =============================================================================
+# 9. MESSUNG
+# =============================================================================
+
+measurement:
+
+  primary_kpi:
+    name: "TUEV-Zertifizierungs-Rate"
+    current: "26% (200/780)"
+    target_6m: "64% (500/780)"
+    target_12m: "100% (780/780)"
+
+  secondary_kpis:
+    - "ATP-Abstrich-Score (woechentlich)"
+    - "Checklisten-Completion-Rate (taeglich)"
+    - "Filial-Hygiene-Ranking (monatlich)"
+    - "MA-Zufriedenheit Hygiene-Prozesse (quartalsweise)"
+
+  habit_test: |
+    Checklisten-Completion OHNE Reminder messen:
+    Woche 1-4: MIT Reminder | Woche 5-8: Reminder -50% | Woche 9-12: OHNE
+    Completion ohne Reminder > 80% → Habit gebildet.
+
+# =============================================================================
+# METADATEN
+# =============================================================================
+
+_sources:
+  inherited: "Alle aus kaufland_context_schnell.yaml"
+  additional:
+    - "hussam2022rational — Rational Habit Formation, Handwashing India"
+    - "jones2025habits — How Do Habits Form? (QJE)"
+    - "jones2025incentives — Incentives and Habit Formation (QJE)"
+    - "webb2006meta — Intention-Behavior Gap Meta-Analysis"
+    - "guentuerkuen2025crowdingout — Crowding-Out Defaults (PNAS Nexus)"
+    - "akerlof2000economics — Identity Economics (QJE)"
+    - "SBO-Taxonomie STAX-KAUF-001, Domain DOM-HS"
+
+_changelog:
+  - version: "1.0"
+    date: "2026-02-20"
+    author: "EBF/Claude"
+    changes: "Initiale Erstellung Projekt-Kontext Sauberkeit (CVA MITTEL)"

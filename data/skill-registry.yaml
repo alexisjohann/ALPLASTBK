@@ -1,0 +1,1055 @@
+# =============================================================================
+# SKILL REGISTRY - FehrAdvice & Partners AG
+# =============================================================================
+# Zentrale Datenbank aller Claude Code Skills mit EBF-Integration
+#
+# Superkey Format: SKL-{CATEGORY}-{NNN}
+# Reference: SKILLS-INDEX.md, Appendix BN REF-SUPERKEY
+#
+# Version: 1.0.0
+# Created: 2026-01-28
+# =============================================================================
+
+metadata:
+  version: "1.0.0"
+  last_updated: "2026-02-19"
+  total_skills: 45
+  superkey_prefix: "SKL-"
+  description: "Zentrale Skill-Registry mit EBF-Integration"
+  source_directory: ".claude/commands/"
+
+# =============================================================================
+# SKILL-KATEGORIEN
+# =============================================================================
+categories:
+  - id: "PRJ"
+    name: "Projekt-Setup & Management"
+    description: "Skills für Projekt-Lifecycle (Setup, Tracking, Closing)"
+    ebf_connection: "Chapter 17-20 (Intervention Design & Implementation)"
+
+  - id: "FRM"
+    name: "Framework & Modellierung"
+    description: "Skills für EBF-Modellierung (10C, Interventionen)"
+    ebf_connection: "Chapters 5-13 (Core Framework), Appendices AAA-HI"
+
+  - id: "DOC"
+    name: "Dokumentation & LaTeX"
+    description: "Skills für Dokument-Erstellung und Kompilierung"
+    ebf_connection: "Appendix CCC/DDD (Document Types)"
+
+  - id: "VAL"
+    name: "Validierung & Qualität"
+    description: "Skills für Compliance-Prüfung und Validierung"
+    ebf_connection: "Appendix VC (Validation), quality/"
+
+  - id: "DAT"
+    name: "Daten & Analyse"
+    description: "Skills für Datenverarbeitung und Analyse"
+    ebf_connection: "Appendix AN (LLMMC), BBB (Parameters)"
+
+  - id: "SAL"
+    name: "Sales Pipeline"
+    description: "Skills für Lead- und Pipeline-Management"
+    ebf_connection: "data/sales/, Appendix BN (Superkeys)"
+
+  - id: "CUS"
+    name: "Customer Strategy"
+    description: "Skills für Kundenmodellierung und Strategie"
+    ebf_connection: "data/customers/, CVA Framework"
+
+  - id: "SPE"
+    name: "Spezielle Workflows"
+    description: "Domain-spezifische Skills (Innosuisse, BFE, etc.)"
+    ebf_connection: "Projekt-spezifisch"
+
+# =============================================================================
+# SKILLS
+# =============================================================================
+skills:
+
+  # ---------------------------------------------------------------------------
+  # PROJEKT-SETUP & MANAGEMENT (PRJ)
+  # ---------------------------------------------------------------------------
+
+  - id: "SKL-PRJ-001"
+    command: "/project-setup"
+    name: "Project Setup Workflow"
+    description: "Automatisierter Workflow für komplettes Projekt-Setup"
+    category: "PRJ"
+    file: ".claude/commands/project-setup.md"
+    version: "1.0.0"
+    created: "2026-01-28"
+
+    # EBF Integration
+    ebf_integration:
+      appendices:
+        - code: "BN"
+          name: "REF-SUPERKEY"
+          relationship: "Definiert Superkey-Formate (LEAD, PRJ, INT)"
+      chapters: [17, 18, 19]
+      10c_dimensions:
+        - "WHEN"   # Projekt-Timing
+        - "WHERE"  # Ressourcen/Parameter
+
+    # Abhängigkeiten
+    dependencies:
+      requires_cva: true  # CVA muss existieren oder erstellt werden
+      creates:
+        - "LEAD-{NNN} in lead-database.yaml"
+        - "PRJ-{KUNDE}-{NNN}_scope.yaml"
+      uses_skills:
+        - "SKL-SAL-001"  # /new-lead
+        - "SKL-CUS-001"  # /new-customer
+
+    # Workflow-Phasen
+    workflow_phases:
+      - phase: 1
+        name: "Lead"
+        description: "Lead prüfen/erstellen"
+      - phase: 2
+        name: "CVA"
+        description: "Kundenprofil prüfen/erstellen"
+      - phase: 3
+        name: "Scope"
+        description: "Projekt-Scope definieren (11 Sektionen)"
+      - phase: 4
+        name: "Files"
+        description: "Dateien erstellen + Git commit"
+
+    tags: [workflow, project, setup, lead, scope]
+
+  - id: "SKL-PRJ-002"
+    command: "/intervention-manage"
+    name: "Intervention Management"
+    description: "Projekte anlegen, aktualisieren und abschliessen"
+    category: "PRJ"
+    file: ".claude/commands/intervention-manage.md"
+    version: "1.0.0"
+    created: "2026-01-15"
+
+    ebf_integration:
+      appendices:
+        - code: "HHH"
+          name: "METHOD-TOOLKIT"
+          relationship: "20-Field Intervention Schema"
+        - code: "IE"
+          name: "CORE-EIT"
+          relationship: "Intervention Emergence Theory"
+      chapters: [17, 18, 19, 20]
+      10c_dimensions: ["AWARE", "READY", "STAGE", "HOW", "WHAT"]
+
+    dependencies:
+      requires_cva: true
+      requires_project_scope: true
+      creates:
+        - "PRJ-{KUNDE}-{NNN} in intervention-registry.yaml"
+        - "INT-{NN} entries"
+
+    tags: [intervention, project, tracking]
+
+  - id: "SKL-PRJ-003"
+    command: "/phase6-manage"
+    name: "Phase 6 Outcome Tracking"
+    description: "Langfrist-Messungen und Decay-Analyse"
+    category: "PRJ"
+    file: ".claude/commands/phase6-manage.md"
+    version: "1.0.0"
+    created: "2026-01-15"
+
+    ebf_integration:
+      appendices:
+        - code: "HHH"
+          name: "METHOD-TOOLKIT"
+          relationship: "Phase 6 Measurement Protocol"
+      chapters: [20]
+      10c_dimensions: ["STAGE"]
+
+    dependencies:
+      requires_cva: true
+      requires_project_scope: true
+      requires_intervention: true
+
+    tags: [measurement, outcome, decay, sustainability]
+
+  # ---------------------------------------------------------------------------
+  # FRAMEWORK & MODELLIERUNG (FRM)
+  # ---------------------------------------------------------------------------
+
+  - id: "SKL-FRM-001"
+    command: "/design-model"
+    name: "Verhaltensmodell-Design"
+    description: "9-Step Workflow für 10C-Modell-Design"
+    category: "FRM"
+    file: ".claude/commands/design-model.md"
+    version: "1.0.0"
+    created: "2026-01-15"
+
+    ebf_integration:
+      appendices:
+        - code: "EEE"
+          name: "METHOD-DESIGN"
+          relationship: "9-Step Workflow Definition"
+        - code: "GGG"
+          name: "METHOD-CONFIG"
+          relationship: "Mapping Tables & Defaults"
+        - code: "FFF"
+          name: "METHOD-REGISTRY"
+          relationship: "Seed Models"
+        - code: "AAA"
+          name: "CORE-WHO"
+          relationship: "Welfare Hierarchy"
+        - code: "BBB"
+          name: "CORE-WHERE"
+          relationship: "Parameter Repository"
+      chapters: [5, 9, 10, 11, 12, 13]
+      10c_dimensions: ["WHO", "WHAT", "HOW", "WHEN", "WHERE", "AWARE", "READY", "STAGE", "HIERARCHY"]
+
+    dependencies:
+      requires_cva: true  # Kontext für Modell
+      creates:
+        - "Model in model-registry.yaml"
+
+    modes:
+      - name: "SCHNELL"
+        duration: "10 min"
+        description: "3 Fragen → GGG Defaults"
+      - name: "GEFÜHRT"
+        duration: "45 min"
+        description: "Alle 9 Steps mit 3+1 Optionen"
+      - name: "TEMPLATE"
+        duration: "20 min"
+        description: "Von FFF Seed-Modell"
+      - name: "CUSTOM"
+        duration: "variabel"
+        description: "Freie Gestaltung"
+
+    tags: [model, 10c, behavioral, design]
+
+  - id: "SKL-FRM-002"
+    command: "/design-intervention"
+    name: "Interventions-Design"
+    description: "20-Field Schema für Intervention-Spezifikation"
+    category: "FRM"
+    file: ".claude/commands/design-intervention.md"
+    version: "1.0.0"
+    created: "2026-01-15"
+
+    ebf_integration:
+      appendices:
+        - code: "HHH"
+          name: "METHOD-TOOLKIT"
+          relationship: "20-Field Schema Definition"
+        - code: "IE"
+          name: "CORE-EIT"
+          relationship: "9D Intervention Vector"
+      chapters: [17, 18, 19]
+      10c_dimensions: ["AWARE", "READY", "WHEN", "WHAT", "HOW"]
+
+    dependencies:
+      requires_cva: true
+      requires_model: true  # 10C-Modell sollte existieren
+
+    modes:
+      - name: "SCHNELL"
+        duration: "10 min"
+        fields: "F1-F6"
+      - name: "STANDARD"
+        duration: "30 min"
+        fields: "F1-F12"
+      - name: "VOLLSTÄNDIG"
+        duration: "60 min"
+        fields: "F1-F20"
+
+    tags: [intervention, nudge, design, 9d-vector]
+
+  - id: "SKL-FRM-003"
+    command: "/find-model"
+    name: "Modell-Registry Suche"
+    description: "Durchsucht model-registry.yaml nach Modellen"
+    category: "FRM"
+    file: ".claude/commands/find-model.md"
+    version: "1.0.0"
+    created: "2026-01-15"
+
+    ebf_integration:
+      appendices:
+        - code: "FFF"
+          name: "METHOD-REGISTRY"
+          relationship: "Model Registry"
+      chapters: []
+      10c_dimensions: []
+
+    tags: [search, model, registry]
+
+  - id: "SKL-FRM-004"
+    command: "/case"
+    name: "Case Registry Abfrage"
+    description: "Sucht Cases nach 10C-Dimensionen, Domain, Stage"
+    category: "FRM"
+    file: ".claude/commands/case.md"
+    version: "1.0.0"
+    created: "2026-01-15"
+
+    ebf_integration:
+      appendices: []
+      chapters: []
+      10c_dimensions: ["WHO", "WHAT", "HOW", "WHEN", "AWARE", "READY", "STAGE"]
+      data_files:
+        - "data/case-registry.yaml"
+
+    tags: [case, search, registry]
+
+  - id: "SKL-FRM-005"
+    command: "/case-manage"
+    name: "Case Management"
+    description: "Cases finden und anlegen"
+    category: "FRM"
+    file: ".claude/commands/case-manage.md"
+    version: "1.0.0"
+    created: "2026-01-15"
+
+    ebf_integration:
+      appendices: []
+      chapters: []
+      10c_dimensions: []
+      data_files:
+        - "data/case-registry.yaml"
+
+    tags: [case, management, create]
+
+  - id: "SKL-FRM-006"
+    command: "/intervention"
+    name: "Intervention Registry Abfrage"
+    description: "Abfrage mit Learnings und Deviation Analysis"
+    category: "FRM"
+    file: ".claude/commands/intervention.md"
+    version: "1.0.0"
+    created: "2026-01-15"
+
+    ebf_integration:
+      appendices:
+        - code: "HHH"
+          name: "METHOD-TOOLKIT"
+          relationship: "Intervention Tracking"
+      chapters: [17, 18, 19, 20]
+      10c_dimensions: []
+      data_files:
+        - "data/intervention-registry.yaml"
+
+    tags: [intervention, search, learnings]
+
+  # ---------------------------------------------------------------------------
+  # SALES PIPELINE (SAL)
+  # ---------------------------------------------------------------------------
+
+  - id: "SKL-SAL-001"
+    command: "/new-lead"
+    name: "Neuen Lead erstellen"
+    description: "Schnelle Lead-Erfassung"
+    category: "SAL"
+    file: ".claude/commands/new-lead.md"
+    version: "1.0.0"
+    created: "2026-01-27"
+
+    ebf_integration:
+      appendices:
+        - code: "BN"
+          name: "REF-SUPERKEY"
+          relationship: "LEAD-{NNN} Format"
+      chapters: []
+      10c_dimensions: []
+      data_files:
+        - "data/sales/lead-database.yaml"
+
+    creates:
+      - "LEAD-{NNN} in lead-database.yaml"
+
+    tags: [lead, sales, create]
+
+  - id: "SKL-SAL-002"
+    command: "/lead-card"
+    name: "Lead-Details anzeigen"
+    description: "Zeigt vollständige Lead-Informationen"
+    category: "SAL"
+    file: ".claude/commands/lead-card.md"
+    version: "1.0.0"
+    created: "2026-01-27"
+
+    tags: [lead, display, details]
+
+  - id: "SKL-SAL-003"
+    command: "/lead-update"
+    name: "Lead aktualisieren"
+    description: "Stage, Owner, Opportunity aktualisieren"
+    category: "SAL"
+    file: ".claude/commands/lead-update.md"
+    version: "1.0.0"
+    created: "2026-01-27"
+
+    tags: [lead, update, stage]
+
+  - id: "SKL-SAL-004"
+    command: "/pipeline-summary"
+    name: "Pipeline-Übersicht"
+    description: "Kompakte Pipeline-Zusammenfassung"
+    category: "SAL"
+    file: ".claude/commands/pipeline-summary.md"
+    version: "1.0.0"
+    created: "2026-01-27"
+
+    tags: [pipeline, summary, report]
+
+  - id: "SKL-SAL-005"
+    command: "/pipeline-report"
+    name: "Detaillierter Pipeline-Bericht"
+    description: "Vollständiger Report mit Bewegungen"
+    category: "SAL"
+    file: ".claude/commands/pipeline-report.md"
+    version: "1.0.0"
+    created: "2026-01-27"
+
+    tags: [pipeline, report, detailed]
+
+  - id: "SKL-SAL-006"
+    command: "/forecast"
+    name: "Umsatzprognose"
+    description: "Best/Expected/Worst Case Forecasting"
+    category: "SAL"
+    file: ".claude/commands/forecast.md"
+    version: "1.0.0"
+    created: "2026-01-27"
+
+    tags: [forecast, revenue, scenarios]
+
+  - id: "SKL-SAL-007"
+    command: "/win-loss"
+    name: "Deal-Analyse"
+    description: "Win/Loss-Statistiken und Analyse"
+    category: "SAL"
+    file: ".claude/commands/win-loss.md"
+    version: "1.0.0"
+    created: "2026-01-27"
+
+    tags: [analysis, win, loss]
+
+  - id: "SKL-SAL-008"
+    command: "/action-list"
+    name: "Pipeline-Aufgaben"
+    description: "Task-Management für Pipeline"
+    category: "SAL"
+    file: ".claude/commands/action-list.md"
+    version: "1.0.0"
+    created: "2026-01-27"
+
+    tags: [tasks, actions, pipeline]
+
+  # ---------------------------------------------------------------------------
+  # CUSTOMER STRATEGY (CUS)
+  # ---------------------------------------------------------------------------
+
+  - id: "SKL-CUS-001"
+    command: "/new-customer"
+    name: "Neuen Kunden anlegen"
+    description: "CVA-Profil erstellen (SCHNELL/STANDARD)"
+    category: "CUS"
+    file: ".claude/commands/new-customer.md"
+    version: "1.0.0"
+    created: "2026-01-15"
+
+    ebf_integration:
+      appendices: []
+      chapters: []
+      10c_dimensions: ["WHEN"]  # Kontext-Dimensionen
+      data_files:
+        - "data/customers/{kunde}/"
+      frameworks:
+        - "Context Vector Architecture (CVA)"
+
+    creates:
+      - "data/customers/{kunde}/ (8-9 YAML files)"
+
+    modes:
+      - name: "SCHNELL"
+        factors: 30
+        files: 1
+        duration: "30 min"
+      - name: "STANDARD"
+        factors: 400
+        files: 8
+        duration: "2h"
+
+    tags: [customer, cva, profile, create]
+
+  - id: "SKL-CUS-002"
+    command: "/apply-models"
+    name: "Alle Modelle ausführen"
+    description: "RPM, MCSM, OSM, CAM für Kunde"
+    category: "CUS"
+    file: ".claude/commands/apply-models.md"
+    version: "1.0.0"
+    created: "2026-01-15"
+
+    ebf_integration:
+      appendices: []
+      chapters: []
+      10c_dimensions: []
+
+    dependencies:
+      requires_cva: true
+
+    tags: [models, rpm, mcsm, osm, cam]
+
+  - id: "SKL-CUS-003"
+    command: "/sensitivity-analysis"
+    name: "Sensitivitätsanalyse"
+    description: "Was-Wenn Parameter-Tests"
+    category: "CUS"
+    file: ".claude/commands/sensitivity-analysis.md"
+    version: "1.0.0"
+    created: "2026-01-15"
+
+    dependencies:
+      requires_cva: true
+      requires_models: true
+
+    tags: [sensitivity, parameters, what-if]
+
+  - id: "SKL-CUS-004"
+    command: "/board-presentation"
+    name: "Board-Präsentation"
+    description: "10-Slide Board-ready Präsentation"
+    category: "CUS"
+    file: ".claude/commands/board-presentation.md"
+    version: "1.0.0"
+    created: "2026-01-15"
+
+    dependencies:
+      requires_cva: true
+
+    tags: [presentation, board, pptx]
+
+  - id: "SKL-CUS-005"
+    command: "/replicate-customer"
+    name: "Kunde replizieren"
+    description: "Von ALPLA-Template neuen Kunden erstellen"
+    category: "CUS"
+    file: ".claude/commands/replicate-customer.md"
+    version: "1.0.0"
+    created: "2026-01-15"
+
+    tags: [template, replicate, customer]
+
+  # ---------------------------------------------------------------------------
+  # DOKUMENTATION & LATEX (DOC)
+  # ---------------------------------------------------------------------------
+
+  - id: "SKL-DOC-001"
+    command: "/compile"
+    name: "LaTeX kompilieren"
+    description: "LaTeX → PDF mit latexmk"
+    category: "DOC"
+    file: ".claude/commands/compile.md"
+    version: "1.0.0"
+    created: "2026-01-01"
+
+    tags: [latex, compile, pdf]
+
+  - id: "SKL-DOC-002"
+    command: "/convert"
+    name: "Format konvertieren"
+    description: "LaTeX ↔ Word/Markdown mit pandoc"
+    category: "DOC"
+    file: ".claude/commands/convert.md"
+    version: "1.0.0"
+    created: "2026-01-01"
+
+    tags: [convert, pandoc, word, markdown]
+
+  - id: "SKL-DOC-003"
+    command: "/build-all"
+    name: "Alle kompilieren"
+    description: "Batch-Kompilierung aller Papers"
+    category: "DOC"
+    file: ".claude/commands/build-all.md"
+    version: "1.0.0"
+    created: "2026-01-01"
+
+    tags: [batch, compile, all]
+
+  - id: "SKL-DOC-004"
+    command: "/new-chapter"
+    name: "Neues Kapitel"
+    description: "Kapitel nach Template erstellen"
+    category: "DOC"
+    file: ".claude/commands/new-chapter.md"
+    version: "1.0.0"
+    created: "2026-01-01"
+
+    ebf_integration:
+      appendices: []
+      chapters: []
+      templates:
+        - "chapters/00_chapter_template.tex"
+
+    tags: [chapter, create, template]
+
+  - id: "SKL-DOC-005"
+    command: "/new-appendix"
+    name: "Neuer Appendix"
+    description: "Appendix nach Template erstellen"
+    category: "DOC"
+    file: ".claude/commands/new-appendix.md"
+    version: "1.0.0"
+    created: "2026-01-01"
+
+    ebf_integration:
+      appendices: []
+      chapters: []
+      templates:
+        - "appendices/00_appendix_template.tex"
+
+    tags: [appendix, create, template]
+
+  - id: "SKL-DOC-006"
+    command: "/generate-paper"
+    name: "Paper generieren"
+    description: "Wissenschaftliches Paper schreiben mit SWSM Move-Sequencing, 8D Style-Profilen und COMPOSE Mode"
+    category: "DOC"
+    file: ".claude/commands/generate-paper.md"
+    version: "2.0.0"
+    created: "2026-01-01"
+    updated: "2026-02-14"
+
+    modes:
+      - name: "COMPOSE"
+        description: "Vollständiges Paper mit SWSM Moves M1-M8, 8D Style-Profil, Quality Gates"
+        template: "templates/paper-compose-template.yaml"
+        helper: "scripts/paper_compose_helper.py"
+      - name: "EXTRACT"
+        description: "Paper aus bestehendem Appendix/Kapitel extrahieren"
+      - name: "TRANSLATE"
+        description: "Paper zwischen Styles übersetzen (z.B. fehr → thaler)"
+
+    ebf_integration:
+      appendices:
+        - code: "CCC"
+          name: "METHOD-DOCTYPE"
+          relationship: "8D Document Algorithm"
+        - code: "DDD"
+          name: "REF-DOCTYPE"
+          relationship: "Document Type Theory"
+        - code: "BP"
+          name: "METHOD-VOTING"
+          relationship: "First COMPOSE mode paper (WP-2026-001)"
+      chapters: []
+      10c_dimensions: []
+
+    styles:
+      - "fehr"
+      - "thaler"
+      - "kahneman"
+      - "sunstein"
+
+    style_profiles:
+      - id: "nber_working_paper"
+        D1: 0.85
+        D4: 0.8
+        D8: 0.9
+      - id: "aer_article"
+        D1: 0.9
+        D4: 0.7
+        D8: 0.95
+      - id: "policy_brief"
+        D1: 0.5
+        D4: 0.3
+        D8: 0.6
+      - id: "science_letter"
+        D1: 0.8
+        D4: 0.4
+        D8: 0.85
+
+    swsm_moves: ["M1_territory", "M2_niche", "M3_occupy", "M4_model", "M5_data", "M6_results", "M7_discussion", "M8_conclusion"]
+
+    tags: [paper, generate, style, swsm, compose, 8d]
+
+  - id: "SKL-DOC-007"
+    command: "/swsm"
+    name: "Scientific Writing Structure Model"
+    description: "Text-Analyse und -Generierung mit SWSM (SFL + RST + CARS)"
+    category: "DOC"
+    file: ".claude/commands/swsm.md"
+    version: "2.0.0"
+    created: "2026-01-29"
+
+    ebf_integration:
+      appendices:
+        - code: "SW"
+          name: "METHOD-SWSM"
+          relationship: "Primary specification (9 components, 21 axioms, θ schema)"
+        - code: "AN"
+          name: "METHOD-LLMMC"
+          relationship: "LLMMC for θ estimation (SWSM-21)"
+        - code: "DTE"
+          name: "REF-DOCTYPE"
+          relationship: "8D → θ mapping for legacy compatibility"
+        - code: "MS"
+          name: "REF-MODELSPACE"
+          relationship: "Theory catalog (MOD-013)"
+      chapters: []
+      10c_dimensions:
+        - "WHAT"   # Style content (θ parameters)
+        - "HOW"    # Style form (components E1-E9)
+
+    model_registry: "MOD-013"
+
+    components:
+      analysis:
+        - "E1: Cohesion Analyzer → θ_cohesion"
+        - "E2: RST Discourse Parser → θ_rst"
+        - "E3: CARS Move Tagger → θ_move"
+        - "E4: Theme-Rheme Analyzer → θ_info"
+        - "E5: SFL Clause Annotator → clause annotations"
+        - "E6: Lexicogrammar Profiler → θ_lexicogrammar, θ_vocab"
+        - "E7: Genre Classifier → genre classification"
+      generation:
+        - "E7: Genre constraints"
+        - "E8: Move Planner → document plan"
+        - "E9: Text Generator → generated text"
+
+    theta_schema:
+      - "θ_move"
+      - "θ_cohesion"
+      - "θ_rst"
+      - "θ_lexicogrammar"
+      - "θ_info"
+      - "θ_vocab"
+
+    genres:
+      - scientific_paper
+      - policy_brief
+      - executive_summary
+      - ebf_appendix
+      - blog_post
+      - consulting_memo
+
+    scripts:
+      - "scripts/swsm_cohesion_analyzer.py"
+      - "scripts/swsm_rst_parser.py"
+      - "scripts/swsm_cars_tagger.py"
+      - "scripts/swsm_theme_analyzer.py"
+      - "scripts/swsm_sfl_annotator.py"
+      - "scripts/swsm_lexicogrammar_profiler.py"
+      - "scripts/swsm_genre_mapper.py"
+      - "scripts/swsm_move_planner.py"
+      - "scripts/swsm_text_generator.py"
+      - "scripts/swsm_extract_author_profile.py"
+
+    theory_support:
+      - "SFL: Halliday (1985) - Systemic Functional Linguistics"
+      - "RST: Mann & Thompson (1988) - Rhetorical Structure Theory"
+      - "CARS: Swales (1990) - Create A Research Space"
+
+    tags: [swsm, text, analysis, generation, sfl, rst, cars, theta]
+
+  # ---------------------------------------------------------------------------
+  # VALIDIERUNG & QUALITÄT (VAL)
+  # ---------------------------------------------------------------------------
+
+  - id: "SKL-VAL-001"
+    command: "/check-compliance"
+    name: "Compliance prüfen"
+    description: "Template-Compliance für Kapitel/Appendix"
+    category: "VAL"
+    file: ".claude/commands/check-compliance.md"
+    version: "1.0.0"
+    created: "2026-01-01"
+
+    ebf_integration:
+      appendices:
+        - code: "VC"
+          name: "METHOD-VALIDATE"
+          relationship: "Validation Framework"
+      chapters: []
+      10c_dimensions: []
+
+    threshold: 85  # Minimum score %
+
+    tags: [compliance, validation, quality]
+
+  - id: "SKL-VAL-002"
+    command: "/validate"
+    name: "Alle Validierungen"
+    description: "Vollständiger Validierungs-Check"
+    category: "VAL"
+    file: ".claude/commands/validate.md"
+    version: "1.0.0"
+    created: "2026-01-01"
+
+    checks:
+      - "10C Framework Consistency"
+      - "Appendix Index Integrity"
+      - "Cross-Reference Validation"
+      - "Parameter Consistency"
+      - "Referential Integrity"
+
+    tags: [validation, full, check]
+
+  - id: "SKL-VAL-003"
+    command: "/integration-test"
+    name: "Integration Tests"
+    description: "Führt Integration Tests aus"
+    category: "VAL"
+    file: ".claude/commands/integration-test.md"
+    version: "1.0.0"
+    created: "2026-01-01"
+
+    tags: [test, integration]
+
+  - id: "SKL-VAL-004"
+    command: "/classify-papers"
+    name: "Papers klassifizieren"
+    description: "Klassifiziert Papers gegen paper-sources.yaml"
+    category: "VAL"
+    file: ".claude/commands/classify-papers.md"
+    version: "1.0.0"
+    created: "2026-01-01"
+
+    tags: [papers, classify, bibliography]
+
+  # ---------------------------------------------------------------------------
+  # DATEN & ANALYSE (DAT)
+  # ---------------------------------------------------------------------------
+
+  - id: "SKL-DAT-001"
+    command: "/r-score"
+    name: "R-Score Pipeline"
+    description: "LLMMC → R-Score Berechnung"
+    category: "DAT"
+    file: ".claude/commands/r-score.md"
+    version: "1.0.0"
+    created: "2026-01-01"
+
+    ebf_integration:
+      appendices:
+        - code: "AN"
+          name: "METHOD-LLMMC"
+          relationship: "LLM Monte Carlo Method"
+      chapters: []
+      10c_dimensions: []
+
+    tags: [llmmc, r-score, analysis]
+
+  - id: "SKL-DAT-002"
+    command: "/bayesian-priors"
+    name: "Bayesian Priors"
+    description: "Generiert Bayesian Priors aus LLMMC"
+    category: "DAT"
+    file: ".claude/commands/bayesian-priors.md"
+    version: "1.0.0"
+    created: "2026-01-01"
+
+    ebf_integration:
+      appendices:
+        - code: "AN"
+          name: "METHOD-LLMMC"
+          relationship: "Prior Generation"
+        - code: "BBB"
+          name: "CORE-WHERE"
+          relationship: "Parameter Storage"
+      chapters: []
+      10c_dimensions: []
+
+    tags: [bayesian, priors, llmmc]
+
+  - id: "SKL-DAT-003"
+    command: "/bfe-project"
+    name: "BFE Projekt"
+    description: "Bundesamt für Energie Projekt erstellen"
+    category: "DAT"
+    file: ".claude/commands/bfe-project.md"
+    version: "1.0.0"
+    created: "2026-01-01"
+
+    tags: [bfe, energy, project]
+
+  - id: "SKL-DAT-004"
+    command: "/drive"
+    name: "Google Drive Integration"
+    description: "Dateien von Google Drive herunterladen via GitHub Actions"
+    category: "DAT"
+    file: ".claude/commands/drive.md"
+    version: "1.0.0"
+    created: "2026-02-19"
+
+    ebf_integration:
+      appendices: []
+      chapters: []
+      10c_dimensions: []
+      data_files:
+        - "data/drive-downloads/"
+        - "data/drive-fetch-trigger.yaml"
+        - "data/drive-fetch-log.yaml"
+
+    dependencies:
+      requires_cva: false
+      requires_project_scope: false
+      uses_skills: []
+
+    workflow_phases:
+      - phase: 1
+        name: "File-ID extrahieren"
+        description: "Google Drive URL → File-ID"
+      - phase: 2
+        name: "Workflow triggern"
+        description: "Via api.sh oder Push-Trigger"
+      - phase: 3
+        name: "Ergebnis holen"
+        description: "git pull + Dateien verarbeiten"
+
+    modes:
+      - name: "download"
+        duration: "3-5 min"
+        description: "Download + PDF-Konvertierung"
+      - name: "split"
+        duration: "3-5 min"
+        description: "Download + Konvertierung + Paper-Splitting"
+
+    tags: [google-drive, download, pdf, github-actions, api-proxy]
+
+  # ---------------------------------------------------------------------------
+  # SPEZIELLE WORKFLOWS (SPE)
+  # ---------------------------------------------------------------------------
+
+  - id: "SKL-SPE-001"
+    command: "/innosuisse"
+    name: "Innosuisse/BEATRIX Workflow"
+    description: "AUTO-TRIGGER für BEATRIX-Projekte"
+    category: "SPE"
+    file: ".claude/commands/innosuisse.md"
+    version: "1.0.0"
+    created: "2026-01-27"
+
+    ebf_integration:
+      appendices: []
+      chapters: []
+      10c_dimensions: []
+      data_files:
+        - "data/innosuisse-learning-database.yaml"
+
+    auto_trigger:
+      keywords:
+        - "Innosuisse"
+        - "BEATRIX"
+        - "Innovation Cheque"
+      paths:
+        - "docs/funding/"
+
+    tags: [innosuisse, beatrix, workflow, auto-trigger]
+
+  - id: "SKL-SPE-002"
+    command: "/simulate-stakeholder"
+    name: "Stakeholder-Simulation"
+    description: "7-Persona BEATRIX Focus Group"
+    category: "SPE"
+    file: ".claude/commands/simulate-stakeholder.md"
+    version: "1.0.0"
+    created: "2026-01-27"
+
+    ebf_integration:
+      appendices: []
+      chapters: []
+      10c_dimensions: ["WHO", "WHAT"]
+      data_files:
+        - "data/stakeholder-models/"
+
+    tags: [simulation, stakeholder, focus-group]
+
+  - id: "SKL-SPE-003"
+    command: "/github-token"
+    name: "GitHub Token Management"
+    description: "Master-Skill für PAT-Erstellung und Verwaltung"
+    category: "SPE"
+    file: ".claude/commands/github-token.md"
+    version: "1.0.0"
+    created: "2026-01-31"
+
+    ebf_integration:
+      appendices: []
+      chapters: []
+      10c_dimensions: []
+      data_files: []
+
+    documentation:
+      links:
+        fine_grained_tokens: "https://github.com/settings/tokens?type=beta"
+        classic_tokens: "https://github.com/settings/tokens"
+        developer_settings: "https://github.com/settings/developers"
+
+    tags: [github, token, authentication, api, master-skill]
+
+# =============================================================================
+# DEPENDENCY RULES
+# =============================================================================
+dependency_rules:
+
+  # CVA ist Voraussetzung für viele Skills
+  cva_required_for:
+    - "SKL-PRJ-001"  # /project-setup
+    - "SKL-PRJ-002"  # /intervention-manage
+    - "SKL-PRJ-003"  # /phase6-manage
+    - "SKL-FRM-001"  # /design-model
+    - "SKL-FRM-002"  # /design-intervention
+    - "SKL-CUS-002"  # /apply-models
+    - "SKL-CUS-003"  # /sensitivity-analysis
+    - "SKL-CUS-004"  # /board-presentation
+
+  # Projekt-Scope ist Voraussetzung
+  project_scope_required_for:
+    - "SKL-PRJ-002"  # /intervention-manage
+    - "SKL-PRJ-003"  # /phase6-manage
+
+  # Modell ist Voraussetzung
+  model_required_for:
+    - "SKL-FRM-002"  # /design-intervention
+
+# =============================================================================
+# WORKFLOW CHAINS
+# =============================================================================
+workflow_chains:
+
+  # Standard Projekt-Workflow
+  standard_project:
+    name: "Standard Projekt-Workflow"
+    description: "Kompletter Flow von Lead bis Outcome"
+    steps:
+      - skill: "SKL-SAL-001"
+        action: "/new-lead"
+        output: "LEAD-{NNN}"
+      - skill: "SKL-CUS-001"
+        action: "/new-customer"
+        output: "CVA Profile"
+        condition: "if CVA not exists"
+      - skill: "SKL-PRJ-001"
+        action: "/project-setup"
+        output: "PRJ-{KUNDE}-{NNN}"
+      - skill: "SKL-FRM-001"
+        action: "/design-model"
+        output: "10C Model"
+      - skill: "SKL-FRM-002"
+        action: "/design-intervention"
+        output: "Intervention Design"
+      - skill: "SKL-PRJ-002"
+        action: "/intervention-manage new"
+        output: "Project in Registry"
+      - skill: "SKL-PRJ-003"
+        action: "/phase6-manage schedule"
+        output: "Measurement Schedule"
+
+# =============================================================================
+# CROSS-REFERENCES
+# =============================================================================
+cross_references:
+  to_appendices: "ebf_integration.appendices[].code → Appendix {CODE}"
+  to_chapters: "ebf_integration.chapters[] → Chapter {N}"
+  to_templates: "templates/ directory"
+  specification: "Appendix BN REF-SUPERKEY"

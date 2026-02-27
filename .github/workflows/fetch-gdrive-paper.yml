@@ -1,0 +1,193 @@
+name: Fetch Paper from Google Drive
+
+on:
+  push:
+    paths:
+      - 'data/gdrive-fetch-trigger.yaml'
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-gdrive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install gdown pyyaml pymupdf
+
+      - name: Read trigger file
+        id: trigger
+        run: |
+          python3 -c "
+          import yaml, os
+          with open('data/gdrive-fetch-trigger.yaml') as f:
+              cfg = yaml.safe_load(f)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              for k, v in cfg.items():
+                  if isinstance(v, list):
+                      import json
+                      out.write(f'{k}={json.dumps(v)}\n')
+                  else:
+                      out.write(f'{k}={v}\n')
+          "
+
+      - name: Download and convert papers
+        run: |
+          python3 << 'PYEOF'
+          import yaml, subprocess, sys, os, re
+          from pathlib import Path
+          from datetime import datetime
+
+          with open("data/gdrive-fetch-trigger.yaml") as f:
+              cfg = yaml.safe_load(f)
+
+          files = cfg.get("files", [])
+          print(f"Files to fetch: {len(files)}")
+
+          texts_dir = Path("data/paper-texts")
+          texts_dir.mkdir(parents=True, exist_ok=True)
+
+          results = []
+
+          for i, entry in enumerate(files, 1):
+              file_id = entry["file_id"]
+              key = entry.get("key", f"gdrive-{i}")
+              doi = entry.get("doi", "")
+              url = f"https://drive.google.com/uc?id={file_id}"
+
+              print(f"\n[{i}/{len(files)}] Downloading {key} (id={file_id})")
+
+              # Download with gdown
+              out_path = f"/tmp/{key}.pdf"
+              try:
+                  subprocess.run(
+                      ["gdown", url, "-O", out_path, "--fuzzy"],
+                      check=True, timeout=120
+                  )
+              except Exception as e:
+                  print(f"  ERROR: {e}")
+                  # Try alternative URL format
+                  alt_url = f"https://drive.google.com/file/d/{file_id}/view"
+                  try:
+                      subprocess.run(
+                          ["gdown", alt_url, "-O", out_path, "--fuzzy"],
+                          check=True, timeout=120
+                      )
+                  except Exception as e2:
+                      print(f"  ERROR (alt): {e2}")
+                      results.append({"key": key, "status": "failed", "error": str(e2)})
+                      continue
+
+              # Check file type
+              import subprocess as sp
+              file_type = sp.run(["file", "--mime-type", "-b", out_path],
+                                capture_output=True, text=True).stdout.strip()
+              file_size = os.path.getsize(out_path)
+              print(f"  Downloaded: {file_size:,} bytes, type: {file_type}")
+
+              # Convert PDF to text
+              text = ""
+              if "pdf" in file_type:
+                  try:
+                      import fitz  # pymupdf
+                      doc = fitz.open(out_path)
+                      pages = []
+                      for page in doc:
+                          pages.append(page.get_text())
+                      text = "\n\n".join(pages)
+                      doc.close()
+                      print(f"  Extracted {len(text.split())} words from {len(pages)} pages")
+                  except Exception as e:
+                      print(f"  PyMuPDF failed: {e}, trying pdftotext...")
+                      try:
+                          result = sp.run(["pdftotext", "-layout", out_path, "-"],
+                                         capture_output=True, text=True, timeout=60)
+                          text = result.stdout
+                      except Exception as e2:
+                          print(f"  pdftotext also failed: {e2}")
+              elif "text" in file_type or "html" in file_type:
+                  with open(out_path) as f:
+                      text = f.read()
+
+              if not text.strip():
+                  print(f"  WARNING: No text extracted")
+                  results.append({"key": key, "status": "empty", "file_size": file_size})
+                  continue
+
+              word_count = len(text.split())
+
+              # Save as markdown
+              md_path = texts_dir / f"PAP-{key}.md"
+              header = f"""---
+          # Full text extracted from PDF via Google Drive
+          # Source: Google Drive
+          # DOI: {doi}
+          # File ID: {file_id}
+          # Fetched: {datetime.now().strftime('%Y-%m-%d %H:%M')}
+          # Word count: {word_count}
+          ---
+
+          """
+              md_path.write_text(header + text, encoding="utf-8")
+              print(f"  Saved: {md_path} ({word_count:,} words)")
+
+              results.append({
+                  "key": key,
+                  "doi": doi,
+                  "status": "success",
+                  "word_count": word_count,
+                  "file_size": file_size,
+              })
+
+          # Write log
+          log = {
+              "run_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+              "source": "google_drive",
+              "total": len(files),
+              "success": sum(1 for r in results if r.get("status") == "success"),
+              "failed": sum(1 for r in results if r.get("status") != "success"),
+              "results": results,
+          }
+          Path("data/gdrive-fetch-log.yaml").write_text(
+              yaml.dump(log, default_flow_style=False, allow_unicode=True),
+              encoding="utf-8"
+          )
+          print(f"\nDone: {log['success']} success, {log['failed']} failed")
+          PYEOF
+
+      - name: Show results
+        if: always()
+        run: |
+          echo "=== LOG ==="
+          cat data/gdrive-fetch-log.yaml 2>/dev/null || echo "No log"
+          echo ""
+          echo "=== FILES ==="
+          ls -la data/paper-texts/PAP-gdrive-* data/paper-texts/PAP-jep-* 2>/dev/null || echo "No files"
+
+      - name: Commit results
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/paper-texts/ data/gdrive-fetch-log.yaml 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            CHANGED=$(git diff --staged --name-only | wc -l)
+            git commit -m "feat(fulltext): Fetch $CHANGED papers from Google Drive
+
+          https://claude.ai/code/session_01DJGzodmAQQvVx9TXCfW7NE"
+            git push
+          fi

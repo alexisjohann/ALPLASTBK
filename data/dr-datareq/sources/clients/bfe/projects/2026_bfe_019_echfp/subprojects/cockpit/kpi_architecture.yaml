@@ -1,0 +1,415 @@
+# Behavioral Impact Cockpit - KPI Architecture
+# Ergebnis von AP1 (KPI-Logik & Architektur)
+# Version: 1.0
+# Erstellt: 2025-12-19
+# Verantwortlich: Lucas, Manuel
+
+metadata:
+  subproject_id: "BFE-2026-001-COCKPIT"
+  document_type: "KPI-Architecture"
+  version: "1.0"
+  created: "2025-12-19"
+  last_updated: "2026-01-26"
+  status: "approved"
+  approved_by: "Lucas, Manuel"
+
+# =============================================================================
+# KPI-FRAMEWORK ÜBERSICHT
+# =============================================================================
+framework:
+  name: "A-W-I-T Framework"
+  description: |
+    Das A-W-I-T Framework misst die Wirkung von Verhaltensinterventionen
+    entlang von vier Kerndimensionen plus aggregiertem Gesamt-Score.
+
+    Jede Dimension entspricht einem Schritt in der Behavioral Customer Journey
+    und ist mit einer 10C-Dimension des EBF verknüpft.
+
+  dimensions:
+    - code: "A"
+      name: "Awareness"
+      weight: 0.25
+    - code: "W"
+      name: "Willingness"
+      weight: 0.25
+    - code: "I"
+      name: "Impact"
+      weight: 0.30
+    - code: "T"
+      name: "Trust"
+      weight: 0.20
+
+  gesamt_score:
+    formula: "G = 0.25*A + 0.25*W + 0.30*I + 0.20*T"
+    range: "[0, 100]"
+    interpretation:
+      - range: "0-30"
+        label: "Kritisch"
+        color: "red"
+      - range: "31-50"
+        label: "Verbesserungsbedarf"
+        color: "orange"
+      - range: "51-70"
+        label: "Zufriedenstellend"
+        color: "yellow"
+      - range: "71-85"
+        label: "Gut"
+        color: "lightgreen"
+      - range: "86-100"
+        label: "Exzellent"
+        color: "green"
+
+# =============================================================================
+# A - AWARENESS
+# =============================================================================
+awareness:
+  code: "A"
+  name: "Awareness"
+  definition: |
+    Mass für die Bekanntheit der Kampagne, der Förderprogramme und
+    der konkreten Massnahmen bei der Zielgruppe.
+
+  ebf_mapping:
+    10c_dimension: "AWARE"
+    ebf_variable: "A(·)"
+    appendix: "AU"
+    chapter: 12
+
+  bcj_phases:
+    primary: "unaware → aware"
+    description: "Übergang von Unwissenheit zu Bewusstsein"
+
+  sub_kpis:
+    - id: "A1"
+      name: "Kampagnen-Bekanntheit"
+      question_type: "Einzelauswahl"
+      question: "Haben Sie von der Kampagne 'Energie Schweiz für Private' gehört?"
+      scale: "Ja/Nein/Unsicher"
+      weight: 0.30
+
+    - id: "A2"
+      name: "Förder-Bekanntheit"
+      question_type: "Matrix"
+      question: "Welche der folgenden Förderprogramme kennen Sie?"
+      items:
+        - "Gebäudeprogramm"
+        - "Impulsberatung"
+        - "Kantonale Förderung"
+        - "Minergie"
+      scale: "Kenne ich / Habe davon gehört / Kenne ich nicht"
+      weight: 0.35
+
+    - id: "A3"
+      name: "Massnahmen-Kenntnis"
+      question_type: "Matrix"
+      question: "Wie gut kennen Sie sich mit folgenden Massnahmen aus?"
+      items:
+        - "Wärmepumpe"
+        - "Fassadendämmung"
+        - "Solaranlage"
+        - "Fensterersatz"
+      scale: "5-stufig (1=gar nicht bis 5=sehr gut)"
+      weight: 0.35
+
+  calculation:
+    formula: "A = 0.30*A1 + 0.35*A2 + 0.35*A3"
+    normalization: "Alle Sub-KPIs werden auf [0,100] normalisiert"
+
+  targets:
+    baseline: 35  # Geschätzt vor Kampagne
+    target_year1: 55
+    target_year3: 75
+
+# =============================================================================
+# W - WILLINGNESS
+# =============================================================================
+willingness:
+  code: "W"
+  name: "Willingness"
+  definition: |
+    Mass für die Handlungsbereitschaft der Zielgruppe, energetische
+    Massnahmen am eigenen Gebäude umzusetzen.
+
+  ebf_mapping:
+    10c_dimension: "READY"
+    ebf_variable: "W_base, θ (Aktivierungsschwelle)"
+    appendix: "AV"
+    chapter: 12
+
+  bcj_phases:
+    primary: "aware → considering → intending"
+    description: "Entwicklung von Interesse zu konkreter Absicht"
+
+  sub_kpis:
+    - id: "W1"
+      name: "Generelle Bereitschaft"
+      question_type: "Einzelauswahl"
+      question: "Wie wahrscheinlich ist es, dass Sie in den nächsten 3 Jahren energetische Massnahmen umsetzen?"
+      scale: "5-stufig (1=sehr unwahrscheinlich bis 5=sehr wahrscheinlich)"
+      weight: 0.30
+
+    - id: "W2"
+      name: "Spezifische Motivation"
+      question_type: "Matrix"
+      question: "Wie stark motivieren Sie folgende Faktoren?"
+      items:
+        - "Kosteneinsparung"
+        - "Umweltschutz"
+        - "Wertsteigerung Immobilie"
+        - "Unabhängigkeit von fossilen Energien"
+        - "Fördergelder"
+      scale: "5-stufig (1=gar nicht bis 5=sehr stark)"
+      weight: 0.35
+
+    - id: "W3"
+      name: "Barrieren-Wahrnehmung"
+      question_type: "Matrix"
+      question: "Wie stark hindern Sie folgende Faktoren?"
+      items:
+        - "Kosten"
+        - "Komplexität"
+        - "Zeitaufwand"
+        - "Unsicherheit über Nutzen"
+        - "Koordination (bei STWE)"
+      scale: "5-stufig (1=gar nicht bis 5=sehr stark)"
+      weight: 0.35
+      invert: true  # Höhere Barrieren = niedrigerer Score
+
+  calculation:
+    formula: "W = 0.30*W1 + 0.35*W2 + 0.35*(100-W3)"
+    note: "W3 wird invertiert, da hohe Barrieren negativ sind"
+
+  targets:
+    baseline: 30
+    target_year1: 45
+    target_year3: 60
+
+# =============================================================================
+# I - IMPACT
+# =============================================================================
+impact:
+  code: "I"
+  name: "Impact"
+  definition: |
+    Mass für die tatsächliche Verhaltensänderung - durchgeführte oder
+    konkret geplante energetische Massnahmen.
+
+  ebf_mapping:
+    10c_dimension: "STAGE"
+    ebf_variable: "BCJ Phase φ"
+    appendix: "AW"
+    chapter: 18
+
+  bcj_phases:
+    primary: "intending → acting → maintaining"
+    description: "Übergang von Absicht zu Handlung und Beibehaltung"
+
+  sub_kpis:
+    - id: "I1"
+      name: "Umgesetzte Massnahmen"
+      question_type: "Matrix"
+      question: "Welche Massnahmen haben Sie in den letzten 2 Jahren umgesetzt?"
+      items:
+        - "Heizungsersatz"
+        - "Fassadendämmung"
+        - "Fensterersatz"
+        - "Solaranlage"
+        - "Ladestation E-Auto"
+      scale: "Ja/Nein/Geplant"
+      weight: 0.50
+
+    - id: "I2"
+      name: "Konkrete Planung"
+      question_type: "Matrix"
+      question: "Welche Massnahmen planen Sie konkret in den nächsten 12 Monaten?"
+      items:
+        - "Heizungsersatz"
+        - "Fassadendämmung"
+        - "Fensterersatz"
+        - "Solaranlage"
+        - "Ladestation E-Auto"
+      scale: "Ja, konkret geplant / Vielleicht / Nein"
+      weight: 0.30
+
+    - id: "I3"
+      name: "Beratung in Anspruch genommen"
+      question_type: "Einzelauswahl"
+      question: "Haben Sie eine Energieberatung (z.B. Impulsberatung, GEAK) in Anspruch genommen?"
+      scale: "Ja / Nein, aber geplant / Nein"
+      weight: 0.20
+
+  calculation:
+    formula: "I = 0.50*I1 + 0.30*I2 + 0.20*I3"
+    scoring:
+      I1:
+        "Ja": 100
+        "Geplant": 50
+        "Nein": 0
+      I2:
+        "Ja, konkret geplant": 100
+        "Vielleicht": 40
+        "Nein": 0
+      I3:
+        "Ja": 100
+        "Nein, aber geplant": 50
+        "Nein": 0
+
+  targets:
+    baseline: 15
+    target_year1: 25
+    target_year3: 40
+
+# =============================================================================
+# T - TRUST
+# =============================================================================
+trust:
+  code: "T"
+  name: "Trust"
+  definition: |
+    Mass für das Vertrauen in den Absender (BFE/Energie Schweiz),
+    die Glaubwürdigkeit der Informationen und die wahrgenommene Kompetenz.
+
+  ebf_mapping:
+    10c_dimension: "WHAT"
+    ebf_variable: "u_S (Social Utility)"
+    appendix: "C"
+    chapter: 10
+
+  bcj_phases:
+    primary: "alle Phasen"
+    description: "Vertrauen beeinflusst alle BCJ-Übergänge"
+
+  sub_kpis:
+    - id: "T1"
+      name: "Absender-Vertrauen"
+      question_type: "Einzelauswahl"
+      question: "Wie sehr vertrauen Sie den Informationen von Energie Schweiz / BFE?"
+      scale: "5-stufig (1=gar nicht bis 5=vollständig)"
+      weight: 0.40
+
+    - id: "T2"
+      name: "Wahrgenommene Kompetenz"
+      question_type: "Einzelauswahl"
+      question: "Wie kompetent schätzen Sie Energie Schweiz in Energiefragen ein?"
+      scale: "5-stufig (1=gar nicht bis 5=sehr kompetent)"
+      weight: 0.30
+
+    - id: "T3"
+      name: "Empfehlungs-Bereitschaft"
+      question_type: "Einzelauswahl"
+      question: "Würden Sie die Angebote von Energie Schweiz weiterempfehlen?"
+      scale: "5-stufig (1=definitiv nicht bis 5=definitiv ja)"
+      weight: 0.30
+
+  calculation:
+    formula: "T = 0.40*T1 + 0.30*T2 + 0.30*T3"
+
+  targets:
+    baseline: 65
+    target_year1: 72
+    target_year3: 80
+
+# =============================================================================
+# GESAMT-SCORE BERECHNUNG
+# =============================================================================
+gesamt_score:
+  code: "G"
+  name: "Behavioral Impact Score"
+
+  formula:
+    weighted_sum: "G = w_A*A + w_W*W + w_I*I + w_T*T"
+    weights:
+      w_A: 0.25
+      w_W: 0.25
+      w_I: 0.30  # Impact hat höchstes Gewicht
+      w_T: 0.20
+
+  rationale: |
+    Impact (I) erhält das höchste Gewicht (0.30), da tatsächliche
+    Verhaltensänderung das ultimative Ziel ist. Awareness (A) und
+    Willingness (W) sind notwendige Voraussetzungen mit je 0.25.
+    Trust (T) mit 0.20 ist ein Enabler für alle anderen Dimensionen.
+
+# =============================================================================
+# SEGMENTIERUNG
+# =============================================================================
+segmentation:
+  description: "KPIs werden nach folgenden Dimensionen segmentiert"
+
+  dimensions:
+    - name: "Zeit"
+      options: ["Welle 1", "Welle 2", "Welle 3", "Trend"]
+
+    - name: "Zielgruppe"
+      options:
+        - "Eigentümer EFH"
+        - "Eigentümer MFH"
+        - "Stockwerkeigentümer"
+        - "Alle Eigentümer"
+
+    - name: "Region"
+      options:
+        - "Deutschschweiz"
+        - "Romandie"
+        - "Tessin"
+        - "Gesamtschweiz"
+
+    - name: "Altersgruppe"
+      options:
+        - "18-34"
+        - "35-54"
+        - "55-69"
+        - "70+"
+
+# =============================================================================
+# DATENQUELLEN
+# =============================================================================
+data_sources:
+  primary:
+    - name: "Intervista Online-Befragung"
+      type: "Primärerhebung"
+      frequency: "3x pro Jahr (Wellen)"
+      sample_size: "n=1'200 pro Welle"
+
+  secondary:
+    - name: "EVAI Social Listening"
+      type: "Social Media Monitoring"
+      integration: "iFrame"
+      metrics: ["Mentions", "Sentiment", "Reach"]
+
+    - name: "BFE Analytics"
+      type: "Web Analytics"
+      metrics: ["Webseitenbesuche", "Downloads", "Beratungsanfragen"]
+
+    - name: "Kantonale Förderdaten"
+      type: "Administrativdaten"
+      metrics: ["Förderanträge", "Bewilligungen", "Auszahlungen"]
+
+# =============================================================================
+# DASHBOARD-VISUALISIERUNG
+# =============================================================================
+visualization:
+  main_view:
+    - type: "Gauge Chart"
+      kpis: ["A", "W", "I", "T", "G"]
+      description: "Tachometer-Ansicht für jeden KPI"
+
+    - type: "Trend Line"
+      kpis: ["A", "W", "I", "T", "G"]
+      description: "Zeitlicher Verlauf über Wellen"
+
+  drill_down:
+    - type: "Stacked Bar"
+      level: "Sub-KPIs"
+      description: "Aufschlüsselung in Komponenten"
+
+    - type: "Heatmap"
+      dimensions: ["Segment", "KPI"]
+      description: "Matrix-Ansicht für Segmentvergleich"
+
+  export:
+    formats: ["PDF", "PowerPoint", "CSV"]
+    templates:
+      - "Executive Summary (1 Seite)"
+      - "Detailbericht (10 Seiten)"
+      - "Rohdaten-Export"

@@ -1,0 +1,464 @@
+# ============================================================================
+# FA-SM-1.0: FehrAdvice Strategy Model
+# ============================================================================
+# Meta-model for value-creation-driven strategy design
+# Integrates behavioral economics with strategic management
+#
+# CAUSAL CHAIN (corrected 2026-02-24):
+#   WERTSTEIGERUNG (Ziel) ← VERHALTEN (Hebel) ← KONTEXT-DESIGN (Instrument)
+#   V(t)                  ← B(t)              ← Ψ(t)
+#
+# SUB-MODELS:
+#   - SDM-1.0: Strategy Design Model (process layer)
+#   - SOCM-1.0: Strategy Option Comparison Model (option comparison layer)
+#
+# Created: 2026-02-24
+# Version: 1.0
+# ============================================================================
+
+model:
+  id: "FA-SM-1.0"
+  name: "FehrAdvice Strategy Model"
+  category: "META-STRATEGY"
+  status: "EXPERIMENTAL"
+  version: "1.0"
+  created: "2026-02-24"
+  last_updated: "2026-02-24"
+  maintainer: "EBF Strategy Team"
+
+  # ==========================================================================
+  # PHILOSOPHICAL FOUNDATION
+  # ==========================================================================
+  foundation:
+    paradigm: |
+      Strategy without behavior integration is not implementable.
+      Strategy oriented only at behavioral goals is purposeless.
+      The ultimate goal is VALUE CREATION (Wertsteigerung).
+      Behavior is the LEVER (Hebel), Context Design is the INSTRUMENT.
+
+    causal_chain:
+      direction: "bidirectional"
+      top_down:
+        description: "What value do we need? → What behaviors enable it? → What context produces those behaviors?"
+        formula: "V*(t) → B*(t) → Ψ*(t)"
+        purpose: "Strategic goal-setting and requirement derivation"
+      bottom_up:
+        description: "Given this context → what behavior will emerge? → what value will result?"
+        formula: "Ψ(t) → B(t) → V(t)"
+        purpose: "Realistic prediction and feasibility assessment"
+
+    three_layers:
+      - layer: 0
+        name: "Wertschöpfungsziel (Value Creation Target)"
+        symbol: "V(t)"
+        question: "What value must be created over what time horizon?"
+        role: "NORTH STAR — all other layers serve this"
+      - layer: 1
+        name: "Verhaltensübersetzung (Behavior Translation)"
+        symbol: "B(t)"
+        question: "Which behaviors of which actors must change to produce V(t)?"
+        role: "LEVER — the mechanism through which strategy becomes real"
+      - layer: 2
+        name: "Kontext-Design (Context Architecture)"
+        symbol: "Ψ(t)"
+        question: "What context conditions must be created to produce B(t)?"
+        role: "INSTRUMENT — the actionable design space"
+
+  # ==========================================================================
+  # CORE FORMULA
+  # ==========================================================================
+  core_formulas:
+
+    # Layer 0: Value Creation
+    value_creation: |
+      V(t) = Σ_k w_k · V_k(t)
+
+      where:
+        V_k(t)  = value dimension k at time t
+        w_k     = weight of dimension k (Σw_k = 1)
+        k ∈ {F(financial), S(strategic), O(organizational), C(customer), I(innovation)}
+
+    # Layer 1: Behavior → Value Translation
+    behavior_to_value: |
+      V_k(t) = f_k(B(t), Ψ(t))
+      V_k(t) = α_k · B_aggregate(t) + β_k · Ψ_market(t) + γ_k · B(t)·Ψ(t)
+
+      where:
+        B_aggregate(t) = Σ_j λ_j · B_j(t)    (weighted behavioral adoption across actor groups)
+        B_j(t)         = adoption level of actor group j at time t
+        λ_j            = value-leverage of actor group j
+        γ_k            = behavior-context complementarity for value dim k
+
+    # Layer 2: Context → Behavior Translation (from SDM-1.0)
+    context_to_behavior: |
+      dB_j/dt = β_j · U_j(Ψ) · B_j · (1 - B_j) · (1 - R_j) · (1 + M_j)
+
+      where:
+        U_j(Ψ)  = utility of new behavior for actor group j given context Ψ
+        R_j(t)   = resistance of actor group j
+        M_j(t)   = organizational momentum for actor group j
+        β_j      = adoption speed parameter
+
+    # Master equation
+    master_equation: |
+      V(t) = f(B(t), Ψ(t))   where   B(t) = g(Ψ(t), I(t))
+
+      Expanded:
+      V(t) = Σ_k w_k · [α_k · Σ_j λ_j · B_j(t) + β_k · Ψ_market(t) + γ_k · B(t)·Ψ(t)]
+
+      Subject to:
+        dB_j/dt = h_j(U_j(Ψ(t), I(t)), B_j, R_j, M_j)    ∀ actor groups j
+        I(t) ∈ [0,1]^9                                       (EBF intervention vector)
+
+  # ==========================================================================
+  # VALUE DIMENSIONS (Layer 0)
+  # ==========================================================================
+  value_dimensions:
+    - symbol: "V_F"
+      name: "Financial Value"
+      description: "Revenue growth, profitability, EBITDA, cash generation"
+      measurement: "CHF/EUR, %, CAGR"
+      weight: 0.30
+      typical_horizon: "1-5 years"
+
+    - symbol: "V_S"
+      name: "Strategic Value"
+      description: "Market position, competitive advantage, moat depth"
+      measurement: "Market share %, relative position"
+      weight: 0.25
+      typical_horizon: "3-10 years"
+
+    - symbol: "V_O"
+      name: "Organizational Value"
+      description: "Capability building, culture, talent, leadership quality"
+      measurement: "Capability index, engagement scores"
+      weight: 0.20
+      typical_horizon: "2-7 years"
+
+    - symbol: "V_C"
+      name: "Customer Value"
+      description: "Customer satisfaction, loyalty, NPS, lifetime value"
+      measurement: "NPS, CLV, retention %"
+      weight: 0.15
+      typical_horizon: "1-3 years"
+
+    - symbol: "V_I"
+      name: "Innovation Value"
+      description: "New products, processes, business models, IP"
+      measurement: "Revenue from new products %, patent count"
+      weight: 0.10
+      typical_horizon: "3-10 years"
+
+  # ==========================================================================
+  # ACTOR GROUPS (Layer 1) — who must change behavior?
+  # ==========================================================================
+  actor_groups:
+    - symbol: "B_L"
+      name: "Leadership"
+      description: "C-suite, board, senior management"
+      value_leverage: "HIGH (λ = 0.35)"
+      typical_behaviors:
+        - "Strategic decision quality"
+        - "Resource allocation discipline"
+        - "Culture role-modeling"
+
+    - symbol: "B_M"
+      name: "Middle Management"
+      description: "Department heads, team leads, project managers"
+      value_leverage: "HIGH (λ = 0.30)"
+      typical_behaviors:
+        - "Strategy translation to operations"
+        - "Team motivation and coaching"
+        - "Cross-functional collaboration"
+
+    - symbol: "B_O"
+      name: "Operations"
+      description: "Frontline employees, specialists, craftspeople"
+      value_leverage: "MEDIUM (λ = 0.20)"
+      typical_behaviors:
+        - "Process adoption"
+        - "Quality commitment"
+        - "Continuous improvement"
+
+    - symbol: "B_E"
+      name: "External Stakeholders"
+      description: "Customers, suppliers, partners, regulators"
+      value_leverage: "MEDIUM (λ = 0.15)"
+      typical_behaviors:
+        - "Adoption of new offerings"
+        - "Partnership commitment"
+        - "Regulatory compliance"
+
+  # ==========================================================================
+  # CONTEXT DIMENSIONS (Layer 2) — what can we design?
+  # ==========================================================================
+  context_dimensions:
+    # Organizational Context (internal, designable)
+    organizational:
+      - symbol: "Ψ_GOV"
+        name: "Governance & Decision Architecture"
+        description: "How decisions are made, authority distribution, accountability"
+        designable: true
+        scale: [0.0, 1.0]
+
+      - symbol: "Ψ_INC"
+        name: "Incentive Architecture"
+        description: "Compensation, recognition, career paths, non-monetary rewards"
+        designable: true
+        scale: [0.0, 1.0]
+
+      - symbol: "Ψ_INF"
+        name: "Information Architecture"
+        description: "Transparency, feedback loops, KPI visibility, communication"
+        designable: true
+        scale: [0.0, 1.0]
+
+      - symbol: "Ψ_CUL"
+        name: "Cultural Architecture"
+        description: "Values, norms, rituals, symbols, stories"
+        designable: "partially (slow, 2-5 years)"
+        scale: [0.0, 1.0]
+
+      - symbol: "Ψ_CAP"
+        name: "Capability Architecture"
+        description: "Skills, tools, processes, technology"
+        designable: true
+        scale: [0.0, 1.0]
+
+    # Market Context (external, partially influenceable)
+    market:
+      - symbol: "Ψ_MKT"
+        name: "Market Dynamics"
+        description: "Competition, disruption, demand shifts"
+        designable: false
+        scale: [0.0, 1.0]
+
+      - symbol: "Ψ_REG"
+        name: "Regulatory Environment"
+        description: "Laws, standards, compliance requirements"
+        designable: false
+        scale: [0.0, 1.0]
+
+      - symbol: "Ψ_MAC"
+        name: "Macro Environment"
+        description: "Economy, geopolitics, technology trends"
+        designable: false
+        scale: [0.0, 1.0]
+
+  # ==========================================================================
+  # COMPLEMENTARITY PARAMETERS (γ)
+  # ==========================================================================
+  complementarity_parameters:
+    # Value-Behavior Complementarities
+    - pair: "V_F × B_L"
+      symbol: "γ_FL"
+      value: 0.25
+      interpretation: "Leadership behavior has outsized impact on financial value"
+
+    - pair: "V_O × B_M"
+      symbol: "γ_OM"
+      value: 0.30
+      interpretation: "Middle management behavior is primary driver of organizational value"
+
+    - pair: "V_C × B_O"
+      symbol: "γ_CO"
+      value: 0.22
+      interpretation: "Frontline behavior directly creates customer value"
+
+    - pair: "V_I × B_L"
+      symbol: "γ_IL"
+      value: 0.18
+      interpretation: "Innovation requires leadership commitment and resource allocation"
+
+    # Context-Behavior Complementarities (from SDM-1.0)
+    - pair: "Ψ_GOV × B_L"
+      symbol: "γ_GL"
+      value: 0.20
+      interpretation: "Good governance enables leadership effectiveness"
+
+    - pair: "Ψ_INC × B_O"
+      symbol: "γ_IO"
+      value: 0.15
+      interpretation: "Incentive alignment drives operational behavior change"
+      warning: "Crowding-out risk if Ψ_INC = monetary AND Ψ_CUL = intrinsic"
+
+    - pair: "Ψ_INF × B_M"
+      symbol: "γ_IM"
+      value: 0.18
+      interpretation: "Information transparency empowers middle management"
+
+    - pair: "Ψ_CUL × B_L"
+      symbol: "γ_CL"
+      value: -0.12
+      interpretation: "Trade-off: culture change is slow, leadership wants fast results"
+
+    # Cross-layer Complementarities
+    - pair: "V_F × V_O"
+      symbol: "γ_FO"
+      value: -0.10
+      interpretation: "Short-term financial pressure can undermine organizational building"
+
+    - pair: "V_S × V_I"
+      symbol: "γ_SI"
+      value: 0.22
+      interpretation: "Strategic positioning and innovation reinforce each other"
+
+  # ==========================================================================
+  # SUB-MODEL INTEGRATION
+  # ==========================================================================
+  sub_models:
+    - model_id: "SDM-1.0"
+      role: "Process Layer"
+      integration: |
+        SDM-1.0 provides the 4-phase BCJ (Awareness-Readiness-Action-Embedding)
+        for Layer 2 → Layer 1 translation. Its FEPSDE dimensions map to FA-SM
+        value dimensions. SDM's context factors (Ψ₁-Ψ₅) become a subset of
+        FA-SM's organizational context dimensions.
+      mapping:
+        SDM_F: "FA-SM V_F (Financial)"
+        SDM_E: "FA-SM V_O (Environmental → Organizational)"
+        SDM_P: "FA-SM Ψ_CAP (Practical → Capability)"
+        SDM_S: "FA-SM V_S (Strategic)"
+        SDM_D: "FA-SM Ψ_INF (Deliberative → Information)"
+
+    - model_id: "SOCM-1.0"
+      role: "Option Comparison Layer"
+      integration: |
+        SOCM-1.0 operates within Layer 0 to compare and optimize strategic
+        options. Its portfolio utility function determines the optimal
+        V*(t) target configuration. SOCM's strategic options become the
+        instruments through which value dimensions are pursued.
+      mapping:
+        SOCM_options: "FA-SM strategic_instruments"
+        SOCM_portfolio_utility: "FA-SM V(t) optimization"
+        SOCM_gamma: "FA-SM cross-option complementarities"
+
+  # ==========================================================================
+  # BIDIRECTIONAL WORKFLOW
+  # ==========================================================================
+  workflow:
+    top_down:
+      name: "Auslegeordnung → Zielableitung"
+      steps:
+        - step: 1
+          name: "Wertschöpfungsziel definieren"
+          question: "What value must be created? For whom? By when?"
+          output: "V*(t) = target value vector with weights and timeline"
+          layer: 0
+
+        - step: 2
+          name: "Verhaltensübersetzung"
+          question: "Which actors must change which behaviors to produce V*(t)?"
+          output: "B*(t) = required behavioral adoption by actor group and phase"
+          layer: 1
+
+        - step: 3
+          name: "Kontext-Diagnostik"
+          question: "What is the current context Ψ(t₀)? What gap to Ψ*(t)?"
+          output: "ΔΨ = Ψ*(t) - Ψ(t₀) = context design requirements"
+          layer: 2
+
+        - step: 4
+          name: "Strategische Architektur"
+          question: "Which strategic options best close ΔΨ? (via SOCM-1.0)"
+          output: "Portfolio of strategic options with weights and sequencing"
+          sub_model: "SOCM-1.0"
+
+        - step: 5
+          name: "Implementierungsdesign"
+          question: "How to implement over BCJ phases? (via SDM-1.0)"
+          output: "4-phase implementation roadmap with milestones"
+          sub_model: "SDM-1.0"
+
+        - step: 6
+          name: "Dynamisches Modell"
+          question: "What does the ODE system predict for this configuration?"
+          output: "V(t), B(t), R(t) trajectories with scenarios"
+          tool: "scripts/ode_simulator.py"
+
+    bottom_up:
+      name: "Realitätscheck → Machbarkeitsanalyse"
+      steps:
+        - step: 1
+          name: "Kontext-Ist-Analyse"
+          question: "What is the actual current context Ψ(t₀)?"
+          output: "983+ context factors from CVA (if VERTIEFT)"
+
+        - step: 2
+          name: "Verhaltensvorhersage"
+          question: "Given Ψ(t₀), what behavior will actually emerge?"
+          output: "B_predicted(t) from ODE simulation"
+
+        - step: 3
+          name: "Wertschöpfungs-Prognose"
+          question: "Given B_predicted(t), what value will be created?"
+          output: "V_predicted(t) — reality check against V*(t)"
+
+        - step: 4
+          name: "Gap-Analyse"
+          question: "V*(t) - V_predicted(t) = how far from target?"
+          output: "Gap analysis driving iteration back to top-down"
+
+  # ==========================================================================
+  # 10C MAPPING
+  # ==========================================================================
+  ten_c_mapping:
+    WHO: "Actor groups (B_L, B_M, B_O, B_E) — whose behavior creates value"
+    WHAT: "Value dimensions (V_F, V_S, V_O, V_C, V_I) — what utility"
+    HOW: "Complementarity parameters (γ) — interaction effects"
+    WHEN: "BCJ phases from SDM-1.0 — timing of behavioral change"
+    WHERE: "Context dimensions (Ψ) — organizational and market parameters"
+    AWARE: "Information architecture (Ψ_INF) — strategic awareness"
+    READY: "Capability architecture (Ψ_CAP) — readiness to execute"
+    STAGE: "4-phase BCJ — where in the journey"
+    HIERARCHY: "L0 (Board) → L1 (C-suite) → L2 (Management) → L3 (Operations)"
+    EIT: "Intervention vector I(t) ∈ [0,1]^9 — emergent design"
+
+  # ==========================================================================
+  # VALIDATION
+  # ==========================================================================
+  validation:
+    status: "EXPERIMENTAL"
+    methodology: "First instantiation: Zindel United (ZIN005)"
+    accuracy: 0.00
+    data_points: 0
+    confidence: "LOW (framework-level; requires client projects for calibration)"
+    notes: |
+      FA-SM-1.0 is a meta-model integrating SDM-1.0 and SOCM-1.0.
+      The key innovation is the corrected causal chain:
+      V(t) ← B(t) ← Ψ(t) with bidirectional workflow.
+      First validation via Zindel United organizational design project (ZIN005).
+
+  # ==========================================================================
+  # ROADMAP
+  # ==========================================================================
+  roadmap:
+    v1_0:
+      status: "EXPERIMENTAL"
+      date: "2026-02-24"
+      deliverables:
+        - "Three-layer architecture (Value → Behavior → Context)"
+        - "Bidirectional workflow (top-down + bottom-up)"
+        - "Sub-model integration (SDM-1.0, SOCM-1.0)"
+        - "Value dimensions (5) with weights"
+        - "Actor groups (4) with value-leverage"
+        - "Context dimensions (8) with designability"
+        - "Complementarity parameters (10)"
+        - "10C mapping"
+        - "First instantiation: Zindel United (ZIN005)"
+
+    v1_1_planned:
+      status: "PLANNED"
+      date: "2026-Q3"
+      deliverables:
+        - "Empirical calibration of γ from Zindel ZIN005 outcomes"
+        - "Integration with ODE simulator for V(t) trajectories"
+        - "Cross-client validation (3-5 projects)"
+
+    v2_0_planned:
+      status: "PLANNED"
+      date: "2027-Q1"
+      deliverables:
+        - "Dynamic context adaptation (real-time Ψ updates)"
+        - "Multi-stakeholder value aggregation"
+        - "Machine learning for γ calibration"

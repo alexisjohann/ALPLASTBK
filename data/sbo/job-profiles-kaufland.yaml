@@ -1,0 +1,1166 @@
+# ============================================================================
+# JOB PROFILES — KAUFLAND LEBENSMITTELEINZELHANDEL (LEH)
+# ============================================================================
+# Model:     MOD-ORG-SBO-001 v1.1
+# Taxonomy:  STAX-KAUF-001 (120 Skills, 9 Domains)
+# Created:   2026-02-17
+# Scope:     22 Rollenprofile × 120 Skills × 5 Levels
+# Matching:  Fit-Score F(p,j) = weighted skill match
+# ============================================================================
+
+metadata:
+  id: JPRF-KAUF-001
+  name: "Kaufland Job Profiles LEH"
+  version: "1.0"
+  taxonomy_ref: STAX-KAUF-001
+  model_ref: MOD-ORG-SBO-001
+  created: "2026-02-17"
+  total_profiles: 22
+  matching_algorithm: "weighted_euclidean_with_mandatory_gate"
+
+# ============================================================================
+# MATCHING ALGORITHM
+# ============================================================================
+matching:
+  description: |
+    Der Fit-Score F(p,j) berechnet die Passung zwischen Person p und Job j.
+
+    FORMEL:
+    F(p,j) = Gate(p,j) × [ w_core × S_core(p,j) + w_dev × S_dev(p,j) + w_pot × S_pot(p,j) ]
+
+    WO:
+      Gate(p,j) = 1 wenn ALLE mandatory Skills >= min_level, sonst 0
+      S_core(p,j) = 1 - sqrt( Σᵢ wᵢ × (max(0, req_i - actual_i))² / Σᵢ wᵢ )
+      S_dev(p,j)  = Anteil der development_skills mit actual >= 1
+      S_pot(p,j)  = Lerngeschwindigkeit × Motivationsfaktor
+
+    GEWICHTE:
+      w_core = 0.60  (Kernkompetenzen)
+      w_dev  = 0.25  (Entwicklungspotenzial)
+      w_pot  = 0.15  (Lernpotenzial)
+
+    INTERPRETATION:
+      F >= 0.85: Excellent Fit — sofort einsetzbar
+      F >= 0.70: Good Fit — mit kurzem Onboarding (<4 Wochen)
+      F >= 0.55: Development Fit — mit Entwicklungsplan (3-6 Monate)
+      F >= 0.40: Stretch Fit — ambitioniert, braucht Foerderung (6-12 Monate)
+      F <  0.40: Gap too large — andere Rolle empfehlen
+
+    MANDATORY GATE:
+      Wenn ein Skill als mandatory: true markiert ist UND min_level definiert,
+      MUSS die Person dieses Level erreichen. Sonst: F(p,j) = 0.
+
+      Beispiel: HACCP (SKL-HS-001) auf Level 2 ist mandatory fuer alle
+      Rollen mit Lebensmittelkontakt. Ohne dieses Level: kein Match.
+
+  weights:
+    core: 0.60
+    development: 0.25
+    potential: 0.15
+
+  fit_thresholds:
+    excellent: 0.85
+    good: 0.70
+    development: 0.55
+    stretch: 0.40
+
+# ============================================================================
+# JOB FAMILY 1: FILIALE / STORE OPERATIONS
+# ============================================================================
+job_families:
+
+  - id: JF-STORE
+    name: "Filiale / Store Operations"
+    headcount_share: 0.88
+    description: "~150'000 MA in 1'500+ Filialen"
+    roles:
+
+      # ---------------------------------------------------------------
+      # ROLE 1: Kassierer:in / Checkout
+      # ---------------------------------------------------------------
+      - id: JOB-KAS
+        name: "Kassierer:in"
+        name_en: "Cashier"
+        level: "Mitarbeiter:in"
+        headcount_estimate: 45000
+        headcount_share: 0.265
+        typical_weekly_hours: [20, 30, 40]
+        entry_requirements:
+          education: "Keine formale Anforderung"
+          experience: "Keine"
+          age_min: 16
+        career_paths:
+          next: ["JOB-SBK", "JOB-TLK", "JOB-SER"]
+          lateral: ["JOB-REG", "JOB-WAE"]
+        skill_requirements:
+          mandatory:  # Gate-Skills — ohne diese: F=0
+            - skill: SKL-KI-010   # Kassen-Handling
+              min_level: 3
+              weight: 1.0
+            - skill: SKL-TS-001   # POS-Bedienung
+              min_level: 3
+              weight: 0.9
+            - skill: SKL-TS-002   # Zahlungsabwicklung
+              min_level: 3
+              weight: 0.9
+            - skill: SKL-HS-001   # HACCP-Grundlagen
+              min_level: 1
+              weight: 0.5
+            - skill: SKL-CS-012   # Datenschutz
+              min_level: 1
+              weight: 0.4
+          core:  # Kern-Skills — gewichtet in S_core
+            - skill: SKL-KI-001   # Kundenansprache
+              target_level: 2
+              weight: 0.7
+            - skill: SKL-KI-004   # Beschwerdemanagement
+              target_level: 2
+              weight: 0.6
+            - skill: SKL-TS-003   # Kassenabschluss
+              target_level: 2
+              weight: 0.8
+            - skill: SKL-KZ-020   # Teamarbeit
+              target_level: 2
+              weight: 0.5
+            - skill: SKL-KZ-021   # Stressresistenz
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-CS-001   # Arbeitssicherheit
+              target_level: 1
+              weight: 0.4
+          development:  # Entwicklungs-Skills
+            - skill: SKL-KI-011   # SB-Kassen
+              target_level: 2
+            - skill: SKL-KI-003   # Cross-Selling
+              target_level: 1
+            - skill: SKL-KI-013   # Servicepoint
+              target_level: 1
+            - skill: SKL-KZ-023   # Interkulturelle Kompetenz
+              target_level: 2
+
+      # ---------------------------------------------------------------
+      # ROLE 2: Regalservice / Shelf Stocking
+      # ---------------------------------------------------------------
+      - id: JOB-REG
+        name: "Regalservice / Veraeumer:in"
+        name_en: "Shelf Stocker"
+        level: "Mitarbeiter:in"
+        headcount_estimate: 35000
+        headcount_share: 0.206
+        typical_weekly_hours: [15, 20, 30]
+        entry_requirements:
+          education: "Keine formale Anforderung"
+          experience: "Keine"
+        career_paths:
+          next: ["JOB-WAE", "JOB-KAS", "JOB-FVO"]
+          lateral: ["JOB-KAS"]
+        skill_requirements:
+          mandatory:
+            - skill: SKL-LO-003   # Veraeumung
+              min_level: 2
+              weight: 1.0
+            - skill: SKL-WM-021   # MHD-Management
+              min_level: 2
+              weight: 0.9
+            - skill: SKL-HS-001   # HACCP
+              min_level: 1
+              weight: 0.5
+          core:
+            - skill: SKL-WM-010   # Regalbestueckung
+              target_level: 3
+              weight: 1.0
+            - skill: SKL-WM-001   # Trockensortiment
+              target_level: 2
+              weight: 0.7
+            - skill: SKL-TS-011   # MDE-Geraete
+              target_level: 2
+              weight: 0.6
+            - skill: SKL-LO-001   # Warenannahme
+              target_level: 2
+              weight: 0.7
+            - skill: SKL-KZ-020   # Teamarbeit
+              target_level: 2
+              weight: 0.5
+            - skill: SKL-CS-004   # Ergonomie
+              target_level: 2
+              weight: 0.5
+          development:
+            - skill: SKL-WM-011   # Aktionsaufbauten
+              target_level: 2
+            - skill: SKL-WM-024   # Schwund-Praevention
+              target_level: 1
+            - skill: SKL-KI-001   # Kundenansprache
+              target_level: 1
+
+      # ---------------------------------------------------------------
+      # ROLE 3: Fachverkaeufer:in Obst/Gemuese
+      # ---------------------------------------------------------------
+      - id: JOB-FVO
+        name: "Fachverkaeufer:in Obst/Gemuese"
+        name_en: "Produce Specialist"
+        level: "Fachkraft"
+        headcount_estimate: 10000
+        headcount_share: 0.059
+        typical_weekly_hours: [30, 40]
+        entry_requirements:
+          education: "Ausbildung Einzelhandel empfohlen"
+          experience: "6 Monate LEH"
+        career_paths:
+          next: ["JOB-ALF", "JOB-TLK"]
+          lateral: ["JOB-FVF", "JOB-FVK"]
+        skill_requirements:
+          mandatory:
+            - skill: SKL-WM-002   # Frische-Warenkunde O/G
+              min_level: 3
+              weight: 1.0
+            - skill: SKL-HS-001   # HACCP
+              min_level: 2
+              weight: 0.8
+            - skill: SKL-HS-002   # Temperaturkontrolle
+              min_level: 2
+              weight: 0.8
+          core:
+            - skill: SKL-WM-012   # Frischetheken-Praesentation
+              target_level: 3
+              weight: 0.9
+            - skill: SKL-KI-002   # Fachberatung Frische
+              target_level: 3
+              weight: 0.9
+            - skill: SKL-WM-021   # MHD-Management
+              target_level: 3
+              weight: 0.8
+            - skill: SKL-WM-020   # Bestellwesen
+              target_level: 2
+              weight: 0.7
+            - skill: SKL-WM-007   # Bio/Nachhaltigkeit
+              target_level: 2
+              weight: 0.5
+            - skill: SKL-KI-001   # Kundenansprache
+              target_level: 3
+              weight: 0.7
+          development:
+            - skill: SKL-WM-013   # Visual Merchandising
+              target_level: 2
+            - skill: SKL-KI-003   # Cross-Selling
+              target_level: 2
+            - skill: SKL-AB-001   # Umsatzanalyse
+              target_level: 1
+
+      # ---------------------------------------------------------------
+      # ROLE 4: Fachverkaeufer:in Fleisch/Wurst
+      # ---------------------------------------------------------------
+      - id: JOB-FVF
+        name: "Fachverkaeufer:in Fleisch/Wurst"
+        name_en: "Meat Counter Specialist"
+        level: "Fachkraft"
+        headcount_estimate: 12000
+        headcount_share: 0.071
+        typical_weekly_hours: [30, 40]
+        entry_requirements:
+          education: "IHK Fleischfachverkaeufer:in oder Metzger:in empfohlen"
+          experience: "Berufserfahrung Theke/Metzgerei"
+        career_paths:
+          next: ["JOB-ALF"]
+          lateral: ["JOB-FVK", "JOB-FVO"]
+        skill_requirements:
+          mandatory:
+            - skill: SKL-WM-003   # Fleisch/Wurst-Fachkenntnis
+              min_level: 3
+              weight: 1.0
+            - skill: SKL-HS-001   # HACCP
+              min_level: 3
+              weight: 1.0
+            - skill: SKL-HS-002   # Temperaturkontrolle
+              min_level: 3
+              weight: 0.9
+            - skill: SKL-HS-004   # Allergenkennzeichnung
+              min_level: 2
+              weight: 0.8
+          core:
+            - skill: SKL-WM-012   # Frischetheken-Praesentation
+              target_level: 4
+              weight: 0.9
+            - skill: SKL-KI-002   # Fachberatung Frische
+              target_level: 3
+              weight: 0.9
+            - skill: SKL-HS-011   # Geraetereinigung
+              target_level: 3
+              weight: 0.8
+            - skill: SKL-KI-001   # Kundenansprache
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-WM-020   # Bestellwesen
+              target_level: 3
+              weight: 0.7
+          development:
+            - skill: SKL-KI-003   # Cross-Selling
+              target_level: 2
+            - skill: SKL-WM-007   # Bio/Nachhaltigkeit
+              target_level: 2
+
+      # ---------------------------------------------------------------
+      # ROLE 5: Fachverkaeufer:in Kaese/Feinkost
+      # ---------------------------------------------------------------
+      - id: JOB-FVK
+        name: "Fachverkaeufer:in Kaese/Feinkost"
+        name_en: "Deli & Cheese Specialist"
+        level: "Fachkraft"
+        headcount_estimate: 6000
+        headcount_share: 0.035
+        typical_weekly_hours: [30, 40]
+        entry_requirements:
+          education: "Ausbildung Einzelhandel oder Gastronomie"
+          experience: "6 Monate Thekenverkauf"
+        career_paths:
+          next: ["JOB-ALF"]
+          lateral: ["JOB-FVF", "JOB-FVO"]
+        skill_requirements:
+          mandatory:
+            - skill: SKL-WM-004   # Kaese/Feinkost
+              min_level: 3
+              weight: 1.0
+            - skill: SKL-HS-001   # HACCP
+              min_level: 2
+              weight: 0.9
+            - skill: SKL-HS-004   # Allergene
+              min_level: 2
+              weight: 0.8
+          core:
+            - skill: SKL-WM-012   # Thekenpraesentation
+              target_level: 4
+              weight: 0.9
+            - skill: SKL-KI-002   # Fachberatung
+              target_level: 4
+              weight: 1.0
+            - skill: SKL-KI-001   # Kundenansprache
+              target_level: 3
+              weight: 0.8
+            - skill: SKL-WM-020   # Bestellwesen
+              target_level: 2
+              weight: 0.6
+
+      # ---------------------------------------------------------------
+      # ROLE 6: Warenannahme / Lager Filiale
+      # ---------------------------------------------------------------
+      - id: JOB-WAE
+        name: "Warenannahme / Lager"
+        name_en: "Receiving & Store Warehouse"
+        level: "Mitarbeiter:in"
+        headcount_estimate: 8000
+        headcount_share: 0.047
+        typical_weekly_hours: [30, 40]
+        entry_requirements:
+          education: "Keine formale Anforderung"
+          experience: "Koerperliche Fitness"
+        career_paths:
+          next: ["JOB-REG", "JOB-TLK"]
+          lateral: ["JOB-REG", "JOB-LOG-KOM"]
+        skill_requirements:
+          mandatory:
+            - skill: SKL-LO-001   # Warenannahme
+              min_level: 3
+              weight: 1.0
+            - skill: SKL-WM-022   # Wareneingang
+              min_level: 3
+              weight: 0.9
+            - skill: SKL-HS-002   # Temperaturkontrolle
+              min_level: 2
+              weight: 0.8
+          core:
+            - skill: SKL-LO-003   # Veraeumung
+              target_level: 2
+              weight: 0.7
+            - skill: SKL-TS-011   # MDE-Geraete
+              target_level: 2
+              weight: 0.7
+            - skill: SKL-CS-001   # Arbeitssicherheit
+              target_level: 2
+              weight: 0.6
+            - skill: SKL-CS-004   # Ergonomie
+              target_level: 2
+              weight: 0.6
+            - skill: SKL-LO-010   # Stapler
+              target_level: 2
+              weight: 0.5
+
+      # ---------------------------------------------------------------
+      # ROLE 7: SB-Kassen Betreuer:in
+      # ---------------------------------------------------------------
+      - id: JOB-SBK
+        name: "SB-Kassen Betreuer:in"
+        name_en: "Self-Checkout Attendant"
+        level: "Fachkraft"
+        headcount_estimate: 5000
+        headcount_share: 0.029
+        typical_weekly_hours: [30, 40]
+        entry_requirements:
+          education: "Keine formale Anforderung"
+          experience: "6 Monate Kasse"
+        career_paths:
+          next: ["JOB-TLK", "JOB-SER"]
+          lateral: ["JOB-KAS"]
+        skill_requirements:
+          mandatory:
+            - skill: SKL-KI-011   # SB-Kassen-Betreuung
+              min_level: 3
+              weight: 1.0
+            - skill: SKL-KI-010   # Kassen-Handling
+              min_level: 3
+              weight: 0.8
+            - skill: SKL-TS-001   # POS
+              min_level: 3
+              weight: 0.7
+          core:
+            - skill: SKL-KI-004   # Beschwerdemanagement
+              target_level: 3
+              weight: 0.8
+            - skill: SKL-KI-001   # Kundenansprache
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-WM-024   # Schwund-Praevention
+              target_level: 2
+              weight: 0.7
+            - skill: SKL-TS-023   # KI-Tools
+              target_level: 1
+              weight: 0.4
+
+      # ---------------------------------------------------------------
+      # ROLE 8: Servicepoint
+      # ---------------------------------------------------------------
+      - id: JOB-SER
+        name: "Servicepoint-Mitarbeiter:in"
+        name_en: "Service Desk Associate"
+        level: "Fachkraft"
+        headcount_estimate: 4000
+        headcount_share: 0.024
+        typical_weekly_hours: [30, 40]
+        entry_requirements:
+          education: "Ausbildung Einzelhandel empfohlen"
+          experience: "6 Monate Kundenkontakt"
+        career_paths:
+          next: ["JOB-TLK", "JOB-SFL"]
+          lateral: ["JOB-SBK", "JOB-KAS"]
+        skill_requirements:
+          mandatory:
+            - skill: SKL-KI-013   # Servicepoint-Management
+              min_level: 3
+              weight: 1.0
+            - skill: SKL-KI-004   # Beschwerdemanagement
+              min_level: 3
+              weight: 0.9
+            - skill: SKL-CS-012   # Datenschutz
+              min_level: 2
+              weight: 0.7
+          core:
+            - skill: SKL-KI-001   # Kundenansprache
+              target_level: 4
+              weight: 0.8
+            - skill: SKL-KZ-021   # Stressresistenz
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-KI-014   # Mehrsprachig
+              target_level: 2
+              weight: 0.5
+
+      # ---------------------------------------------------------------
+      # ROLE 9: Teamleitung Kasse
+      # ---------------------------------------------------------------
+      - id: JOB-TLK
+        name: "Teamleitung Kasse"
+        name_en: "Checkout Team Lead"
+        level: "Teamleitung"
+        headcount_estimate: 3000
+        headcount_share: 0.018
+        typical_weekly_hours: [40]
+        entry_requirements:
+          education: "Ausbildung Einzelhandel"
+          experience: "2+ Jahre Kasse + Fuehrungspotenzial"
+        career_paths:
+          next: ["JOB-SFL"]
+          lateral: ["JOB-ALF"]
+        skill_requirements:
+          mandatory:
+            - skill: SKL-FM-001   # Mitarbeiterfuehrung
+              min_level: 2
+              weight: 1.0
+            - skill: SKL-KI-010   # Kassen-Handling
+              min_level: 4
+              weight: 0.9
+            - skill: SKL-FM-002   # Dienstplanung
+              min_level: 2
+              weight: 0.8
+          core:
+            - skill: SKL-FM-005   # Onboarding
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-FM-003   # Feedback
+              target_level: 2
+              weight: 0.7
+            - skill: SKL-FM-004   # Konfliktmanagement
+              target_level: 2
+              weight: 0.7
+            - skill: SKL-KI-004   # Beschwerdemanagement
+              target_level: 4
+              weight: 0.6
+            - skill: SKL-AB-002   # KPI-Interpretation
+              target_level: 2
+              weight: 0.5
+            - skill: SKL-CS-010   # Arbeitsrecht
+              target_level: 2
+              weight: 0.5
+          development:
+            - skill: SKL-FM-010   # P&L
+              target_level: 1
+            - skill: SKL-AB-011   # Personalbedarfsplanung
+              target_level: 2
+
+      # ---------------------------------------------------------------
+      # ROLE 10: Abteilungsleitung Frische
+      # ---------------------------------------------------------------
+      - id: JOB-ALF
+        name: "Abteilungsleitung Frische"
+        name_en: "Fresh Department Manager"
+        level: "Abteilungsleitung"
+        headcount_estimate: 3000
+        headcount_share: 0.018
+        typical_weekly_hours: [40]
+        entry_requirements:
+          education: "Ausbildung + Weiterbildung Handel"
+          experience: "3+ Jahre Frische + Fuehrungserfahrung"
+        career_paths:
+          next: ["JOB-SFL", "JOB-FL"]
+          lateral: ["JOB-ALT"]
+        skill_requirements:
+          mandatory:
+            - skill: SKL-FM-001   # Fuehrung
+              min_level: 3
+              weight: 1.0
+            - skill: SKL-HS-001   # HACCP
+              min_level: 4
+              weight: 1.0
+            - skill: SKL-WM-020   # Disposition
+              min_level: 3
+              weight: 0.9
+          core:
+            - skill: SKL-FM-002   # Dienstplanung
+              target_level: 3
+              weight: 0.8
+            - skill: SKL-FM-003   # Feedback
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-AB-001   # Umsatzanalyse
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-WM-024   # Schwund-Praevention
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-WM-012   # Thekenpraesentation
+              target_level: 3
+              weight: 0.6
+            - skill: SKL-CS-013   # Lebensmittelrecht
+              target_level: 3
+              weight: 0.6
+            - skill: SKL-TS-012   # Bestellsystem
+              target_level: 3
+              weight: 0.6
+          development:
+            - skill: SKL-FM-010   # P&L
+              target_level: 2
+            - skill: SKL-FM-011   # KPI-Steuerung
+              target_level: 2
+            - skill: SKL-FM-020   # Change Communication
+              target_level: 2
+
+      # ---------------------------------------------------------------
+      # ROLE 11: Abteilungsleitung Trockensortiment
+      # ---------------------------------------------------------------
+      - id: JOB-ALT
+        name: "Abteilungsleitung Trockensortiment"
+        name_en: "Dry Goods Department Manager"
+        level: "Abteilungsleitung"
+        headcount_estimate: 2000
+        headcount_share: 0.012
+        typical_weekly_hours: [40]
+        entry_requirements:
+          education: "Ausbildung + Weiterbildung Handel"
+          experience: "3+ Jahre Regalservice/Logistik + Fuehrung"
+        career_paths:
+          next: ["JOB-SFL", "JOB-FL"]
+          lateral: ["JOB-ALF"]
+        skill_requirements:
+          mandatory:
+            - skill: SKL-FM-001   # Fuehrung
+              min_level: 3
+              weight: 1.0
+            - skill: SKL-WM-001   # Trockensortiment
+              min_level: 4
+              weight: 0.9
+            - skill: SKL-WM-020   # Disposition
+              min_level: 3
+              weight: 0.9
+          core:
+            - skill: SKL-FM-002   # Dienstplanung
+              target_level: 3
+              weight: 0.8
+            - skill: SKL-WM-010   # Regalbestueckung
+              target_level: 4
+              weight: 0.7
+            - skill: SKL-WM-011   # Aktionsaufbauten
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-AB-001   # Umsatzanalyse
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-WM-024   # Schwund
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-AB-010   # Sortimentsplanung
+              target_level: 2
+              weight: 0.6
+
+      # ---------------------------------------------------------------
+      # ROLE 12: Stellvertretende Filialleitung
+      # ---------------------------------------------------------------
+      - id: JOB-SFL
+        name: "Stellvertretende Filialleitung"
+        name_en: "Deputy Store Manager"
+        level: "Stellv. Filialleitung"
+        headcount_estimate: 1500
+        headcount_share: 0.009
+        typical_weekly_hours: [40]
+        entry_requirements:
+          education: "Handelsfachwirt:in oder vergleichbar"
+          experience: "5+ Jahre LEH + Fuehrungserfahrung"
+        career_paths:
+          next: ["JOB-FL"]
+          lateral: ["JOB-ZEN-HR", "JOB-ZEN-CM"]
+        skill_requirements:
+          mandatory:
+            - skill: SKL-FM-001   # Fuehrung
+              min_level: 4
+              weight: 1.0
+            - skill: SKL-FM-010   # P&L
+              min_level: 3
+              weight: 0.9
+            - skill: SKL-FM-011   # KPI-Steuerung
+              min_level: 3
+              weight: 0.9
+          core:
+            - skill: SKL-FM-002   # Dienstplanung
+              target_level: 4
+              weight: 0.8
+            - skill: SKL-FM-003   # Feedback
+              target_level: 4
+              weight: 0.7
+            - skill: SKL-FM-004   # Konfliktmanagement
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-FM-012   # Budgetplanung
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-CS-010   # Arbeitsrecht
+              target_level: 3
+              weight: 0.6
+            - skill: SKL-CS-014   # BetrVG
+              target_level: 2
+              weight: 0.5
+            - skill: SKL-AB-002   # KPI-Interpretation
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-AB-011   # Personalbedarfsplanung
+              target_level: 3
+              weight: 0.6
+            - skill: SKL-FM-021   # Stakeholder Management
+              target_level: 2
+              weight: 0.5
+          development:
+            - skill: SKL-FM-013   # Strategische Entwicklung
+              target_level: 2
+            - skill: SKL-FM-020   # Change Communication
+              target_level: 3
+            - skill: SKL-AB-003   # Marktanalyse
+              target_level: 2
+
+      # ---------------------------------------------------------------
+      # ROLE 13: Filialleitung
+      # ---------------------------------------------------------------
+      - id: JOB-FL
+        name: "Filialleitung"
+        name_en: "Store Manager"
+        level: "Filialleitung"
+        headcount_estimate: 1500
+        headcount_share: 0.009
+        typical_weekly_hours: [45]
+        entry_requirements:
+          education: "Handelsfachwirt:in, Betriebswirt:in, oder Studium"
+          experience: "7+ Jahre LEH, davon 3+ Jahre Fuehrung"
+        career_paths:
+          next: ["JOB-BZL", "JOB-ZEN-VL"]
+          lateral: ["JOB-ZEN-CM", "JOB-ZEN-HR"]
+        skill_requirements:
+          mandatory:
+            - skill: SKL-FM-001   # Fuehrung
+              min_level: 4
+              weight: 1.0
+            - skill: SKL-FM-010   # P&L
+              min_level: 4
+              weight: 1.0
+            - skill: SKL-FM-011   # KPI-Steuerung
+              min_level: 4
+              weight: 0.9
+            - skill: SKL-CS-014   # BetrVG
+              min_level: 3
+              weight: 0.7
+          core:
+            - skill: SKL-FM-013   # Strategische Entwicklung
+              target_level: 4
+              weight: 0.8
+            - skill: SKL-FM-012   # Budgetplanung
+              target_level: 4
+              weight: 0.8
+            - skill: SKL-FM-003   # Feedback
+              target_level: 4
+              weight: 0.7
+            - skill: SKL-FM-004   # Konfliktmanagement
+              target_level: 4
+              weight: 0.7
+            - skill: SKL-FM-020   # Change Communication
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-FM-021   # Stakeholder
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-FM-006   # Diversity
+              target_level: 3
+              weight: 0.5
+            - skill: SKL-AB-001   # Umsatzanalyse
+              target_level: 4
+              weight: 0.7
+            - skill: SKL-AB-003   # Marktanalyse
+              target_level: 3
+              weight: 0.6
+            - skill: SKL-AB-011   # Personalbedarfsplanung
+              target_level: 4
+              weight: 0.7
+            - skill: SKL-CS-010   # Arbeitsrecht
+              target_level: 3
+              weight: 0.6
+            - skill: SKL-KZ-003   # Reporting
+              target_level: 4
+              weight: 0.6
+          development:
+            - skill: SKL-TS-021   # Datenanalyse
+              target_level: 3
+            - skill: SKL-FM-022   # Projektmanagement
+              target_level: 3
+
+      # ---------------------------------------------------------------
+      # ROLE 14: Bezirksleitung
+      # ---------------------------------------------------------------
+      - id: JOB-BZL
+        name: "Bezirksleitung"
+        name_en: "District Manager"
+        level: "Bezirksleitung"
+        headcount_estimate: 200
+        headcount_share: 0.001
+        typical_weekly_hours: [50]
+        entry_requirements:
+          education: "Studium oder Handelsfachwirt:in + Berufserfahrung"
+          experience: "10+ Jahre LEH, davon 5+ Jahre Filialleitung"
+        career_paths:
+          next: ["JOB-ZEN-VL"]
+          lateral: ["JOB-ZEN-CM", "JOB-ZEN-HR"]
+        skill_requirements:
+          mandatory:
+            - skill: SKL-FM-001   # Fuehrung
+              min_level: 5
+              weight: 1.0
+            - skill: SKL-FM-010   # P&L
+              min_level: 5
+              weight: 1.0
+            - skill: SKL-FM-013   # Strategische Entwicklung
+              min_level: 4
+              weight: 0.9
+          core:
+            - skill: SKL-FM-020   # Change Communication
+              target_level: 4
+              weight: 0.8
+            - skill: SKL-FM-021   # Stakeholder
+              target_level: 4
+              weight: 0.8
+            - skill: SKL-FM-022   # Projektmanagement
+              target_level: 4
+              weight: 0.7
+            - skill: SKL-AB-001   # Umsatzanalyse
+              target_level: 5
+              weight: 0.7
+            - skill: SKL-AB-003   # Marktanalyse
+              target_level: 4
+              weight: 0.7
+            - skill: SKL-FM-006   # Diversity
+              target_level: 4
+              weight: 0.6
+            - skill: SKL-TS-021   # Datenanalyse
+              target_level: 3
+              weight: 0.5
+
+  # ============================================================================
+  # JOB FAMILY 2: LOGISTIK / ZENTRALLAGER
+  # ============================================================================
+  - id: JF-LOGISTICS
+    name: "Logistik / Zentrallager"
+    headcount_share: 0.05
+    description: "~8'500 MA in Distributionszentren"
+    roles:
+
+      - id: JOB-LOG-KOM
+        name: "Kommissionierer:in"
+        name_en: "Order Picker"
+        level: "Mitarbeiter:in"
+        headcount_estimate: 4000
+        skill_requirements:
+          mandatory:
+            - skill: SKL-LO-002   # Kommissionierung
+              min_level: 3
+              weight: 1.0
+            - skill: SKL-LO-010   # Stapler
+              min_level: 2
+              weight: 0.8
+            - skill: SKL-CS-001   # Arbeitssicherheit
+              min_level: 2
+              weight: 0.7
+          core:
+            - skill: SKL-LO-011   # Lagerorganisation
+              target_level: 2
+              weight: 0.7
+            - skill: SKL-LO-013   # Kuehlkette
+              target_level: 2
+              weight: 0.6
+            - skill: SKL-TS-011   # MDE
+              target_level: 2
+              weight: 0.6
+
+      - id: JOB-LOG-LTR
+        name: "LKW-Fahrer:in"
+        name_en: "Truck Driver"
+        level: "Fachkraft"
+        headcount_estimate: 2000
+        skill_requirements:
+          mandatory:
+            - skill: SKL-LO-013   # Kuehlkette
+              min_level: 3
+              weight: 0.9
+            - skill: SKL-CS-001   # Arbeitssicherheit
+              min_level: 3
+              weight: 0.8
+          core:
+            - skill: SKL-LO-012   # Tourenplanung
+              target_level: 2
+              weight: 0.6
+            - skill: SKL-KZ-002   # Schichtuebergabe
+              target_level: 2
+              weight: 0.5
+
+      - id: JOB-LOG-DIS
+        name: "Disponent:in"
+        name_en: "Logistics Planner"
+        level: "Fachkraft"
+        headcount_estimate: 500
+        skill_requirements:
+          mandatory:
+            - skill: SKL-LO-012   # Tourenplanung
+              min_level: 4
+              weight: 1.0
+            - skill: SKL-TS-010   # SAP/ERP
+              min_level: 3
+              weight: 0.9
+          core:
+            - skill: SKL-AB-013   # Forecast
+              target_level: 3
+              weight: 0.8
+            - skill: SKL-TS-021   # Datenanalyse
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-LO-011   # Lagerorganisation
+              target_level: 3
+              weight: 0.6
+
+  # ============================================================================
+  # JOB FAMILY 3: ZENTRALE / CORPORATE
+  # ============================================================================
+  - id: JF-CORPORATE
+    name: "Zentrale / Corporate Functions"
+    headcount_share: 0.07
+    description: "~12'000 MA in Zentralfunktionen"
+    roles:
+
+      - id: JOB-ZEN-HR
+        name: "HR Business Partner"
+        name_en: "HR Business Partner"
+        level: "Spezialist:in"
+        headcount_estimate: 300
+        skill_requirements:
+          mandatory:
+            - skill: SKL-FM-003   # Feedback & Entwicklung
+              min_level: 4
+              weight: 1.0
+            - skill: SKL-CS-010   # Arbeitsrecht
+              min_level: 4
+              weight: 0.9
+            - skill: SKL-CS-014   # BetrVG
+              min_level: 3
+              weight: 0.8
+          core:
+            - skill: SKL-AB-011   # Personalbedarfsplanung
+              target_level: 4
+              weight: 0.8
+            - skill: SKL-FM-006   # Diversity
+              target_level: 4
+              weight: 0.7
+            - skill: SKL-FM-020   # Change Communication
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-TS-021   # Datenanalyse
+              target_level: 3
+              weight: 0.6
+            - skill: SKL-FM-022   # Projektmanagement
+              target_level: 3
+              weight: 0.6
+
+      - id: JOB-ZEN-CM
+        name: "Category Manager:in"
+        name_en: "Category Manager"
+        level: "Spezialist:in"
+        headcount_estimate: 200
+        skill_requirements:
+          mandatory:
+            - skill: SKL-AB-010   # Sortimentsplanung
+              min_level: 4
+              weight: 1.0
+            - skill: SKL-AB-001   # Umsatzanalyse
+              min_level: 4
+              weight: 0.9
+          core:
+            - skill: SKL-AB-003   # Marktanalyse
+              target_level: 4
+              weight: 0.8
+            - skill: SKL-AB-004   # Kundenanalyse
+              target_level: 4
+              weight: 0.8
+            - skill: SKL-AB-012   # Aktionsplanung
+              target_level: 4
+              weight: 0.7
+            - skill: SKL-TS-021   # Datenanalyse
+              target_level: 4
+              weight: 0.7
+            - skill: SKL-KZ-010   # Lieferanten-Kommunikation
+              target_level: 4
+              weight: 0.7
+            - skill: SKL-AB-013   # Forecast
+              target_level: 3
+              weight: 0.6
+
+      - id: JOB-ZEN-MK
+        name: "Marketing Manager:in"
+        name_en: "Marketing Manager"
+        level: "Spezialist:in"
+        headcount_estimate: 150
+        skill_requirements:
+          mandatory:
+            - skill: SKL-AB-012   # Aktionsplanung
+              min_level: 4
+              weight: 1.0
+          core:
+            - skill: SKL-KZ-012   # Presse & Oeffentlichkeit
+              target_level: 4
+              weight: 0.8
+            - skill: SKL-TS-022   # E-Commerce
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-AB-004   # Kundenanalyse
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-WM-013   # Visual Merchandising
+              target_level: 3
+              weight: 0.6
+            - skill: SKL-FM-022   # Projektmanagement
+              target_level: 3
+              weight: 0.6
+
+      - id: JOB-ZEN-IT
+        name: "IT Spezialist:in"
+        name_en: "IT Specialist"
+        level: "Spezialist:in"
+        headcount_estimate: 500
+        skill_requirements:
+          mandatory:
+            - skill: SKL-TS-020   # MS Office / Collaboration
+              min_level: 4
+              weight: 0.7
+            - skill: SKL-TS-023   # KI-Tools
+              min_level: 3
+              weight: 0.8
+          core:
+            - skill: SKL-TS-021   # Datenanalyse
+              target_level: 5
+              weight: 0.9
+            - skill: SKL-TS-010   # SAP/ERP
+              target_level: 4
+              weight: 0.8
+            - skill: SKL-CS-012   # Datenschutz
+              target_level: 3
+              weight: 0.7
+            - skill: SKL-FM-022   # Projektmanagement
+              target_level: 3
+              weight: 0.6
+            - skill: SKL-FM-023   # Agile Methoden
+              target_level: 3
+              weight: 0.6
+
+      - id: JOB-ZEN-VL
+        name: "Vertriebsleitung"
+        name_en: "Head of Retail Operations"
+        level: "Geschaeftsfuehrung"
+        headcount_estimate: 30
+        skill_requirements:
+          mandatory:
+            - skill: SKL-FM-001   # Fuehrung
+              min_level: 5
+              weight: 1.0
+            - skill: SKL-FM-010   # P&L
+              min_level: 5
+              weight: 1.0
+            - skill: SKL-FM-013   # Strategie
+              min_level: 5
+              weight: 1.0
+          core:
+            - skill: SKL-FM-020   # Change Communication
+              target_level: 5
+              weight: 0.8
+            - skill: SKL-FM-021   # Stakeholder
+              target_level: 5
+              weight: 0.8
+            - skill: SKL-AB-001   # Umsatzanalyse
+              target_level: 5
+              weight: 0.7
+            - skill: SKL-AB-003   # Marktanalyse
+              target_level: 5
+              weight: 0.7
+            - skill: SKL-FM-006   # Diversity
+              target_level: 4
+              weight: 0.6
+
+# ============================================================================
+# CAREER PATH MATRIX (Uebergangs-Wahrscheinlichkeiten)
+# ============================================================================
+career_transitions:
+  description: |
+    Typische Karrierepfade mit geschaetzter Uebergangsrate pro Jahr.
+    Berechnet als: P(Transition) = Fit-Score × Vacancy Rate × Willingness
+
+  common_paths:
+    - from: JOB-KAS
+      to: JOB-TLK
+      typical_years: 2-4
+      transition_rate: 0.08
+      required_development: ["SKL-FM-001 → Level 2", "SKL-FM-002 → Level 2"]
+
+    - from: JOB-REG
+      to: JOB-FVO
+      typical_years: 1-2
+      transition_rate: 0.12
+      required_development: ["SKL-WM-002 → Level 3", "SKL-KI-002 → Level 2"]
+
+    - from: JOB-FVF
+      to: JOB-ALF
+      typical_years: 3-5
+      transition_rate: 0.06
+      required_development: ["SKL-FM-001 → Level 3", "SKL-AB-001 → Level 3"]
+
+    - from: JOB-TLK
+      to: JOB-SFL
+      typical_years: 3-5
+      transition_rate: 0.05
+      required_development: ["SKL-FM-010 → Level 3", "SKL-FM-001 → Level 4"]
+
+    - from: JOB-ALF
+      to: JOB-SFL
+      typical_years: 2-4
+      transition_rate: 0.07
+      required_development: ["SKL-FM-010 → Level 3", "SKL-FM-012 → Level 3"]
+
+    - from: JOB-SFL
+      to: JOB-FL
+      typical_years: 2-3
+      transition_rate: 0.15
+      required_development: ["SKL-FM-010 → Level 4", "SKL-FM-013 → Level 4"]
+
+    - from: JOB-FL
+      to: JOB-BZL
+      typical_years: 5-8
+      transition_rate: 0.03
+      required_development: ["SKL-FM-001 → Level 5", "SKL-AB-003 → Level 4"]
+
+    # Lateral: Filiale → Zentrale
+    - from: JOB-FL
+      to: JOB-ZEN-HR
+      typical_years: 5-10
+      transition_rate: 0.02
+      required_development: ["SKL-CS-010 → Level 4", "SKL-FM-006 → Level 4"]
+
+    - from: JOB-ALT
+      to: JOB-ZEN-CM
+      typical_years: 3-6
+      transition_rate: 0.03
+      required_development: ["SKL-AB-010 → Level 4", "SKL-AB-004 → Level 3"]
+
+# ============================================================================
+# SKILL GAP HEATMAP (Typische Luecken bei Internem Aufstieg)
+# ============================================================================
+typical_skill_gaps:
+  description: |
+    Die haeufigsten Skill-Luecken bei typischen Karriereschritten.
+    Basierend auf: Autor-Typ-Shift (z.B. M→L bei Aufstieg zur Fuehrung)
+
+  critical_transitions:
+    - name: "Fachkraft → Teamleitung"
+      autor_shift: "R/M/I → L"
+      typical_gaps:
+        - skill: SKL-FM-001   # Fuehrung
+          typical_delta: -2    # Meist Level 1, braucht Level 3
+          training_weeks: 8
+        - skill: SKL-FM-002   # Dienstplanung
+          typical_delta: -2
+          training_weeks: 4
+        - skill: SKL-FM-003   # Feedback
+          typical_delta: -2
+          training_weeks: 4
+      mitigation: "Fuehrungskraefteentwicklungs-Programm (16 Wochen)"
+
+    - name: "Teamleitung → Filialleitung"
+      autor_shift: "L+I → L+A"
+      typical_gaps:
+        - skill: SKL-FM-010   # P&L
+          typical_delta: -2
+          training_weeks: 8
+        - skill: SKL-FM-013   # Strategie
+          typical_delta: -3
+          training_weeks: 12
+        - skill: SKL-AB-003   # Marktanalyse
+          typical_delta: -2
+          training_weeks: 6
+      mitigation: "Filialleiter:innen-Programm (26 Wochen)"
+
+    - name: "Filiale → Zentrale"
+      autor_shift: "L+I → A+L"
+      typical_gaps:
+        - skill: SKL-TS-021   # Datenanalyse
+          typical_delta: -2
+          training_weeks: 8
+        - skill: SKL-FM-022   # Projektmanagement
+          typical_delta: -2
+          training_weeks: 6
+        - skill: SKL-FM-023   # Agile Methoden
+          typical_delta: -3
+          training_weeks: 4
+      mitigation: "Cross-Functional Rotation (12 Wochen)"

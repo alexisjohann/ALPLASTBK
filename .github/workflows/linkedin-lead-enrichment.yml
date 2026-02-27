@@ -1,0 +1,80 @@
+# =============================================================================
+# LINKEDIN LEAD ENRICHMENT (On-Demand)
+# =============================================================================
+# Fetch comprehensive profile data for a person before meetings.
+#
+# Trigger: Manual dispatch with LinkedIn URL, name+company, or email
+# Output: Saved to data/leads/ and displayed in workflow logs
+# =============================================================================
+
+name: LinkedIn Lead Enrichment
+
+on:
+  workflow_dispatch:
+    inputs:
+      linkedin_url:
+        description: 'LinkedIn URL (e.g., https://linkedin.com/in/johndoe)'
+        required: false
+      name:
+        description: 'Person name (e.g., "John Doe")'
+        required: false
+      company:
+        description: 'Company name (for name search)'
+        required: false
+      email:
+        description: 'Email address'
+        required: false
+
+jobs:
+  enrich-lead:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml requests
+
+      - name: Enrich Lead Profile
+        id: enrich
+        env:
+          PROXYCURL_API_KEY: ${{ secrets.PROXYCURL_API_KEY }}
+        run: |
+          # Build command based on inputs
+          CMD="python scripts/enrich_lead.py --save"
+
+          if [ -n "${{ github.event.inputs.linkedin_url }}" ]; then
+            CMD="$CMD '${{ github.event.inputs.linkedin_url }}'"
+          elif [ -n "${{ github.event.inputs.email }}" ]; then
+            CMD="$CMD --email '${{ github.event.inputs.email }}'"
+          elif [ -n "${{ github.event.inputs.name }}" ]; then
+            CMD="$CMD '${{ github.event.inputs.name }}'"
+            if [ -n "${{ github.event.inputs.company }}" ]; then
+              CMD="$CMD --company '${{ github.event.inputs.company }}'"
+            fi
+          else
+            echo "Error: Provide linkedin_url, email, or name"
+            exit 1
+          fi
+
+          echo "Running: $CMD"
+          eval $CMD
+
+      - name: Commit results
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add data/leads/
+          git diff --staged --quiet || git commit -m "feat(leads): Add enriched lead profile
+
+          Lead enriched via LinkedIn Lead Enrichment workflow.
+          Source: Proxycurl API"
+          git push || echo "No changes to push"
